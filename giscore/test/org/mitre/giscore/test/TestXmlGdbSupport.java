@@ -60,7 +60,7 @@ public class TestXmlGdbSupport {
 	/**
 	 * Base path to test directories
 	 */
-	public static final String base_path = "mediate/data/kml/";
+	public static final String base_path = "data/kml/";
 
 	@Test public void test1() throws Exception {
 		InputStream s = TestKmlInputStream.class.getResourceAsStream("7084.kml");

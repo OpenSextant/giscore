@@ -1083,7 +1083,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				StartElement se = event.asStartElement();
 				String sename = se.getName().getLocalPart();
 				String value = stream.getElementText();
-				if (StringUtils.isNotEmpty(value)) {
+				if (StringUtils.isNotBlank(value)) {
 					Double angle = new Double(value.trim());
 					if (NORTH.equals(sename)) {
 						overlay.setNorth(angle);

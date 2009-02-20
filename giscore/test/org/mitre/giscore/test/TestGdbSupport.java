@@ -57,7 +57,7 @@ public class TestGdbSupport {
 	/**
 	 * Base path to test directories
 	 */
-	public static final String base_path = "mediate/data/kml/";
+	public static final String base_path = "data/kml/";
 
 	@Test
 	public void test1f() throws Exception {

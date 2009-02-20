@@ -19,6 +19,7 @@
 package org.mitre.giscore.output.kml;
 
 import java.awt.Color;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -89,6 +90,24 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 		writer.writeStartElement(KML);
 		writer.writeDefaultNamespace(KML_NS);
 	}
+
+	
+	
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.output.XmlOutputStreamBase#close()
+	 */
+	@Override
+	public void close() throws IOException {
+		try {
+			writer.writeEndElement();
+			writer.writeEndDocument();
+			super.close();
+		} catch (XMLStreamException e) {
+			throw new IOException(e);
+		}
+	}
+
+
 
 	/*
 	 * (non-Javadoc)
