@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.1">
+<Document>
+
+    <description>
+      Example Placemark with mixed dimensions on points within a Line
+    </description>
+
+    <Placemark>
+	<name>1</name>
+	<Point>
+            <altitudeMode>relativeToGround</altitudeMode>
+            <coordinates>-76.73150843510001,39.10402861679,0</coordinates>
+	</Point>
+    </Placemark>
+
+    <Placemark>
+	<name>2</name>
+	<Point>
+            <altitudeMode>relativeToGround</altitudeMode>
+            <coordinates>-76.725516550066,39.099512700527,0</coordinates>
+	</Point>
+    </Placemark>
+
+    <Placemark>
+	<name>3</name>
+	<Point>
+            <altitudeMode>relativeToGround</altitudeMode>
+            <coordinates>-76.725516550066,39.099512700527,500</coordinates>
+	</Point>
+    </Placemark>
+
+    <Placemark>
+        <name>Line</name>
+        <LineString>
+	    <altitudeMode>relativeToGround</altitudeMode>
+            <coordinates>-76.73150843510001,39.10402861679 -76.72894181350101,39.104144789924,8.5 -76.72756248803701,39.104244115439,14.5 -76.72727574323801,39.102729087014005,19.5 -76.726920769773,39.100620200974,130.0 -76.72668766913401,39.099571373827004,160.0 -76.725516550066,39.099512700527,500</coordinates>
+            <tessellate>1</tessellate>
+            <extrude>1</extrude>
+        </LineString>
+    </Placemark>
+</Document>
+</kml>

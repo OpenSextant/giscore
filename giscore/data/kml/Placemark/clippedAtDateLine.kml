@@ -1,0 +1,49 @@
+<kml xmlns="http://earth.google.com/kml/2.1">
+<Document>
+  <name>Placemark LineString</name>
+  <description>
+    Test line that wraps Longitude at the International Date Line (IDL)
+  </description>
+
+  <LookAt>
+	<longitude>-179.8922632275846</longitude>
+	<latitude>-0.7981665695707441</latitude>
+	<altitude>0</altitude>
+	<heading>22</heading>
+	<tilt>0</tilt>
+	<range>1337884</range>
+  </LookAt>
+
+  <Placemark>
+    <Point>
+      <coordinates>-180,0,50</coordinates>
+    </Point>
+  </Placemark>
+
+  <Placemark>
+    <name>Line 1</name>
+    <Style>
+        <LineStyle>
+            <color>ffff0000</color>
+            <width>5</width>
+        </LineStyle>
+    </Style>
+    <LineString>
+      <coordinates> -180,0,50 30,60,50 </coordinates>
+    </LineString>
+  </Placemark>
+
+  <Placemark>
+    <name>Line 2</name>
+    <Style>
+        <LineStyle>
+            <color>FF00E6FF</color>
+            <width>5</width>
+        </LineStyle>
+    </Style>
+    <LineString>
+      <coordinates> 30,-60,50 -180,0,50 </coordinates>
+    </LineString>
+  </Placemark>
+</Document>
+</kml>

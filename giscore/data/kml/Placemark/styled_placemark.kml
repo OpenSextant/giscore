@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Placemark>
+    <name>styled placemark</name>
+    <description>paleogeographers unite!</description>
+    <Style>
+      <IconStyle>
+        <Icon>
+          <href>http://code.google.com/events/io/images/logo.gif</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <color>ffff0000</color>
+      </LabelStyle>
+      <BalloonStyle>
+        <text>
+          <![CDATA[
+          <b>$[name]</b><br/><br/>
+          <i>$[description]</i><br/>
+          ]]>
+        </text>
+      </BalloonStyle>
+    </Style>
+    <Point>
+      <coordinates>-122,37</coordinates>
+    </Point>
+  </Placemark>
+</kml>

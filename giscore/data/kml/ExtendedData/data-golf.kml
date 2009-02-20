@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+
+  Use Data to add untyped name-value pairs to any Feature (such as Placemark)
+  for use in a balloon template.
+
+http://code.google.com/apis/kml/documentation/extendeddata.html
+
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Data+BalloonStyle</name>
+    <open>1</open>
+    <Style id="name-value">
+      <BalloonStyle>
+        <text>
+          <![CDATA[
+          This is $[name]
+          This is hole $[holeNumber]
+          The par for this hole is $[holePar]
+          The yardage is $[holeYardage]
+          ]]>
+        </text>
+      </BalloonStyle>
+    </Style>
+    <Style id="displayName-value">
+      <BalloonStyle>
+        <text>
+          <![CDATA[
+          This is $[name]<br/>
+          $[holeNumber/displayName] $[holeNumber]<br/>
+          $[holePar/displayName] $[holePar]<br/>
+          $[holeYardage/displayName] $[holeYardage]
+          ]]>
+        </text>
+      </BalloonStyle>
+    </Style>
+    <!-- This placemark uses the text defined in the BalloonStyle to describe
+         the data
+    -->
+    <Placemark>
+      <name>Club house</name>
+      <styleUrl>#name-value</styleUrl>
+      <ExtendedData>
+        <Data name="holeNumber">
+          <value>1</value>
+        </Data>
+        <Data name="holePar">
+          <value>4</value>
+        </Data>
+        <Data name="holeYardage">
+          <value>234</value>
+        </Data>
+      </ExtendedData>
+  <Point>
+	<coordinates>-111.956,33.5043</coordinates>
+  </Point>
+    </Placemark>
+    <!-- This placemark's BalloonStyle uses the value of <displayName> to
+         describe the data
+    -->
+    <Placemark>
+      <name>By the lake</name>
+      <styleUrl>#displayName-value</styleUrl>
+      <ExtendedData>
+        <Data name="holeNumber">
+          <displayName>
+            <![CDATA[
+            <b>This is hole </b>
+            ]]>
+          </displayName>
+          <value>5</value>
+        </Data>
+        <Data name="holePar">
+          <displayName>
+            <![CDATA[
+            <i>The par for this hole is </i>
+            ]]>
+          </displayName>
+          <value>5</value>
+        </Data>
+        <Data name="holeYardage">
+          <displayName>
+            <![CDATA[
+            <b><i>The yardage is </i></b>
+            ]]>
+          </displayName>
+          <value>523</value>
+        </Data>
+      </ExtendedData>
+    <Point>
+      <coordinates>-111.95,33.5024</coordinates>
+    </Point>
+    </Placemark>
+  </Document>
+</kml>

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- sample KML from Dirt Devil Exercise: 080708_dev1.kml -->
+<kml xmlns="http://earth.google.com/kml/2.1">
+  <Document>
+    <name>test1</name>
+    <Style id="dot">
+      <IconStyle>
+        <scale>0.75</scale>
+	<Icon>
+		<href>http://maps.google.com/mapfiles/kml/shapes/cross-hairs_highlight.png</href>
+	</Icon>
+      </IconStyle>
+    </Style>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3653N<br><b type="C">Lon: </b>071 14.0274W<br><b type="C">TimeString: </b>2008-07-08T18:01:53.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:01:53.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.23379000000001,42.50608833333333</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3648N<br><b type="C">Lon: </b>071 14.0250W<br><b type="C">TimeString: </b>2008-07-08T18:02:03.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:02:03.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.23375,42.50608</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3617N<br><b type="C">Lon: </b>071 14.0326W<br><b type="C">TimeString: </b>2008-07-08T18:02:11.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:02:11.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.23387666666666,42.50602833333334</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3656N<br><b type="C">Lon: </b>071 14.0269W<br><b type="C">TimeString: </b>2008-07-08T18:02:20.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:02:20.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.23378166666666,42.50609333333333</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3596N<br><b type="C">Lon: </b>071 14.0283W<br><b type="C">TimeString: </b>2008-07-08T18:02:28.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:02:28.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.233805,42.505993333333336</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3582N<br><b type="C">Lon: </b>071 14.0393W<br><b type="C">TimeString: </b>2008-07-08T18:12:57.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:12:57.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.23398833333333,42.505970000000005</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3555N<br><b type="C">Lon: </b>071 14.0154W<br><b type="C">TimeString: </b>2008-07-08T18:13:06.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:13:06.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.23359,42.50592499999999</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3648N<br><b type="C">Lon: </b>071 14.0024W<br><b type="C">TimeString: </b>2008-07-08T18:13:35.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:13:35.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.23337333333332,42.50608</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3774N<br><b type="C">Lon: </b>071 14.0067W<br><b type="C">TimeString: </b>2008-07-08T18:13:46.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:13:46.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.233445,42.50629000000001</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3746N<br><b type="C">Lon: </b>071 14.0001W<br><b type="C">TimeString: </b>2008-07-08T18:14:15.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:14:15.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.23333499999998,42.50624333333334</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3899N<br><b type="C">Lon: </b>071 13.9952W<br><b type="C">TimeString: </b>2008-07-08T18:14:25.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:14:25.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.23325333333334,42.506498333333326</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3805N<br><b type="C">Lon: </b>071 13.9733W<br><b type="C">TimeString: </b>2008-07-08T18:14:51.000Z]]></description>
+      <TimeStamp>
+        <when>2008-07-08T18:14:51.000Z</when>
+      </TimeStamp>
+      <styleUrl>#dot</styleUrl>
+      <Point>
+        <coordinates>-71.23288833333334,42.50634166666667</coordinates>
+      </Point>
+    </Placemark>
+  </Document>
+</kml>

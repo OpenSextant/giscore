@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Folder>
+    <open>1</open>
+    <Placemark>
+      <name>My name</name>
+      <snippet />
+      <description>My description for the balloon</description>
+      <!-- Inhibit list view snippet of description -->
+      <Point>
+        <coordinates>1,2</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>My name</name>
+      <!-- override description with snippet text in list view -->
+      <snippet>Snippet</snippet>
+      <description>My description for the balloon</description>
+      <Point>
+        <coordinates>1,2</coordinates>
+      </Point>
+    </Placemark>
+  </Folder>
+</kml>

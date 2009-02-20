@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.1">
+<!--
+  KML created by KmlHandler.exportLayers() in TestKmlMediateSupport.testRoundTrip()
+ -->
+  <Document>
+    <Folder>
+      <name>l0</name>
+      <Placemark>
+        <description><![CDATA[<b type="C">geotype: </b>Point]]></description>
+        <Point>
+          <coordinates>-71.0,42.0</coordinates>
+        </Point>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>l1</name>
+      <Placemark>
+        <description><![CDATA[<b type="C">geotype: </b>Three point line]]></description>
+        <MultiGeometry>
+          <Point>
+            <coordinates>-71.0,42.07</coordinates>
+          </Point>
+          <LineString>
+            <coordinates>-71.0,42.05 -71.0,42.07 -71.05,42.07</coordinates>
+          </LineString>
+        </MultiGeometry>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>l2</name>
+      <Placemark>
+        <description><![CDATA[<b type="C">geotype: </b>Two line multiline]]></description>
+        <MultiGeometry>
+          <Point>
+            <coordinates>-71.19999999999999,42.1</coordinates>
+          </Point>
+          <LineString>
+            <coordinates>-71.1,42.1 -71.19999999999999,42.1</coordinates>
+          </LineString>
+          <LineString>
+            <coordinates>-71.3,42.1 -71.40000000000002,42.1</coordinates>
+          </LineString>
+        </MultiGeometry>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>l3</name>
+      <Placemark>
+        <description><![CDATA[<b type="C">geotype: </b>Two point multipoint]]></description>
+        <MultiGeometry>
+          <Point>
+            <coordinates>-71.0,41.900000000000006</coordinates>
+          </Point>
+          <Point>
+            <coordinates>-71.0,41.95</coordinates>
+          </Point>
+        </MultiGeometry>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>l4</name>
+      <Placemark>
+        <description><![CDATA[<b type="C">geotype: </b>Four point ring]]></description>
+        <MultiGeometry>
+          <Point>
+            <coordinates>-71.12,41.82500000000001</coordinates>
+          </Point>
+          <LinearRing>
+            <coordinates>-71.13000000000001,41.800000000000004 -71.13000000000001,41.85000000000001 -71.11,41.85000000000001 -71.11,41.800000000000004 -71.13000000000001,41.800000000000004</coordinates>
+          </LinearRing>
+        </MultiGeometry>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>l5</name>
+      <Placemark>
+        <description><![CDATA[<b type="C">geotype: </b>2 ring MultiLinearRing]]></description>
+        <MultiGeometry>
+          <Point>
+            <coordinates>-71.12,41.625</coordinates>
+          </Point>
+          <LinearRing>
+            <coordinates>-71.13000000000001,41.6 -71.13000000000001,41.65 -71.11,41.65 -71.11,41.6 -71.13000000000001,41.6</coordinates>
+          </LinearRing>
+          <LinearRing>
+            <coordinates>-71.12499999999999,41.61000000000001 -71.12499999999999,41.64 -71.115,41.64 -71.115,41.61000000000001 -71.12499999999999,41.61000000000001</coordinates>
+          </LinearRing>
+        </MultiGeometry>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>l6</name>
+      <Placemark>
+        <description><![CDATA[<b type="C">geotype: </b>Eight point Polygon]]></description>
+        <MultiGeometry>
+          <Point>
+            <coordinates>-71.12,42.425</coordinates>
+          </Point>
+          <Polygon>
+            <outerBoundaryIs>
+              <LinearRing>
+                <coordinates>-71.13000000000001,42.4 -71.13000000000001,42.45 -71.11,42.45 -71.11,42.4 -71.13000000000001,42.4</coordinates>
+              </LinearRing>
+            </outerBoundaryIs>
+            <innerBoundaryIs>
+              <LinearRing>
+                <coordinates>-71.12499999999999,42.40999999999999 -71.115,42.40999999999999 -71.115,42.44 -71.12499999999999,42.44 -71.12499999999999,42.40999999999999</coordinates>
+              </LinearRing>
+            </innerBoundaryIs>
+          </Polygon>
+        </MultiGeometry>
+      </Placemark>
+    </Folder>
+    <Folder>
+      <name>l7</name>
+      <Placemark>
+        <description><![CDATA[<b type="C">geotype: </b>2 polygon MultiPolygon]]></description>
+        <MultiGeometry>
+          <Point>
+            <coordinates>-71.04,41.425</coordinates>
+          </Point>
+          <Polygon>
+            <outerBoundaryIs>
+              <LinearRing>
+                <coordinates>-71.13000000000001,41.4 -71.13000000000001,41.45 -71.11,41.45 -71.11,41.4 -71.13000000000001,41.4</coordinates>
+              </LinearRing>
+            </outerBoundaryIs>
+            <innerBoundaryIs>
+              <LinearRing>
+                <coordinates>-71.12499999999999,41.41 -71.115,41.41 -71.115,41.44 -71.12499999999999,41.44 -71.12499999999999,41.41</coordinates>
+              </LinearRing>
+            </innerBoundaryIs>
+          </Polygon>
+          <Polygon>
+            <outerBoundaryIs>
+              <LinearRing>
+                <coordinates>-70.97,41.4 -70.97,41.45 -70.95,41.45 -70.95,41.4 -70.97,41.4</coordinates>
+              </LinearRing>
+            </outerBoundaryIs>
+            <innerBoundaryIs>
+              <LinearRing>
+                <coordinates>-70.96500000000002,41.41 -70.96500000000002,41.44 -70.955,41.44 -70.955,41.41 -70.96500000000002,41.41</coordinates>
+              </LinearRing>
+            </innerBoundaryIs>
+          </Polygon>
+        </MultiGeometry>
+      </Placemark>
+    </Folder>
+  </Document>
+</kml>
+
