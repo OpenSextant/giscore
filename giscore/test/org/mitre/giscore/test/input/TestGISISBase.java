@@ -48,7 +48,9 @@ public class TestGISISBase {
 		private List<IGISObject> testobjects = new ArrayList<IGISObject>();
 		
 		public TestInputStream() {
-			testobjects.add(new ContainerStart("air"));
+			ContainerStart air = new ContainerStart("Folder");
+			air.setName("air");
+			testobjects.add(air);
 			Feature f1 = new Feature();
 			f1.setName("test1");
 			f1.setDescription("desc1");

@@ -31,5 +31,13 @@
 			rev="1.0.1">
 			<conf name="compile" />
 		</dependency>
+		<dependency org="org.codehaus.woodstox" name="com.springsource.com.ctc.wstx" rev="3.2.7">
+			<conf name="compile" />
+			<exclude org="org.apache.xerces" module="com.springsource.org.apache.xerces" />
+			<exclude org="org.apache.xml" module="com.springsource.org.apache.xml.resolver" />
+		</dependency>
+		<dependency org="com.esri.arcgis" name="arcobjects" rev="9.3">
+			<conf name="compile" />
+		</dependency>
 	</dependencies>
 </ivy-module>

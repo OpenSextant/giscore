@@ -46,7 +46,7 @@ public class TestKmlSupport {
 	/**
 	 * Base path to test directories
 	 */
-	public static final String base_path = "mediate/data/kml/";
+	public static final String base_path = "data/kml/";
 	
 	@Test public void testAtom() throws Exception {
 		runTestsOnDir("atom");
