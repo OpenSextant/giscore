@@ -81,17 +81,17 @@
 	</target>
 	
 	<target name="jar" depends="compile">
-		<jar destfile="${rel}/jars/itf-giscore.jar">
+		<jar destfile="${rel}/jars/giscore.jar">
 			<fileset dir="${rel}/classes" />
 		</jar>
 	</target>
 	
-	<target name="publish" depends="jar">
+	<target name="publish" depends="jar, makepom">
 		<ivy:publish resolver="mapsrv" />
 	</target>
 	
 	<target name="makepom">
 		<ivy:settings file="${basedir}/ivysettings.xml" />
-		<ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${rel}/itf-giscore.pom" />
+		<ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${rel}/giscore.pom" />
 	</target>
 </project>
