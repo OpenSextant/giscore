@@ -50,6 +50,7 @@ import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.StyleMap;
 import org.mitre.giscore.events.TaggedMap;
 import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
@@ -70,11 +71,14 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
  * feature, and the KML output stream buffers these until the next feature is
  * seen. At that point the styles are output after the element's attributes and
  * before any content.
+ * <p>
+ * The geometry visitors are invoked by the feature vistor via the Geometry 
+ * accept method.
  * 
  * @author DRAND
  * 
  */
-public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
+public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	private List<IGISObject> waitingElements = new ArrayList<IGISObject>();
 
 	/**
@@ -85,15 +89,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 	 */
 	public KmlOutputStream(OutputStream stream) throws XMLStreamException {
 		super(stream);
-		
+
 		writer.writeStartDocument();
 		writer.writeStartElement(KML);
 		writer.writeDefaultNamespace(KML_NS);
 	}
 
-	
-	
-	/* (non-Javadoc)
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see org.mitre.giscore.output.XmlOutputStreamBase#close()
 	 */
 	@Override
@@ -106,8 +110,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 			throw new IOException(e);
 		}
 	}
-
-
 
 	/*
 	 * (non-Javadoc)
@@ -143,7 +145,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 			throw new RuntimeException(e);
 		}
 	}
-	
+
 	/**
 	 * Common code for outputting feature data that is held for both containers
 	 * and other features like Placemarks and Overlays.
@@ -164,7 +166,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 				Object val = feature.get(key);
 				handleSimpleElement(key, val.toString());
 			}
-			
+
 			if (feature.hasExtendedData()) {
 				String schema = feature.getSchema();
 				writer.writeStartElement(EXTENDED_DATA);
@@ -224,7 +226,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 			if (feature instanceof Overlay) {
 				handleOverlay((Overlay) feature);
 			} else if (feature.getGeometry() != null) {
-				handleGeometry(feature);
+				feature.getGeometry().accept(this);
 			} else if (feature instanceof NetworkLink) {
 				handleNetworkLink((NetworkLink) feature);
 			}
@@ -236,6 +238,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 
 	/**
 	 * Handle elements specific to a network link feature.
+	 * 
 	 * @param link
 	 */
 	private void handleNetworkLink(NetworkLink link) throws XMLStreamException {
@@ -244,14 +247,16 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 
 	/**
 	 * Handle elements specific to an overlay feature
+	 * 
 	 * @param overlay
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
 	private void handleOverlay(Overlay overlay) throws XMLStreamException {
 		handleColor(COLOR, overlay.getColor());
-		handleSimpleElement(DRAW_ORDER, Integer.toString(overlay.getDrawOrder()));
+		handleSimpleElement(DRAW_ORDER, Integer
+				.toString(overlay.getDrawOrder()));
 		handleTagElement(overlay.getIcon());
-		
+
 		if (overlay instanceof GroundOverlay) {
 			GroundOverlay go = (GroundOverlay) overlay;
 			handleSimpleElement(ALTITUDE, go.getAltitude());
@@ -281,9 +286,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 	 * 
 	 * @param tag
 	 * @param loc
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
-	private void handleXY(String tag, ScreenLocation loc) throws XMLStreamException {
+	private void handleXY(String tag, ScreenLocation loc)
+			throws XMLStreamException {
 		if (loc != null) {
 			writer.writeStartElement(tag);
 			writer.writeAttribute("x", Double.toString(loc.x));
@@ -296,12 +302,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 
 	/**
 	 * Output a tagged element.
+	 * 
 	 * @param data
 	 */
 	private void handleTagElement(TaggedMap data) throws XMLStreamException {
-		if (data == null) return;
+		if (data == null)
+			return;
 		writer.writeStartElement(data.getTag());
-		for(String key : data.keySet()) {
+		for (String key : data.keySet()) {
 			String value = data.get(key);
 			handleSimpleElement(key, value);
 		}
@@ -309,75 +317,133 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 	}
 
 	/**
-	 * Handle elements that have been deferred. Style information is stored
-	 * as found and output on the next feature or container.
-	 * @throws XMLStreamException 
+	 * Handle elements that have been deferred. Style information is stored as
+	 * found and output on the next feature or container.
+	 * 
+	 * @throws XMLStreamException
 	 */
 	private void handleWaitingElements() throws XMLStreamException {
-		for(int i = waitingElements.size() - 1; i >= 0; i--) {
+		for (int i = waitingElements.size() - 1; i >= 0; i--) {
 			IGISObject element = waitingElements.get(i);
 			if (element instanceof Style) {
 				handle((Style) element);
 			} else if (element instanceof StyleMap) {
 				handle((StyleMap) element);
 			} else {
-				throw new RuntimeException("Unknown kind of deferred element: " + element.getClass());
+				throw new RuntimeException("Unknown kind of deferred element: "
+						+ element.getClass());
 			}
 		}
 		waitingElements.clear();
 	}
+
+	/**
+	 * Output a multigeometry, represented by a geometry bag
+	 * @param bag the geometry bag, never <code>null</code>
+	 */
+	public void visit(GeometryBag bag) {
+		if (bag == null) {
+			throw new IllegalArgumentException("bag should never be null");
+		}
+		try {
+			writer.writeStartElement(MULTI_GEOMETRY);
+			super.visit(bag);
+			writer.writeEndElement();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 	
 	/**
-	 * @param feature
+	 * Handle the output of a polygon
+	 * 
+	 * @param poly
+	 *            the polygon, never <code>null</code>
 	 */
-	private void handleGeometry(Feature feature) {
+	public void visit(Polygon poly) {
+		if (poly == null) {
+			throw new IllegalArgumentException("poly should never be null");
+		}
 		try {
-			Geometry geo = feature.getGeometry();
-			if (geo == null) return;
-			if (geo instanceof Point) {
-				Point p = (Point) geo;
-				writer.writeStartElement(POINT);
-				handleSimpleElement(COORDINATES,
-						handleCoordinates(Collections.singletonList(p)));
-				writer.writeEndElement();
-			} else if (geo instanceof Line) {
-				Line l = (Line) geo;
-				writer.writeStartElement(LINE_STRING);
-				handleSimpleElement(COORDINATES,
-						handleCoordinates(l.getPoints()));
-				writer.writeEndElement();
-			} else if (geo instanceof LinearRing) {
-				LinearRing r = (LinearRing) geo;
+			writer.writeStartElement(POLYGON);
+			if (poly.getOuterRing() != null) {
+				writer.writeStartElement(OUTER_BOUNDARY_IS);
 				writer.writeStartElement(LINEAR_RING);
-				handleSimpleElement(COORDINATES,
-						handleCoordinates(r.iterator()));
+				handleSimpleElement(COORDINATES, handleCoordinates(poly
+						.getOuterRing().iterator()));
 				writer.writeEndElement();
-			} else if (geo instanceof Polygon) {
-				Polygon poly = (Polygon) geo;
-				writer.writeStartElement(POLYGON);
-				if (poly.getOuterRing() != null) {
-					writer.writeStartElement(OUTER_BOUNDARY_IS);
-					writer.writeStartElement(LINEAR_RING);
-					handleSimpleElement(COORDINATES,
-							handleCoordinates(poly.getOuterRing().iterator()));
-					writer.writeEndElement();
-					writer.writeEndElement();
-				}
-				if (poly.getLinearRings() != null) {
-					for(LinearRing lr : poly.getLinearRings()) {
-						writer.writeStartElement(INNER_BOUNDARY_IS);
-						writer.writeStartElement(LINEAR_RING);
-						handleSimpleElement(COORDINATES,
-								handleCoordinates(lr.getPoints()));
-						writer.writeEndElement();
-						writer.writeEndElement();
-					}
-				}
 				writer.writeEndElement();
-			} else {
-				throw new UnsupportedOperationException("Found unknown type of geometry: " + geo.getClass());
 			}
-		} catch (XMLStreamException e) {
+			if (poly.getLinearRings() != null) {
+				for (LinearRing lr : poly.getLinearRings()) {
+					writer.writeStartElement(INNER_BOUNDARY_IS);
+					writer.writeStartElement(LINEAR_RING);
+					handleSimpleElement(COORDINATES, handleCoordinates(lr
+							.getPoints()));
+					writer.writeEndElement();
+					writer.writeEndElement();
+				}
+			}
+			writer.writeEndElement();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Handle the output of a ring
+	 * 
+	 * @param r
+	 *            the ring, never <code>null</code>
+	 */
+	public void visit(LinearRing r) {
+		if (r == null) {
+			throw new IllegalArgumentException("r should never be null");
+		}
+		try {
+			writer.writeStartElement(LINEAR_RING);
+			handleSimpleElement(COORDINATES, handleCoordinates(r.iterator()));
+			writer.writeEndElement();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Handle the output of a line
+	 * 
+	 * @param l
+	 *            the line, never <code>null</code>
+	 */
+	public void visit(Line l) {
+		if (l == null) {
+			throw new IllegalArgumentException("l should never be null");
+		}
+		try {
+			writer.writeStartElement(LINE_STRING);
+			handleSimpleElement(COORDINATES, handleCoordinates(l.getPoints()));
+			writer.writeEndElement();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Handle the output of a point
+	 * 
+	 * @param p
+	 *            the point, never <code>null</code>
+	 */
+	public void visit(Point p) {
+		if (p == null) {
+			throw new IllegalArgumentException("p should never be null");
+		}
+		try {
+			writer.writeStartElement(POINT);
+			handleSimpleElement(COORDINATES, handleCoordinates(Collections
+					.singletonList(p)));
+			writer.writeEndElement();
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
@@ -385,30 +451,34 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 	/**
 	 * output the coordinates. The coordinates are output as lon,lat[,altitude]
 	 * and are separated by spaces
-	 * @param coordinates an iterator over the points, never <code>null</code>
+	 * 
+	 * @param coordinates
+	 *            an iterator over the points, never <code>null</code>
 	 * @throws XMLStreamException
-	 * @return the coordinates as a string 
+	 * @return the coordinates as a string
 	 */
-	private String handleCoordinates(Iterator<Point> coordinates) 
-	throws XMLStreamException {
+	private String handleCoordinates(Iterator<Point> coordinates)
+			throws XMLStreamException {
 		StringBuilder b = new StringBuilder();
-		while(coordinates.hasNext()) {
+		while (coordinates.hasNext()) {
 			Point point = coordinates.next();
 			handleSingleCoordinate(b, point);
 		}
 		return b.toString();
 	}
-	
+
 	/**
 	 * output the coordinates. The coordinates are output as lon,lat[,altitude]
 	 * and are separated by spaces
-	 * @param coordinateList the list of coordinates, never <code>null</code>
-	 * @throws XMLStreamException 
+	 * 
+	 * @param coordinateList
+	 *            the list of coordinates, never <code>null</code>
+	 * @throws XMLStreamException
 	 */
-	private String handleCoordinates(Collection<Point> coordinateList) 
-	throws XMLStreamException {
+	private String handleCoordinates(Collection<Point> coordinateList)
+			throws XMLStreamException {
 		StringBuilder b = new StringBuilder();
-		for(Point point : coordinateList) {
+		for (Point point : coordinateList) {
 			handleSingleCoordinate(b, point);
 		}
 		return b.toString();
@@ -416,6 +486,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 
 	/**
 	 * Output a single coordinate
+	 * 
 	 * @param b
 	 * @param point
 	 */
@@ -447,14 +518,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 			writer.writeStartElement(SCHEMA);
 			writer.writeAttribute(NAME, schema.getName());
 			writer.writeAttribute(ID, schema.getId());
-			for(String name : schema.getKeys()) {
+			for (String name : schema.getKeys()) {
 				SimpleField field = schema.get(name);
 				if (field.getType().isGeometry()) {
 					continue; // Skip geometry elements, no equivalent in Kml
 				}
 				writer.writeStartElement(SIMPLE_FIELD);
 				if (field.getType().isKmlCompatible())
-					writer.writeAttribute(TYPE, field.getType().toString().toLowerCase());
+					writer.writeAttribute(TYPE, field.getType().toString()
+							.toLowerCase());
 				else
 					writer.writeAttribute(TYPE, "string");
 				writer.writeAttribute(NAME, field.getName());
@@ -469,8 +541,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 		}
 	}
 
-
-
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -482,11 +552,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 	public void visit(Style style) {
 		waitingElements.add(style);
 	}
-	
+
 	/**
 	 * Actually output the style
+	 * 
 	 * @param style
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
 	private void handle(Style style) throws XMLStreamException {
 		writer.writeStartElement(STYLE);
@@ -510,10 +581,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 		}
 		writer.writeEndElement();
 	}
-	
+
 	/**
 	 * @param style
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
 	private void handlePolyStyleElement(Style style) throws XMLStreamException {
 		writer.writeStartElement(POLY_STYLE);
@@ -525,7 +596,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 
 	/**
 	 * @param style
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
 	private void handleLabelStyleElement(Style style) throws XMLStreamException {
 		writer.writeStartElement(LABEL_STYLE);
@@ -536,9 +607,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 
 	/**
 	 * @param style
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
-	private void handleBalloonStyleElement(Style style) throws XMLStreamException {
+	private void handleBalloonStyleElement(Style style)
+			throws XMLStreamException {
 		writer.writeStartElement(BALLOON_STYLE);
 		handleColor(BG_COLOR, style.getBalloonBgColor());
 		handleSimpleElement(DISPLAY_MODE, style.getBalloonDisplayMode());
@@ -550,20 +622,22 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 	/**
 	 * @param style
 	 * @return
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
-	protected void handleLineStyleElement(Style style) throws XMLStreamException {
+	protected void handleLineStyleElement(Style style)
+			throws XMLStreamException {
 		writer.writeStartElement(LINE_STYLE);
 		handleSimpleElement(WIDTH, Double.toString(style.getLineWidth()));
 		handleColor(COLOR, style.getLineColor());
 		writer.writeEndElement();
 	}
-	
+
 	/**
 	 * @return
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
-	protected void handleIconStyleElement(Style style) throws XMLStreamException {
+	protected void handleIconStyleElement(Style style)
+			throws XMLStreamException {
 		writer.writeStartElement(ICON_STYLE);
 		handleColor(COLOR, style.getIconColor());
 		handleSimpleElement(SCALE, Double.toString(style.getIconScale()));
@@ -580,19 +654,20 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 		writer.writeEndElement();
 		writer.writeEndElement();
 	}
-	
+
 	/**
 	 * Get the kml compliant color translation
 	 * 
 	 * @return kml color element
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
-	protected void handleColor(String tag, Color color) throws XMLStreamException {
+	protected void handleColor(String tag, Color color)
+			throws XMLStreamException {
 		if (color != null) {
 			StringBuilder sb = new StringBuilder(8);
 			Formatter formatter = new Formatter(sb, Locale.US);
-			formatter.format("%02x%02x%02x%02x", color.getAlpha(), color.getBlue(),
-					color.getGreen(), color.getRed());
+			formatter.format("%02x%02x%02x%02x", color.getAlpha(), color
+					.getBlue(), color.getGreen(), color.getRed());
 			handleSimpleElement(tag, sb.toString());
 		}
 	}
@@ -608,11 +683,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 	public void visit(StyleMap styleMap) {
 		waitingElements.add(styleMap);
 	}
-	
+
 	/**
 	 * Actually handle style map
+	 * 
 	 * @param styleMap
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
 	private void handle(StyleMap styleMap) throws XMLStreamException {
 		writer.writeStartElement(STYLE_MAP);
@@ -620,7 +696,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 			writer.writeAttribute(ID, styleMap.getId());
 		}
 		Iterator<String> kiter = styleMap.keys();
-		while(kiter.hasNext()) {
+		while (kiter.hasNext()) {
 			String key = kiter.next();
 			String value = styleMap.get(key);
 			writer.writeStartElement(PAIR);
@@ -628,6 +704,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements	IKml {
 			handleSimpleElement(STYLE_URL, value);
 			writer.writeEndElement();
 		}
-		writer.writeEndElement();		
+		writer.writeEndElement();
 	}
 }

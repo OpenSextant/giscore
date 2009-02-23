@@ -44,6 +44,7 @@ import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
@@ -92,6 +93,12 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  * ArcCatalog and testing for what elements can be removed and what values 
  * work correctly in some cases.
  * </ul> 
+ * <p>
+ * Note that the visitor pattern is somewhat split here. On the feature and 
+ * schema visitor methods are really exercised in the "front-end" process where
+ * the data is pulled in and sorted into the feature sorter. The "back-end" 
+ * process handles one feature set at a time and the visitor patter is once more
+ * asserted to handle the geometry information.
  * 
  * @author DRAND
  */
@@ -482,49 +489,9 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			SimpleField.Type type = field.getType();
 			if (SimpleField.Type.GEOMETRY.equals(type)) {
 				Geometry geo = (Geometry) datum;
-				if (geo instanceof Point) {
-					Point point = (Point) geo;
-					writeEsriType(POINT_N);
-					writePoint(point);
-				} else if (geo instanceof Line) {
-					Line line = (Line) geo;
-					writeEsriType("PolylineN");
-					handleSimpleElement(HAS_ID, "false");
-					handleSimpleElement(HAS_Z, "false");
-					handleSimpleElement(HAS_M, "false");
-					writeExtent(geo.getBoundingBox(), false);
-					writer.writeStartElement(PATH_ARRAY);
-					writeEsriType("ArrayOfPath");
-					writer.writeStartElement(PATH);
-					writeEsriType("Path");
-					writePointArray(line.getPoints());
-					writer.writeEndElement();
-					writer.writeEndElement();
-				} else if (geo instanceof LinearRing) {
-					LinearRing ring = (LinearRing) geo;
-					writeRing(null, ring);
-				} else if (geo instanceof Polygon) {
-					Polygon poly = (Polygon) geo;
-					writeEsriType("PolygonN");
-					handleSimpleElement(HAS_ID, "false");
-					handleSimpleElement(HAS_Z, "false");
-					handleSimpleElement(HAS_M, "false");
-					writeExtent(geo.getBoundingBox(), false);
-					writer.writeStartElement(RING_ARRAY);
-					writeEsriType("ArrayOfRing");
-					if (poly.getBoundingBox() != null) {
-						writeRing(RING, poly.getOuterRing());
-					}
-					for(LinearRing ring : poly.getLinearRings()) {
-						writeRing(RING, ring);				
-					}
-					writer.writeEndElement();
-				} else {
-					throw new UnsupportedOperationException(
-							"Found unknown type of geometry: " + geo.getClass());
-				}
+				geo.accept(this);
 			} else if (SimpleField.Type.DATE.equals(type)) {
-				
+				// FIXME: We need something here!
 			} else {
 				if (type.getXmlSchemaType() != null) {
 					writer.writeAttribute(XSI_NS, TYPE_ATTR, type.getXmlSchemaType());
@@ -534,6 +501,87 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 				handleCharacters(datum.toString());
 			}
 			writer.writeEndElement();
+		}
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.GeometryBag)
+	 */
+	@Override
+	public void visit(GeometryBag geobag) {
+		throw new UnsupportedOperationException("Geometry Bag is not supported by XML GDB");
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.Line)
+	 */
+	@Override
+	public void visit(Line line) {
+		try {
+			writeEsriType("PolylineN");
+			handleSimpleElement(HAS_ID, "false");
+			handleSimpleElement(HAS_Z, "false");
+			handleSimpleElement(HAS_M, "false");
+			writeExtent(line.getBoundingBox(), false);
+			writer.writeStartElement(PATH_ARRAY);
+			writeEsriType("ArrayOfPath");
+			writer.writeStartElement(PATH);
+			writeEsriType("Path");
+			writePointArray(line.getPoints());
+			writer.writeEndElement();
+			writer.writeEndElement();
+		} catch (XMLStreamException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.LinearRing)
+	 */
+	@Override
+	public void visit(LinearRing ring) {
+		try {
+			writeRing(null, ring);
+		} catch (XMLStreamException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.Point)
+	 */
+	@Override
+	public void visit(Point point) {
+		try {
+			writeEsriType(POINT_N);
+			writePoint(point);
+		} catch (XMLStreamException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.Polygon)
+	 */
+	@Override
+	public void visit(Polygon polygon) {
+		try {
+			writeEsriType("PolygonN");
+			handleSimpleElement(HAS_ID, "false");
+			handleSimpleElement(HAS_Z, "false");
+			handleSimpleElement(HAS_M, "false");
+			writeExtent(polygon.getBoundingBox(), false);
+			writer.writeStartElement(RING_ARRAY);
+			writeEsriType("ArrayOfRing");
+			if (polygon.getBoundingBox() != null) {
+				writeRing(RING, polygon.getOuterRing());
+			}
+			for(LinearRing ring : polygon.getLinearRings()) {
+				writeRing(RING, ring);				
+			}
+			writer.writeEndElement();
+		} catch (XMLStreamException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -748,6 +796,8 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			return "esriGeometryRing";
 		} else if (geoclass.isAssignableFrom(Polygon.class)) {
 			return "esriGeometryPolygon";
+		} else if (geoclass.isAssignableFrom(GeometryBag.class)) {
+			return "esriGeometryBag";
 		} else {
 			throw new UnsupportedOperationException(
 					"Found unknown type of geometry: " + geoclass.getClass());

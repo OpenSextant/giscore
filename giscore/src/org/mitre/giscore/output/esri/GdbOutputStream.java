@@ -47,6 +47,7 @@ import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
@@ -358,8 +359,10 @@ public class GdbOutputStream extends StreamVisitorBase implements
 					if (!field.isEditable())
 						continue;
 					if (fc.getShapeFieldName().equals(field.getName())) {
-						IGeometry geo = makeFeatureGeometry(current);
-						buffer.setShapeByRef(geo);
+						if (current.getGeometry() != null) {
+							IGeometry geo = makeFeatureGeometry(current.getGeometry());
+							buffer.setShapeByRef(geo);
+						}
 					} else {
 						Object value = current.getData(field.getName());
 						Variant vval = createVariant(field.getType(), field
@@ -386,16 +389,15 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	}
 
 	/**
-	 * @param current
+	 * @param geo
 	 * @return
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 * @throws AutomationException
 	 */
-	private IGeometry makeFeatureGeometry(Feature current)
+	private IGeometry makeFeatureGeometry(Geometry geo)
 			throws AutomationException, UnknownHostException, IOException {
 		IGeometry rval = null;
-		Geometry geo = (Geometry) current.getGeometry();
 		if (geo instanceof Point) {
 			rval = makePoint((Point) geo);
 		} else if (geo instanceof Line) {
@@ -412,6 +414,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 				epoly.addGeometry(makeRing(ir), null, null);
 			}
 			rval = epoly;
+		} else if (geo instanceof GeometryBag) {
+			throw new UnsupportedOperationException("Geometry bags are currently not working with ESRI output formats");
 		} else {
 			throw new UnsupportedOperationException(
 					"Found unknown type of geometry: " + geo.getClass());
@@ -657,6 +661,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			return esriGeometryType.esriGeometryRing;
 		} else if (geoclass.isAssignableFrom(Polygon.class)) {
 			return esriGeometryType.esriGeometryPolygon;
+		} else if (geoclass.isAssignableFrom(GeometryBag.class)) {
+			return esriGeometryType.esriGeometryBag;
 		} else {
 			throw new UnsupportedOperationException(
 					"Found unknown type of geometry: " + geoclass.getClass());

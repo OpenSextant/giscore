@@ -56,6 +56,8 @@ import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.StyleMap;
 import org.mitre.giscore.events.TaggedMap;
+import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
@@ -243,7 +245,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					break;
 				}
 			}
-			
+
 			XMLEvent ee = stream.nextEvent();
 			if (ee == null) {
 				break;
@@ -955,7 +957,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				if (!handleProperties(fs, ee, localname)) {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
-						handleGeometry(fs, sl);
+						Geometry geo = handleGeometry(sl);
+						if (geo != null) {
+							fs.setGeometry(geo);
+						}
 					} else if (ground && LAT_LON_BOX.equals(localname)) {
 						handleLatLonBox((GroundOverlay) fs, sl);
 					} else if (screen && OVERLAY_XY.equals(localname)) {
@@ -1104,29 +1109,22 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	/**
 	 * Parse and process the geometry for the feature and store in the feature
 	 * 
-	 * @param fs
 	 * @param sl
 	 * @throws XMLStreamException
 	 */
-	private void handleGeometry(Feature fs, StartElement sl)
-			throws XMLStreamException {
+	private Geometry handleGeometry(StartElement sl) throws XMLStreamException {
 		QName name = sl.getName();
 		String localname = name.getLocalPart();
 		if (localname.equals(POINT)) {
-			List<Point> coords = parseCoordinates(localname);
-			if (coords.size() < 1) {
-				throw new IllegalStateException(
-						"Too few coordinates found for point");
-			}
-			fs.setGeometry(coords.get(0));
+			return parseCoordinate(localname);
 		} else if (localname.equals(LINE_STRING)) {
 			List<Point> coords = parseCoordinates(localname);
 			Line line = new Line(coords);
-			fs.setGeometry(line);
+			return line;
 		} else if (localname.equals(LINEAR_RING)) {
 			ArrayList<Point> coords = parseCoordinates(localname);
 			LinearRing ring = new LinearRing(coords);
-			fs.setGeometry(ring);
+			return ring;
 		} else if (localname.equals(POLYGON)) {
 			// Contains two linear rings
 			LinearRing outer = null;
@@ -1151,18 +1149,23 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (outer == null) {
 				throw new IllegalStateException("Bad poly found, no outer ring");
 			}
-			Polygon poly = new Polygon(outer, inners);
-			fs.setGeometry(poly);
-
+			return new Polygon(outer, inners);
 		} else if (localname.equals(MULTI_GEOMETRY)) {
-			// we don't really have a way to represent this yet, look for end
-			// element and continue
+			GeometryBag bag = new GeometryBag();
 			while (true) {
 				XMLEvent event = stream.nextEvent();
+				if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
+					StartElement el = (StartElement) event;
+					String tag = el.getName().getLocalPart();
+					if (ms_geometries.contains(tag)) {
+						bag.add(handleGeometry(el));
+					}
+				}
 				if (foundEndTag(event, localname)) {
 					break;
 				}
 			}
+			return bag;
 		} else if (localname.equals(MODEL)) {
 			// we don't really have a way to represent this yet, look for end
 			// element and continue
@@ -1173,6 +1176,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				}
 			}
 		}
+		return null; // Default
 	}
 
 	/**
@@ -1213,6 +1217,54 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 								double elev = Double.parseDouble(parts[2]);
 								rval.add(new Point(new Geodetic3DPoint(lon,
 										lat, elev)));
+							}
+						}
+					}
+				}
+			}
+		}
+		return rval;
+	}
+
+	/**
+	 * Find the coordinates element for Point and extract the fractional
+	 * lat/lons/alts. The element name is used to spot if we leave the "end" of
+	 * the block. The stream will be positioned after the element when this
+	 * returns.
+	 * 
+	 * @param localname
+	 *            the tag name of the containing element
+	 * @return the coordinate
+	 * @throws XMLStreamException
+	 */
+	private Point parseCoordinate(String localname) throws XMLStreamException {
+		Point rval = null;
+		while (true) {
+			XMLEvent event = stream.nextEvent();
+			if (foundEndTag(event, localname)) {
+				break;
+			}
+			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
+				if (event.asStartElement().getName().getLocalPart().equals(
+						COORDINATES)) {
+					String text = stream.getElementText().trim();
+					// allow sloppy KML with whitespace appearing before/after
+					// lat and lon values
+					// e.g. <coordinates>-121.9921875, 37.265625</coordinates>
+					// http://kml-samples.googlecode.com/svn/trunk/kml/ListStyle/radio-folder-vis.kml
+					if (!StringUtils.isEmpty(text)) {
+						String parts[] = text.split(",");
+						if (parts.length > 1) {
+							double dlon = Double.parseDouble(parts[0]);
+							double dlat = Double.parseDouble(parts[1]);
+							Longitude lon = new Longitude(dlon, Angle.DEGREES);
+							Latitude lat = new Latitude(dlat, Angle.DEGREES);
+							if (parts.length < 3) {
+								rval = new Point(new Geodetic2DPoint(lon, lat));
+							} else {
+								double elev = Double.parseDouble(parts[2]);
+								rval = new Point(new Geodetic3DPoint(lon, lat,
+										elev));
 							}
 						}
 					}

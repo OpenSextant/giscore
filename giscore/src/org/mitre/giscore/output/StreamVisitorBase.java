@@ -26,6 +26,8 @@ import org.mitre.giscore.events.GroundOverlay;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.StyleMap;
+import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.MultiLine;
@@ -81,7 +83,9 @@ public class StreamVisitorBase {
 	 * @param feature
 	 */
 	public void visit(Feature feature) {
-		// Ignored by default
+		if (feature.getGeometry() != null) {
+			feature.getGeometry().accept(this);
+		}
 	}
 
 	/**
@@ -123,6 +127,15 @@ public class StreamVisitorBase {
         }
 	}
 
+    /**
+     * @param geobag a geometry bag
+     */
+    public void visit(GeometryBag geobag) {
+    	for(Geometry geo : geobag) {
+    		geo.accept(this);
+    	}
+    }
+    
 	/**
 	 * @param multiLine
 	 */
