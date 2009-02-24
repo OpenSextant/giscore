@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.net.UnknownHostException;
 import java.sql.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.zip.ZipEntry;
@@ -54,6 +55,7 @@ import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.FeatureSorter;
+import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.StreamVisitorBase;
 import org.slf4j.Logger;
@@ -105,6 +107,38 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		IGISOutputStream {
 	private static final Logger logger = LoggerFactory
 			.getLogger(GdbOutputStream.class);
+	
+	/**
+	 * Strategy that uses the current "container" along with the geometry
+	 * to derive a name.
+	 */
+	public class GdbContainerNameStrategy implements IContainerNameStrategy {
+		/*
+		 * (non-Javadoc)
+		 * @see org.mitre.giscore.output.IContainerNameStrategy#deriveContainerName(java.util.List, org.mitre.giscore.output.FeatureKey)
+		 */
+		@Override
+		public String deriveContainerName(List<String> path, FeatureKey key) {
+			StringBuilder setname = new StringBuilder();
+			for (String element : path) {
+				if (setname.length() > 0) {
+					setname.append("_");
+				}
+				if (StringUtils.isNotBlank(element)) {
+					setname.append(element);
+				}
+			}
+			if (key.getGeoclass() != null) {
+				if (setname.length() > 0) 
+					setname.append("_");
+				setname.append(key.getGeoclass().getSimpleName());
+			}
+			String datasetname = setname.toString();
+			datasetname = datasetname.replaceAll("\\s", "_");
+			return datasetname;
+		}
+	}
+	
 	/**
 	 * Reference environment to create geospatial references
 	 */
@@ -205,6 +239,12 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * The path to the file or directory being created by this stream.
 	 */
 	private File outputPath = null;
+	
+	/**
+	 * The container naming strategy. If not supplied in the ctor then
+	 * {@link GdbContainerNameStrategy} will be used.
+	 */
+	private IContainerNameStrategy containerNameStrategy = null;
 
 	/**
 	 * Ctor
@@ -219,11 +259,14 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * @param path
 	 *            the directory and file that should hold the file gdb, never
 	 *            <code>null</code>.
+	 * @param containerNameStrategy
+	 * 			  a name strategy to override the default, may be <code>null</code>.
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 * @throws XMLStreamException
 	 */
-	public GdbOutputStream(DocumentType type, OutputStream stream, File path)
+	public GdbOutputStream(DocumentType type, OutputStream stream, File path,
+			IContainerNameStrategy containerNameStrategy)
 			throws UnknownHostException, IOException {
 		if (type == null) {
 			throw new IllegalArgumentException("type should never be null");
@@ -234,6 +277,11 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		if (path == null || !path.getParentFile().exists()) {
 			throw new IllegalArgumentException(
 					"path should never be null and parent must exist");
+		}
+		if (containerNameStrategy == null) {
+			this.containerNameStrategy = new GdbContainerNameStrategy();
+		} else {
+			this.containerNameStrategy = containerNameStrategy;
 		}
 		outputStream = stream;
 		outputPath = path;
@@ -707,21 +755,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		
 		FeatureKey key = sorter.add(feature);
 		if (datasets.get(key) == null) {
-			StringBuilder setname = new StringBuilder();
-			for (String element : path) {
-				if (setname.length() > 0) {
-					setname.append("_");
-				}
-				if (StringUtils.isNotBlank(element)) {
-					setname.append(element);
-				}
-			}
-			if (key.getGeoclass() != null) {
-				setname.append("_");
-				setname.append(key.getGeoclass().getSimpleName());
-			}
-			String datasetname = setname.toString();
-			datasetname = datasetname.replaceAll("\\s", "_");
+			String datasetname = containerNameStrategy.deriveContainerName(path, key);
 			datasets.put(key, datasetname);
 			writeDataSetDef(key, datasetname);
 		}

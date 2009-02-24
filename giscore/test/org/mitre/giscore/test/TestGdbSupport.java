@@ -26,14 +26,18 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.input.IGISInputStream;
+import org.mitre.giscore.output.FeatureKey;
+import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.test.input.TestKmlInputStream;
 
@@ -59,109 +63,109 @@ public class TestGdbSupport {
 	 */
 	public static final String base_path = "data/kml/";
 
-//	@Test
-//	public void test1f() throws Exception {
-//		InputStream s = TestKmlInputStream.class
-//				.getResourceAsStream("7084.kml");
-//		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
-//	}
-//
-//	@Test
-//	public void test1s() throws Exception {
-//		InputStream s = TestKmlInputStream.class
-//				.getResourceAsStream("7084.kml");
-//		doKmlTest(s, "", true, DocumentType.Shapefile);
-//	}
-//
-//	@Test
-//	public void test2af() throws Exception {
-//		InputStream s = new FileInputStream(base_path
-//				+ "Placemark/LineString/straight.kml");
-//		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
-//	}
-//
-//	@Test
-//	public void test2as() throws Exception {
-//		InputStream s = new FileInputStream(base_path
-//				+ "Placemark/LineString/straight.kml");
-//		doKmlTest(s, "", true, DocumentType.Shapefile);
-//	}
-//
-//	@Test
-//	public void test2bf() throws Exception {
-//		InputStream s = new FileInputStream(base_path
-//				+ "Placemark/LineString/extruded.kml");
-//		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
-//	}
-//
-//	@Test
-//	public void test2bs() throws Exception {
-//		InputStream s = new FileInputStream(base_path
-//				+ "Placemark/LineString/extruded.kml");
-//		doKmlTest(s, "", true, DocumentType.Shapefile);
-//	}
-//
-//	@Test
-//	public void test3a() throws Exception {
-//		InputStream s = new FileInputStream(base_path
-//				+ "Placemark/LinearRing/polygon-lr-all-modes.kml");
-//		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
-//	}
-//
-//	@Test
-//	public void test3as() throws Exception {
-//		InputStream s = new FileInputStream(base_path
-//				+ "Placemark/LinearRing/polygon-lr-all-modes.kml");
-//		doKmlTest(s, "", true, DocumentType.Shapefile);
-//	}
-//
-//	@Test
-//	public void test3bf() throws Exception {
-//		InputStream s = new FileInputStream(base_path
-//				+ "Polygon/treasureIsland.kml");
-//		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
-//	}
-//
-//	@Test
-//	public void test3bs() throws Exception {
-//		InputStream s = new FileInputStream(base_path
-//				+ "Polygon/treasureIsland.kml");
-//		doKmlTest(s, "", true, DocumentType.Shapefile);
-//	}
-//
-//	@Test
-//	public void test4() throws Exception {
-//		InputStream s = TestKmlInputStream.class
-//				.getResourceAsStream("KML_sample1.kml");
-//		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
-//	}
-//	
-//	@Test
-//	public void test4s() throws Exception {
-//		InputStream s = TestKmlInputStream.class
-//				.getResourceAsStream("KML_sample1.kml");
-//		doKmlTest(s, "", true, DocumentType.Shapefile);
-//	}
-//
-//	@Test
-//	public void test5() throws Exception {
-//		InputStream s = new FileInputStream(base_path
-//				+ "MultiGeometry/polygon-point.kml");
-//		doKmlTest(s, "", true, DocumentType.FileGDB);
-//	}
-//
-//	@Test
-//	public void test6f() throws Exception {
-//		InputStream s = new FileInputStream(base_path
-//				+ "MultiGeometry/multi-linestrings.kml");
-//		doKmlTest(s, "", true, DocumentType.FileGDB);
-//	}
-//	@Test
-//	public void test6s() throws Exception {
-//		InputStream s = new FileInputStream(base_path
-//				+ "MultiGeometry/multi-linestrings.kml");
-//		doKmlTest(s, "", true, DocumentType.Shapefile);
-//	}
+	@Test
+	public void test1f() throws Exception {
+		InputStream s = TestKmlInputStream.class
+				.getResourceAsStream("7084.kml");
+		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
+	}
+
+	@Test
+	public void test1s() throws Exception {
+		InputStream s = TestKmlInputStream.class
+				.getResourceAsStream("7084.kml");
+		doKmlTest(s, "", true, DocumentType.Shapefile);
+	}
+
+	@Test
+	public void test2af() throws Exception {
+		InputStream s = new FileInputStream(base_path
+				+ "Placemark/LineString/straight.kml");
+		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
+	}
+
+	@Test
+	public void test2as() throws Exception {
+		InputStream s = new FileInputStream(base_path
+				+ "Placemark/LineString/straight.kml");
+		doKmlTest(s, "", true, DocumentType.Shapefile);
+	}
+
+	@Test
+	public void test2bf() throws Exception {
+		InputStream s = new FileInputStream(base_path
+				+ "Placemark/LineString/extruded.kml");
+		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
+	}
+
+	@Test
+	public void test2bs() throws Exception {
+		InputStream s = new FileInputStream(base_path
+				+ "Placemark/LineString/extruded.kml");
+		doKmlTest(s, "", true, DocumentType.Shapefile);
+	}
+
+	@Test
+	public void test3a() throws Exception {
+		InputStream s = new FileInputStream(base_path
+				+ "Placemark/LinearRing/polygon-lr-all-modes.kml");
+		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
+	}
+
+	@Test
+	public void test3as() throws Exception {
+		InputStream s = new FileInputStream(base_path
+				+ "Placemark/LinearRing/polygon-lr-all-modes.kml");
+		doKmlTest(s, "", true, DocumentType.Shapefile);
+	}
+
+	@Test
+	public void test3bf() throws Exception {
+		InputStream s = new FileInputStream(base_path
+				+ "Polygon/treasureIsland.kml");
+		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
+	}
+
+	@Test
+	public void test3bs() throws Exception {
+		InputStream s = new FileInputStream(base_path
+				+ "Polygon/treasureIsland.kml");
+		doKmlTest(s, "", true, DocumentType.Shapefile);
+	}
+
+	@Test
+	public void test4() throws Exception {
+		InputStream s = TestKmlInputStream.class
+				.getResourceAsStream("KML_sample1.kml");
+		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
+	}
+	
+	@Test
+	public void test4s() throws Exception {
+		InputStream s = TestKmlInputStream.class
+				.getResourceAsStream("KML_sample1.kml");
+		doKmlTest(s, "", true, DocumentType.Shapefile);
+	}
+
+	@Test
+	public void test5() throws Exception {
+		InputStream s = new FileInputStream(base_path
+				+ "MultiGeometry/polygon-point.kml");
+		doKmlTest(s, "", true, DocumentType.FileGDB);
+	}
+
+	@Test
+	public void test6f() throws Exception {
+		InputStream s = new FileInputStream(base_path
+				+ "MultiGeometry/multi-linestrings.kml");
+		doKmlTest(s, "", true, DocumentType.FileGDB);
+	}
+	@Test
+	public void test6s() throws Exception {
+		InputStream s = new FileInputStream(base_path
+				+ "MultiGeometry/multi-linestrings.kml");
+		doKmlTest(s, "", true, DocumentType.Shapefile);
+	}
 
 	
 	public void doKmlTest(InputStream is, String suffix, boolean usezip,

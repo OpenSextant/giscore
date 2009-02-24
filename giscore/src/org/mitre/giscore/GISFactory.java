@@ -27,6 +27,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.kml.KmlInputStream;
+import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.esri.GdbOutputStream;
 import org.mitre.giscore.output.esri.XmlGdbOutputStream;
@@ -80,10 +81,11 @@ public class GISFactory {
 	 *            the type of the document to be written, never
 	 *            <code>null</code>.
 	 * @param outputStream
-	 *            the output stream used to save the generated GIS file or files.
+	 *            the output stream used to save the generated GIS file or
+	 *            files.
 	 * @param arguments
-	 *            the additional arguments needed by the constructor, the type or types
-	 *            depend on the constructor
+	 *            the additional arguments needed by the constructor, the type
+	 *            or types depend on the constructor
 	 * @return a gis output stream, never <code>null</code>.
 	 * @throws IOException
 	 */
@@ -94,33 +96,43 @@ public class GISFactory {
 			throw new IllegalArgumentException("type should never be null");
 		}
 		if (outputStream == null) {
-			throw new IllegalArgumentException("outputStream should never be null");
+			throw new IllegalArgumentException(
+					"outputStream should never be null");
 		}
 
 		try {
 			if (DocumentType.KML.equals(type)) {
-				checkArguments(new Class[] { }, arguments,
+				checkArguments(new Class[] {}, arguments,
 						new boolean[] { true });
 				return new KmlOutputStream(outputStream);
 			} else if (DocumentType.Shapefile.equals(type)) {
-				checkArguments(new Class[] { File.class }, arguments,
-						new boolean[] { true });
-				return new GdbOutputStream(type, 
-						outputStream, (File) arguments[0]);
+				checkArguments(new Class[] { File.class,
+						IContainerNameStrategy.class }, arguments,
+						new boolean[] { true, false });
+				IContainerNameStrategy strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
+						: null);
+				return new GdbOutputStream(type, outputStream,
+						(File) arguments[0], strategy);
 			} else if (DocumentType.FileGDB.equals(type)) {
-				checkArguments(new Class[] { File.class }, arguments,
-						new boolean[] { true });
-				return new GdbOutputStream(type, 
-						outputStream, (File) arguments[0]);
+				checkArguments(new Class[] { File.class,
+						IContainerNameStrategy.class }, arguments,
+						new boolean[] { true, false });
+				IContainerNameStrategy strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
+						: null);
+				return new GdbOutputStream(type, outputStream,
+						(File) arguments[0], strategy);
 			} else if (DocumentType.XmlGDB.equals(type)) {
-				checkArguments(new Class[] { }, arguments,
+				checkArguments(new Class[] {}, arguments,
 						new boolean[] { true });
 				return new XmlGdbOutputStream(outputStream);
-			} else if (DocumentType.PersonalGDB.equals(type)) { 
-				checkArguments(new Class[] { File.class }, arguments,
-						new boolean[] { true });
-				return new GdbOutputStream(type, 
-						outputStream, (File) arguments[0]);
+			} else if (DocumentType.PersonalGDB.equals(type)) {
+				checkArguments(new Class[] { File.class,
+						IContainerNameStrategy.class }, arguments,
+						new boolean[] { true, false });
+				IContainerNameStrategy strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
+						: null);
+				return new GdbOutputStream(type, outputStream,
+						(File) arguments[0], strategy);
 			} else {
 				throw new UnsupportedOperationException(
 						"Cannot create an output stream for type " + type);
@@ -140,11 +152,19 @@ public class GISFactory {
 	 * @param required
 	 *            for each argument, is it required? If required has fewer
 	 *            elements than types or arguments the remainder is treated as
-	 *            false
+	 *            false. If a <code>false</code> element is found, any further
+	 *            <code>true</code> value is ignored, i.e. only leading
+	 *            arguments are considered required.
 	 */
 	private static void checkArguments(Class<? extends Object> types[],
 			Object arguments[], boolean required[]) {
-		if (arguments.length < types.length) {
+		int nreq = 0;
+		for (int i = 0; i < required.length; i++) {
+			if (!required[i])
+				break;
+			nreq++;
+		}
+		if (arguments.length < nreq) {
 			throw new IllegalArgumentException(
 					"There are insufficient arguments, there should be at least "
 							+ types.length);
