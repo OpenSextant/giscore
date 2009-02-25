@@ -103,7 +103,7 @@ public class GISFactory {
 		try {
 			if (DocumentType.KML.equals(type)) {
 				checkArguments(new Class[] {}, arguments,
-						new boolean[] { true });
+						new boolean[] {});
 				return new KmlOutputStream(outputStream);
 			} else if (DocumentType.Shapefile.equals(type)) {
 				checkArguments(new Class[] { File.class,
