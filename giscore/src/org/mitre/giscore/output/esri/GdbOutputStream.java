@@ -40,6 +40,7 @@ import java.util.zip.ZipOutputStream;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.events.ContainerEnd;
@@ -565,7 +566,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			throw new IllegalArgumentException(
 					"name should never be null or empty");
 		}
-		if (value == null) {
+		if (value == null || ObjectUtils.NULL.equals(value)) {
 			return new Variant(name);
 		}
 

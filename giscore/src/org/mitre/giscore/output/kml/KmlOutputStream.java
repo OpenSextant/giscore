@@ -33,6 +33,7 @@ import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.helpers.ISO8601DateFormat;
 import org.mitre.giscore.events.BaseStart;
@@ -216,7 +217,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	 * @return a formatted value
 	 */
 	private String formatValue(Type type, Object data) {
-		if (Type.DATE.equals(type)) {
+		if (data == null || ObjectUtils.NULL.equals(data)) {
+			return "";
+		} else if (Type.DATE.equals(type)) {
 			Object val = data;
 			if (val instanceof String) {
 				try {
