@@ -185,7 +185,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 						writer.writeStartElement(DATA);
 						writer.writeAttribute("name", field.getName());
 						handleSimpleElement(VALUE, formatValue(field.getType(),
-								value.toString()));
+								value));
 						writer.writeEndElement();
 					}
 				} else {
@@ -196,7 +196,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 						writer.writeStartElement(SIMPLE_DATA);
 						writer.writeAttribute(NAME, field.getName());
 						handleCharacters(formatValue(field.getType(),
-								value.toString()));
+								value));
 						writer.writeEndElement();
 					}
 					writer.writeEndElement();

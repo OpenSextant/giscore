@@ -32,6 +32,9 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Assert;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Schema;
@@ -131,11 +134,11 @@ public class TestGISBase {
 			throw new IllegalArgumentException("valuemap should never be null");
 		}
 		Feature f = createBasicFeature(geoclass);
+		f.setSchema("#" + schema.getName());
 		for(String key : schema.getKeys()) {
-			if (valuemap.get(key) != null) {
-				SimpleField field = new SimpleField(key);
-				f.putData(field, valuemap.get(key));
-			}
+			SimpleField field = schema.get(key);
+			Object value = valuemap.get(key);
+			f.putData(field, value != null ? value : ObjectUtils.NULL);
 		}
 		return f;
 	}	
@@ -148,11 +151,8 @@ public class TestGISBase {
 	 */
 	protected Schema createSchema(String names[], SimpleField.Type types[]) {
 		Schema s = new Schema();
-		byte arr[] = new byte[6];
-		random.nextBytes(arr);
-		String id = new String(arr);
-		s.setId("id" + id);
-		s.setName("name" + arr);
+		s.setId("id" + RandomStringUtils.randomAlphabetic(3));
+		s.setName("name" + RandomStringUtils.randomAlphabetic(5));
 		for(int i = 0; i < names.length; i++) {
 			SimpleField field = new SimpleField(names[i]);
 			field.setType(types[i]);
