@@ -41,7 +41,7 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	protected String description;
 	protected String schema;
 	protected Map<String, Object> elementAttributes = new HashMap<String, Object>();
-	protected Map<String, Object> extendedData = new HashMap<String, Object>();
+	protected Map<SimpleField, Object> extendedData = new HashMap<SimpleField, Object>();
 	
 	/**
 	 * Get element attribute value. Element attributes are used to store data
@@ -51,7 +51,7 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	 *            the attribute key, never <code>null</code>
 	 * @return the value, may be <code>null</code>.
 	 */
-	public Object get(String key) {
+	public Object getElementAttribute(String key) {
 		if (key == null) {
 			throw new IllegalArgumentException("key should never be null");
 		}
@@ -66,14 +66,15 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	 * @param value
 	 *            the value, never <code>null</code>
 	 */
-	public void put(String key, Object value) {
+	public void putElementAttribute(String key, Object value) {
 		if (key == null) {
 			throw new IllegalArgumentException("key should never be null");
 		}
 		if (value == null) {
-			throw new IllegalArgumentException("value should never be null");
+			elementAttributes.remove(key);
+		} else {
+			elementAttributes.put(key, value);
 		}
-		elementAttributes.put(key, value);
 	}
 
 	/**
@@ -137,20 +138,21 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	 * @param value
 	 *            the value, never <code>null</code>
 	 */
-	public void putData(String key, Object value) {
+	public void putData(SimpleField key, Object value) {
 		if (key == null) {
 			throw new IllegalArgumentException("key should never be null");
 		}
 		if (value == null) {
-			throw new IllegalArgumentException("value should never be null");
+			extendedData.remove(key);
+		} else {
+			extendedData.put(key, value);
 		}
-		extendedData.put(key, value);
 	}
 
 	/**
-	 * @return the field names 
+	 * @return the fields
 	 */
-	public Collection<String> getFieldNames() {
+	public Collection<SimpleField> getFields() {
 		return extendedData.keySet();
 	}
 
@@ -169,8 +171,8 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	 * 
 	 * @return the value of the field
 	 */
-	public Object getData(String field) {
-		if (field == null || field.trim().length() == 0) {
+	public Object getData(SimpleField field) {
+		if (field == null) {
 			throw new IllegalArgumentException(
 					"field should never be null or empty");
 		}

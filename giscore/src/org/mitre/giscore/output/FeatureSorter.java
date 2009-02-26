@@ -224,10 +224,7 @@ public class FeatureSorter {
 	 */
 	private Set<SimpleField> getFields(Feature feature) {
 		Set<SimpleField> rval = new HashSet<SimpleField>();
-		for (String fieldname : feature.getFieldNames()) {
-			SimpleField field = new SimpleField();
-			field.setName(fieldname);
-			field.setType(SimpleField.Type.STRING);
+		for (SimpleField field : feature.getFields()) {
 			rval.add(field);
 		}
 		return rval;

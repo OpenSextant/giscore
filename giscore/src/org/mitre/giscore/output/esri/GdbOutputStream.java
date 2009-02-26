@@ -29,8 +29,10 @@ import java.io.OutputStream;
 import java.net.UnknownHostException;
 import java.sql.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -107,15 +109,18 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		IGISOutputStream {
 	private static final Logger logger = LoggerFactory
 			.getLogger(GdbOutputStream.class);
-	
+
 	/**
-	 * Strategy that uses the current "container" along with the geometry
-	 * to derive a name.
+	 * Strategy that uses the current "container" along with the geometry to
+	 * derive a name.
 	 */
 	public class GdbContainerNameStrategy implements IContainerNameStrategy {
 		/*
 		 * (non-Javadoc)
-		 * @see org.mitre.giscore.output.IContainerNameStrategy#deriveContainerName(java.util.List, org.mitre.giscore.output.FeatureKey)
+		 * 
+		 * @see
+		 * org.mitre.giscore.output.IContainerNameStrategy#deriveContainerName
+		 * (java.util.List, org.mitre.giscore.output.FeatureKey)
 		 */
 		@Override
 		public String deriveContainerName(List<String> path, FeatureKey key) {
@@ -129,7 +134,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 				}
 			}
 			if (key.getGeoclass() != null) {
-				if (setname.length() > 0) 
+				if (setname.length() > 0)
 					setname.append("_");
 				setname.append(key.getGeoclass().getSimpleName());
 			}
@@ -138,7 +143,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			return datasetname;
 		}
 	}
-	
+
 	/**
 	 * Reference environment to create geospatial references
 	 */
@@ -147,8 +152,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	private static SimpleField shape = null;
 
 	static {
-		shape = new SimpleField();
-		shape.setName("INT_SHAPE");
+		shape = new SimpleField("INT_SHAPE");
 		shape.setType(SimpleField.Type.GEOMETRY);
 		shape.setLength(0);
 		shape.setRequired(true);
@@ -236,15 +240,28 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	private boolean isdir = false;
 
 	/**
+	 * Set to <code>true</code> for shapefiles since they require special
+	 * handling of fieldnames
+	 */
+	private boolean isshapefile = false;
+
+	/**
 	 * The path to the file or directory being created by this stream.
 	 */
 	private File outputPath = null;
-	
+
 	/**
 	 * The container naming strategy. If not supplied in the ctor then
 	 * {@link GdbContainerNameStrategy} will be used.
 	 */
 	private IContainerNameStrategy containerNameStrategy = null;
+
+	/**
+	 * Map that allows the software to go from esri field objects back to the
+	 * {@link SimpleField} object needed to look up data for the extended data
+	 * in the features.
+	 */
+	private Map<FeatureKey, Map<String, SimpleField>> fieldmap = new HashMap<FeatureKey, Map<String, SimpleField>>();
 
 	/**
 	 * Ctor
@@ -260,7 +277,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 *            the directory and file that should hold the file gdb, never
 	 *            <code>null</code>.
 	 * @param containerNameStrategy
-	 * 			  a name strategy to override the default, may be <code>null</code>.
+	 *            a name strategy to override the default, may be
+	 *            <code>null</code>.
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 * @throws XMLStreamException
@@ -294,6 +312,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		} else if (type.equals(DocumentType.Shapefile)) {
 			factory = new ShapefileWorkspaceFactory();
 			isdir = true;
+			isshapefile = true;
 		} else {
 			throw new IllegalArgumentException("Unhandled format " + type);
 		}
@@ -360,7 +379,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 						component, outputStream);
 			} else {
 				try {
-					ZipEntry entry = new ZipEntry(prefix + "/" + component.getName());
+					ZipEntry entry = new ZipEntry(prefix + "/"
+							+ component.getName());
 					outputStream.putNextEntry(entry);
 					is = new FileInputStream(component);
 					IOUtils.copy(is, outputStream);
@@ -389,6 +409,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	private void addData(FeatureKey key, IFeatureClass fc)
 			throws AutomationException, IOException {
 		File ffile = sorter.getFeatureFile(key);
+		Map<String, SimpleField> etosf = fieldmap.get(key);
+
 		if (!ffile.exists()) {
 			logger.error("Feature file doesn't exist: "
 					+ key.getSchema().getName());
@@ -408,14 +430,24 @@ public class GdbOutputStream extends StreamVisitorBase implements
 						continue;
 					if (fc.getShapeFieldName().equals(field.getName())) {
 						if (current.getGeometry() != null) {
-							IGeometry geo = makeFeatureGeometry(current.getGeometry());
+							IGeometry geo = makeFeatureGeometry(current
+									.getGeometry());
 							buffer.setShapeByRef(geo);
 						}
 					} else {
-						Object value = current.getData(field.getName());
-						Variant vval = createVariant(field.getType(), field
-								.getName(), value);
-						buffer.setValue(i, vval);
+						if (etosf == null) {
+							throw new IllegalStateException(
+									"Found fields without map");
+						}
+						SimpleField gisfield = etosf.get(field.getName());
+						if (gisfield != null) {
+							Object value = current.getData(gisfield);
+							Variant vval = createVariant(field.getType(), field
+									.getName(), value);
+							buffer.setValue(i, vval);
+						} else {
+							logger.debug("Found field without corresponding schema info: " + field.getName());
+						}
 					}
 				}
 				cursor.insertFeature(buffer);
@@ -463,7 +495,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			}
 			rval = epoly;
 		} else if (geo instanceof GeometryBag) {
-			throw new UnsupportedOperationException("Geometry bags are currently not working with ESRI output formats");
+			throw new UnsupportedOperationException(
+					"Geometry bags are currently not working with ESRI output formats");
 		} else {
 			throw new UnsupportedOperationException(
 					"Found unknown type of geometry: " + geo.getClass());
@@ -608,14 +641,16 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		String shapeFieldName = shape != null ? shape.getName() : shape
 				.getName();
 		String configKeyword = null;
+		Set<String> fieldnames = new HashSet<String>();
 
 		Fields fields = new Fields();
 		for (String fieldname : schema.getKeys()) {
-			fields.addField(createField(schema.get(fieldname), key
-					.getGeoclass()));
+			fields
+					.addField(createField(key, schema.get(fieldname),
+							fieldnames));
 		}
 		if (shapeField == null) {
-			fields.addField(createField(shape, key.getGeoclass()));
+			fields.addField(createField(key, shape, fieldnames));
 		}
 
 		return featureWorkspace.createFeatureClass(dsname, fields, clsid,
@@ -623,17 +658,25 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	}
 
 	/**
+	 * Create an esri field from a simple field and store the relationship for
+	 * later use.
+	 * 
+	 * @param key
 	 * @param simpleField
-	 * @param geoClass
+	 * @param fieldnames
+	 *            the fieldnames already in use
 	 * @return
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 */
-	private IField createField(SimpleField simpleField,
-			Class<? extends Geometry> geoClass) throws UnknownHostException,
-			IOException {
+	private IField createField(FeatureKey key, SimpleField simpleField,
+			Set<String> fieldnames) throws UnknownHostException, IOException {
 		Field field = new Field();
-		field.setName(simpleField.getName());
+		String fieldname = makeUniqueFieldname(simpleField, fieldnames);
+		field.setName(fieldname);
+		if (simpleField.getDisplayName() != null) {
+			field.setAliasName(simpleField.getDisplayName());
+		}
 		field.setType(getEsriFieldType(simpleField.getType()));
 		field.setIsNullable(simpleField.isNullable());
 		field.setRequired(simpleField.isRequired());
@@ -652,13 +695,58 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			// Add geometry definition
 			GeometryDef def = new GeometryDef();
 			def.setAvgNumPoints(1);
-			def.setGeometryType(getEsriGeoType(geoClass));
+			def.setGeometryType(getEsriGeoType(key.getGeoclass()));
 			def.setSpatialReferenceByRef(spatialRef);
 			def.setHasM(false);
 			def.setHasZ(false);
 			field.setGeometryDefByRef(def);
 		}
+		Map<String, SimpleField> etosf = fieldmap.get(key);
+		if (etosf == null) {
+			etosf = new HashMap<String, SimpleField>();
+			fieldmap.put(key, etosf);
+		}
+		etosf.put(fieldname, simpleField);
 		return field;
+	}
+
+	/**
+	 * Make a unique fieldname considering whether we're outputting a shapefile.
+	 * For non-shapefiles the fieldnames must be unique already.
+	 * 
+	 * @param simpleField
+	 * @param fieldnames
+	 * @return
+	 */
+	private String makeUniqueFieldname(SimpleField simpleField,
+			Set<String> fieldnames) {
+		String fieldname = simpleField.getName();
+		if (isshapefile) {
+			int i = 0;
+			String basefieldname;
+			if (fieldname.length() > 10) {
+				basefieldname = fieldname.substring(0, 10);
+			} else {
+				basefieldname = fieldname;
+			}
+			while (fieldnames.contains(basefieldname)) {
+				if (i > 99) {
+					throw new IllegalStateException(
+							"Couldn't form unique fieldname for " + fieldname);
+				}
+				if (fieldname.length() > 8) {
+					basefieldname = fieldname.substring(0, 8) + i++;
+				} else {
+					basefieldname = fieldname + i++;
+				}
+			}
+			fieldname = basefieldname;
+		} else if (fieldnames.contains(fieldname)) {
+			throw new IllegalStateException("Fieldname " + fieldname
+					+ " isn't unique");
+		}
+		fieldnames.add(fieldname);
+		return fieldname;
 	}
 
 	/**
@@ -751,11 +839,13 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	@Override
 	public void visit(Feature feature) {
 		// Skip non-geometry features
-		if (feature.getGeometry() == null) return;
-		
+		if (feature.getGeometry() == null)
+			return;
+
 		FeatureKey key = sorter.add(feature);
 		if (datasets.get(key) == null) {
-			String datasetname = containerNameStrategy.deriveContainerName(path, key);
+			String datasetname = containerNameStrategy.deriveContainerName(
+					path, key);
 			datasets.put(key, datasetname);
 			writeDataSetDef(key, datasetname);
 		}

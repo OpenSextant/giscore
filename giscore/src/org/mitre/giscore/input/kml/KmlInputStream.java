@@ -283,7 +283,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			handleStyle(feature, ee);
 			return true;
 		} else if (ms_attributes.contains(localname)) {
-			feature.put(localname, stream.getElementText());
+			feature.putElementAttribute(localname, stream.getElementText());
 			return true;
 		} else if (localname.equals(SNIPPET)) {
 			handleSnippet(feature, ee);
@@ -332,7 +332,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					Attribute name = se.getAttributeByName(new QName(NAME));
 					if (name != null) {
 						String value = parseValue(DATA);
-						cs.putData(name.getValue(), value);
+						cs.putData(new SimpleField(name.getValue()), value);
 					}
 				} else if (tag.equals(SCHEMA_DATA)) {
 					Attribute url = se
@@ -395,7 +395,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					Attribute name = se.getAttributeByName(new QName(NAME));
 					if (name != null) {
 						String value = stream.getElementText();
-						cs.putData(name.getValue(), value);
+						cs.putData(new SimpleField(name.getValue()), value);
 					}
 				}
 			} else if (foundEndTag(next, SCHEMA_DATA)) {
@@ -859,6 +859,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		if (name != null)
 			s.setName(name.getValue());
 
+		int gen = 0;
 		while (true) {
 			next = stream.nextEvent();
 			if (next == null)
@@ -866,18 +867,23 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				if (foundStartTag(se, SIMPLE_FIELD)) {
-					SimpleField field = new SimpleField();
-					Attribute type = se.getAttributeByName(new QName(TYPE));
 					Attribute fname = se.getAttributeByName(new QName(NAME));
+					String fieldname = null;
+					if (fname != null) {
+						fieldname = fname.getValue();
+					} else {
+						fieldname = "gen" + gen++;
+					}
+					SimpleField field = new SimpleField(fieldname);
+					s.put(fieldname, field);
+					Attribute type = se.getAttributeByName(new QName(TYPE));
+					
 					if (type != null) {
 						SimpleField.Type ttype = SimpleField.Type.valueOf(type
 								.getValue().toUpperCase());
 						field.setType(ttype);
 					}
-					if (fname != null) {
-						field.setName(fname.getValue());
-						s.put(fname.getValue(), field);
-					}
+					
 					String displayName = parseDisplayName(SIMPLE_FIELD);
 					field.setDisplayName(displayName);
 				}

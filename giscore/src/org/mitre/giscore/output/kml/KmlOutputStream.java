@@ -21,9 +21,11 @@ package org.mitre.giscore.output.kml;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.List;
@@ -32,6 +34,7 @@ import java.util.Locale;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.helpers.ISO8601DateFormat;
 import org.mitre.giscore.events.BaseStart;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
@@ -49,7 +52,7 @@ import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.StyleMap;
 import org.mitre.giscore.events.TaggedMap;
-import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
@@ -80,7 +83,12 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
  */
 public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	private List<IGISObject> waitingElements = new ArrayList<IGISObject>();
-
+	private static final ISO8601DateFormat ms_date_fmt = 
+		new ISO8601DateFormat();
+	private static final DecimalFormat ms_float_fmt =
+		new DecimalFormat("##0.#####E00");
+	private static final DecimalFormat ms_int_fmt =
+		new DecimalFormat("###,###");
 	/**
 	 * Ctor
 	 * 
@@ -163,7 +171,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			Iterator<String> kiter = feature.keys();
 			while (kiter.hasNext()) {
 				String key = kiter.next();
-				Object val = feature.get(key);
+				Object val = feature.getElementAttribute(key);
 				handleSimpleElement(key, val.toString());
 			}
 
@@ -171,21 +179,23 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				String schema = feature.getSchema();
 				writer.writeStartElement(EXTENDED_DATA);
 				if (schema == null) {
-					for (String fieldname : feature.getFieldNames()) {
-						Object value = feature.getData(fieldname);
+					for (SimpleField field : feature.getFields()) {
+						Object value = feature.getData(field);
 						writer.writeStartElement(DATA);
-						writer.writeAttribute("name", fieldname);
-						handleSimpleElement(VALUE, value.toString());
+						writer.writeAttribute("name", field.getName());
+						handleSimpleElement(VALUE, formatValue(field.getType(),
+								value.toString()));
 						writer.writeEndElement();
 					}
 				} else {
-					for (String fieldname : feature.getFieldNames()) {
-						Object value = feature.getData(fieldname);
+					for (SimpleField field : feature.getFields()) {
+						Object value = feature.getData(field);
 						writer.writeStartElement(SCHEMA_DATA);
 						writer.writeAttribute(SCHEMA_URL, schema);
 						writer.writeStartElement(SIMPLE_DATA);
-						writer.writeAttribute(NAME, fieldname);
-						handleCharacters(value.toString());
+						writer.writeAttribute(NAME, field.getName());
+						handleCharacters(formatValue(field.getType(),
+								value.toString()));
 						writer.writeEndElement();
 						writer.writeEndElement();
 					}
@@ -194,6 +204,56 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			}
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Format a value according to the type, defaults to using toString.
+	 * 
+	 * @param type the type, assumed not <code>null</code>
+	 * @param data the data, may be a number of types, but must be coercible to
+	 * the given type 
+	 * @return a formatted value
+	 */
+	private String formatValue(Type type, Object data) {
+		if (Type.DATE.equals(type)) {
+			Object val = data;
+			if (val instanceof String) {
+				try {
+					// Try converting to ISO?
+					val = ms_date_fmt.parse((String) data);
+				} catch(Exception e) {
+					// Fall through
+				}
+			}
+			if (val instanceof Date) {
+				return ms_date_fmt.format(data);
+			} else {
+				return val.toString();
+			}
+		} else if (Type.DOUBLE.equals(type) || Type.FLOAT.equals(type)) {
+			if (data instanceof String) {
+				data = new Double((String) data);
+			} 
+			
+			if (data instanceof Number) {
+				return ms_float_fmt.format(((Number) data).doubleValue());
+			} else {
+				throw new IllegalArgumentException("Data that cannot be coerced to float: " + data);
+			}
+		} else if (Type.INT.equals(type) || Type.SHORT.equals(type) 
+				|| Type.UINT.equals(type) || Type.USHORT.equals(type)) {
+			if (data instanceof String) {
+				data = new Long((String) data);
+			} 
+			
+			if (data instanceof Number) {
+				return ms_int_fmt.format(((Number) data).longValue());
+			} else {
+				throw new IllegalArgumentException("Data that cannot be coerced to int: " + data);
+			}
+		} else {
+			return data.toString();
 		}
 	}
 

@@ -26,18 +26,14 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.input.IGISInputStream;
-import org.mitre.giscore.output.FeatureKey;
-import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.test.input.TestKmlInputStream;
 
@@ -49,7 +45,7 @@ import org.mitre.giscore.test.input.TestKmlInputStream;
  */
 public class TestGdbSupport {
 	public static File tempdir = null;
-	public static SimpleDateFormat FMT = new SimpleDateFormat("HH-mm-ss");
+	public static SimpleDateFormat FMT = new SimpleDateFormat("D-HH-mm-ss");
 	
 	static {
 		// String dir = System.getProperty("java.io.tmpdir");

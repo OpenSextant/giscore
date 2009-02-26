@@ -87,10 +87,10 @@ public class Feature extends BaseStart {
 		if (! fields) return false;
 		
 		// Check extended data
-		Set<String> maximalSet = new HashSet<String>();
+		Set<SimpleField> maximalSet = new HashSet<SimpleField>();
 		maximalSet.addAll(extendedData.keySet());
 		maximalSet.addAll(other.extendedData.keySet());
-		for(String fieldname : maximalSet) {
+		for(SimpleField fieldname : maximalSet) {
 			Object val1 = extendedData.get(fieldname);
 			Object val2 = other.extendedData.get(fieldname);
 			if (val1 != null && val2 != null) {

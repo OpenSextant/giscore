@@ -83,8 +83,7 @@ public class TestFeatureSorter extends TestGISBase {
 		Schema s1 = new Schema();
 		s1.setName("s1");
 		s1.setId("1");
-		SimpleField field = new SimpleField();
-		field.setName("category");
+		SimpleField field = new SimpleField("category");
 		field.setDisplayName("Category");
 		field.setType(SimpleField.Type.STRING);
 		s1.put(field);
@@ -96,8 +95,7 @@ public class TestFeatureSorter extends TestGISBase {
 		Schema s2 = new Schema();
 		s1.setName("s2");
 		s1.setId("2");
-		field = new SimpleField();
-		field.setName("phylum");
+		field = new SimpleField("phylum");
 		field.setDisplayName("Phylum");
 		field.setType(SimpleField.Type.STRING);
 		s1.put(field);

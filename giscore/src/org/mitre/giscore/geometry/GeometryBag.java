@@ -72,7 +72,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 */
 	@Override
 	public Geodetic2DPoint getCenter() {
-		Geodetic2DPoint rval = null;
 		double lat = 0.0;
 		double lon = 0.0;
 		double count = 0;

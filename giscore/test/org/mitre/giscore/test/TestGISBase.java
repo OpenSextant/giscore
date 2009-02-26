@@ -75,7 +75,8 @@ public class TestGISBase {
 		}
 		Feature f = createBasicFeature(geoclass);
 		for(int i = 0; i < names.length; i++) {
-			f.putData(names[i], values[i]);
+			SimpleField field = new SimpleField(names[i]);
+			f.putData(field, values[i]);
 		}
 		return f;
 	}
@@ -102,8 +103,10 @@ public class TestGISBase {
 		}
 		Feature f = createBasicFeature(geoclass);
 		for(String key : schema.getKeys()) {
-			if (valuemap.get(key) != null)
-				f.putData(key, valuemap.get(key));
+			if (valuemap.get(key) != null) {
+				SimpleField field = new SimpleField(key);
+				f.putData(field, valuemap.get(key));
+			}
 		}
 		return f;
 	}	
@@ -122,8 +125,7 @@ public class TestGISBase {
 		s.setId("id" + id);
 		s.setName("name" + arr);
 		for(int i = 0; i < names.length; i++) {
-			SimpleField field = new SimpleField();
-			field.setName(names[i]);
+			SimpleField field = new SimpleField(names[i]);
 			field.setType(types[i]);
 			s.put(names[i], field);
 		}

@@ -219,26 +219,22 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	private static SimpleField shapeLength = null;
 	
 	static {
-		oid = new SimpleField();
-		oid.setName("INT_OID");
+		oid = new SimpleField("INT_OID");
 		oid.setType(SimpleField.Type.OID);
 		oid.setLength(4);
 		oid.setRequired(true);
 		
-		shape = new SimpleField();
-		shape.setName("INT_SHAPE");
+		shape = new SimpleField("INT_SHAPE");
 		shape.setType(SimpleField.Type.GEOMETRY);
 		shape.setLength(0);
 		shape.setRequired(true);
 		
-		shapeArea = new SimpleField();
-		shapeArea.setName("INT_SHAPE_AREA");
+		shapeArea = new SimpleField("INT_SHAPE_AREA");
 		shapeArea.setType(SimpleField.Type.DOUBLE);
 		shapeArea.setLength(8);
 		shapeArea.setRequired(true);
 		
-		shapeLength = new SimpleField();
-		shapeLength.setName("INT_SHAPE_LENGTH");
+		shapeLength = new SimpleField("INT_SHAPE_LENGTH");
 		shapeLength.setType(SimpleField.Type.DOUBLE);
 		shapeLength.setLength(8);
 		shapeLength.setRequired(true);
@@ -405,8 +401,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			is = new FileInputStream(tf);
 			ois = new ObjectInputStream(is);
 			Object next = null;
-			SimpleField geofielddef = new SimpleField();
-			geofielddef.setName(geometryField);
+			SimpleField geofielddef = new SimpleField(geometryField);
 			geofielddef.setType(SimpleField.Type.GEOMETRY);
 			int index = 0;
 			while ((next = ois.readObject()) != null) {
@@ -456,7 +451,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			if (field.equals(geometryField)) {
 				writeValue(field, feature.getGeometry());
 			} else {
-				writeValue(field, feature.getData(fieldname));
+				writeValue(field, feature.getData(field));
 			}
 		}
 		if (geohandled == false) {

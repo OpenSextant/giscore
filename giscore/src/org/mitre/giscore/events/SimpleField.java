@@ -18,6 +18,8 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -30,7 +32,9 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * 
  * @author DRAND
  */
-public class SimpleField {
+public class SimpleField implements Serializable {
+	private static final long serialVersionUID = 1L;
+
 	public enum Type {
 		STRING("esriFieldTypeString", "xs:string", 255, 0), 
 		INT("esriFieldTypeInteger", "xs:int", 4, 0), 
@@ -107,6 +111,20 @@ public class SimpleField {
 	Integer precision = null;
 	Integer scale = null;
 	boolean editable = true;
+	
+	/**
+	 * Ctor - for a simple default field type
+	 * @param name
+	 */
+	public SimpleField(String name) {
+		if (name == null || name.trim().length() == 0) {
+			throw new IllegalArgumentException(
+					"name should never be null or empty");
+		}
+		this.name = name;
+		displayName = name;
+		type = Type.STRING;
+	}
 
 	/**
 	 * @return the type
@@ -135,6 +153,10 @@ public class SimpleField {
 	 *            the name to set
 	 */
 	public void setName(String name) {
+		if (name == null) {
+			throw new IllegalArgumentException(
+					"name should never be null");
+		}
 		this.name = name;
 	}
 

@@ -28,6 +28,7 @@ import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.GISInputStreamBase;
@@ -54,7 +55,7 @@ public class TestGISISBase {
 			Feature f1 = new Feature();
 			f1.setName("test1");
 			f1.setDescription("desc1");
-			f1.putData("x", "100");
+			f1.putData(new SimpleField("x"), "100");
 			testobjects.add(f1);
 			testobjects.add(new Point(new Geodetic2DPoint(new Longitude(.3),
 					new Latitude(.5))));
