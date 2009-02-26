@@ -21,6 +21,7 @@ package org.mitre.giscore.geometry;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -41,6 +42,18 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	private static final long serialVersionUID = 1L;
 	
 	Collection<Geometry> geometries = new ArrayList<Geometry>();
+
+	/**
+	 * Ctor
+	 * @param geometries
+	 */
+	public GeometryBag(List<Geometry> geometries) {
+		if (geometries == null) {
+			throw new IllegalArgumentException(
+					"geometries should never be null");
+		}
+		this.geometries = geometries;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.Geometry#containerOf(org.mitre.giscore.geometry.Geometry)

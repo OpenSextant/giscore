@@ -82,7 +82,9 @@ public class Feature extends BaseStart {
 		boolean fields = eb.append(description, other.description) //
 			.append(name, other.name) //
 			.append(schema, other.schema) //
-			.append(elementAttributes, other.elementAttributes).isEquals();
+			.append(styleUrl, other.styleUrl) // 
+			.append(endTime, other.endTime) //
+			.append(startTime, other.startTime).isEquals();
 		
 		if (! fields) return false;
 		

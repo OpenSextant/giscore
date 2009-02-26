@@ -19,7 +19,11 @@ package org.mitre.giscore.input.kml;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -60,6 +64,7 @@ import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.GISInputStreamBase;
@@ -115,6 +120,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private static Set<String> ms_containers = new HashSet<String>();
 	private static Set<String> ms_attributes = new HashSet<String>();
 	private static Set<String> ms_geometries = new HashSet<String>();
+	
+	private static List<DateFormat> ms_dateFormats = new ArrayList<DateFormat>(); 
 
 	static {
 		ms_fact = XMLInputFactory.newInstance();
@@ -131,7 +138,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		ms_attributes.add(OPEN);
 		ms_attributes.add(ADDRESS);
 		ms_attributes.add(PHONE_NUMBER);
-		ms_attributes.add(STYLE_URL);
 
 		ms_geometries.add(POINT);
 		ms_geometries.add(LINE_STRING);
@@ -139,6 +145,16 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		ms_geometries.add(POLYGON);
 		ms_geometries.add(MULTI_GEOMETRY);
 		ms_geometries.add(MODEL);
+		
+		ms_dateFormats.add(ISO_DATE_FMT);
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'hh:mm"));
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd hh:mm"));
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'hh"));
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd hh"));
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd"));
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));
+		ms_dateFormats.add(new SimpleDateFormat("yyyy"));
+		
 	}
 
 	/**
@@ -283,7 +299,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			handleStyle(feature, ee);
 			return true;
 		} else if (ms_attributes.contains(localname)) {
-			feature.put(localname, stream.getElementText());
+			// Skip, but consume
 			return true;
 		} else if (localname.equals(SNIPPET)) {
 			handleSnippet(feature, ee);
@@ -305,6 +321,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			return true;
 		} else if (localname.equals(EXTENDED_DATA)) {
 			handleExtendedData(feature, ee);
+			return true;
+		} else if (localname.equals(STYLE_URL)) {
+			feature.setStyleUrl(stream.getElementText());
 			return true;
 		}
 		return false;
@@ -534,10 +553,45 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			next = stream.nextEvent();
 			if (next == null)
 				return;
+			if (next.getEventType() == XMLEvent.START_ELEMENT) {
+				StartElement se = next.asStartElement();
+				String time;
+				try {
+					if (foundStartTag(se, BEGIN) || foundStartTag(se, WHEN)) {
+						time = stream.getElementText();
+						cs.setStartTime(parseDate(time.trim()));
+					} else if (foundStartTag(se, END)) {
+						time = stream.getElementText();
+						cs.setEndTime(parseDate(time.trim()));
+					}
+				} catch (ParseException e) {
+					throw new XMLStreamException("Found bad time", e);
+				}
+			}
 			if (foundEndTag(next, tag.getLocalPart())) {
 				return;
 			}
 		}
+	}
+
+	/**
+	 * Try all available formats to parse the passed string. The method will
+	 * return if the parse succeeds, otherwise it remembers the last exception
+	 * and throws that if we exhaust the list of formats.
+	 * @param datestr
+	 * @return
+	 * @throws ParseException 
+	 */
+	private Date parseDate(String datestr) throws ParseException {
+		ParseException e = null;
+		for(DateFormat fmt : ms_dateFormats) {
+			try {
+				return fmt.parse(datestr);
+			} catch(ParseException pe) {
+				e = pe;
+			}
+		}
+		throw e;
 	}
 
 	/**
@@ -1157,21 +1211,32 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			}
 			return new Polygon(outer, inners);
 		} else if (localname.equals(MULTI_GEOMETRY)) {
-			GeometryBag bag = new GeometryBag();
+			List<Geometry> geometries = new ArrayList<Geometry>();
 			while (true) {
 				XMLEvent event = stream.nextEvent();
 				if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 					StartElement el = (StartElement) event;
 					String tag = el.getName().getLocalPart();
 					if (ms_geometries.contains(tag)) {
-						bag.add(handleGeometry(el));
+						geometries.add(handleGeometry(el));
 					}
 				}
 				if (foundEndTag(event, localname)) {
 					break;
 				}
 			}
-			return bag;
+			boolean allpoints = true;
+			for(Geometry geo : geometries) {
+				if (!(geo instanceof Point)) {
+					allpoints = false;
+					break;
+				}
+			}
+			if (allpoints) {
+				return new MultiPoint((List) geometries);
+			} else {
+				return new GeometryBag(geometries);
+			}
 		} else if (localname.equals(MODEL)) {
 			// we don't really have a way to represent this yet, look for end
 			// element and continue

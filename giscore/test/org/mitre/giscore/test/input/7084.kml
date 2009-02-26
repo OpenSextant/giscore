@@ -70,12 +70,15 @@
     </Style> 
 	
 		<Placemark>
+			<TimeStamp>
+  				<when>2008-01-03</when>
+			</TimeStamp> 
 			<styleUrl>#default</styleUrl>
 			
 			  <name><![CDATA[By the lake]]></name>
 			
 			
-			
+
 			
 			<ExtendedData>
 					<Data name='name'>
@@ -108,7 +111,10 @@
 			<styleUrl>#default</styleUrl>
 			
 			  <name><![CDATA[Club house]]></name>
-			
+			<TimeSpan>
+  				<begin>2008-12-01</begin>
+  				<end>2008-12-31</end>
+			</TimeSpan> 
 			
 			
 			

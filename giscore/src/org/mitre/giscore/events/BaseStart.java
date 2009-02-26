@@ -20,8 +20,8 @@ package org.mitre.giscore.events;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -40,50 +40,10 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	protected String name;
 	protected String description;
 	protected String schema;
-	protected Map<String, Object> elementAttributes = new HashMap<String, Object>();
+	protected Date startTime;
+	protected Date endTime;
+	protected String styleUrl;
 	protected Map<SimpleField, Object> extendedData = new HashMap<SimpleField, Object>();
-	
-	/**
-	 * Get element attribute value. Element attributes are used to store data
-	 * for the element that can be interpreted by the output code.
-	 * 
-	 * @param key
-	 *            the attribute key, never <code>null</code>
-	 * @return the value, may be <code>null</code>.
-	 */
-	public Object getElementAttribute(String key) {
-		if (key == null) {
-			throw new IllegalArgumentException("key should never be null");
-		}
-		return elementAttributes.get(key);
-	}
-
-	/**
-	 * Put an element attribute value.
-	 * 
-	 * @param key
-	 *            the key, never <code>null</code>
-	 * @param value
-	 *            the value, never <code>null</code>
-	 */
-	public void put(String key, Object value) {
-		if (key == null) {
-			throw new IllegalArgumentException("key should never be null");
-		}
-		if (value == null) {
-			elementAttributes.remove(key);
-		} else {
-			elementAttributes.put(key, value);
-		}
-	}
-
-	/**
-	 * @return an iterator over the element attribute keys, never
-	 *         <code>null</code>.
-	 */
-	public Iterator<String> keys() {
-		return elementAttributes.keySet().iterator();
-	}
 
 	/**
 	 * @return the name
@@ -113,6 +73,48 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	 */
 	public void setDescription(String description) {
 		this.description = description;
+	}
+	
+	/**
+	 * @return the styleUrl
+	 */
+	public String getStyleUrl() {
+		return styleUrl;
+	}
+
+	/**
+	 * @param styleUrl the styleUrl to set
+	 */
+	public void setStyleUrl(String styleUrl) {
+		this.styleUrl = styleUrl;
+	}
+
+	/**
+	 * @return the startTime
+	 */
+	public Date getStartTime() {
+		return startTime;
+	}
+
+	/**
+	 * @param startTime the startTime to set
+	 */
+	public void setStartTime(Date startTime) {
+		this.startTime = startTime;
+	}
+
+	/**
+	 * @return the endTime
+	 */
+	public Date getEndTime() {
+		return endTime;
+	}
+
+	/**
+	 * @param endTime the endTime to set
+	 */
+	public void setEndTime(Date endTime) {
+		this.endTime = endTime;
 	}
 
 	/**

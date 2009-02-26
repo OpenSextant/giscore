@@ -57,6 +57,7 @@ import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.kml.IKml;
@@ -84,10 +85,8 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
  */
 public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	private List<IGISObject> waitingElements = new ArrayList<IGISObject>();
-	private static final ISO8601DateFormat ms_date_fmt = 
-		new ISO8601DateFormat();
 	private static final DecimalFormat ms_float_fmt =
-		new DecimalFormat("##0.#####E00");
+		new DecimalFormat("##0.####");
 	private static final DecimalFormat ms_int_fmt =
 		new DecimalFormat("###,###");
 	/**
@@ -169,13 +168,21 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			if (feature.getDescription() != null) {
 				handleSimpleElement(DESCRIPTION, feature.getDescription());
 			}
-			Iterator<String> kiter = feature.keys();
-			while (kiter.hasNext()) {
-				String key = kiter.next();
-				Object val = feature.getElementAttribute(key);
-				handleSimpleElement(key, val.toString());
+			if (feature.getStartTime() != null) {
+				if (feature.getEndTime() != null) {
+					writer.writeStartElement(TIME_SPAN);
+					handleSimpleElement(BEGIN, ISO_DATE_FMT.format(feature.getStartTime()));
+					handleSimpleElement(END, ISO_DATE_FMT.format(feature.getEndTime()));
+					writer.writeEndElement();					
+				} else {
+					writer.writeStartElement(TIME_STAMP);
+					handleSimpleElement(WHEN, ISO_DATE_FMT.format(feature.getStartTime()));
+					writer.writeEndElement();
+				}
 			}
-
+			if (feature.getStyleUrl() != null) {
+				handleSimpleElement(STYLE_URL, feature.getStyleUrl());
+			}
 			if (feature.hasExtendedData()) {
 				String schema = feature.getSchema();
 				writer.writeStartElement(EXTENDED_DATA);
@@ -224,13 +231,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			if (val instanceof String) {
 				try {
 					// Try converting to ISO?
-					val = ms_date_fmt.parse((String) data);
+					val = ISO_DATE_FMT.parse((String) data);
 				} catch(Exception e) {
 					// Fall through
 				}
 			}
 			if (val instanceof Date) {
-				return ms_date_fmt.format(data);
+				return ISO_DATE_FMT.format(data);
 			} else {
 				return val.toString();
 			}
@@ -417,6 +424,26 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.MultiPoint)
+	 */
+	@Override
+	public void visit(MultiPoint multiPoint) {
+		if (multiPoint == null) {
+			throw new IllegalArgumentException("bag should never be null");
+		}
+		try {
+			writer.writeStartElement(MULTI_GEOMETRY);
+			for(Point point : multiPoint.getPoints()) {
+				point.accept(this);
+			}
+			writer.writeEndElement();
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+
+	}
+
 	/**
 	 * Handle the output of a polygon
 	 * 

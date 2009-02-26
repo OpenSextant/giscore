@@ -18,6 +18,8 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.kml;
 
+import org.apache.log4j.helpers.ISO8601DateFormat;
+
 /**
  * Container for element and attribute names used in KML
  * 
@@ -25,7 +27,8 @@ package org.mitre.giscore.input.kml;
  */
 public interface IKml {
 	static final String KML_NS = "http://earth.google.com/kml/2.2";
-	
+	static final ISO8601DateFormat ISO_DATE_FMT = 
+		new ISO8601DateFormat();
 	static final String ADDRESS = "address";
 	static final String ALTITUDE = "altitude";
 	static final String ALTITUDE_MODE = "altitudeMode";

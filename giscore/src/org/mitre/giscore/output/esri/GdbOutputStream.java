@@ -54,6 +54,7 @@ import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.output.FeatureKey;
@@ -85,6 +86,7 @@ import com.esri.arcgis.geodatabase.esriFeatureType;
 import com.esri.arcgis.geodatabase.esriFieldType;
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.ISpatialReference;
+import com.esri.arcgis.geometry.Multipoint;
 import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.geometry.Ring;
 import com.esri.arcgis.geometry.SpatialReferenceEnvironment;
@@ -498,6 +500,13 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		} else if (geo instanceof GeometryBag) {
 			throw new UnsupportedOperationException(
 					"Geometry bags are currently not working with ESRI output formats");
+		} else if (geo instanceof MultiPoint) {
+			MultiPoint gismp = (MultiPoint) geo;
+			Multipoint mp = new Multipoint();
+			for(Point p : gismp.getPoints()) {
+				mp.addPoint(makePoint(p), 0, null);
+			}
+			rval = mp;
 		} else {
 			throw new UnsupportedOperationException(
 					"Found unknown type of geometry: " + geo.getClass());
@@ -805,6 +814,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			return esriGeometryType.esriGeometryPolygon;
 		} else if (geoclass.isAssignableFrom(GeometryBag.class)) {
 			return esriGeometryType.esriGeometryBag;
+		} else if (geoclass.isAssignableFrom(MultiPoint.class)) {
+			return esriGeometryType.esriGeometryMultipoint;
 		} else {
 			throw new UnsupportedOperationException(
 					"Found unknown type of geometry: " + geoclass.getClass());
