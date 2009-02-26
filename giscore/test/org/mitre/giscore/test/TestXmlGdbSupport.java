@@ -45,18 +45,7 @@ import org.mitre.giscore.test.input.TestKmlInputStream;
  * @author DRAND
  *
  */
-public class TestXmlGdbSupport {
-	public static File tempdir = null;
-	public static SimpleDateFormat FMT = new SimpleDateFormat("HH-mm-ss");
-	
-	static {
-		// String dir = System.getProperty("java.io.tmpdir");
-		tempdir = new File("c:/temp/", "t" + FMT.format(new Date()));
-		tempdir.mkdirs();
-	}
-	
-	public static final AtomicInteger count = new AtomicInteger();
-	
+public class TestXmlGdbSupport extends TestGISBase  {
 	/**
 	 * Base path to test directories
 	 */
@@ -108,7 +97,7 @@ public class TestXmlGdbSupport {
 	}
 	
 	public void doTest(IGISInputStream is) throws IOException {
-		File test = new File(tempdir, "t" + count.incrementAndGet() + ".xml");
+		File test = createTemp("t", ".xml");
 		FileOutputStream fos = new FileOutputStream(test);
 		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.XmlGDB, fos);
 		for(IGISObject object = is.read(); object != null; object = is.read()) {

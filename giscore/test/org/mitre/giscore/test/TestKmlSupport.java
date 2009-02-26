@@ -42,7 +42,7 @@ import org.mitre.giscore.output.IGISOutputStream;
  * @author DRAND
  *
  */
-public class TestKmlSupport {
+public class TestKmlSupport extends TestGISBase {	
 	/**
 	 * Base path to test directories
 	 */
@@ -169,7 +169,7 @@ public class TestKmlSupport {
 		System.out.println("Testing " + testcase);
 		FileInputStream fs = new FileInputStream(testcase);
 		IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
-		File temp = File.createTempFile("test", ".kml");
+		File temp = createTemp("test", ".kml");
 		OutputStream fos = new FileOutputStream(temp);
 		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
 		List<IGISObject> elements = new ArrayList<IGISObject>();

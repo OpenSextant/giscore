@@ -757,7 +757,12 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		if (Type.BOOL.equals(type)) {
 			return esriFieldType.esriFieldTypeSmallInteger;
 		} else if (Type.DATE.equals(type)) {
-			return esriFieldType.esriFieldTypeDate;
+			if (isshapefile)
+				// Shapefiles only represent calendar dates for this type, so
+				// use string data instead
+				return esriFieldType.esriFieldTypeString;
+			else
+				return esriFieldType.esriFieldTypeDate;
 		} else if (Type.DOUBLE.equals(type)) {
 			return esriFieldType.esriFieldTypeDouble;
 		} else if (Type.FLOAT.equals(type)) {

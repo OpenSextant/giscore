@@ -35,6 +35,7 @@ import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
+import org.mitre.giscore.test.TestGISBase;
 import org.mitre.giscore.test.input.TestKmlInputStream;
 
 /**
@@ -43,7 +44,7 @@ import org.mitre.giscore.test.input.TestKmlInputStream;
  * @author DRAND
  * 
  */
-public class TestKmlOutputStream {
+public class TestKmlOutputStream extends TestGISBase {
 	@Test
 	public void testSimpleCase() throws Exception {
 		doTest(TestKmlInputStream.class.getResourceAsStream("7084.kml"));
@@ -66,7 +67,7 @@ public class TestKmlOutputStream {
 
 	public void doTest(InputStream fs) throws Exception {
 		IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
-		File temp = File.createTempFile("test", ".kml");
+		File temp = createTemp("test", ".kml");
 		OutputStream fos = new FileOutputStream(temp);
 		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
 		List<IGISObject> elements = new ArrayList<IGISObject>();

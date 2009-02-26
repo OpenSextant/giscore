@@ -283,7 +283,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			handleStyle(feature, ee);
 			return true;
 		} else if (ms_attributes.contains(localname)) {
-			feature.putElementAttribute(localname, stream.getElementText());
+			feature.put(localname, stream.getElementText());
 			return true;
 		} else if (localname.equals(SNIPPET)) {
 			handleSnippet(feature, ee);

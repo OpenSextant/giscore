@@ -78,7 +78,7 @@
 			
 			
 			<ExtendedData>
-									<Data name='name'>
+					<Data name='name'>
 						<displayName><![CDATA[name]]></displayName>
 						<value><![CDATA[By the lake]]></value>
 					</Data>

@@ -43,17 +43,7 @@ import org.mitre.giscore.test.input.TestKmlInputStream;
  * @author DRAND
  * 
  */
-public class TestGdbSupport {
-	public static File tempdir = null;
-	public static SimpleDateFormat FMT = new SimpleDateFormat("D-HH-mm-ss");
-	
-	static {
-		// String dir = System.getProperty("java.io.tmpdir");
-		tempdir = new File("c:/temp/", "t" + FMT.format(new Date()));
-		tempdir.mkdirs();
-	}
-	
-	public static final AtomicInteger count = new AtomicInteger();
+public class TestGdbSupport extends TestGISBase {	
 	/**
 	 * Base path to test directories
 	 */
@@ -172,8 +162,7 @@ public class TestGdbSupport {
 
 	public void doTest(IGISInputStream is, String suffix, boolean usezip,
 			DocumentType type) throws IOException {
-		File outputdir = new File(tempdir, "test" + count.incrementAndGet()
-				+ suffix);
+		File outputdir = createTemp("test", suffix);
 		File outputfile = null;
 		if (usezip) {
 			outputfile = new File(tempdir, "testout"

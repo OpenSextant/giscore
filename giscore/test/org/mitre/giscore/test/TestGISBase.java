@@ -23,10 +23,13 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -42,13 +45,39 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
 
 /**
  * The base class provides a series of features of various kinds, used to feed
- * the test cases.
+ * the test cases as well as establishing a common test output file directory.
  * 
  * @author DRAND
  */
 public class TestGISBase {
-	protected int count = 0;
-	protected Random random = new Random(1000);
+	public static File tempdir = null;
+	public static SimpleDateFormat FMT = new SimpleDateFormat("D-HH-mm-ss");
+	static {
+		// String dir = System.getProperty("java.io.tmpdir");
+		tempdir = new File("c:/temp/", "t" + FMT.format(new Date()));
+		tempdir.mkdirs();
+	}
+	public static final AtomicInteger count = new AtomicInteger();
+	protected static Random random = new Random(1000);
+	
+	/**
+	 * Create a temp file or directory for a test
+	 * @param prefix string prefix, never <code>null</code> or empty
+	 * @param suffix string suffix, never <code>null</code> or empty
+	 * @return a non-<code>null</code> file path in the temp directory setup
+	 * above
+	 */
+	protected File createTemp(String prefix, String suffix) {
+		if (prefix == null || prefix.trim().length() == 0) {
+			throw new IllegalArgumentException(
+					"prefix should never be null or empty");
+		}
+		if (suffix == null || suffix.trim().length() == 0) {
+			throw new IllegalArgumentException(
+					"suffix should never be null or empty");
+		}
+		return new File(tempdir, prefix + count.incrementAndGet() + suffix);
+	}
 	
 	/**
 	 * Create a feature with a number of data elements in the extended data.
@@ -138,7 +167,7 @@ public class TestGISBase {
 	 */
 	protected Feature createBasicFeature(Class<? extends Geometry> geoclass) {
 		Feature f = new Feature();
-		count++;
+		count.incrementAndGet();
 		f.setName("feature" + count);
 		f.setDescription("feature description " + count);
 		if (geoclass.isAssignableFrom(Point.class)) {

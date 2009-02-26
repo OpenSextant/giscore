@@ -95,7 +95,7 @@ public class TestXmlGdbOutputStream extends TestGISBase {
 			features.add(f);
 		}
 		
-		File test = File.createTempFile("testxmlgdb", ".xml");
+		File test = createTemp("testxmlgdb", ".xml");
 		FileOutputStream fos = new FileOutputStream(test);
 		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.XmlGDB, fos);
 		os.write(s1);

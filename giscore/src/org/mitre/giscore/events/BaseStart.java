@@ -66,7 +66,7 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	 * @param value
 	 *            the value, never <code>null</code>
 	 */
-	public void putElementAttribute(String key, Object value) {
+	public void put(String key, Object value) {
 		if (key == null) {
 			throw new IllegalArgumentException("key should never be null");
 		}
