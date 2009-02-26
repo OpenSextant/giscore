@@ -188,17 +188,17 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 						writer.writeEndElement();
 					}
 				} else {
+					writer.writeStartElement(SCHEMA_DATA);
+					writer.writeAttribute(SCHEMA_URL, schema);
 					for (SimpleField field : feature.getFields()) {
 						Object value = feature.getData(field);
-						writer.writeStartElement(SCHEMA_DATA);
-						writer.writeAttribute(SCHEMA_URL, schema);
 						writer.writeStartElement(SIMPLE_DATA);
 						writer.writeAttribute(NAME, field.getName());
 						handleCharacters(formatValue(field.getType(),
 								value.toString()));
 						writer.writeEndElement();
-						writer.writeEndElement();
 					}
+					writer.writeEndElement();
 				}
 				writer.writeEndElement();
 			}

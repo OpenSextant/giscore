@@ -94,7 +94,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 	/*
 	 * Don't bother quoting for these characters
 	 */
-	private static final String ALLOWED_SPECIAL_CHARACTERS = "{}[]\"=.-,#_!@$*()[]/";
+	private static final String ALLOWED_SPECIAL_CHARACTERS = "{}[]\"=.-,#_!@$*()[]/:";
 
 	/**
 	 * See if the characters include special characters, and if it does use a

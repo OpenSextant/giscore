@@ -92,7 +92,6 @@ public class TestKmlOutputStream extends TestGISBase {
 		}
 		is.close();
 		fs.close();
-		temp.delete();
 	}
 	
 	/**
