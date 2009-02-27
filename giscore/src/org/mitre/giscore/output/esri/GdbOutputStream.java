@@ -27,7 +27,7 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.net.UnknownHostException;
-import java.sql.Date;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,6 +57,7 @@ import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.FeatureSorter;
 import org.mitre.giscore.output.IContainerNameStrategy;
@@ -600,7 +601,11 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		case esriFieldType.esriFieldTypeOID:
 			return makeIntegerVariant(name, Variant.VT_INT, value);
 		case esriFieldType.esriFieldTypeString:
-			return new Variant(name, Variant.VT_BSTR, value.toString());
+			if (value instanceof Date) {
+				return new Variant(name, Variant.VT_BSTR, IKml.ISO_DATE_FMT.format((Date) value));
+			} else {
+				return new Variant(name, Variant.VT_BSTR, value.toString());
+			}
 		default:
 			throw new IllegalStateException("Found unsupported type: " + type);
 		}
@@ -687,14 +692,20 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		if (simpleField.getDisplayName() != null) {
 			field.setAliasName(simpleField.getDisplayName());
 		}
-		field.setType(getEsriFieldType(simpleField.getType()));
+		if (isshapefile && Type.DATE.equals(simpleField.getType())) {
+			field.setType(esriFieldType.esriFieldTypeString);
+			field.setLength(26);
+		} else {
+			field.setType(getEsriFieldType(simpleField.getType()));
+			if (simpleField.getLength() != null)
+				field.setLength(simpleField.getLength());
+			else
+				field.setLength(simpleField.getType().getDefaultLength());
+		}
+		
 		field.setIsNullable(simpleField.isNullable());
 		field.setRequired(simpleField.isRequired());
 		field.setEditable(simpleField.isEditable());
-		if (simpleField.getLength() != null)
-			field.setLength(simpleField.getLength());
-		else
-			field.setLength(simpleField.getType().getDefaultLength());
 		if (simpleField.getPrecision() != null)
 			field.setPrecision(simpleField.getPrecision());
 		else
@@ -767,12 +778,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		if (Type.BOOL.equals(type)) {
 			return esriFieldType.esriFieldTypeSmallInteger;
 		} else if (Type.DATE.equals(type)) {
-			if (isshapefile)
-				// Shapefiles only represent calendar dates for this type, so
-				// use string data instead
-				return esriFieldType.esriFieldTypeString;
-			else
-				return esriFieldType.esriFieldTypeDate;
+			return esriFieldType.esriFieldTypeDate;
 		} else if (Type.DOUBLE.equals(type)) {
 			return esriFieldType.esriFieldTypeDouble;
 		} else if (Type.FLOAT.equals(type)) {

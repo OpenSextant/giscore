@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -68,6 +69,11 @@ public class FeatureSorter {
 	 */
 	private Map<FeatureKey, File> dataFileMap = null;
 	/**
+	 * The output streams must be held open while features are being sorted. 
+	 * Otherwise the output stream becomes corrupted, at least sometimes.
+	 */
+	private Map<FeatureKey, ObjectOutputStream> dataStreamMap = null;
+	/**
 	 * The class keeps track of the overall extent of the features in a
 	 * particular collection.
 	 */
@@ -78,16 +84,16 @@ public class FeatureSorter {
 	 * of these pieces of information.
 	 */
 	private transient FeatureKey currentKey = null;
-	/**
-	 * @see #currentSchema.
-	 */
-	private transient ObjectOutputStream currentOutputStream = null;
 
 	/**
 	 * Empty ctor
 	 */
 	public FeatureSorter() {
-		cleanup();
+		try {
+			cleanup();
+		} catch (IOException e) {
+			// Ignore, can't happen since no stream is open
+		}
 	}
 
 	/**
@@ -126,21 +132,20 @@ public class FeatureSorter {
 			if (feature.getGeometry() != null)
 				geoclass = feature.getGeometry().getClass();
 			FeatureKey key = new FeatureKey(s, geoclass, feature.getClass());
+			ObjectOutputStream stream = null;
 			if (!key.equals(currentKey)) {
 				currentKey = key;
-				if (currentOutputStream != null) {
-					IOUtils.closeQuietly(currentOutputStream);
-				}
 				File stemp = dataFileMap.get(key);
 				if (stemp == null) {
 					stemp = File.createTempFile("gdbrecordset", ".data");
 					dataFileMap.put(key, stemp);
+					FileOutputStream os = new FileOutputStream(stemp, true);
+					ObjectOutputStream oos = new ObjectOutputStream(os);
+					dataStreamMap.put(key, oos);
 				}
-				FileOutputStream os = new FileOutputStream(stemp, true);
-				ObjectOutputStream oos = new ObjectOutputStream(os);
-				currentOutputStream = oos;
 			}
-			currentOutputStream.writeObject(feature);
+			stream = dataStreamMap.get(key);
+			stream.writeObject(feature);
 			Geometry g = feature.getGeometry();
 			if (g != null) {
 				Geodetic2DBounds bounds = boundingBoxes.get(key);
@@ -191,11 +196,17 @@ public class FeatureSorter {
 			}
 			Schema rval = schemata.get(schema);
 			if (rval == null) {
-				URL url = new URL(schema);
-				String path = url.getPath();
-				String parts[] = path.split("#");
+				String name = null;
+				if (schema.startsWith("#")) {
+					name = schema.substring(1);
+				} else {
+					URL url = new URL(schema);
+					String path = url.getPath();
+					String parts[] = path.split("#");
+					name = parts[parts.length - 1];
+				}
 				rval = new Schema();
-				rval.setName(parts[parts.length - 1]);
+				rval.setName(name);
 				schemata.put(schema, rval);
 			}
 			return rval;
@@ -249,18 +260,23 @@ public class FeatureSorter {
 
 	/**
 	 * Close any open streams.
+	 * @throws IOException 
 	 */
-	public void close() {
-		if (currentOutputStream != null) {
-			IOUtils.closeQuietly(currentOutputStream);
-			currentOutputStream = null;
+	public void close() throws IOException {
+		if (dataStreamMap != null) {
+			for(OutputStream os : dataStreamMap.values()) {
+				os.flush();
+				IOUtils.closeQuietly(os);
+				dataStreamMap = null;
+			}
 		}
 	}
 
 	/**
 	 * Cleanup deletes the temporary files and resets all the data structures.
+	 * @throws IOException 
 	 */
-	public void cleanup() {
+	public void cleanup() throws IOException {
 		close();
 		if (dataFileMap != null) {
 			for (File tfile : dataFileMap.values()) {
@@ -282,6 +298,7 @@ public class FeatureSorter {
 		schemata = new HashMap<String, Schema>();
 		internalSchema = new HashMap<Set<SimpleField>, Schema>();
 		dataFileMap = new HashMap<FeatureKey, File>();
+		dataStreamMap = new HashMap<FeatureKey, ObjectOutputStream>();
 		boundingBoxes = new HashMap<FeatureKey, Geodetic2DBounds>();
 		currentKey = null;
 	}
