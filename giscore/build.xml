@@ -9,6 +9,8 @@
 
 	<property name="lib" value="${basedir}/lib" />
 	<property name="rel" value="${basedir}/rel" />
+	<property name="test" value="${rel}/test" />
+	<property name="testoutput" value="${basedir}/testOutput" />
 
 	<path id="project.classpath">
 		<fileset dir="${lib}">
@@ -79,11 +81,41 @@
 		<javac source="1.5" classpathref="project.classpath" srcdir="${basedir}/src"
 			destdir="${rel}/classes" />
 	</target>
+
+	<target name="compileTests" depends="resolve">
+		<mkdir dir="${test}/classes" />
+		<javac source="1.5" target="1.5" srcdir="${basedir}/test"
+			debug="true"
+			includeantruntime="false"
+			destdir="${test}/classes">
+			<classpath>
+				<path refid="project.classpath"/>
+				<pathelement path="${rel}/classes"/>
+			</classpath>
+		</javac>
+	</target>
 	
 	<target name="jar" depends="compile">
 		<jar destfile="${rel}/jars/giscore.jar">
 			<fileset dir="${rel}/classes" />
 		</jar>
+	</target>
+
+	<target name="test" depends="compile,compileTests" description="Run JUnit tests">
+		<junit printsummary="yes" haltonfailure="no" maxmemory="512m" fork="yes">
+			<sysproperty key="basedir" file="${top.basedir}"/>
+			<classpath>
+				<path refid="project.classpath"/>
+				<pathelement path="${rel}/classes"/>
+				<pathelement path="${test}/classes"/>
+			</classpath>
+			<formatter type="plain"/>
+
+			<batchtest fork="yes" todir="${testoutput}">
+				<fileset dir="${test}">
+				</fileset>
+			</batchtest>
+		</junit>
 	</target>
 	
 	<target name="publish" depends="jar, makepom">
