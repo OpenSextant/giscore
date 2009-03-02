@@ -25,14 +25,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.geometry.MultiPoint;
+import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.test.input.TestKmlInputStream;
@@ -49,6 +57,58 @@ public class TestGdbSupport extends TestGISBase {
 	 */
 	public static final String base_path = "data/kml/";
 
+	@Test
+	public void testMultiPointWithDate() throws Exception {
+		File test = createTemp("t", ".zip");
+		FileOutputStream fos = new FileOutputStream(test);
+		IGISOutputStream os = null;
+		ZipOutputStream zos = null;
+		zos = new ZipOutputStream(fos);
+		os = GISFactory.getOutputStream(DocumentType.FileGDB, zos, createTemp("t",".gdb"));
+		
+		SimpleField nameid = new SimpleField("nameid");
+		nameid.setType(SimpleField.Type.INT);
+		SimpleField dtm = new SimpleField("dtm");
+		dtm.setType(SimpleField.Type.DATE);
+		
+		Schema s = new Schema();
+		s.put(nameid);
+		s.put(dtm);
+		os.write(s);
+		
+		Feature f = new Feature();
+		f.setSchema(s.getName());
+		List<Point> pnts = new ArrayList<Point>();
+		pnts.add(new Point(44.0, 33.0));
+		pnts.add(new Point(44.1, 33.4));
+		pnts.add(new Point(44.3, 33.3));
+		pnts.add(new Point(44.2, 33.1));
+		pnts.add(new Point(44.6, 33.2));
+		MultiPoint mp = new MultiPoint(pnts);
+		f.setGeometry(mp);
+		f.putData(nameid, null);
+		f.putData(dtm, new Date());
+		os.write(f);
+		
+		f = new Feature();
+		f.setSchema(s.getName());
+		pnts = new ArrayList<Point>();
+		pnts.add(new Point(44.5, 33.3));
+		pnts.add(new Point(44.6, 33.1));
+		pnts.add(new Point(44.7, 33.0));
+		pnts.add(new Point(44.4, 33.4));
+		pnts.add(new Point(44.2, 33.6));
+		mp = new MultiPoint(pnts);
+		f.setGeometry(mp);
+		f.putData(nameid, 2);
+		f.putData(dtm, new Date());
+		os.write(f);
+		
+		os.close();
+		zos.close();
+		fos.close();
+	}
+	
 	@Test
 	public void test1f() throws Exception {
 		InputStream s = TestKmlInputStream.class

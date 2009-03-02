@@ -629,9 +629,9 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	private Variant makeIntegerVariant(String name, int ft, Object value) {
 		if (value instanceof Number) {
-			return new Variant(name, ft, ((Number) value).longValue());
+			return new Variant(name, ft, ((Number) value).intValue());
 		} else if (value instanceof String) {
-			return new Variant(name, ft, new Long((String) value).longValue());
+			return new Variant(name, ft, new Integer((String) value).intValue());
 		} else {
 			throw new IllegalArgumentException("Uncoercible type found "
 					+ value.getClass());

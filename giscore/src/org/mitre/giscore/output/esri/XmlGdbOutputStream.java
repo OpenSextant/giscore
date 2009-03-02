@@ -26,7 +26,10 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -53,6 +56,7 @@ import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.gdb.IXmlGdb;
+import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.FeatureSorter;
 import org.mitre.giscore.output.XmlOutputStreamBase;
@@ -212,6 +216,8 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 */
 	private static final DecimalFormat DEC = new DecimalFormat("###############.#");
 	private static final DecimalFormat LOC = new DecimalFormat("###.#####");
+	private static final SimpleDateFormat ISO_DATE_FMT = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+	
 	/*
 	 * The following three fields are reused for each feature class that
 	 * contains geometry.
@@ -484,18 +490,27 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			writer.writeEmptyElement(VALUE);
 		} else {
 			writer.writeStartElement(VALUE);
+			if (field.getType().getXmlSchemaType() != null) {
+				writer.writeAttribute(XSI_NS, TYPE_ATTR, 
+						field.getType().getXmlSchemaType());
+			}
 			SimpleField.Type type = field.getType();
 			if (SimpleField.Type.GEOMETRY.equals(type)) {
 				Geometry geo = (Geometry) datum;
 				geo.accept(this);
 			} else if (SimpleField.Type.DATE.equals(type)) {
-				// FIXME: We need something here!
-			} else {
-				if (type.getXmlSchemaType() != null) {
-					writer.writeAttribute(XSI_NS, TYPE_ATTR, type.getXmlSchemaType());
-				} else {
-					writer.writeAttribute(XSI_NS, TYPE_ATTR, "string");
+				Date dtm = null;
+				try {
+					if (datum instanceof String) {
+						dtm = ISO_DATE_FMT.parse((String) datum);
+					} else if (datum instanceof Date) {
+						dtm = (Date) datum;
+					}
+					handleCharacters(ISO_DATE_FMT.format(dtm));
+				} catch (ParseException e) {
+					throw new RuntimeException(e);
 				}
+			} else {
 				handleCharacters(datum.toString());
 			}
 			writer.writeEndElement();

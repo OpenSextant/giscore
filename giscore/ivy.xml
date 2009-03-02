@@ -1,6 +1,6 @@
 <ivy-module version="2.0">
 	<info organisation="org.mitre.itf" module="giscore" 
-		revision="0.3" status="test" />
+		revision="0.3" branch="a" status="test" />
 	<publications>
 		<artifact name="giscore" type="jar" />
 		<artifact name="giscore" type="pom" ext="pom" />

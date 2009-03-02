@@ -100,15 +100,20 @@ public class TestXmlGdbSupport extends TestGISBase  {
 	}
 	
 	@Test
-	public void testMultiPoint() throws Exception {
+	public void testMultiPointWithDate() throws Exception {
 		File test = createTemp("t", ".xml");
 		FileOutputStream fos = new FileOutputStream(test);
 		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.XmlGDB, fos);
 		
 		SimpleField nameid = new SimpleField("nameid");
 		nameid.setType(SimpleField.Type.INT);
+		SimpleField dtm = new SimpleField("dtm");
+		dtm.setType(SimpleField.Type.DATE);
+		
 		Schema s = new Schema();
 		s.put(nameid);
+		s.put(dtm);
+		os.write(s);
 		
 		Feature f = new Feature();
 		f.setSchema(s.getName());
@@ -120,7 +125,8 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		pnts.add(new Point(44.6, 33.2));
 		MultiPoint mp = new MultiPoint(pnts);
 		f.setGeometry(mp);
-		f.putData(nameid, null);
+		f.putData(nameid, 5);
+		f.putData(dtm, new Date());
 		os.write(f);
 		
 		f = new Feature();
@@ -134,6 +140,7 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		mp = new MultiPoint(pnts);
 		f.setGeometry(mp);
 		f.putData(nameid, 2);
+		f.putData(dtm, new Date());
 		os.write(f);
 		
 		os.close();
