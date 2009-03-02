@@ -49,8 +49,6 @@ public class TestXmlGdbOutputStream extends TestGISBase {
 	@Test public void testSimple() throws Exception {
 		List<Feature> features = new ArrayList<Feature>();
 		Schema s1 = new Schema();
-		s1.setName("s1");
-		s1.setId("1");
 		SimpleField field = new SimpleField("category");
 		field.setDisplayName("Category");
 		field.setType(SimpleField.Type.STRING);

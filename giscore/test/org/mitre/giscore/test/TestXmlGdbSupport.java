@@ -36,6 +36,8 @@ import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.IGISInputStream;
@@ -102,7 +104,14 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		File test = createTemp("t", ".xml");
 		FileOutputStream fos = new FileOutputStream(test);
 		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.XmlGDB, fos);
+		
+		SimpleField nameid = new SimpleField("nameid");
+		nameid.setType(SimpleField.Type.INT);
+		Schema s = new Schema();
+		s.put(nameid);
+		
 		Feature f = new Feature();
+		f.setSchema(s.getName());
 		List<Point> pnts = new ArrayList<Point>();
 		pnts.add(new Point(44.0, 33.0));
 		pnts.add(new Point(44.1, 33.4));
@@ -111,7 +120,22 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		pnts.add(new Point(44.6, 33.2));
 		MultiPoint mp = new MultiPoint(pnts);
 		f.setGeometry(mp);
+		f.putData(nameid, null);
 		os.write(f);
+		
+		f = new Feature();
+		f.setSchema(s.getName());
+		pnts = new ArrayList<Point>();
+		pnts.add(new Point(44.5, 33.3));
+		pnts.add(new Point(44.6, 33.1));
+		pnts.add(new Point(44.7, 33.0));
+		pnts.add(new Point(44.4, 33.4));
+		pnts.add(new Point(44.2, 33.6));
+		mp = new MultiPoint(pnts);
+		f.setGeometry(mp);
+		f.putData(nameid, 2);
+		os.write(f);
+		
 		os.close();
 		IOUtils.closeQuietly(fos);
 	}

@@ -1,8 +1,11 @@
 <ivy-module version="2.0">
 	<info organisation="org.mitre.itf" module="giscore" 
-		revision="0.2" status="test" />
+		revision="0.3" status="test" />
 	<publications>
-		<artifact name="itf-giscore" />
+		<artifact name="giscore" type="jar" />
+		<artifact name="giscore" type="pom" ext="pom" />
+		<artifact name="giscore_src" type="src" ext="jar" />
+		<artifact name="giscore_javadoc" type="javadoc" ext="jar" />
 	</publications>
 	<dependencies>
 		<dependency org="org.mitre.itf" name="geodesy" rev="1.8.0" />

@@ -133,7 +133,7 @@ public class TestGISBase {
 			throw new IllegalArgumentException("valuemap should never be null");
 		}
 		Feature f = createBasicFeature(geoclass);
-		f.setSchema("#" + schema.getName());
+		f.setSchema(schema.getName());
 		for(String key : schema.getKeys()) {
 			SimpleField field = schema.get(key);
 			Object value = valuemap.get(key);
@@ -150,8 +150,6 @@ public class TestGISBase {
 	 */
 	protected Schema createSchema(String names[], SimpleField.Type types[]) {
 		Schema s = new Schema();
-		s.setId("id" + RandomStringUtils.randomAlphabetic(3));
-		s.setName("name" + RandomStringUtils.randomAlphabetic(5));
 		for(int i = 0; i < names.length; i++) {
 			SimpleField field = new SimpleField(names[i]);
 			field.setType(types[i]);

@@ -19,6 +19,7 @@
 package org.mitre.giscore.test;
 
 import java.io.File;
+import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -81,7 +82,7 @@ public class TestFeatureSorter extends TestGISBase {
 	@Test
 	public void testSort2() throws Exception {
 		Schema s1 = new Schema();
-		s1.setName("s1");
+		s1.setName(new URI("#s1"));
 		s1.setId("1");
 		SimpleField field = new SimpleField("category");
 		field.setDisplayName("Category");
@@ -93,7 +94,7 @@ public class TestFeatureSorter extends TestGISBase {
 		s1.put(field);
 		
 		Schema s2 = new Schema();
-		s1.setName("s2");
+		s1.setName(new URI("s2"));
 		s1.setId("2");
 		field = new SimpleField("phylum");
 		field.setDisplayName("Phylum");

@@ -25,7 +25,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -51,8 +51,6 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  */
 public class FeatureSorter {
 	private static final String OID = "OID";
-
-	private static AtomicInteger ms_id = null;
 	
 	private static SimpleField oid = null;
 	
@@ -71,7 +69,7 @@ public class FeatureSorter {
 	 * defined schemata as well as implied or inline schemata that are defined
 	 * with their data.
 	 */
-	private Map<String, Schema> schemata = null;
+	private Map<URI, Schema> schemata = null;
 	/**
 	 * Maps a set of simple fields, derived from inline data declarations to a
 	 * schema. This is used to gather like features together. THe assumption is
@@ -207,28 +205,11 @@ public class FeatureSorter {
 	 * @throws MalformedURLException
 	 */
 	private Schema getSchema(Feature feature) throws MalformedURLException {
-		String schema = feature.getSchema();
+		URI schema = feature.getSchema();
 		if (schema != null) {
-			if (schema.startsWith("#")) {
-				// Local reference
-				Schema s = schemata.get(schema.substring(1));
-				if (s != null) {
-					return s;
-				}
-			}
 			Schema rval = schemata.get(schema);
 			if (rval == null) {
-				String name = null;
-				if (schema.startsWith("#")) {
-					name = schema.substring(1);
-				} else {
-					URL url = new URL(schema);
-					String path = url.getPath();
-					String parts[] = path.split("#");
-					name = parts[parts.length - 1];
-				}
-				rval = new Schema();
-				rval.setName(name);
+				rval = new Schema(schema);
 				schemata.put(schema, rval);
 			}
 			return rval;
@@ -238,7 +219,6 @@ public class FeatureSorter {
 		Schema rval = internalSchema.get(fields);
 		if (rval == null) {
 			rval = new Schema();
-			rval.setName("schema" + ms_id.incrementAndGet());
 			for (SimpleField field : fields) {
 				rval.put(field.getName(), field);
 			}
@@ -323,8 +303,7 @@ public class FeatureSorter {
 				}
 			}
 		}
-		ms_id = new AtomicInteger();
-		schemata = new HashMap<String, Schema>();
+		schemata = new HashMap<URI, Schema>();
 		internalSchema = new HashMap<Set<SimpleField>, Schema>();
 		dataFileMap = new HashMap<FeatureKey, File>();
 		dataStreamMap = new HashMap<FeatureKey, ObjectOutputStream>();

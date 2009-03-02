@@ -21,6 +21,10 @@ package org.mitre.giscore.test;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -58,8 +62,8 @@ public class TestTransfusionFields {
 		tempdir = new File(dir);
 	}
 	
-	private static final String XFUSION_SCHEMA_PT = "xfusion_schema_pt";
-	private static final String XFUSION_SCHEMA_RING = "xfusion_schema_ring";
+	private static final String XFUSION_SCHEMA_PT = "#xfusion_schema_pt";
+	private static final String XFUSION_SCHEMA_RING = "#xfusion_schema_ring";
 	
 	private static List<SimpleField> ms_fields = new ArrayList<SimpleField>();
 	private static SimpleField ms_field_cacheUrl;
@@ -138,7 +142,7 @@ public class TestTransfusionFields {
 				zos, gdb);
 		Schema s = new Schema();
 		s.setId(XFUSION_SCHEMA_PT);
-		s.setName(XFUSION_SCHEMA_PT);
+		s.setName(new URI(XFUSION_SCHEMA_PT));
 		for(SimpleField field : ms_fields) {
 			s.put(field);
 		}
@@ -146,7 +150,7 @@ public class TestTransfusionFields {
 		
 		Schema s2 = new Schema();
 		s2.setId(XFUSION_SCHEMA_RING);
-		s2.setName(XFUSION_SCHEMA_RING);
+		s2.setName(new URI(XFUSION_SCHEMA_RING));
 		gos.write(s2);
 
 		for(int i = 0; i < 10; i++) {
@@ -168,7 +172,7 @@ public class TestTransfusionFields {
 				zos, sf);
 		Schema s = new Schema();
 		s.setId(XFUSION_SCHEMA_PT);
-		s.setName(XFUSION_SCHEMA_PT);
+		s.setName(new URI(XFUSION_SCHEMA_PT));
 		for(SimpleField field : ms_fields) {
 			s.put(field);
 		}
@@ -184,10 +188,10 @@ public class TestTransfusionFields {
 		os.close();
 	}
 	
-	public Feature getFeatureT1() {
+	public Feature getFeatureT1() throws URISyntaxException  {
 		Feature f = new Feature();
 		f.setName("f1");
-		f.setSchema(XFUSION_SCHEMA_PT);
+		f.setSchema(new URI(XFUSION_SCHEMA_PT));
 		List<Point> pts = new ArrayList<Point>();
 		pts.add(new Point(new Geodetic2DPoint(RandomUtils.JVM_RANDOM)));
 		f.setGeometry(new MultiPoint(pts));
@@ -199,10 +203,10 @@ public class TestTransfusionFields {
 		return f;
 	}
 	
-	public Feature getFeatureT2() {
+	public Feature getFeatureT2() throws URISyntaxException  {
 		Feature f = new Feature();
 		f.setName("f1");
-		f.setSchema(XFUSION_SCHEMA_PT);
+		f.setSchema(new URI(XFUSION_SCHEMA_PT));
 		List<Point> pts = new ArrayList<Point>();
 		pts.add(new Point(new Geodetic2DPoint(RandomUtils.JVM_RANDOM)));
 		pts.add(new Point(new Geodetic2DPoint(RandomUtils.JVM_RANDOM)));

@@ -18,6 +18,8 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -45,23 +47,50 @@ import org.mitre.giscore.output.StreamVisitorBase;
  * @author DRAND
  */
 public class Schema implements IGISObject {
+	// Numeric id, used for GDB XML and to create an initial name
 	private final static AtomicInteger ms_idgen = new AtomicInteger();
 	
-	String name;
+	URI name; 
 	String id;
-	transient int nid = ms_idgen.incrementAndGet(); // Numeric id, used for GDB XML
+	transient int nid; 
 	Map<String, SimpleField> fields = new HashMap<String, SimpleField>();
+	
+	/**
+	 * Default Ctor
+	 */
+	public Schema() {
+		try {
+			name = new URI("#schema_" + ms_idgen.incrementAndGet());
+			id = "id_" + ms_idgen.get();
+			nid = ms_idgen.get();
+		} catch (URISyntaxException e) {
+			// Impossible
+		}
+	}
+	
+	public Schema(URI urn) {
+		this();
+		if (urn == null) {
+			throw new IllegalArgumentException(
+					"urn should never be null");
+		}
+		name = urn;
+	}
 	
 	/**
 	 * @return the name
 	 */
-	public String getName() {
+	public URI getName() {
 		return name;
 	}
 	/**
 	 * @param name the name to set
 	 */
-	public void setName(String name) {
+	public void setName(URI name) {
+		if (name == null) {
+			throw new IllegalArgumentException(
+					"name should never be null");
+		}
 		this.name = name;
 	}
 	/**
@@ -74,6 +103,10 @@ public class Schema implements IGISObject {
 	 * @param id the id to set
 	 */
 	public void setId(String id) {
+		if (id == null || id.trim().length() == 0) {
+			throw new IllegalArgumentException(
+					"id should never be null or empty");
+		}
 		this.id = id;
 	}
 	

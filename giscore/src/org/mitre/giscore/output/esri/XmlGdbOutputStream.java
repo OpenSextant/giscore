@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
@@ -479,7 +480,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 */
 	private void writeValue(SimpleField field, Object datum)
 			throws XMLStreamException {
-		if (datum == null) {
+		if (datum == null || ObjectUtils.NULL.equals(datum)) {
 			writer.writeEmptyElement(VALUE);
 		} else {
 			writer.writeStartElement(VALUE);
@@ -574,7 +575,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			writer.writeStartElement(POINT_ARRAY);
 			writeEsriType(ARRAY_OF_POINT);
 			for(Point p : mp.getPoints()) {
-				writer.writeStartElement(POINT_N);
+				writer.writeStartElement(POINT);
 				p.accept(this);
 				writer.writeEndElement();
 			}

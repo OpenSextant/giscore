@@ -19,6 +19,7 @@
 package org.mitre.giscore.events;
 
 import java.io.Serializable;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -39,7 +40,7 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	private static final long serialVersionUID = 1L;
 	protected String name;
 	protected String description;
-	protected String schema;
+	protected URI schema;
 	protected Date startTime;
 	protected Date endTime;
 	protected String styleUrl;
@@ -121,14 +122,14 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	 * @return the schema, may be <code>null</code> if there's no reference
 	 * to a schema
 	 */
-	public String getSchema() {
+	public URI getSchema() {
 		return schema;
 	}
 
 	/**
 	 * @param schema the schema to set
 	 */
-	public void setSchema(String schema) {
+	public void setSchema(URI schema) {
 		this.schema = schema;
 	}
 

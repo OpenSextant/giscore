@@ -19,6 +19,8 @@ package org.mitre.giscore.input.kml;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -358,7 +360,11 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 							.getAttributeByName(new QName(SCHEMA_URL));
 					if (url != null) {
 						handleSchemaData(cs, url);
-						cs.setSchema(url.getValue());
+						try {
+							cs.setSchema(new URI(url.getValue()));
+						} catch (URISyntaxException e) {
+							throw new XMLStreamException(e);
+						}
 					}
 				}
 			} else if (foundEndTag(next, EXTENDED_DATA)) {
@@ -910,8 +916,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		Attribute name = element.getAttributeByName(new QName(NAME));
 		if (id != null)
 			s.setId(id.getValue());
-		if (name != null)
-			s.setName(name.getValue());
+		try {
+			if (name != null)
+				s.setName(new URI(name.getValue()));
+		} catch (URISyntaxException e) {
+			throw new XMLStreamException(e);
+		}
 
 		int gen = 0;
 		while (true) {

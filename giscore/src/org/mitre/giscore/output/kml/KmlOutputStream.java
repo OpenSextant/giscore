@@ -21,6 +21,7 @@ package org.mitre.giscore.output.kml;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URI;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,7 +36,6 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.helpers.ISO8601DateFormat;
 import org.mitre.giscore.events.BaseStart;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
@@ -184,7 +184,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				handleSimpleElement(STYLE_URL, feature.getStyleUrl());
 			}
 			if (feature.hasExtendedData()) {
-				String schema = feature.getSchema();
+				URI schema = feature.getSchema();
 				writer.writeStartElement(EXTENDED_DATA);
 				if (schema == null) {
 					for (SimpleField field : feature.getFields()) {
@@ -197,7 +197,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 					}
 				} else {
 					writer.writeStartElement(SCHEMA_DATA);
-					writer.writeAttribute(SCHEMA_URL, schema);
+					writer.writeAttribute(SCHEMA_URL, schema.toString());
 					for (SimpleField field : feature.getFields()) {
 						Object value = feature.getData(field);
 						writer.writeStartElement(SIMPLE_DATA);
@@ -606,7 +606,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	public void visit(Schema schema) {
 		try {
 			writer.writeStartElement(SCHEMA);
-			writer.writeAttribute(NAME, schema.getName());
+			writer.writeAttribute(NAME, schema.getName().toString());
 			writer.writeAttribute(ID, schema.getId());
 			for (String name : schema.getKeys()) {
 				SimpleField field = schema.get(name);
