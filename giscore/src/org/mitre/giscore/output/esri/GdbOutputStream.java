@@ -126,7 +126,6 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		 * org.mitre.giscore.output.IContainerNameStrategy#deriveContainerName
 		 * (java.util.List, org.mitre.giscore.output.FeatureKey)
 		 */
-		@Override
 		public String deriveContainerName(List<String> path, FeatureKey key) {
 			StringBuilder setname = new StringBuilder();
 			for (String element : path) {
@@ -520,7 +519,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	}
 
 	/**
-	 * @param geo
+	 * @param ring
 	 * @return
 	 * @throws IOException
 	 * @throws UnknownHostException
@@ -551,7 +550,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	}
 
 	/**
-	 * @param geo
+	 * @param point
 	 * @return
 	 * @throws IOException
 	 * @throws UnknownHostException
@@ -906,7 +905,6 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * org.mitre.giscore.output.IGISOutputStream#write(org.mitre.giscore.events
 	 * .IGISObject)
 	 */
-	@Override
 	public void write(IGISObject object) {
 		object.accept(this);
 	}

@@ -45,7 +45,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 
 	/**
 	 * Ctor
-	 * @param geometries
+	 * @param geometries List of Geometry objects to include in the bag
 	 */
 	public GeometryBag(List<Geometry> geometries) {
 		if (geometries == null) {
@@ -139,7 +139,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.Geometry#toString()
 	 */
-	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
@@ -147,7 +146,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.VisitableGeometry#accept(org.mitre.giscore.output.StreamVisitorBase)
 	 */
-	@Override
 	public void accept(StreamVisitorBase visitor) {
 		visitor.visit(this);
 	}
@@ -155,7 +153,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#add(java.lang.Object)
 	 */
-	@Override
 	public boolean add(Geometry e) {
 		return geometries.add(e);
 	}
@@ -163,7 +160,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#addAll(java.util.Collection)
 	 */
-	@Override
 	public boolean addAll(Collection<? extends Geometry> c) {
 		return geometries.addAll(c);
 	}
@@ -171,7 +167,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#clear()
 	 */
-	@Override
 	public void clear() {
 		geometries.clear();
 	}
@@ -179,7 +174,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#contains(java.lang.Object)
 	 */
-	@Override
 	public boolean contains(Object o) {
 		return geometries.contains(o);
 	}
@@ -187,7 +181,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#containsAll(java.util.Collection)
 	 */
-	@Override
 	public boolean containsAll(Collection<?> c) {
 		return geometries.containsAll(c); 
 	}
@@ -195,7 +188,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#isEmpty()
 	 */
-	@Override
 	public boolean isEmpty() {
 		return geometries.isEmpty();
 	}
@@ -203,7 +195,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#iterator()
 	 */
-	@Override
 	public Iterator<Geometry> iterator() {
 		return geometries.iterator();
 	}
@@ -211,7 +202,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#remove(java.lang.Object)
 	 */
-	@Override
 	public boolean remove(Object o) {
 		return geometries.remove(o);
 	}
@@ -219,7 +209,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#removeAll(java.util.Collection)
 	 */
-	@Override
 	public boolean removeAll(Collection<?> c) {
 		return geometries.removeAll(c);
 	}
@@ -227,7 +216,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#retainAll(java.util.Collection)
 	 */
-	@Override
 	public boolean retainAll(Collection<?> c) {
 		return geometries.retainAll(c);
 	}
@@ -235,7 +223,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#size()
 	 */
-	@Override
 	public int size() {
 		return geometries.size();
 	}
@@ -243,7 +230,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#toArray()
 	 */
-	@Override
 	public Object[] toArray() {
 		return geometries.toArray();
 	}
@@ -251,7 +237,6 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#toArray(T[])
 	 */
-	@Override
 	public <T> T[] toArray(T[] a) {
 		return geometries.toArray(a);
 	}
