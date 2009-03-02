@@ -58,6 +58,9 @@ public class TestTransfusionFields {
 		tempdir = new File(dir);
 	}
 	
+	private static final String XFUSION_SCHEMA_PT = "xfusion_schema_pt";
+	private static final String XFUSION_SCHEMA_RING = "xfusion_schema_ring";
+	
 	private static List<SimpleField> ms_fields = new ArrayList<SimpleField>();
 	private static SimpleField ms_field_cacheUrl;
 	private static SimpleField ms_field_localUrl;	
@@ -76,12 +79,6 @@ public class TestTransfusionFields {
 	private static SimpleField ms_field_rpt;
 	private static SimpleField ms_field_desc;
 	private static SimpleField ms_field_ctx;
-
-	/**
-	 * The schema, contains field definitions as well as types and display names
-	 */
-	protected Schema m_schema_point = new Schema();
-	protected Schema m_schema_ring = new Schema();
 
 	static {
 		ms_field_cacheUrl = makeSimpleField("cacheURL", "Cache_URL",
@@ -140,12 +137,17 @@ public class TestTransfusionFields {
 		IGISOutputStream gos = GISFactory.getOutputStream(DocumentType.FileGDB,
 				zos, gdb);
 		Schema s = new Schema();
-		s.setId("test1");
-		s.setName("test1");
+		s.setId(XFUSION_SCHEMA_PT);
+		s.setName(XFUSION_SCHEMA_PT);
 		for(SimpleField field : ms_fields) {
 			s.put(field);
 		}
 		gos.write(s);
+		
+		Schema s2 = new Schema();
+		s2.setId(XFUSION_SCHEMA_RING);
+		s2.setName(XFUSION_SCHEMA_RING);
+		gos.write(s2);
 
 		for(int i = 0; i < 10; i++) {
 			gos.write(getFeatureT1());
@@ -165,8 +167,8 @@ public class TestTransfusionFields {
 		IGISOutputStream gos = GISFactory.getOutputStream(DocumentType.Shapefile,
 				zos, sf);
 		Schema s = new Schema();
-		s.setId("test1");
-		s.setName("test1");
+		s.setId(XFUSION_SCHEMA_PT);
+		s.setName(XFUSION_SCHEMA_PT);
 		for(SimpleField field : ms_fields) {
 			s.put(field);
 		}
@@ -185,7 +187,7 @@ public class TestTransfusionFields {
 	public Feature getFeatureT1() {
 		Feature f = new Feature();
 		f.setName("f1");
-		f.setSchema("test1");
+		f.setSchema(XFUSION_SCHEMA_PT);
 		List<Point> pts = new ArrayList<Point>();
 		pts.add(new Point(new Geodetic2DPoint(RandomUtils.JVM_RANDOM)));
 		f.setGeometry(new MultiPoint(pts));
@@ -200,7 +202,7 @@ public class TestTransfusionFields {
 	public Feature getFeatureT2() {
 		Feature f = new Feature();
 		f.setName("f1");
-		f.setSchema("test1");
+		f.setSchema(XFUSION_SCHEMA_PT);
 		List<Point> pts = new ArrayList<Point>();
 		pts.add(new Point(new Geodetic2DPoint(RandomUtils.JVM_RANDOM)));
 		pts.add(new Point(new Geodetic2DPoint(RandomUtils.JVM_RANDOM)));
