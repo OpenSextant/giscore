@@ -8,7 +8,7 @@
 		<artifact name="giscore_javadoc" type="javadoc" ext="jar" />
 	</publications>
 	<dependencies>
-		<dependency org="org.mitre.itf" name="geodesy" rev="1.8.0" />
+		<dependency org="org.mitre.itf" name="geodesy" rev="1.9" />
 		<dependency org="commons-lang" name="commons-lang" rev="2.0">
 			<conf name="compile" />
 			<exclude org="commons-logging" module="commons-logging" />

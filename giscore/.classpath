@@ -13,7 +13,7 @@
     <classpathentry kind="lib" path="lib/net.sourceforge.iso-relax/com.springsource.org.iso_relax.verifier-0.0.0.20041111.jar"/>
     <classpathentry kind="lib" path="lib/org.apache.commons/commons-io-1.3.2.jar"/>
     <classpathentry kind="lib" path="lib/org.codehaus.woodstox/com.springsource.com.ctc.wstx-3.2.7.jar"/>
-    <classpathentry kind="lib" path="lib/org.mitre.itf/geodesy-1.8.0.jar"/>
+    <classpathentry kind="lib" path="lib/org.mitre.itf/geodesy-1.9.jar"/>
     <classpathentry kind="lib" path="lib/org.relaxng/com.springsource.org.relaxng.datatype-1.0.0.jar"/>
     <classpathentry kind="lib" path="lib/org.slf4j/jcl-over-slf4j-1.5.2.jar"/>
     <classpathentry kind="lib" path="lib/org.slf4j/slf4j-api-1.5.2.jar"/>
