@@ -50,7 +50,22 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  * @author DRAND
  */
 public class FeatureSorter {
+	private static final String OID = "OID";
+
 	private static AtomicInteger ms_id = null;
+	
+	private static SimpleField oid = null;
+	
+	static {
+		oid = new SimpleField(OID);
+		oid.setType(SimpleField.Type.OID);
+		oid.setLength(4);
+		oid.setRequired(true);
+		oid.setEditable(false);
+		oid.setAliasName(OID);
+		oid.setModelName(OID);
+	}
+	
 	/**
 	 * Maps the schema name to the schema. The schemata included are both
 	 * defined schemata as well as implied or inline schemata that are defined
@@ -126,8 +141,15 @@ public class FeatureSorter {
 	 * @param feature
 	 */
 	public FeatureKey add(Feature feature) {
+		if (feature == null) {
+			throw new IllegalArgumentException(
+					"feature should never be null");
+		}
 		try {
 			Schema s = getSchema(feature);
+			if (s.getOidField() == null) {
+				s.put(oid);
+			}
 			Class<? extends Geometry> geoclass = null;
 			if (feature.getGeometry() != null)
 				geoclass = feature.getGeometry().getClass();
@@ -245,6 +267,13 @@ public class FeatureSorter {
 	 * @param schema
 	 */
 	public void add(Schema schema) {
+		if (schema == null) {
+			throw new IllegalArgumentException(
+					"schema should never be null");
+		}
+		if (schema.getOidField() == null) {
+			schema.put(oid);
+		}
 		schemata.put(schema.getName(), schema);
 	}
 	

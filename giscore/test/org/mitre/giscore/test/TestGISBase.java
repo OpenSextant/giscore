@@ -76,8 +76,7 @@ public class TestGISBase {
 					"prefix should never be null or empty");
 		}
 		if (suffix == null || suffix.trim().length() == 0) {
-			throw new IllegalArgumentException(
-					"suffix should never be null or empty");
+			suffix = "";
 		}
 		return new File(tempdir, prefix + count.incrementAndGet() + suffix);
 	}

@@ -104,8 +104,10 @@ public class SimpleField implements Serializable {
 	};
 	
 	Type type;
-	String name;
-	String displayName;
+	String name = null;
+	String displayName = null;
+	String aliasName = null;
+	String modelName = null;
 	boolean required = false;
 	Integer length = null;
 	Integer precision = null;
@@ -250,6 +252,34 @@ public class SimpleField implements Serializable {
 	 */
 	public void setEditable(boolean editable) {
 		this.editable = editable;
+	}
+
+	/**
+	 * @return the aliasName
+	 */
+	public String getAliasName() {
+		return aliasName;
+	}
+
+	/**
+	 * @param aliasName the aliasName to set
+	 */
+	public void setAliasName(String aliasName) {
+		this.aliasName = aliasName;
+	}
+
+	/**
+	 * @return the modelName
+	 */
+	public String getModelName() {
+		return modelName;
+	}
+
+	/**
+	 * @param modelName the modelName to set
+	 */
+	public void setModelName(String modelName) {
+		this.modelName = modelName;
 	}
 
 	/*

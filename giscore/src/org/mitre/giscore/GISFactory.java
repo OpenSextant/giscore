@@ -123,7 +123,7 @@ public class GISFactory {
 						(File) arguments[0], strategy);
 			} else if (DocumentType.XmlGDB.equals(type)) {
 				checkArguments(new Class[] {}, arguments,
-						new boolean[] { true });
+						new boolean[] { });
 				return new XmlGdbOutputStream(outputStream);
 			} else if (DocumentType.PersonalGDB.equals(type)) {
 				checkArguments(new Class[] { File.class,

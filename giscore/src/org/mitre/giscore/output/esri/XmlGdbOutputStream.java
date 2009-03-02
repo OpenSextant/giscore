@@ -29,6 +29,7 @@ import java.text.DecimalFormat;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -213,31 +214,31 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * The following three fields are reused for each feature class that
 	 * contains geometry.
 	 */
-	private static SimpleField oid = null;
 	private static SimpleField shape = null;
 	private static SimpleField shapeArea = null;
 	private static SimpleField shapeLength = null;
 	
-	static {
-		oid = new SimpleField("INT_OID");
-		oid.setType(SimpleField.Type.OID);
-		oid.setLength(4);
-		oid.setRequired(true);
-		
+	static {		
 		shape = new SimpleField("INT_SHAPE");
 		shape.setType(SimpleField.Type.GEOMETRY);
 		shape.setLength(0);
 		shape.setRequired(true);
+		shape.setAliasName("INT_SHAPE");
+		shape.setModelName("INT_SHAPE");
 		
 		shapeArea = new SimpleField("INT_SHAPE_AREA");
 		shapeArea.setType(SimpleField.Type.DOUBLE);
 		shapeArea.setLength(8);
 		shapeArea.setRequired(true);
+		shapeArea.setAliasName("INT_SHAPE_AREA");
+		shapeArea.setModelName("INT_SHAPE_AREA");
 		
 		shapeLength = new SimpleField("INT_SHAPE_LENGTH");
 		shapeLength.setType(SimpleField.Type.DOUBLE);
 		shapeLength.setLength(8);
 		shapeLength.setRequired(true);
+		shapeLength.setAliasName("INT_SHAPE_LENGTH");
+		shapeLength.setModelName("INT_SHAPE_LENGTH");
 	}
 	
 	private static AtomicInteger ms_id = new AtomicInteger();
@@ -442,25 +443,25 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		writer.writeStartElement(VALUES);
 		writeEsriType("ArrayOfValue");
 		boolean geohandled = false;
-		// writeValue(oid, index);
+		SimpleField oidfield = schema.getOidField();
 		for (String fieldname : schema.getKeys()) {
 			SimpleField field = schema.get(fieldname);
-			if (field.getType().isGeometry()) {
-				geohandled = true;
-			}
-			if (field.equals(geometryField)) {
+			if (oidfield.equals(field)) {
+				writeValue(oidfield, index + 1);
+			} else if (field.equals(geometryField)) {
 				writeValue(field, feature.getGeometry());
+				geohandled = true;
 			} else {
 				writeValue(field, feature.getData(field));
 			}
 		}
 		if (geohandled == false) {
 			writeValue(geometryField, feature.getGeometry());
-			if (geoClassNeedsArea(featureKey.getGeoclass()))
-				writeValue(shapeArea, null);
-			if (geoClassNeedsLength(featureKey.getGeoclass()))
-				writeValue(shapeLength, null);
 		}
+		if (geoClassNeedsArea(featureKey.getGeoclass()))
+			writeValue(shapeArea, null);
+		if (geoClassNeedsLength(featureKey.getGeoclass()))
+			writeValue(shapeLength, null);
 		writer.writeEndElement(); // VALUES
 		writer.writeEndElement(); // RECORD
 	}
@@ -671,7 +672,6 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		writeEsriType("Fields");
 		writer.writeStartElement(FIELD_ARRAY);
 		writeEsriType("ArrayOfField");
-		// writeField(oid, null);
 		for(String name : schema.getKeys()) {
 			fieldnames.add(name);
 			SimpleField field = schema.get(name);
@@ -679,6 +679,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		}
 		if (geo_field == null && featureKey.getGeoclass() != null) {
 			SimpleField field = shape;
+			geo_field = shape.getName();
 			writeField(field, geoclass);
 			
 		}
@@ -737,8 +738,9 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			handleSimpleElement(SCALE, field.getScale().toString());
 		else
 			handleSimpleElement(SCALE, 0);
+		handleSimpleElement(REQUIRED, field.isRequired());
+		handleSimpleElement(EDITABLE, field.isEditable());
 		if (field.getType().equals(SimpleField.Type.GEOMETRY)) {
-			handleSimpleElement(REQUIRED, "true");
 			writer.writeStartElement(GEOMETRY_DEF);
 			writeEsriType("GeometryDef");
 			handleSimpleElement(AVG_NUM_POINTS, "0");
@@ -748,8 +750,13 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			writeSpatialReference(WKT_WGS_84, WGS_84);
 			handleSimpleElement(GRID_SIZE + "0", 0);
 			writer.writeEndElement(); // GEO DEF
-			handleSimpleElement(ALIAS_NAME, field.getName());
-			handleSimpleElement(MODEL_NAME, field.getName());
+		}
+		if (field.getAliasName() != null) {
+			handleSimpleElement(ALIAS_NAME, field.getAliasName());
+		}
+		if (field.getModelName() != null) {
+			handleSimpleElement(MODEL_NAME, field.getModelName());
+			
 		}
 		writer.writeEndElement();
 	}
@@ -865,6 +872,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		if (key.getGeoclass() == null) {
 			throw new IllegalArgumentException("Must have a geo class");
 		}
+		Schema schema = key.getSchema();
 		writer.writeStartElement(DATA_ELEMENT);
 		writeEsriType("DEFeatureClass");
 		handleSimpleElement(CATALOG_PATH, "/FC=" + datasetname);
@@ -873,14 +881,14 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		handleSimpleElement(DSID, ms_id.incrementAndGet());
 		handleSimpleElement(VERSIONED, "false");
 		handleSimpleElement(CAN_VERSION, "false");
-		handleSimpleElement(HAS_OID, "false");
-		handleSimpleElement(OID_FIELD_NAME, null);
-		// handleSimpleElement(OID_FIELD_NAME, oid.getName());
+		handleSimpleElement(HAS_OID, "true");
+		handleSimpleElement(OID_FIELD_NAME, schema.getOidField().getName());
 		writeFields(key);
 		writer.writeStartElement(INDEXES);
 		writeEsriType("Indexes");
 		writer.writeStartElement(INDEX_ARRAY);
 		writeEsriType("ArrayOfIndex");
+		writeIndex(schema.getOidField(), true, true, key);
 		if (key.getGeoclass() != null) {
 			writeIndex(shape, false, false, key);
 		}

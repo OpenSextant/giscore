@@ -426,6 +426,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		IFeatureCursor cursor = fc.IFeatureClass_insert(true);
 		try {
 			Feature current = null;
+			int oid = 0;
 			while ((current = (Feature) ois.readObject()) != null) {
 				IFields fields = fc.getFields();
 				for (int i = 0; i < fields.getFieldCount(); i++) {
@@ -438,6 +439,9 @@ public class GdbOutputStream extends StreamVisitorBase implements
 									.getGeometry());
 							buffer.setShapeByRef(geo);
 						}
+					} else if (fc.getOIDFieldName().equals(field.getName())) {
+						Variant oval = createVariant(field.getType(), field.getName(), oid++);
+						buffer.setValue(i, oval);
 					} else {
 						if (etosf == null) {
 							throw new IllegalStateException(
