@@ -41,6 +41,7 @@ public interface IXmlGdb {
 
 	// Elements 
 	static final String ALIAS_NAME = "AliasName";
+	static final String ARRAY_OF_POINT = "ArrayOfPoint";
 	static final String AREA_FIELD_NAME = "AreaFieldName";
 	static final String AVG_NUM_POINTS = "AvgNumPoints";
 	static final String CAN_VERSION = "CanVersion";
@@ -87,6 +88,7 @@ public interface IXmlGdb {
 	static final String LENGTH_FIELD_NAME = "LengthFieldName";
 	static final String METADATA = "Metadata";
 	static final String MODEL_NAME = "ModelName";
+	static final String MULTIPOINT_N = "MultipointN";
 	static final String M_ORIGIN = "MOrigin";
 	static final String M_SCALE = "MScale";
 	static final String M_TOLERANCE = "MTolerance";

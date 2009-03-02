@@ -48,6 +48,7 @@ import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.gdb.IXmlGdb;
@@ -507,6 +508,8 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	public void visit(GeometryBag geobag) {
 		throw new UnsupportedOperationException("Geometry Bag is not supported by XML GDB");
 	}
+	
+	
 
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.Line)
@@ -554,6 +557,31 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
 		}
+	}
+	
+	/*
+	 * (non-Javadoc)
+	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.MultiPoint)
+	 */
+	@Override
+	public void visit(MultiPoint mp) {
+		try {
+			writeEsriType(MULTIPOINT_N);
+			handleSimpleElement(HAS_ID, "false");
+			handleSimpleElement(HAS_Z, "false");
+			handleSimpleElement(HAS_M, "false");
+			writeExtent(mp.getBoundingBox(), false);
+			writer.writeStartElement(POINT_ARRAY);
+			writeEsriType(ARRAY_OF_POINT);
+			for(Point p : mp.getPoints()) {
+				writer.writeStartElement(POINT_N);
+				p.accept(this);
+				writer.writeEndElement();
+			}
+			writer.writeEndElement(); // Point array
+		} catch (XMLStreamException e) {
+			throw new RuntimeException(e);
+		}		
 	}
 
 	/* (non-Javadoc)
@@ -800,6 +828,8 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			return "esriGeometryPolygon";
 		} else if (geoclass.isAssignableFrom(GeometryBag.class)) {
 			return "esriGeometryBag";
+		} else if (geoclass.isAssignableFrom(MultiPoint.class)) {
+			return "esriGeometryMultipoint";
 		} else {
 			throw new UnsupportedOperationException(
 					"Found unknown type of geometry: " + geoclass.getClass());

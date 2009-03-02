@@ -18,20 +18,26 @@
  ***************************************************************************************/
 package org.mitre.giscore.test;
 
+import java.awt.image.MultiPixelPackedSampleModel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.geometry.MultiPoint;
+import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.test.input.TestKmlInputStream;
@@ -89,6 +95,25 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		InputStream s = TestKmlInputStream.class
 				.getResourceAsStream("KML_sample1.kml");
 		doKmlTest(s);
+	}
+	
+	@Test
+	public void testMultiPoint() throws Exception {
+		File test = createTemp("t", ".xml");
+		FileOutputStream fos = new FileOutputStream(test);
+		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.XmlGDB, fos);
+		Feature f = new Feature();
+		List<Point> pnts = new ArrayList<Point>();
+		pnts.add(new Point(44.0, 33.0));
+		pnts.add(new Point(44.1, 33.4));
+		pnts.add(new Point(44.3, 33.3));
+		pnts.add(new Point(44.2, 33.1));
+		pnts.add(new Point(44.6, 33.2));
+		MultiPoint mp = new MultiPoint(pnts);
+		f.setGeometry(mp);
+		os.write(f);
+		os.close();
+		IOUtils.closeQuietly(fos);
 	}
 	
 	public void doKmlTest(InputStream is) throws IOException {
