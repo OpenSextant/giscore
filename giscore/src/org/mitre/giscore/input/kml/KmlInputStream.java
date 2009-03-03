@@ -113,15 +113,15 @@ import org.mitre.itf.geodesy.Longitude;
  * 
  */
 public class KmlInputStream extends GISInputStreamBase implements IKml {
-	private InputStream is = null;
-	private XMLEventReader stream = null;
-	private LinkedList<IGISObject> buffered = new LinkedList<IGISObject>();
+	private InputStream is;
+	private XMLEventReader stream;
+	private final LinkedList<IGISObject> buffered = new LinkedList<IGISObject>();
 
 	private static XMLInputFactory ms_fact;
-	private static Set<String> ms_features = new HashSet<String>();
-	private static Set<String> ms_containers = new HashSet<String>();
-	private static Set<String> ms_attributes = new HashSet<String>();
-	private static Set<String> ms_geometries = new HashSet<String>();
+	private static final Set<String> ms_features = new HashSet<String>();
+	private static final Set<String> ms_containers = new HashSet<String>();
+	private static final Set<String> ms_attributes = new HashSet<String>();
+	private static final Set<String> ms_geometries = new HashSet<String>();
 	
 	private static List<DateFormat> ms_dateFormats = new ArrayList<DateFormat>(); 
 
