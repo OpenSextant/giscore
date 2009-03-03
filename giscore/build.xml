@@ -19,6 +19,8 @@
 	<path id="project.classpath">
 		<fileset dir="lib">
 			<include name="**/*.jar" />
+			<exclude name="**/*-sources.jar" />
+			<exclude name="**/*-javadoc.jar" />
 		</fileset>
 	</path>
 
@@ -51,7 +53,7 @@
 		</dependset>
 		<mkdir dir="${lib}" />
 		<property name="ivy.default.ivy.user.dir" value="${user.home}/.ivy/" />
-		<!--property name="ivy.retrieve.pattern" value="lib/[organization]/[artifact]-[revision].[ext]" /-->
+		<property name="ivy.retrieve.pattern" value="lib(/[organization])(/[module])/[artifact]-[revision](-[type]).[ext]" />
 		<ivy:retrieve />
 	</target>
 
@@ -129,15 +131,18 @@
 		</junit>
 	</target>
 
-    <target name="publish" depends="jar, makepom, javadoc, sourcejar">
-        <!-- ivy:buildnumber task overrides ivy.new.revision versioning property -->
-        <property name="ivy.new.revision" value="0.0.0"/>
-        <ivy:buildnumber organisation="org.mitre.itf" module="giscore"/>
-        <ivy:publish resolver="ssh" revision="${ivy.new.revision}" update="true">
-            <artifacts pattern="rel/[artifact].[ext]"/>
-            <artifacts pattern="rel/jars/[artifact].[ext]"/>
-        </ivy:publish>
-    </target>
+	<target name="publish" depends="jar, makepom, javadoc, sourcejar">
+		<copy todir="${rel}">
+			<fileset dir="${basedir}">
+				<include name="ivy.xml"/>
+			</fileset>
+		</copy>
+		<ivy:buildnumber organisation="org.mitre.itf" module="giscore" />
+		<ivy:publish resolver="ssh" revision="${ivy.new.revision}" update="true">
+			<artifacts pattern="rel/[artifact].[ext]" />
+			<artifacts pattern="rel/jars/[artifact].[ext]" />
+		</ivy:publish>
+	</target>
 
     <target name="makepom">
 		<ivy:settings file="${basedir}/ivysettings.xml" />
