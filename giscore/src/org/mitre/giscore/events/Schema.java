@@ -50,8 +50,8 @@ public class Schema implements IGISObject {
 	// Numeric id, used for GDB XML and to create an initial name
 	private final static AtomicInteger ms_idgen = new AtomicInteger();
 	
-	URI name; 
-	String id;
+	String name; 
+	URI id;
 	transient int nid; 
 	Map<String, SimpleField> fields = new HashMap<String, SimpleField>();
 	
@@ -60,8 +60,8 @@ public class Schema implements IGISObject {
 	 */
 	public Schema() {
 		try {
-			name = new URI("#schema_" + ms_idgen.incrementAndGet());
-			id = "id_" + ms_idgen.get();
+			id = new URI("#s_" + ms_idgen.incrementAndGet());
+			name = "schema_" + ms_idgen.get();
 			nid = ms_idgen.get();
 		} catch (URISyntaxException e) {
 			// Impossible
@@ -74,38 +74,38 @@ public class Schema implements IGISObject {
 			throw new IllegalArgumentException(
 					"urn should never be null");
 		}
-		name = urn;
+		id = urn;
 	}
 	
 	/**
 	 * @return the name
 	 */
-	public URI getName() {
+	public String getName() {
 		return name;
 	}
 	/**
 	 * @param name the name to set
 	 */
-	public void setName(URI name) {
-		if (name == null) {
+	public void setName(String name) {
+		if (name == null || name.trim().length() == 0) {
 			throw new IllegalArgumentException(
-					"name should never be null");
+					"name should never be null or empty");
 		}
 		this.name = name;
 	}
 	/**
 	 * @return the id
 	 */
-	public String getId() {
+	public URI getId() {
 		return id;
 	}
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(String id) {
-		if (id == null || id.trim().length() == 0) {
+	public void setId(URI id) {
+		if (id == null) {
 			throw new IllegalArgumentException(
-					"id should never be null or empty");
+					"id should never be null");
 		}
 		this.id = id;
 	}

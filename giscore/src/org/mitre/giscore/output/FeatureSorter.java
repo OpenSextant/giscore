@@ -254,7 +254,7 @@ public class FeatureSorter {
 		if (schema.getOidField() == null) {
 			schema.put(oid);
 		}
-		schemata.put(schema.getName(), schema);
+		schemata.put(schema.getId(), schema);
 	}
 	
 	/**

@@ -116,7 +116,7 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		os.write(s);
 		
 		Feature f = new Feature();
-		f.setSchema(s.getName());
+		f.setSchema(s.getId());
 		List<Point> pnts = new ArrayList<Point>();
 		pnts.add(new Point(44.0, 33.0));
 		pnts.add(new Point(44.1, 33.4));
@@ -130,7 +130,7 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		os.write(f);
 		
 		f = new Feature();
-		f.setSchema(s.getName());
+		f.setSchema(s.getId());
 		pnts = new ArrayList<Point>();
 		pnts.add(new Point(44.5, 33.3));
 		pnts.add(new Point(44.6, 33.1));

@@ -141,16 +141,16 @@ public class TestTransfusionFields {
 		IGISOutputStream gos = GISFactory.getOutputStream(DocumentType.FileGDB,
 				zos, gdb);
 		Schema s = new Schema();
-		s.setId(XFUSION_SCHEMA_PT);
-		s.setName(new URI(XFUSION_SCHEMA_PT));
+		s.setName(XFUSION_SCHEMA_PT);
+		s.setId(new URI(XFUSION_SCHEMA_PT));
 		for(SimpleField field : ms_fields) {
 			s.put(field);
 		}
 		gos.write(s);
 		
 		Schema s2 = new Schema();
-		s2.setId(XFUSION_SCHEMA_RING);
-		s2.setName(new URI(XFUSION_SCHEMA_RING));
+		s2.setName(XFUSION_SCHEMA_RING);
+		s2.setId(new URI(XFUSION_SCHEMA_RING));
 		gos.write(s2);
 
 		for(int i = 0; i < 10; i++) {
@@ -171,8 +171,8 @@ public class TestTransfusionFields {
 		IGISOutputStream gos = GISFactory.getOutputStream(DocumentType.Shapefile,
 				zos, sf);
 		Schema s = new Schema();
-		s.setId(XFUSION_SCHEMA_PT);
-		s.setName(new URI(XFUSION_SCHEMA_PT));
+		s.setName(XFUSION_SCHEMA_PT);
+		s.setId(new URI(XFUSION_SCHEMA_PT));
 		for(SimpleField field : ms_fields) {
 			s.put(field);
 		}

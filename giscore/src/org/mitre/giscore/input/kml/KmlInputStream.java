@@ -912,13 +912,13 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		XMLEvent next;
 		Schema s = new Schema();
 		buffered.add(s);
-		Attribute id = element.getAttributeByName(new QName(ID));
-		Attribute name = element.getAttributeByName(new QName(NAME));
-		if (id != null)
-			s.setId(id.getValue());
 		try {
+			Attribute id = element.getAttributeByName(new QName(ID));
+			Attribute name = element.getAttributeByName(new QName(NAME));
 			if (name != null)
-				s.setName(new URI(name.getValue()));
+				s.setName(name.getValue());
+			if (id != null)
+				s.setId(new URI(id.getValue()));	
 		} catch (URISyntaxException e) {
 			throw new XMLStreamException(e);
 		}

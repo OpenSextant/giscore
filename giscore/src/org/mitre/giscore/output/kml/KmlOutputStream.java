@@ -606,8 +606,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	public void visit(Schema schema) {
 		try {
 			writer.writeStartElement(SCHEMA);
-			writer.writeAttribute(NAME, schema.getName().toString());
-			writer.writeAttribute(ID, schema.getId());
+			writer.writeAttribute(NAME, schema.getName());
+			writer.writeAttribute(ID, schema.getId().toString());
 			for (String name : schema.getKeys()) {
 				SimpleField field = schema.get(name);
 				if (field.getType().isGeometry()) {

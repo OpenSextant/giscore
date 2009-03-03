@@ -77,7 +77,7 @@
 	</target>
 
 	<target name="generate-eclipse-classpath" depends="generate-eclipse-classpath.clean, generate-eclipse-classpath.real" description="Generate the Eclipse classpath." />
-	
+
 	<target name="compile" depends="resolve">
 		<javac source="1.6" classpathref="project.classpath" srcdir="${basedir}/src"
 			destdir="${rel}/classes" />
@@ -90,12 +90,12 @@
 			includeantruntime="false"
 			destdir="${test}/classes">
 			<classpath>
-				<path refid="project.classpath"/>
-				<pathelement path="${rel}/classes"/>
+				<path refid="project.classpath" />
+				<pathelement path="${rel}/classes" />
 			</classpath>
 		</javac>
 	</target>
-	
+
 	<target name="jar" depends="compile">
 		<jar destfile="${rel}/jars/giscore.jar">
 			<fileset dir="${rel}/classes" />
@@ -104,13 +104,13 @@
 
 	<target name="test" depends="compileTests" description="Run JUnit tests">
 		<junit printsummary="yes" haltonfailure="no" maxmemory="512m" fork="yes">
-			<sysproperty key="basedir" file="${top.basedir}"/>
+			<sysproperty key="basedir" file="${top.basedir}" />
 			<classpath>
-				<path refid="project.classpath"/>
-				<pathelement path="${rel}/classes"/>
-				<pathelement path="${test}/classes"/>
+				<path refid="project.classpath" />
+				<pathelement path="${rel}/classes" />
+				<pathelement path="${test}/classes" />
 			</classpath>
-			<formatter type="plain"/>
+			<formatter type="plain" />
 
 			<batchtest fork="yes" todir="${testoutput}">
 				<fileset dir="${test}">
@@ -118,30 +118,30 @@
 			</batchtest>
 		</junit>
 	</target>
-	
+
 	<target name="publish" depends="jar, makepom, javadoc, sourcejar">
-		<ivy:publish resolver="ssh" >
+		<ivy:buildnumber organisation="org.mitre.itf" module="giscore" />
+		<ivy:publish resolver="ssh" revision="${ivy.new.revision}" update="true">
 			<artifacts pattern="rel/[artifact].[ext]" />
 			<artifacts pattern="rel/jars/[artifact].[ext]" />
 		</ivy:publish>
 	</target>
-	
+
 	<target name="makepom">
 		<ivy:settings file="${basedir}/ivysettings.xml" />
-		<ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${rel}/geodesy.pom" />
+		<ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${rel}/giscore.pom" />
 	</target>
-	
+
 	<target name="sourcejar">
 		<jar destfile="${rel}/giscore_src.jar">
 			<fileset dir="${basedir}/src" />
 		</jar>
 	</target>
-	
+
 	<target name="javadoc" depends="resolve">
-		<mkdir dir="${rel}/docs"/>
-		<javadoc sourcepath="${basedir}/src" destdir="${rel}/docs"
-			classpathref="project.classpath"/>
-		<jar destfile="${rel}/giscore_javadoc.jar" >
+		<mkdir dir="${rel}/docs" />
+		<javadoc sourcepath="${basedir}/src" destdir="${rel}/docs" classpathref="project.classpath" />
+		<jar destfile="${rel}/giscore_javadoc.jar">
 			<fileset dir="${rel}/docs" />
 		</jar>
 	</target>
