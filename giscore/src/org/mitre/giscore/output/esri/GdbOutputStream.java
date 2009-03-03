@@ -73,6 +73,7 @@ import com.esri.arcgis.geodatabase.Field;
 import com.esri.arcgis.geodatabase.FieldChecker;
 import com.esri.arcgis.geodatabase.Fields;
 import com.esri.arcgis.geodatabase.GeometryDef;
+import com.esri.arcgis.geodatabase.IEnumFieldError;
 import com.esri.arcgis.geodatabase.IFeatureBuffer;
 import com.esri.arcgis.geodatabase.IFeatureClass;
 import com.esri.arcgis.geodatabase.IFeatureCursor;
@@ -685,8 +686,16 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		if (shapeField == null) {
 			fields.addField(createField(key, shape, fieldnames));
 		}
-
-		return featureWorkspace.createFeatureClass(fixDatasetName(dsname),
+		loadChecker();
+		IEnumFieldError[] errors = new IEnumFieldError[1];
+		IFields[] fixedFields = new IFields[1];
+		checker.validate(fields, errors, fixedFields);
+		
+		if (errors[0] != null) {
+			throw new RuntimeException("There are one or more invalid field names for data set " + dsname);
+		}
+		
+		return featureWorkspace.createFeatureClass(dsname,
 				fields, clsid, extclsid, featureType, shapeFieldName,
 				configKeyword);
 	}
@@ -698,25 +707,30 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * @return
 	 */
 	private String fixDatasetName(String dsname) {
+		loadChecker();
+		String fixed[] = new String[1];
+		try {
+			if (checker.validateTableName(dsname, fixed) != 0) {
+				return fixed[0];
+			}
+		} catch (Exception e) {
+			logger.error("Validation failed badly", e);
+		}
+		return dsname;
+	}
+	
+	/**
+	 * @return the checker
+	 */
+	private void loadChecker() {
 		if (checker == null) {
 			try {
 				checker = new FieldChecker();
 				checker.setInputWorkspace(workspace);
 			} catch (Exception e) {
-				logger.error("Failed to instantiate the field checker", e);
+				throw new RuntimeException("Failed to instantiate the field checker", e);
 			}
 		}
-		if (checker != null) {
-			String fixed[] = new String[1];
-			try {
-				if (checker.validateTableName(dsname, fixed) != 0) {
-					return fixed[0];
-				}
-			} catch (Exception e) {
-				logger.error("Validation failed badly", e);
-			}
-		}
-		return dsname;
 	}
 
 	/**
@@ -916,6 +930,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		if (datasets.get(key) == null) {
 			String datasetname = containerNameStrategy.deriveContainerName(
 					path, key);
+			datasetname = fixDatasetName(datasetname);
 			datasets.put(key, datasetname);
 			writeDataSetDef(key, datasetname);
 		}
