@@ -83,7 +83,7 @@
 			destdir="${rel}/classes" />
 	</target>
 
-	<target name="compileTests" depends="resolve">
+	<target name="compileTests" depends="compile">
 		<mkdir dir="${test}/classes" />
 		<javac source="1.5" target="1.5" srcdir="${basedir}/test"
 			debug="true"
@@ -102,7 +102,7 @@
 		</jar>
 	</target>
 
-	<target name="test" depends="compile,compileTests" description="Run JUnit tests">
+	<target name="test" depends="compileTests" description="Run JUnit tests">
 		<junit printsummary="yes" haltonfailure="no" maxmemory="512m" fork="yes">
 			<sysproperty key="basedir" file="${top.basedir}"/>
 			<classpath>
