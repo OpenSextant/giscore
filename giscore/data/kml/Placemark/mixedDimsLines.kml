@@ -33,10 +33,10 @@
     <Placemark>
         <name>Line</name>
         <LineString>
+            <extrude>1</extrude>
+            <tessellate>1</tessellate>
 	    <altitudeMode>relativeToGround</altitudeMode>
             <coordinates>-76.73150843510001,39.10402861679 -76.72894181350101,39.104144789924,8.5 -76.72756248803701,39.104244115439,14.5 -76.72727574323801,39.102729087014005,19.5 -76.726920769773,39.100620200974,130.0 -76.72668766913401,39.099571373827004,160.0 -76.725516550066,39.099512700527,500</coordinates>
-            <tessellate>1</tessellate>
-            <extrude>1</extrude>
         </LineString>
     </Placemark>
 </Document>
