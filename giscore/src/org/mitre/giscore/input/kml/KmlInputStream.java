@@ -384,7 +384,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 *         matching tag
 	 */
 	private boolean foundEndTag(XMLEvent event, String tag) {
-		if (event == null || event.getEventType() == XMLEvent.END_ELEMENT) {
+        if (event == null) {
+           return true;
+        }
+        if (event.getEventType() == XMLEvent.END_ELEMENT) {
 			if (event.asEndElement().getName().getLocalPart().equals(tag))
 				return true;
 		}
@@ -879,7 +882,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private IGISObject handleStartElement(XMLEvent e) {
 		StartElement se = e.asStartElement();
 		String localname = se.getName().getLocalPart();
-
 		try {
 			if (ms_features.contains(localname)) {
 				return handleFeature(e);
@@ -887,13 +889,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				return handleSchema(se, localname);
 			} else if (ms_containers.contains(localname)) {
 				return handleContainer(se);
-			} else {
+            } else if (NETWORK_LINK_CONTROL.equals(localname)) {
+                handleNetworkLinkControl(stream, localname);
+            } else {
 				// Look for next start element and recurse
 				e = stream.nextTag();
-				if (e != null && e.getEventType() == XMLEvent.START_ELEMENT) {
+                if (e != null && e.getEventType() == XMLEvent.START_ELEMENT) {
 					return handleStartElement(e);
 				}
-			}
+            }
 		} catch (XMLStreamException e1) {
 			throw new RuntimeException(e1);
 		}
@@ -901,7 +905,23 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		return null;
 	}
 
-	/**
+    /**
+	 * @param element
+	 * @param localname
+	 * @return
+	 * @throws XMLStreamException
+	 */
+    private void handleNetworkLinkControl(XMLEventReader element, String localname) throws XMLStreamException {
+        // TODO: implement NetworkLinkControl wrapper 
+        while (true) {
+			XMLEvent next = element.nextEvent();
+			if (next == null || foundEndTag(next, localname)) {
+				break;
+			}
+        }
+    }
+
+    /**
 	 * @param element
 	 * @param localname
 	 * @return
