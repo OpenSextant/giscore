@@ -78,7 +78,7 @@
 
 	<target name="generate-eclipse-classpath" depends="generate-eclipse-classpath.clean, generate-eclipse-classpath.real" description="Generate the Eclipse classpath." />
 
-	<target name="compile" depends="resolve">
+	<target name="compile">
 		<javac source="1.6" classpathref="project.classpath" srcdir="${basedir}/src"
 			destdir="${rel}/classes" />
 	</target>
@@ -119,15 +119,17 @@
 		</junit>
 	</target>
 
-	<target name="publish" depends="jar, makepom, javadoc, sourcejar">
-		<ivy:buildnumber organisation="org.mitre.itf" module="giscore" />
-		<ivy:publish resolver="ssh" revision="${ivy.new.revision}" update="true">
-			<artifacts pattern="rel/[artifact].[ext]" />
-			<artifacts pattern="rel/jars/[artifact].[ext]" />
-		</ivy:publish>
-	</target>
+    <target name="publish" depends="jar, makepom, javadoc, sourcejar">
+        <!-- ivy:buildnumber task overrides ivy.new.revision versioning property -->
+        <property name="ivy.new.revision" value="0.0.0"/>
+        <ivy:buildnumber organisation="org.mitre.itf" module="giscore"/>
+        <ivy:publish resolver="ssh" revision="${ivy.new.revision}" update="true">
+            <artifacts pattern="rel/[artifact].[ext]"/>
+            <artifacts pattern="rel/jars/[artifact].[ext]"/>
+        </ivy:publish>
+    </target>
 
-	<target name="makepom">
+    <target name="makepom">
 		<ivy:settings file="${basedir}/ivysettings.xml" />
 		<ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${rel}/giscore.pom" />
 	</target>
