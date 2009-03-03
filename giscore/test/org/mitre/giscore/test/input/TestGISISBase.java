@@ -67,7 +67,6 @@ public class TestGISISBase {
 		/* (non-Javadoc)
 		 * @see org.mitre.giscore.input.GISInputStreamBase#read()
 		 */
-		@Override
 		public IGISObject read() {
 			if (super.hasSaved())
 				return super.readSaved();
@@ -82,7 +81,6 @@ public class TestGISISBase {
 		/* (non-Javadoc)
 		 * @see org.mitre.giscore.input.IGISInputStream#close()
 		 */
-		@Override
 		public void close() {
 			// Ignore
 		}
