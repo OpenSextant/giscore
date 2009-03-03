@@ -959,7 +959,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
-	 * @param string
+	 * @param tag
 	 * @return
 	 * @throws XMLStreamException
 	 */

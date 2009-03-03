@@ -68,7 +68,6 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 	 * 
 	 * @see org.mitre.giscore.output.IGISOutputStream#close()
 	 */
-	@Override
 	public void close() throws IOException {
 		try {
 			writer.flush();
@@ -86,7 +85,6 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 	 * org.mitre.giscore.output.IGISOutputStream#write(org.mitre.giscore.events
 	 * .IGISObject)
 	 */
-	@Override
 	public void write(IGISObject object) {
 		object.accept(this);
 	}
