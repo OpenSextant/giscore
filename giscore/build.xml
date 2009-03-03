@@ -7,13 +7,17 @@
 	<property name="proxy.pass" value="" />
 	<property name="proxy.nonProxyHosts" value="*.mitre.org|localhost|127.0.0.1" />
 
+	<property name="basedir" value="."/>
 	<property name="lib" value="${basedir}/lib" />
 	<property name="rel" value="${basedir}/rel" />
-	<property name="test" value="${rel}/test" />
+	<property name="test" value="${basedir}/test" />
+	<property name="build.test" value="${rel}/test" />
 	<property name="testoutput" value="${basedir}/testOutput" />
 
+	<ivy:settings file="ivysettings.xml"/>
+
 	<path id="project.classpath">
-		<fileset dir="${lib}">
+		<fileset dir="lib">
 			<include name="**/*.jar" />
 		</fileset>
 	</path>
@@ -33,6 +37,13 @@
 		<delete dir="${rel}" />
 	</target>
 
+	<!-- ================================= 
+          target: clean-cache              
+         ================================= -->
+	<target name="clean-cache" description="--> clean the ivy cache">
+		<ivy:cleancache />
+	</target>
+
 	<target name="resolve" depends="init,init.proxy" description="retrieve dependencies with ivy">
 		<dependset>
 			<srcfilelist dir="${basedir}" files="ivy.xml,ivy.settings" />
@@ -40,7 +51,7 @@
 		</dependset>
 		<mkdir dir="${lib}" />
 		<property name="ivy.default.ivy.user.dir" value="${user.home}/.ivy/" />
-		<property name="ivy.retrieve.pattern" value="lib/[organization]/[artifact]-[revision].[ext]" />
+		<!--property name="ivy.retrieve.pattern" value="lib/[organization]/[artifact]-[revision].[ext]" /-->
 		<ivy:retrieve />
 	</target>
 
@@ -84,14 +95,14 @@
 	</target>
 
 	<target name="compileTests" depends="compile">
-		<mkdir dir="${test}/classes" />
+		<mkdir dir="${build.test}" />
 		<javac source="1.6" target="1.6" srcdir="${basedir}/test"
 			debug="true"
 			includeantruntime="false"
-			destdir="${test}/classes">
+			destdir="${build.test}">
 			<classpath>
-				<path refid="project.classpath" />
 				<pathelement path="${rel}/classes" />
+				<path refid="project.classpath" />
 			</classpath>
 		</javac>
 	</target>
@@ -103,18 +114,17 @@
 	</target>
 
 	<target name="test" depends="compileTests" description="Run JUnit tests">
+		<mkdir dir="${testoutput}" />
 		<junit printsummary="yes" haltonfailure="no" maxmemory="512m" fork="yes">
-			<sysproperty key="basedir" file="${top.basedir}" />
 			<classpath>
-				<path refid="project.classpath" />
 				<pathelement path="${rel}/classes" />
-				<pathelement path="${test}/classes" />
+				<pathelement path="${build.test}" />
+				<path refid="project.classpath" />
 			</classpath>
 			<formatter type="plain" />
 
 			<batchtest fork="yes" todir="${testoutput}">
-				<fileset dir="${test}">
-				</fileset>
+				<fileset dir="${test}"/>
 			</batchtest>
 		</junit>
 	</target>
