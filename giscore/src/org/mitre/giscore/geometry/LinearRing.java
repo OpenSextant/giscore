@@ -148,8 +148,8 @@ public class LinearRing extends Geometry implements Iterable<Point> {
             // Test for Longitude wrap at International Date Line (IDL)
             // Line segments always connect following the shortest path around the globe,
             // and we assume lines are clipped at the IDL crossing, so if there is a sign
-            // change between points and one of the points is -180.0°, we classify this LinearRing
-            // as having wrapped. This allows the -180° to be written as +180° on export,
+            // change between points and one of the points is -180.0, we classify this LinearRing
+            // as having wrapped. This allows the -180 to be written as +180 on export,
             // to satisfy GIS tools that expect this.
             lonRad1 = gp1.getLongitude().inRadians();
             lonRad2 = gp2.getLongitude().inRadians();
@@ -212,7 +212,7 @@ public class LinearRing extends Geometry implements Iterable<Point> {
     /**
      * This predicate method is used to tell if this Ring has positive Longitude points
      * that are part of segments which are clipped at the International Date Line (IDL)
-     * (+/- 180° Longitude). If so, -180° values may need to be written as +180° by
+     * (+/- 180 Longitude). If so, -180 values may need to be written as +180 by
      * export methods to satisfy GIS tools that expect this.
      *
      * @return boolean value indicating whether this ring is clipped at the IDL

@@ -14,8 +14,6 @@
 	<property name="build.test" value="${rel}/test" />
 	<property name="testoutput" value="${basedir}/testOutput" />
 
-	<ivy:settings file="ivysettings.xml"/>
-
 	<path id="project.classpath">
 		<fileset dir="lib">
 			<include name="**/*.jar" />
@@ -24,10 +22,18 @@
 		</fileset>
 	</path>
 
-	<target name="init">
+	<target name="init" unless="ivy.default.ivy.user.dir">
 		<mkdir dir="${rel}" />
 		<mkdir dir="${rel}/classes" />
 		<mkdir dir="${rel}/jars" />
+		<dependset>
+			<srcfilelist dir="${basedir}" files="ivy.xml,ivy.settings" />
+			<targetfileset dir="${lib}" />
+		</dependset>
+		<mkdir dir="${lib}" />
+		<property name="ivy.default.ivy.user.dir" value="${user.home}/.ivy/" />
+		<ivy:configure file="${basedir}/ivysettings.xml" />
+		<ivy:info file="${basedir}/ivy.xml" />
 	</target>
 
 	<target name="init.proxy">
@@ -47,12 +53,7 @@
 	</target>
 
 	<target name="resolve" depends="init,init.proxy" description="retrieve dependencies with ivy">
-		<dependset>
-			<srcfilelist dir="${basedir}" files="ivy.xml,ivy.settings" />
-			<targetfileset dir="${lib}" />
-		</dependset>
 		<mkdir dir="${lib}" />
-		<property name="ivy.default.ivy.user.dir" value="${user.home}/.ivy/" />
 		<property name="ivy.retrieve.pattern" value="lib(/[organization])(/[module])/[artifact]-[revision](-[type]).[ext]" />
 		<ivy:retrieve />
 	</target>
@@ -91,7 +92,7 @@
 
 	<target name="generate-eclipse-classpath" depends="generate-eclipse-classpath.clean, generate-eclipse-classpath.real" description="Generate the Eclipse classpath." />
 
-	<target name="compile">
+	<target name="compile" depends="resolve">
 		<javac source="1.6" classpathref="project.classpath" srcdir="${basedir}/src"
 			destdir="${rel}/classes" />
 	</target>
@@ -144,13 +145,12 @@
 		</ivy:publish>
 	</target>
 
-    <target name="makepom">
-		<ivy:settings file="${basedir}/ivysettings.xml" />
+    <target name="makepom" depends="init">
 		<ivy:makepom ivyfile="${basedir}/ivy.xml" pomfile="${rel}/giscore.pom" />
 	</target>
 
 	<target name="sourcejar">
-		<jar destfile="${rel}/giscore_src.jar">
+		<jar destfile="${rel}/giscore-sources.jar">
 			<fileset dir="${basedir}/src" />
 		</jar>
 	</target>
@@ -158,7 +158,7 @@
 	<target name="javadoc" depends="resolve">
 		<mkdir dir="${rel}/docs" />
 		<javadoc sourcepath="${basedir}/src" destdir="${rel}/docs" classpathref="project.classpath" />
-		<jar destfile="${rel}/giscore_javadoc.jar">
+		<jar destfile="${rel}/giscore-javadoc.jar">
 			<fileset dir="${rel}/docs" />
 		</jar>
 	</target>
