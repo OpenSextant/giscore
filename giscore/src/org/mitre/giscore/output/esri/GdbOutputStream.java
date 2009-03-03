@@ -70,6 +70,7 @@ import com.esri.arcgis.datasourcesGDB.AccessWorkspaceFactory;
 import com.esri.arcgis.datasourcesGDB.FileGDBWorkspaceFactory;
 import com.esri.arcgis.datasourcesfile.ShapefileWorkspaceFactory;
 import com.esri.arcgis.geodatabase.Field;
+import com.esri.arcgis.geodatabase.FieldChecker;
 import com.esri.arcgis.geodatabase.Fields;
 import com.esri.arcgis.geodatabase.GeometryDef;
 import com.esri.arcgis.geodatabase.IFeatureBuffer;
@@ -78,6 +79,7 @@ import com.esri.arcgis.geodatabase.IFeatureCursor;
 import com.esri.arcgis.geodatabase.IFeatureWorkspace;
 import com.esri.arcgis.geodatabase.IFeatureWorkspaceProxy;
 import com.esri.arcgis.geodatabase.IField;
+import com.esri.arcgis.geodatabase.IFieldChecker;
 import com.esri.arcgis.geodatabase.IFields;
 import com.esri.arcgis.geodatabase.IWorkspaceFactory;
 import com.esri.arcgis.geodatabase.IWorkspaceName;
@@ -85,6 +87,7 @@ import com.esri.arcgis.geodatabase.Workspace;
 import com.esri.arcgis.geodatabase.WorkspaceFactory;
 import com.esri.arcgis.geodatabase.esriFeatureType;
 import com.esri.arcgis.geodatabase.esriFieldType;
+import com.esri.arcgis.geodatabase.esriTableNameErrorType;
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.Multipoint;
@@ -119,6 +122,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * derive a name.
 	 */
 	public class GdbContainerNameStrategy implements IContainerNameStrategy {
+		private FieldChecker checker = null;
+		
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -128,6 +133,15 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		 */
 		public String deriveContainerName(List<String> path, FeatureKey key) {
 			StringBuilder setname = new StringBuilder();
+			
+			if (checker == null) {
+				try {
+					checker = new FieldChecker();
+					checker.setInputWorkspace(workspace);
+				} catch (Exception e) {
+					logger.error("Failed to instantiate the field checker", e);
+				}
+			}
 			for (String element : path) {
 				if (setname.length() > 0) {
 					setname.append("_");
@@ -143,6 +157,16 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			}
 			String datasetname = setname.toString();
 			datasetname = datasetname.replaceAll("\\s", "_");
+			if (checker != null) {
+				String fixed[] = new String[1];
+				try {
+					if (checker.validateTableName(datasetname, fixed) != 0) {
+						datasetname = fixed[0];
+					}
+				} catch (Exception e) {
+					logger.error("Validation failed badly", e);
+				}
+			}
 			return datasetname;
 		}
 	}
