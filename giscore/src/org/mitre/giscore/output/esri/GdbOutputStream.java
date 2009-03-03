@@ -118,12 +118,16 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			.getLogger(GdbOutputStream.class);
 
 	/**
+	 * Checker to use for dataset names
+	 */
+	private FieldChecker checker = null;
+
+	/**
 	 * Strategy that uses the current "container" along with the geometry to
 	 * derive a name.
 	 */
 	public class GdbContainerNameStrategy implements IContainerNameStrategy {
-		private FieldChecker checker = null;
-		
+
 		/*
 		 * (non-Javadoc)
 		 * 
@@ -133,15 +137,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		 */
 		public String deriveContainerName(List<String> path, FeatureKey key) {
 			StringBuilder setname = new StringBuilder();
-			
-			if (checker == null) {
-				try {
-					checker = new FieldChecker();
-					checker.setInputWorkspace(workspace);
-				} catch (Exception e) {
-					logger.error("Failed to instantiate the field checker", e);
-				}
-			}
+
 			for (String element : path) {
 				if (setname.length() > 0) {
 					setname.append("_");
@@ -157,16 +153,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			}
 			String datasetname = setname.toString();
 			datasetname = datasetname.replaceAll("\\s", "_");
-			if (checker != null) {
-				String fixed[] = new String[1];
-				try {
-					if (checker.validateTableName(datasetname, fixed) != 0) {
-						datasetname = fixed[0];
-					}
-				} catch (Exception e) {
-					logger.error("Validation failed badly", e);
-				}
-			}
+
 			return datasetname;
 		}
 	}
@@ -463,7 +450,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 							buffer.setShapeByRef(geo);
 						}
 					} else if (fc.getOIDFieldName().equals(field.getName())) {
-						Variant oval = createVariant(field.getType(), field.getName(), oid++);
+						Variant oval = createVariant(field.getType(), field
+								.getName(), oid++);
 						buffer.setValue(i, oval);
 					} else {
 						if (etosf == null) {
@@ -477,7 +465,9 @@ public class GdbOutputStream extends StreamVisitorBase implements
 									.getName(), value);
 							buffer.setValue(i, vval);
 						} else {
-							logger.debug("Found field without corresponding schema info: " + field.getName());
+							logger
+									.debug("Found field without corresponding schema info: "
+											+ field.getName());
 						}
 					}
 				}
@@ -531,7 +521,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		} else if (geo instanceof MultiPoint) {
 			MultiPoint gismp = (MultiPoint) geo;
 			Multipoint mp = new Multipoint();
-			for(Point p : gismp.getPoints()) {
+			for (Point p : gismp.getPoints()) {
 				mp.addPoint(makePoint(p), 0, null);
 			}
 			rval = mp;
@@ -629,7 +619,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			return makeIntegerVariant(name, Variant.VT_INT, value);
 		case esriFieldType.esriFieldTypeString:
 			if (value instanceof Date) {
-				return new Variant(name, Variant.VT_BSTR, IKml.ISO_DATE_FMT.format((Date) value));
+				return new Variant(name, Variant.VT_BSTR, IKml.ISO_DATE_FMT
+						.format((Date) value));
 			} else {
 				return new Variant(name, Variant.VT_BSTR, value.toString());
 			}
@@ -695,8 +686,37 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			fields.addField(createField(key, shape, fieldnames));
 		}
 
-		return featureWorkspace.createFeatureClass(dsname, fields, clsid,
-				extclsid, featureType, shapeFieldName, configKeyword);
+		return featureWorkspace.createFeatureClass(fixDatasetName(dsname),
+				fields, clsid, extclsid, featureType, shapeFieldName,
+				configKeyword);
+	}
+
+	/**
+	 * Method to check the dataset name for validity with ESRI's checker
+	 * 
+	 * @param dsname
+	 * @return
+	 */
+	private String fixDatasetName(String dsname) {
+		if (checker == null) {
+			try {
+				checker = new FieldChecker();
+				checker.setInputWorkspace(workspace);
+			} catch (Exception e) {
+				logger.error("Failed to instantiate the field checker", e);
+			}
+		}
+		if (checker != null) {
+			String fixed[] = new String[1];
+			try {
+				if (checker.validateTableName(dsname, fixed) != 0) {
+					return fixed[0];
+				}
+			} catch (Exception e) {
+				logger.error("Validation failed badly", e);
+			}
+		}
+		return dsname;
 	}
 
 	/**
@@ -729,7 +749,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			else
 				field.setLength(simpleField.getType().getDefaultLength());
 		}
-		
+
 		field.setIsNullable(simpleField.isNullable());
 		field.setRequired(simpleField.isRequired());
 		field.setEditable(simpleField.isEditable());
