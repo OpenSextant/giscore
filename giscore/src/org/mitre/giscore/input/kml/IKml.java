@@ -18,17 +18,19 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.kml;
 
-import org.apache.log4j.helpers.ISO8601DateFormat;
+//import org.apache.log4j.helpers.ISO8601DateFormat;
 
 /**
  * Container for element and attribute names used in KML
- * 
+ *
  * @author DRAND
  */
 public interface IKml {
-	static final String KML_NS = "http://earth.google.com/kml/2.2";
-	static final ISO8601DateFormat ISO_DATE_FMT = 
-		new ISO8601DateFormat();
+	static final String KML_NS = "http://www.opengis.net/kml/2.2";
+    
+    //static final ISO8601DateFormat ISO_DATE_FMT =
+		//new ISO8601DateFormat();
+
 	static final String ADDRESS = "address";
 	static final String ALTITUDE = "altitude";
 	static final String ALTITUDE_MODE = "altitudeMode";
@@ -53,8 +55,8 @@ public interface IKml {
 	static final String GROUND_OVERLAY = "GroundOverlay";
 	static final String HOT_SPOT = "hotSpot";
 	static final String HREF = "href";
-    static final String HTTP_QUERY = "httpQuery";
-    static final String ICON = "Icon";
+	static final String HTTP_QUERY = "httpQuery";
+	static final String ICON = "Icon";
 	static final String ICON_STYLE = "IconStyle";
 	static final String ID = "id";
 	static final String INNER_BOUNDARY_IS = "innerBoundaryIs";
@@ -72,19 +74,19 @@ public interface IKml {
 	static final String MULTI_GEOMETRY = "MultiGeometry";
 	static final String NAME = "name";
 	static final String NETWORK_LINK = "NetworkLink";
-    static final String NETWORK_LINK_CONTROL = "NetworkLinkControl";
-    static final String NORTH = "north";
+	static final String NETWORK_LINK_CONTROL = "NetworkLinkControl";
+	static final String NORTH = "north";
 	static final String OPEN = "open";
 	static final String OUTER_BOUNDARY_IS = "outerBoundaryIs";
 	static final String OUTLINE = "outline";
 	static final String OVERLAY_XY = "overlayXY";
 	static final String PAIR = "Pair";
-    static final String PHONE_NUMBER = "phoneNumber";
+	static final String PHONE_NUMBER = "phoneNumber";
 	static final String PHOTO_OVERLAY = "PhotoOverlay"; // new in KML 2.2
 	static final String PLACEMARK = "Placemark";
 	static final String POINT = "Point";
-	static final String POLY_STYLE = "PolyStyle";
 	static final String POLYGON = "Polygon";
+	static final String POLY_STYLE = "PolyStyle";
 	static final String REFRESH_VISIBILITY = "refreshVisibility";
 	static final String REGION = "Region";
 	static final String ROTATION = "rotation";
@@ -110,8 +112,8 @@ public interface IKml {
 	static final String TYPE = "type";
 	static final String URL = "Url"; // (*) attribute deprecated in KML 2.1
 	static final String VALUE = "value";
-    static final String VIEW_FORMAT = "viewFormat";
-    static final String VISIBILITY = "visibility";
+	static final String VIEW_FORMAT = "viewFormat";
+	static final String VISIBILITY = "visibility";
 	static final String WEST = "west";
 	static final String WHEN = "when";
 	static final String WIDTH = "width";
