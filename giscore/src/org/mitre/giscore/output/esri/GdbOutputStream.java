@@ -57,7 +57,6 @@ import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
-import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.FeatureSorter;
 import org.mitre.giscore.output.IContainerNameStrategy;
@@ -105,6 +104,7 @@ import com.esri.arcgis.system.EngineInitializer;
 import com.esri.arcgis.system.IName;
 import com.esri.arcgis.system.IUID;
 import com.esri.arcgis.system.esriLicenseProductCode;
+import org.apache.log4j.helpers.ISO8601DateFormat;
 
 /**
  * Output the GIS information using the ArcObjects Java API. This results in a
@@ -118,7 +118,10 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	private static final Logger logger = LoggerFactory
 			.getLogger(GdbOutputStream.class);
 
-	/**
+    private static final ISO8601DateFormat ISO_DATE_FMT = new ISO8601DateFormat();
+
+
+    /**
 	 * Checker to use for dataset names
 	 */
 	private FieldChecker checker = null;
@@ -620,7 +623,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			return makeIntegerVariant(name, Variant.VT_INT, value);
 		case esriFieldType.esriFieldTypeString:
 			if (value instanceof Date) {
-				return new Variant(name, Variant.VT_BSTR, IKml.ISO_DATE_FMT
+				return new Variant(name, Variant.VT_BSTR, ISO_DATE_FMT
 						.format((Date) value));
 			} else {
 				return new Variant(name, Variant.VT_BSTR, value.toString());
