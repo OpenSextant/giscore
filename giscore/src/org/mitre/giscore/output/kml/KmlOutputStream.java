@@ -23,14 +23,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Formatter;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -396,9 +389,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		if (data == null)
 			return;
 		writer.writeStartElement(data.getTag());
-		for (String key : data.keySet()) {
-			String value = data.get(key);
-			handleSimpleElement(key, value);
+        // TODO: this writes elements in tag order which DOES NOT match order in KML XML schema
+        // KML is well-formed and should correctly display in Google Earth but is not valid KML wrt spec.
+        for (Map.Entry<String,String> entry : data.entrySet()) {
+			handleSimpleElement(entry.getKey(), entry.getValue());
 		}
 		writer.writeEndElement();
 	}
