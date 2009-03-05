@@ -75,6 +75,9 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
 import org.mitre.itf.geodesy.Latitude;
 import org.mitre.itf.geodesy.Longitude;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.joda.time.DateTimeZone;
 
 /**
  * Read a kml file in as an input stream. Each time the read method is called,
@@ -123,7 +126,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private static final Set<String> ms_attributes = new HashSet<String>();
 	private static final Set<String> ms_geometries = new HashSet<String>();
 	
-	private static List<DateFormat> ms_dateFormats = new ArrayList<DateFormat>(); 
+	// private static List<DateFormat> ms_dateFormats = new ArrayList<DateFormat>(); 
 
 	static {
 		ms_fact = XMLInputFactory.newInstance();
@@ -147,8 +150,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		ms_geometries.add(POLYGON);
 		ms_geometries.add(MULTI_GEOMETRY);
 		ms_geometries.add(MODEL);
-		
-		ms_dateFormats.add(ISO_DATE_FMT);
+
+        /*
+        ms_dateFormats.add(ISO_DATE_FMT);
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'hh:mm"));
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd hh:mm"));
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'hh"));
@@ -156,7 +160,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd"));
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));
 		ms_dateFormats.add(new SimpleDateFormat("yyyy"));
-		
+		*/
 	}
 
 	/**
@@ -591,8 +595,16 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @return
 	 * @throws ParseException 
 	 */
-	private Date parseDate(String datestr) throws ParseException {
-		ParseException e = null;
+	public static Date parseDate(String datestr) throws ParseException {
+        DateTimeFormatter fmt = ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.UTC);
+        try {
+            return new Date(fmt.parseDateTime(datestr).getMillis());
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(e.getMessage(), 0);
+            // e.g. org.joda.time.IllegalFieldValueException: Cannot parse "2006-09-16T18:60:47Z": Value 60 for minuteOfHour must be in the range [0,59]
+        }
+        /*
+        ParseException e = null;
 		for(DateFormat fmt : ms_dateFormats) {
 			try {
 				return fmt.parse(datestr);
@@ -601,6 +613,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			}
 		}
 		throw e;
+		*/
 	}
 
 	/**
@@ -1304,23 +1317,23 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						COORDINATES)) {
 					String text = stream.getElementText().trim();
 					String tuples[] = text.split("\\s");
-					for (int i = 0; i < tuples.length; i++) {
-						if (!StringUtils.isEmpty(tuples[i])) {
-							String parts[] = tuples[i].trim().split(",");
-							double dlon = Double.parseDouble(parts[0]);
-							double dlat = Double.parseDouble(parts[1]);
-							Longitude lon = new Longitude(dlon, Angle.DEGREES);
-							Latitude lat = new Latitude(dlat, Angle.DEGREES);
-							if (parts.length < 3) {
-								rval.add(new Point(
-										new Geodetic2DPoint(lon, lat)));
-							} else {
-								double elev = Double.parseDouble(parts[2]);
-								rval.add(new Point(new Geodetic3DPoint(lon,
-										lat, elev)));
-							}
-						}
-					}
+                    for (String tuple : tuples) {
+                        if (!StringUtils.isEmpty(tuple)) {
+                            String parts[] = tuple.trim().split(",");
+                            double dlon = Double.parseDouble(parts[0]);
+                            double dlat = Double.parseDouble(parts[1]);
+                            Longitude lon = new Longitude(dlon, Angle.DEGREES);
+                            Latitude lat = new Latitude(dlat, Angle.DEGREES);
+                            if (parts.length < 3) {
+                                rval.add(new Point(
+                                        new Geodetic2DPoint(lon, lat)));
+                            } else {
+                                double elev = Double.parseDouble(parts[2]);
+                                rval.add(new Point(new Geodetic3DPoint(lon,
+                                        lat, elev)));
+                            }
+                        }
+                    }
 				}
 			}
 		}

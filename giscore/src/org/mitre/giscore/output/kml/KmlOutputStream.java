@@ -61,9 +61,13 @@ import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.kml.IKml;
+import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.XmlOutputStreamBase;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.joda.time.DateTimeZone;
 
 /**
  * The kml output stream creates a result KML file using the given output
@@ -89,7 +93,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		new DecimalFormat("##0.####");
 	private static final DecimalFormat ms_int_fmt =
 		new DecimalFormat("###,###");
-	/**
+    private DateTimeFormatter dateFormatter;
+    /**
 	 * Ctor
 	 * 
 	 * @param stream
@@ -98,10 +103,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	public KmlOutputStream(OutputStream stream) throws XMLStreamException {
 		super(stream);
 
-		writer.writeStartDocument();
-		writer.writeStartElement(KML);
+        writer.writeStartDocument();
+        writer.writeCharacters("\n");
+        writer.writeStartElement(KML);
 		writer.writeDefaultNamespace(KML_NS);
-	}
+        writer.writeCharacters("\n");
+    }
 
 	/*
 	 * (non-Javadoc)
@@ -112,7 +119,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	public void close() throws IOException {
 		try {
 			writer.writeEndElement();
-			writer.writeEndDocument();
+            writer.writeCharacters("\n");
+            writer.writeEndDocument();
 			super.close();
 		} catch (XMLStreamException e) {
 			throw new IOException(e);
@@ -154,7 +162,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 	}
 
-	/**
+    private DateTimeFormatter getDateFormatter() {
+        if (dateFormatter == null) {
+            dateFormatter = ISODateTimeFormat.dateTimeNoMillis()
+						.withZone(DateTimeZone.UTC);
+        }
+        return dateFormatter;
+    }
+
+    /**
 	 * Common code for outputting feature data that is held for both containers
 	 * and other features like Placemarks and Overlays.
 	 * 
@@ -171,12 +187,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			if (feature.getStartTime() != null) {
 				if (feature.getEndTime() != null) {
 					writer.writeStartElement(TIME_SPAN);
-					handleSimpleElement(BEGIN, ISO_DATE_FMT.format(feature.getStartTime()));
-					handleSimpleElement(END, ISO_DATE_FMT.format(feature.getEndTime()));
+					handleSimpleElement(BEGIN, getDateFormatter().print(feature.getStartTime().getTime()));
+					handleSimpleElement(END, getDateFormatter().print(feature.getEndTime().getTime()));
 					writer.writeEndElement();					
 				} else {
 					writer.writeStartElement(TIME_STAMP);
-					handleSimpleElement(WHEN, ISO_DATE_FMT.format(feature.getStartTime()));
+					handleSimpleElement(WHEN, getDateFormatter().print(feature.getStartTime().getTime()));
 					writer.writeEndElement();
 				}
 			}
@@ -231,13 +247,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			if (val instanceof String) {
 				try {
 					// Try converting to ISO?
-					val = ISO_DATE_FMT.parse((String) data);
+                    val = KmlInputStream.parseDate((String) data);
 				} catch(Exception e) {
 					// Fall through
 				}
 			}
 			if (val instanceof Date) {
-				return ISO_DATE_FMT.format(data);
+                return getDateFormatter().print(((Date)val).getTime());
 			} else {
 				return val.toString();
 			}
@@ -301,7 +317,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				handleNetworkLink((NetworkLink) feature);
 			}
 			writer.writeEndElement();
-		} catch (XMLStreamException e) {
+            writer.writeCharacters("\n");
+        } catch (XMLStreamException e) {
 			throw new RuntimeException(e);
 		}
 	}
