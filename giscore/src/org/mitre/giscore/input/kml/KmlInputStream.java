@@ -78,6 +78,8 @@ import org.mitre.itf.geodesy.Longitude;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Read a kml file in as an input stream. Each time the read method is called,
@@ -116,7 +118,10 @@ import org.joda.time.DateTimeZone;
  * 
  */
 public class KmlInputStream extends GISInputStreamBase implements IKml {
-	private InputStream is;
+
+    private static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
+
+    private InputStream is;
 	private XMLEventReader stream;
 	private final LinkedList<IGISObject> buffered = new LinkedList<IGISObject>();
 
@@ -291,48 +296,51 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param ee
 	 * @param localname
 	 * @return <code>true</code> if the event has been handled
-	 * @throws XMLStreamException
 	 */
 	private boolean handleProperties(BaseStart feature, XMLEvent ee,
-			String localname) throws XMLStreamException {
-		if (localname.equals(NAME)) {
-			feature.setName(stream.getElementText());
-			return true;
-		} else if (localname.equals(DESCRIPTION)) {
-			feature.setDescription(stream.getElementText());
-			return true;
-		} else if (localname.equals(STYLE)) {
-			handleStyle(feature, ee);
-			return true;
-		} else if (ms_attributes.contains(localname)) {
-			// Skip, but consume
-			return true;
-		} else if (localname.equals(SNIPPET)) {
-			handleSnippet(feature, ee);
-			return true;
-		} else if (localname.equals(REGION)) {
-			handleRegion(feature, ee);
-			return true;
-		} else if (localname.equals(TIME_SPAN) || localname.equals(TIME_STAMP)) {
-			handleTimePrimitive(feature, ee);
-			return true;
-		} else if (localname.equals(STYLE_MAP)) {
-			handleStyleMap(feature, ee);
-			return true;
-		} else if (localname.equals(LOOK_AT) || localname.equals(CAMERA)) {
-			handleAbstractView(feature, ee);
-			return true;
-		} else if (localname.equals(METADATA)) {
-			handleMetadata(feature, ee);
-			return true;
-		} else if (localname.equals(EXTENDED_DATA)) {
-			handleExtendedData(feature, ee);
-			return true;
-		} else if (localname.equals(STYLE_URL)) {
-			feature.setStyleUrl(stream.getElementText());
-			return true;
-		}
-		return false;
+			String localname) {
+        try {
+            if (localname.equals(NAME)) {
+                feature.setName(stream.getElementText());
+                return true;
+            } else if (localname.equals(DESCRIPTION)) {
+                feature.setDescription(stream.getElementText());
+                return true;
+            } else if (localname.equals(STYLE)) {
+                handleStyle(feature, ee);
+                return true;
+            } else if (ms_attributes.contains(localname)) {
+                // Skip, but consume
+                return true;
+            } else if (localname.equals(SNIPPET)) {
+                handleSnippet(feature, ee);
+                return true;
+            } else if (localname.equals(REGION)) {
+                handleRegion(feature, ee);
+                return true;
+            } else if (localname.equals(TIME_SPAN) || localname.equals(TIME_STAMP)) {
+                handleTimePrimitive(feature, ee);
+                return true;
+            } else if (localname.equals(STYLE_MAP)) {
+                handleStyleMap(feature, ee);
+                return true;
+            } else if (localname.equals(LOOK_AT) || localname.equals(CAMERA)) {
+                handleAbstractView(feature, ee);
+                return true;
+            } else if (localname.equals(METADATA)) {
+                handleMetadata(feature, ee);
+                return true;
+            } else if (localname.equals(EXTENDED_DATA)) {
+                handleExtendedData(feature, ee);
+                return true;
+            } else if (localname.equals(STYLE_URL)) {
+                feature.setStyleUrl(stream.getElementText());
+                return true;
+            }
+        } catch (XMLStreamException e) {
+            log.error("Faled to handle: " + localname, e);
+        }
+        return false;
 	}
 
 	/**
@@ -554,7 +562,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
-	 * @param ee
+	 * @param cs
+     * @param ee
 	 * @throws XMLStreamException
 	 */
 	private void handleTimePrimitive(BaseStart cs, XMLEvent ee)
@@ -568,9 +577,14 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				return;
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
-				String time;
+				String time = null;
 				try {
-					if (foundStartTag(se, BEGIN) || foundStartTag(se, WHEN)) {
+                    if (foundStartTag(se, WHEN)) {
+                        time = stream.getElementText();
+                        Date date = parseDate(time.trim()); 
+                        cs.setStartTime(date);
+                        cs.setEndTime(date);
+                    } else if (foundStartTag(se, BEGIN)) {
 						time = stream.getElementText();
 						cs.setStartTime(parseDate(time.trim()));
 					} else if (foundStartTag(se, END)) {
@@ -578,7 +592,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						cs.setEndTime(parseDate(time.trim()));
 					}
 				} catch (ParseException e) {
-					throw new XMLStreamException("Found bad time", e);
+					throw new XMLStreamException("Found bad time: " + time, e);
 				}
 			}
 			if (foundEndTag(next, tag.getLocalPart())) {
@@ -882,8 +896,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				}
 			}
 			if (foundEndTag(e, ICON_STYLE)) {
-				style.setIconStyle(color, scale, url);
-				return;
+                try {
+                    style.setIconStyle(color, scale, url);
+                } catch (IllegalArgumentException iae) {
+                    log.error("Invalid style", iae);
+                }
+                return;
 			}
 		}
 	}
@@ -1097,16 +1115,20 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					} else if (ground && ALTITUDE_MODE.equals(localname)) {
 						((GroundOverlay) fs).setAltitudeMode(stream
 								.getElementText());
-					} else if (network && REFRESH_VISIBILITY.equals(localname)) {
-						((NetworkLink) fs).setRefreshVisibility(isTrue(stream
-								.getElementText()));
-					} else if (network && FLY_TO_VIEW.equals(localname)) {
-						((NetworkLink) fs).setFlyToView(isTrue(stream
-								.getElementText()));
-					} else if (network && LINK.equals(localname)) {
-						((NetworkLink) fs).setLink(handleTaggedData(localname));
-					}
-				}
+					} else if (network) {
+                        if (REFRESH_VISIBILITY.equals(localname)) {
+                            ((NetworkLink) fs).setRefreshVisibility(isTrue(stream
+                                    .getElementText()));
+                        } else if (FLY_TO_VIEW.equals(localname)) {
+                            ((NetworkLink) fs).setFlyToView(isTrue(stream
+                                    .getElementText()));
+                        } else if (LINK.equals(localname)) {
+                            ((NetworkLink) fs).setLink(handleTaggedData(localname));
+                        } else if (URL.equals(localname)) {
+                            ((NetworkLink) fs).setLink(handleTaggedData(localname));
+                        }
+                    }
+                }
 			} else if (foundEndTag(ee, se.getName().getLocalPart())) {
 				break; // End of feature
 			}
@@ -1122,27 +1144,32 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @return the location, never <code>null</code>.
 	 */
 	private ScreenLocation handleScreenLocation(StartElement sl) {
-		ScreenLocation loc = new ScreenLocation();
-		Attribute x = sl.getAttributeByName(new QName("x"));
-		Attribute y = sl.getAttributeByName(new QName("y"));
-		Attribute xunits = sl.getAttributeByName(new QName("xunits"));
-		Attribute yunits = sl.getAttributeByName(new QName("yunits"));
-		if (x != null) {
-			loc.x = new Double(x.getValue());
-		}
-		if (y != null) {
-			loc.y = new Double(y.getValue());
-		}
-		if (xunits != null) {
-			String val = xunits.getValue();
-			loc.xunit = ScreenLocation.UNIT.valueOf(val.toUpperCase());
-		}
-		if (yunits != null) {
-			String val = yunits.getValue();
-			loc.yunit = ScreenLocation.UNIT.valueOf(val.toUpperCase());
-		}
-		return loc;
-	}
+        try {
+            ScreenLocation loc = new ScreenLocation();
+            Attribute x = sl.getAttributeByName(new QName("x"));
+            Attribute y = sl.getAttributeByName(new QName("y"));
+            Attribute xunits = sl.getAttributeByName(new QName("xunits"));
+            Attribute yunits = sl.getAttributeByName(new QName("yunits"));
+            if (x != null) {
+                loc.x = new Double(x.getValue());
+            }
+            if (y != null) {
+                loc.y = new Double(y.getValue());
+            }
+            if (xunits != null) {
+                String val = xunits.getValue();
+                loc.xunit = ScreenLocation.UNIT.valueOf(val.toUpperCase());
+            }
+            if (yunits != null) {
+                String val = yunits.getValue();
+                loc.yunit = ScreenLocation.UNIT.valueOf(val.toUpperCase());
+            }
+            return loc;
+        } catch (IllegalArgumentException iae) {
+            log.error("Invalid screenLocation", iae);
+            return null;
+        }
+    }
 
 	/**
 	 * Handle a set of elements with character values. The block has been found
