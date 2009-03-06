@@ -177,19 +177,32 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			if (feature.getDescription() != null) {
 				handleSimpleElement(DESCRIPTION, feature.getDescription());
 			}
-			if (feature.getStartTime() != null) {
-				if (feature.getEndTime() != null) {
-					writer.writeStartElement(TIME_SPAN);
-					handleSimpleElement(BEGIN, getDateFormatter().print(feature.getStartTime().getTime()));
-					handleSimpleElement(END, getDateFormatter().print(feature.getEndTime().getTime()));
-					writer.writeEndElement();					
-				} else {
-					writer.writeStartElement(TIME_STAMP);
-					handleSimpleElement(WHEN, getDateFormatter().print(feature.getStartTime().getTime()));
+
+            Date startTime = feature.getStartTime();
+            Date endTime = feature.getEndTime();
+            if (startTime != null) {
+				if (endTime == null) {
+                    // start time with no end time
+                    writer.writeStartElement(TIME_SPAN);
+                    handleSimpleElement(BEGIN, getDateFormatter().print(startTime.getTime()));
+                    writer.writeEndElement();
+                } else if (endTime.equals(startTime)) {
+                    writer.writeStartElement(TIME_STAMP);
+                    handleSimpleElement(WHEN, getDateFormatter().print(startTime.getTime()));
+                } else {
+                    writer.writeStartElement(TIME_SPAN);
+                    handleSimpleElement(BEGIN, getDateFormatter().print(startTime.getTime()));
+                    handleSimpleElement(END, getDateFormatter().print(endTime.getTime()));
+                    writer.writeEndElement();
+                }
+            } else if (endTime != null) {
+                    // end time with no start time
+                    writer.writeStartElement(TIME_SPAN);
+					handleSimpleElement(END, getDateFormatter().print(endTime.getTime()));
 					writer.writeEndElement();
-				}
-			}
-			if (feature.getStyleUrl() != null) {
+            }
+
+            if (feature.getStyleUrl() != null) {
 				handleSimpleElement(STYLE_URL, feature.getStyleUrl());
 			}
 			if (feature.hasExtendedData()) {
@@ -320,9 +333,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	 * Handle elements specific to a network link feature.
 	 * 
 	 * @param link
+     * @throws javax.xml.stream.XMLStreamException
 	 */
 	private void handleNetworkLink(NetworkLink link) throws XMLStreamException {
-		handleTagElement(link.getLink());
+        handleLinkElement(LINK, link.getLink());
 	}
 
 	/**
@@ -335,7 +349,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		handleColor(COLOR, overlay.getColor());
 		handleSimpleElement(DRAW_ORDER, Integer
 				.toString(overlay.getDrawOrder()));
-		handleTagElement(overlay.getIcon());
+        handleLinkElement(ICON, overlay.getIcon());
 
 		if (overlay instanceof GroundOverlay) {
 			GroundOverlay go = (GroundOverlay) overlay;
@@ -361,7 +375,32 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 	}
 
-	/**
+    // elements associated with Kml22 LinkType in sequence order
+    // for Icon, Link, and Url elements
+    private static final String[] LINK_TYPE_TAGS = {
+          "href",
+          "refreshMode",
+          "refreshInterval",
+          "viewRefreshMode",
+          "viewRefreshTime",
+          "viewBoundScale",
+          "viewFormat",
+          "httpQuery"
+    };
+
+    private void handleLinkElement(String elementName, TaggedMap map) throws XMLStreamException {
+        if (map == null || map.isEmpty())
+            return;
+        writer.writeStartElement(elementName);
+        for (String tag : LINK_TYPE_TAGS) {
+            String val = map.get(tag);
+            if (val != null && val.length() != 0)
+                handleSimpleElement(tag, val);
+        }
+        writer.writeEndElement();
+    }
+
+    /**
 	 * Handle the screen location information
 	 * 
 	 * @param tag
@@ -380,12 +419,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 	}
 
-	/**
+	/*
 	 * Output a tagged element.
 	 * 
 	 * @param data
 	 */
-	private void handleTagElement(TaggedMap data) throws XMLStreamException {
+    /*
+    private void handleTagElement(TaggedMap data) throws XMLStreamException {
 		if (data == null)
 			return;
 		writer.writeStartElement(data.getTag());
@@ -396,8 +436,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 		writer.writeEndElement();
 	}
-
-	/**
+    */
+    
+    /**
 	 * Handle elements that have been deferred. Style information is stored as
 	 * found and output on the next feature or container.
 	 * 
