@@ -34,8 +34,8 @@ import org.mitre.giscore.input.kml.IKml;
 public class GroundOverlay extends Overlay {
 	private static final long serialVersionUID = 1L;
 	
-	Double north, south, east, west, rotation, altitude;
-	String altitudeMode;
+	private Double north, south, east, west, rotation, altitude;
+	private String altitudeMode;
 
 	/**
 	 * @return the type
@@ -112,11 +112,16 @@ public class GroundOverlay extends Overlay {
 	}
 
 	/**
-	 * @param rotation
-	 *            the rotation to set
+     * Set angle of rotation of the overlay image about its center, in degrees
+     * counterclockwise starting from north. The default is 0 (north).
+     *
+     * @param rotation angle of rotation
+     * @throws IllegalArgumentException if rotation angle is out of range [-180,+180]
 	 */
 	public void setRotation(Double rotation) {
-		this.rotation = rotation;
+        if (rotation != null && (Double.isNaN(rotation) || rotation < -180 || rotation > 180))
+            throw new IllegalArgumentException("Rotation out of range [-180,+180]: " + rotation);        
+        this.rotation = rotation;
 	}
 
 	/**
