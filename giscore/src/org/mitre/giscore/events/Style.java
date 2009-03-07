@@ -48,7 +48,7 @@ import org.mitre.giscore.output.StreamVisitorBase;
  * @author DRAND
  */
 public class Style implements IGISObject {
-	public enum ColorMode { NORMAL, RANDOM };
+	public enum ColorMode { NORMAL, RANDOM }
 	
 	private String id;
 
@@ -128,7 +128,7 @@ public class Style implements IGISObject {
 	 * @param color
 	 *            the color for the icon, never <code>null</code>
 	 * @param scale
-	 *            the scale of the icon, must be positive
+	 *            the scale of the icon, must be non-negative
 	 * @param url
 	 *            the url of the icon, never <code>null</code> or empty
 	 */
@@ -136,8 +136,8 @@ public class Style implements IGISObject {
 		if (color == null) {
 			throw new IllegalArgumentException("color should never be null");
 		}
-		if (scale <= 0.0) {
-			throw new IllegalArgumentException("scale must be positive");
+		if (scale < 0.0) {
+			throw new IllegalArgumentException("scale must be non-negative: " + scale);
 		}
 		hasIconStyle = true;
 		iconColor = color;
