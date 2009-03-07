@@ -29,7 +29,7 @@ public class NetworkLink extends Feature {
 	private static final long serialVersionUID = 1L;
 	private boolean refreshVisibility = false;
 	private boolean flyToView = false;
-	private TaggedMap link = null;
+	private TaggedMap link;
 	
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.events.Feature#getType()

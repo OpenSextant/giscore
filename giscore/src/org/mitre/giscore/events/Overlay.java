@@ -31,8 +31,8 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 public abstract class Overlay extends Feature {
 	private static final long serialVersionUID = 1L;
 	
-	private TaggedMap icon = null;
-	private Color color = null;
+	private TaggedMap icon;
+	private Color color;
 	private int drawOrder = 0;
 
 	/**
