@@ -50,12 +50,13 @@ public class Schema implements IGISObject {
 	// Numeric id, used for GDB XML and to create an initial name
 	private final static AtomicInteger ms_idgen = new AtomicInteger();
 	
-	String name; 
-	URI id;
-	transient int nid; 
-	Map<String, SimpleField> fields = new HashMap<String, SimpleField>();
-	
-	/**
+	private String name;
+	private URI id;
+	private transient int nid; 
+	private final Map<String, SimpleField> fields = new HashMap<String, SimpleField>();
+    private String parent;
+
+    /**
 	 * Default Ctor
 	 */
 	public Schema() {
@@ -116,8 +117,20 @@ public class Schema implements IGISObject {
 	public int getNid() {
 		return nid;
 	}
-	
-	/**
+
+    /**
+     * Return parent. Used only in old-style KML 2.0 documents.
+     * @return parent
+     */
+    public String getParent() {
+        return parent;
+    }
+
+    public void setParent(String parent) {
+        this.parent = parent;
+    }
+
+    /**
 	 * Add a new field to the schema
 	 * @param name the name of the field, never <code>null</code> or empty
 	 * @param field the field, never <code>null</code>
@@ -176,11 +189,9 @@ public class Schema implements IGISObject {
 	 * doesn't exist
 	 */
 	public String getGeometryField() {
-		Iterator<SimpleField> fiter = fields.values().iterator();
-		while(fiter.hasNext()) {
-			SimpleField field = fiter.next();
-			if (field.getType().isGeometry()) return field.getName();
-		}
+        for (SimpleField field : fields.values()) {
+            if (field.getType().isGeometry()) return field.getName();
+        }
 		return null;
 	}
 	
@@ -238,4 +249,5 @@ public class Schema implements IGISObject {
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
+
 }
