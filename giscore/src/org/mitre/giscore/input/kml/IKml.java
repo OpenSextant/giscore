@@ -18,8 +18,6 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.kml;
 
-//import org.apache.log4j.helpers.ISO8601DateFormat;
-
 /**
  * Container for element and attribute names used in KML
  *
@@ -27,9 +25,6 @@ package org.mitre.giscore.input.kml;
  */
 public interface IKml {
 	static final String KML_NS = "http://www.opengis.net/kml/2.2";
-    
-    //static final ISO8601DateFormat ISO_DATE_FMT =
-		//new ISO8601DateFormat();
 
 	static final String ADDRESS = "address";
 	static final String ALTITUDE = "altitude";
@@ -81,6 +76,7 @@ public interface IKml {
 	static final String OUTLINE = "outline";
 	static final String OVERLAY_XY = "overlayXY";
 	static final String PAIR = "Pair";
+	static final String PARENT = "parent"; // old-style KML 2.0 Schema attribute removed from KML 2.1
 	static final String PHONE_NUMBER = "phoneNumber";
 	static final String PHOTO_OVERLAY = "PhotoOverlay"; // new in KML 2.2
 	static final String PLACEMARK = "Placemark";
