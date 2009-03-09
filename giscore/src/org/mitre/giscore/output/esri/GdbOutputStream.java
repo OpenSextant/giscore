@@ -130,7 +130,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * Strategy that uses the current "container" along with the geometry to
 	 * derive a name.
 	 */
-	public class GdbContainerNameStrategy implements IContainerNameStrategy {
+	public static class GdbContainerNameStrategy implements IContainerNameStrategy {
 
 		/*
 		 * (non-Javadoc)
