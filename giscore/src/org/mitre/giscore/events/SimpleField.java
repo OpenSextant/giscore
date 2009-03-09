@@ -35,7 +35,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 public class SimpleField implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	public enum Type {
+	public static enum Type {
 		STRING("esriFieldTypeString", "xs:string", 255, 0), 
 		INT("esriFieldTypeInteger", "xs:int", 4, 0), 
 		UINT("esriFieldTypeInteger", "xs:int", 4, 0), 
@@ -101,17 +101,17 @@ public class SimpleField implements Serializable {
 			return !(isGeometry() || DATE.equals(this));
 		}
 	
-	};
+	}
 	
 	Type type;
-	String name = null;
-	String displayName = null;
-	String aliasName = null;
-	String modelName = null;
+	String name;
+	String displayName;
+	String aliasName;
+	String modelName;
 	boolean required = false;
-	Integer length = null;
-	Integer precision = null;
-	Integer scale = null;
+	Integer length;
+	Integer precision;
+	Integer scale;
 	boolean editable = true;
 	
 	/**
