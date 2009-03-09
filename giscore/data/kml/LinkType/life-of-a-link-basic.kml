@@ -19,7 +19,7 @@
     <NetworkLink>
       <name>NetworkLink Url</name>
       <Link>
-        <href>../kmz/simple/big.kml</href>
+        <href>../kmz/simple/big.kmz</href>
         <viewRefreshMode>never</viewRefreshMode>
       </Link>
     </NetworkLink>
