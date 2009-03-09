@@ -24,6 +24,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.output.StreamVisitorBase;
 
 /**
@@ -128,21 +129,19 @@ public class Style implements IGISObject {
 	 * @param color
 	 *            the color for the icon, never <code>null</code>
 	 * @param scale
-	 *            the scale of the icon, must be non-negative
+	 *            the scale of the icon
 	 * @param url
-	 *            the url of the icon, never <code>null</code> or empty
+	 *            the url of the icon
+	 * @throws IllegalArgumentException if color is null. 
 	 */
 	public void setIconStyle(Color color, double scale, String url) {
 		if (color == null) {
 			throw new IllegalArgumentException("color should never be null");
 		}
-		if (scale < 0.0) {
-			throw new IllegalArgumentException("scale must be non-negative: " + scale);
-		}
 		hasIconStyle = true;
 		iconColor = color;
-		iconScale = scale;
-		iconUrl = url;
+		iconScale = scale <= 0.0 ? 0 : scale;
+		iconUrl = StringUtils.isEmpty(url) ? null : url;
 	}
 
 	/**
@@ -180,18 +179,17 @@ public class Style implements IGISObject {
 	 * @param color
 	 *            the color of the line(s), never <code>null</code>
 	 * @param width
-	 *            the width of the line(s), must be positive
+	 *            the width of the line(s).
+	 *            Note non-positive width suppresses display of lines in Google Earth
+	 * @throws IllegalArgumentException if color is null.
 	 */
 	public void setLineStyle(Color color, double width) {
 		if (color == null) {
 			throw new IllegalArgumentException("color should never be null");
 		}
-		if (width <= 0) {
-			throw new IllegalArgumentException("width must be positive");
-		}
 		hasLineStyle = true;
 		lineColor = color;
-		lineWidth = width;
+		lineWidth = (width <= 0.0) ? 0.0 : width;
 	}
 
 	/**
@@ -220,6 +218,7 @@ public class Style implements IGISObject {
 	 *            <code>null</code>
 	 * @param textColor
 	 *            the color for the text in the balloon
+	 * @throws IllegalArgumentException if color or text are null.
 	 */
 	public void setBalloonStyle(Color color, String text, Color textColor,
 			String displayMode) {
