@@ -185,7 +185,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                     // start time with no end time
                     writer.writeStartElement(TIME_SPAN);
                     handleSimpleElement(BEGIN, getDateFormatter().print(startTime.getTime()));
-                    writer.writeEndElement();
                 } else if (endTime.equals(startTime)) {
                     writer.writeStartElement(TIME_STAMP);
                     handleSimpleElement(WHEN, getDateFormatter().print(startTime.getTime()));
@@ -193,8 +192,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                     writer.writeStartElement(TIME_SPAN);
                     handleSimpleElement(BEGIN, getDateFormatter().print(startTime.getTime()));
                     handleSimpleElement(END, getDateFormatter().print(endTime.getTime()));
-                    writer.writeEndElement();
                 }
+                writer.writeEndElement();
             } else if (endTime != null) {
                     // end time with no start time
                     writer.writeStartElement(TIME_SPAN);
@@ -360,8 +359,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			handleSimpleElement(SOUTH, go.getSouth());
 			handleSimpleElement(EAST, go.getEast());
 			handleSimpleElement(WEST, go.getWest());
-			handleSimpleElement(ROTATION, go.getRotation());
-			writer.writeEndElement();
+            Double rot = go.getRotation();
+            if (rot != null)
+                handleSimpleElement(ROTATION, rot);
+            writer.writeEndElement();
 		} else if (overlay instanceof PhotoOverlay) {
 			// PhotoOverlay po = (PhotoOverlay) overlay;
 			// TODO: Fill in sometime
@@ -371,7 +372,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			handleXY(SCREEN_XY, so.getScreen());
 			handleXY(ROTATION_XY, so.getRotation());
 			handleXY(SIZE, so.getSize());
-			handleSimpleElement(ROTATION, so.getRotationAngle());
+            Double rot = so.getRotationAngle();
+            if (rot != null)
+                handleSimpleElement(ROTATION, rot);
 		}
 	}
 
@@ -660,7 +663,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			writer.writeStartElement(SCHEMA);
 			writer.writeAttribute(NAME, schema.getName());
 			writer.writeAttribute(ID, schema.getId().toString());
-			for (String name : schema.getKeys()) {
+            /*
+            // parent attribute may exist from old-style KML 2.0 documents
+            // but is not valid in KML 2.2 so should not be exported...
+            // otherwise KL is not valid.
+            String parent = schema.getParent();
+            if (parent != null)
+                writer.writeAttribute(PARENT, parent);
+            */
+            for (String name : schema.getKeys()) {
 				SimpleField field = schema.get(name);
 				if (field.getType().isGeometry()) {
 					continue; // Skip geometry elements, no equivalent in Kml
@@ -709,17 +720,17 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		if (style.hasIconStyle()) {
 			handleIconStyleElement(style);
 		}
-		if (style.hasLineStyle()) {
-			handleLineStyleElement(style);
-		}
-		if (style.hasBalloonStyle()) {
-			handleBalloonStyleElement(style);
-		}
-		if (style.hasLabelStyle()) {
+        if (style.hasLabelStyle()) {
 			handleLabelStyleElement(style);
 		}
-		if (style.hasPolyStyle()) {
+        if (style.hasLineStyle()) {
+			handleLineStyleElement(style);
+		}
+        if (style.hasPolyStyle()) {
 			handlePolyStyleElement(style);
+		}
+        if (style.hasBalloonStyle()) {
+			handleBalloonStyleElement(style);
 		}
 		writer.writeEndElement();
 	}
@@ -755,9 +766,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			throws XMLStreamException {
 		writer.writeStartElement(BALLOON_STYLE);
 		handleColor(BG_COLOR, style.getBalloonBgColor());
-		handleSimpleElement(DISPLAY_MODE, style.getBalloonDisplayMode());
-		handleSimpleElement(TEXT, style.getBalloonText());
-		handleColor(TEXT_COLOR, style.getBalloonTextColor());
+        handleColor(TEXT_COLOR, style.getBalloonTextColor());
+        handleSimpleElement(TEXT, style.getBalloonText());
+        handleSimpleElement(DISPLAY_MODE, style.getBalloonDisplayMode());
 		writer.writeEndElement();
 	}
 
@@ -769,8 +780,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	protected void handleLineStyleElement(Style style)
 			throws XMLStreamException {
 		writer.writeStartElement(LINE_STYLE);
-		handleSimpleElement(WIDTH, Double.toString(style.getLineWidth()));
-		handleColor(COLOR, style.getLineColor());
+        handleColor(COLOR, style.getLineColor());
+        handleSimpleElement(WIDTH, Double.toString(style.getLineWidth()));
 		writer.writeEndElement();
 	}
 
@@ -788,12 +799,16 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			handleSimpleElement(HREF, style.getIconUrl());
 			writer.writeEndElement();
 		}
-		writer.writeStartElement(HOT_SPOT);
+        /*
+        // hotSpot optional. skip it
+        writer.writeStartElement(HOT_SPOT);
 		writer.writeAttribute("x", "0");
 		writer.writeAttribute("y", "0");
-		writer.writeAttribute("xunits", "0");
-		writer.writeAttribute("yunits", "0");
+		//writer.writeAttribute("xunits", "fraction"); // default
+		//writer.writeAttribute("yunits", "fraction"); // default
 		writer.writeEndElement();
+		*/
+
 		writer.writeEndElement();
 	}
 
