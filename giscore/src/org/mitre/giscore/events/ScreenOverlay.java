@@ -29,11 +29,12 @@ import org.mitre.giscore.input.kml.IKml;
 public class ScreenOverlay extends Overlay {
 	private static final long serialVersionUID = 1L;
 	
-	public ScreenLocation overlay;
-	public ScreenLocation screen;
-	public ScreenLocation rotation;
-	public ScreenLocation size;
-	public double rotationAngle;
+	private ScreenLocation overlay;      // overlayXY
+	private ScreenLocation screen;       // screenXY
+	private ScreenLocation rotation;     // rotationXY
+	private ScreenLocation size;         // type="kml:vec2Type"
+
+    private Double rotationAngle;
 	
 	/**
 	 * @return the type
@@ -77,11 +78,11 @@ public class ScreenOverlay extends Overlay {
 		return rotation;
 	}
 
-	/**
-	 * @param rotation the rotation to set
+    /**
+	 * @param rotation the rotationXY to set
 	 */
 	public void setRotation(ScreenLocation rotation) {
-		this.rotation = rotation;
+       this.rotation = rotation;
 	}
 
 	/**
@@ -101,15 +102,24 @@ public class ScreenOverlay extends Overlay {
 	/**
 	 * @return the rotationAngle
 	 */
-	public double getRotationAngle() {
+	public Double getRotationAngle() {
 		return rotationAngle;
 	}
 
-	/**
-	 * @param rotationAngle the rotationAngle to set
+    /**
+     * Set angle of rotation of the overlay image about its center, in degrees
+     * counterclockwise starting from north. The default is 0 (north).
+     *
+     * @param rotationAngle angle of rotation
+     * @throws IllegalArgumentException if rotation angle is out of range [-180,+180]
 	 */
-	public void setRotationAngle(double rotationAngle) {
-		this.rotationAngle = rotationAngle;
+    public void setRotationAngle(Double rotationAngle) {
+		if (rotationAngle != null) {
+            double rotation = rotationAngle;
+            if (Double.isNaN(rotation) || rotation < -180 || rotation > 180)
+                throw new IllegalArgumentException("Rotation out of range [-180,+180]: " + rotation);
+        }
+        this.rotationAngle = rotationAngle;
 	}
 	
 	/**
