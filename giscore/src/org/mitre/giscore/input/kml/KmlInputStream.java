@@ -25,6 +25,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -129,7 +130,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private static final Set<String> ms_containers = new HashSet<String>();
 	private static final Set<String> ms_attributes = new HashSet<String>();
 	private static final Set<String> ms_geometries = new HashSet<String>();
-	
+	private HashMap<String, String> schemaAliases;
+
 	static {
 		ms_fact = XMLInputFactory.newInstance();
 		ms_features.add(PLACEMARK);
@@ -256,6 +258,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					&& ne.getEventType() == XMLStreamReader.START_ELEMENT) {
 				StartElement nextel = ne.asStartElement();
 				String tag = nextel.getName().getLocalPart();
+				// check if element has been aliased in Schema
+				// only used for old-style KML 2.0 Schema defs with "parent" attribute/element.
+				if (schemaAliases != null) {
+					String newName = schemaAliases.get(tag);
+					if (newName != null) {
+						// log.info("Alias " + tag +" -> " + newName);
+						tag = newName;
+					}
+				}
 				if (ms_containers.contains(tag) || ms_features.contains(tag)
 						|| SCHEMA.equals(tag)) {
 					break;
@@ -269,7 +280,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				StartElement sl = ee.asStartElement();
 				QName name = sl.getName();
 				String localname = name.getLocalPart();
-				//TODO: if schema aliases then lookup localname
 				//System.out.println(localname);//debug
 				if (!handleProperties(cs, ee, localname)) {
 					// Ignore other attributes
@@ -924,14 +934,27 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException, IOException {
 		StartElement se = e.asStartElement();
 		String localname = se.getName().getLocalPart();
+		String elementName = localname; // differs from localname if aliased
 		//System.out.println(localname); //debug
+		// check if element has been aliased in Schema
+		// only used for old-style KML 2.0 Schema defs with "parent" attribute.
+		// generally only Placemarks are aliased. Not much use to alias Document or Folder elements, etc.
+		if (schemaAliases != null) {
+			String newName = schemaAliases.get(elementName);
+			if (newName != null) {
+				// log.info("Alias " + elementName + " -> " + newName);
+				// Note: does not support multiple levels of aliases (e.g. Person <- Placemark; VipPerson <- Person, etc.)
+				// To-date have only seen aliases for Placemarks so don't bother checking.
+				elementName = newName;
+			}
+		}
 		try {
-			if (ms_features.contains(localname)) {
-				return handleFeature(e);
+			if (ms_features.contains(elementName)) {
+				return handleFeature(e, elementName);
+			} else if (ms_containers.contains(elementName)) {
+				return handleContainer(se);
 			} else if (SCHEMA.equals(localname)) {
 				return handleSchema(se, localname);
-			} else if (ms_containers.contains(localname)) {
-				return handleContainer(se);
 			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
 				handleNetworkLinkControl(stream, localname);
 			} else if (STYLE.equals(localname)) {
@@ -990,16 +1013,16 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			throws XMLStreamException {
 		Schema s = new Schema();
 		buffered.add(s);
-		Attribute name = element.getAttributeByName(new QName(NAME));
-		if (name != null)
-			s.setName(name.getValue());
-		// add parent attribute for old-style KML
-		Attribute parent = element.getAttributeByName(new QName(PARENT));
-		if (parent != null) {
-			s.setParent(parent.getValue());
-			if (name != null && PLACEMARK.equals(s.getParent())) {
-				// TODO: add alias to schema list
-			}
+		Attribute attr = element.getAttributeByName(new QName(NAME));
+		String name = null;
+		if (attr != null) name = attr.getValue();			
+		String parent = null;
+		// get parent attribute for old-style KML 2.0/2.1 which aliases KML elements
+		// (e.g. Placemarks) with user-defined ones.
+		attr = element.getAttributeByName(new QName(PARENT));
+		if (attr != null && attr.getValue() != null) {
+			String parentVal = attr.getValue().trim();
+			if (parentVal.length() != 0) parent = parentVal;
 		}
 		Attribute id = element.getAttributeByName(new QName(ID));
 		if (id != null)
@@ -1020,25 +1043,55 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				if (foundStartTag(se, SIMPLE_FIELD)) {
 					Attribute fname = se.getAttributeByName(new QName(NAME));
 					String fieldname = fname != null ? fname.getValue() : "gen" + gen++;
+					// http://code.google.com/apis/kml/documentation/kmlreference.html#simplefield
+					// If either the type or the name is omitted, the field is ignored. 
 					try {
 						SimpleField field = new SimpleField(fieldname);
 						Attribute type = se.getAttributeByName(new QName(TYPE));
+						SimpleField.Type ttype = SimpleField.Type.STRING; // default
 						if (type != null) {
-							SimpleField.Type ttype = SimpleField.Type.valueOf(type
-									.getValue().toUpperCase());
-							field.setType(ttype);
+							String typeValue = type.getValue();
+							// old-style "wstring" is just a string type
+							 if (StringUtils.isNotEmpty(typeValue) && !"wstring".equalsIgnoreCase(typeValue))
+								ttype = SimpleField.Type.valueOf(typeValue.toUpperCase());
 						}
+						field.setType(ttype);
 						String displayName = parseDisplayName(SIMPLE_FIELD);
 						field.setDisplayName(displayName);
 						s.put(fieldname, field);
 					} catch (IllegalArgumentException e) {
 						log.warn("Invalid schema field " + fieldname + ": " + e.getMessage());
 					}
+				} else if (foundStartTag(se, PARENT)) {
+					 // parent can only appear as Schema child element in KML 2.0 or 2.1
+					String parentVal = stream.getElementText();
+					if (StringUtils.isNotEmpty(parentVal))
+						parent = parentVal;
+				} else if (foundStartTag(se, NAME)) {
+					 // name can only appear as Schema child element in KML 2.0 or 2.1
+					String nameVal = stream.getElementText();
+					if (StringUtils.isNotEmpty(nameVal))
+						name = nameVal;
 				}
 			} else if (foundEndTag(next, SCHEMA)) {
 				break;
 			}
 		}
+
+		if (name != null) s.setName(name);
+
+		// define old-style parent association
+		if (parent != null) {
+			s.setParent(parent);
+			if (name != null) {
+				// add alias to schema alias list
+				if (schemaAliases == null)
+					schemaAliases = new HashMap<String, String>();
+				schemaAliases.put(name, parent);
+				// log.info(schemaAliases.toString());
+			}
+		}
+		
 		return buffered.removeFirst();
 	}
 
@@ -1070,12 +1123,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * @param e
+	 * @param type
 	 * @return
 	 * @throws XMLStreamException
 	 */
-	private IGISObject handleFeature(XMLEvent e) throws XMLStreamException {
+	private IGISObject handleFeature(XMLEvent e, String type) throws XMLStreamException {
 		StartElement se = e.asStartElement();
-		String type = se.getName().getLocalPart();
 		boolean placemark = PLACEMARK.equals(type);
 		boolean screen = SCREEN_OVERLAY.equals(type);
 		boolean photo = PHOTO_OVERLAY.equals(type);
@@ -1093,8 +1146,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			fs = new GroundOverlay();
 		} else if (network) {
 			fs = new NetworkLink();
-		} else { 
-			log.error("Found new unhandled feature type: " + type);
+		} else {
+			String localname = se.getName().getLocalPart();
+			if (!localname.equals(type))
+				log.error(String.format("Found new unhandled feature type: %s [%s]", type, localname));
+			else
+				log.error("Found new unhandled feature type: " + type);
 			return NullObject.getInstance();
 		}
 
@@ -1108,6 +1165,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				StartElement sl = ee.asStartElement();
 				QName name = sl.getName();
 				String localname = name.getLocalPart();
+				// TODO: if element is aliased Placemark then metdata fields won't be picked up
+				// could treat as ExtendedData if want to preserve data.
 				if (!handleProperties(fs, ee, localname)) {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
