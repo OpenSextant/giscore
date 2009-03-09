@@ -36,15 +36,17 @@ import org.apache.commons.lang.builder.ToStringStyle;
 public class ScreenLocation implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	public enum UNIT { PIXELS("pixels"), 
+	public enum UNIT {
+        PIXELS("pixels"), 
 		FRACTION("fraction"), 
 		INSETPIXELS("insetPixels");
 		UNIT(String v) {
 			kmlValue = v;
 		}
 		public String kmlValue;
-		};
-	public double x;
+    }
+    
+    public double x;
 	public UNIT xunit = UNIT.FRACTION;
 	public double y;
 	public UNIT yunit = UNIT.FRACTION;

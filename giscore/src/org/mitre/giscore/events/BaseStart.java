@@ -37,6 +37,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * 
  */
 public abstract class BaseStart implements IGISObject, Serializable {
+	
 	private static final long serialVersionUID = 1L;
 
 	protected String name;
