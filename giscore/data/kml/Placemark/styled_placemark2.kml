@@ -4,9 +4,10 @@
     <name>styled placemark</name>
     <description>paleogeographers unite!</description>
     <Style>
-     <IconStyle>
+      <IconStyle>
+        <scale>1.1</scale>
         <Icon>
-          <href>http://code.google.com/events/io/images/logo.gif</href>
+          <href>http://maps.google.com/mapfiles/kml/pal3/icon21.png</href>
         </Icon>
       </IconStyle>
       <LabelStyle>
