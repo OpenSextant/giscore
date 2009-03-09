@@ -21,9 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
@@ -53,6 +51,7 @@ import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.GroundOverlay;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.NetworkLink;
+import org.mitre.giscore.events.NullObject;
 import org.mitre.giscore.events.Overlay;
 import org.mitre.giscore.events.PhotoOverlay;
 import org.mitre.giscore.events.Schema;
@@ -131,8 +130,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private static final Set<String> ms_attributes = new HashSet<String>();
 	private static final Set<String> ms_geometries = new HashSet<String>();
 	
-	// private static List<DateFormat> ms_dateFormats = new ArrayList<DateFormat>(); 
-
 	static {
 		ms_fact = XMLInputFactory.newInstance();
 		ms_features.add(PLACEMARK);
@@ -155,17 +152,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		ms_geometries.add(POLYGON);
 		ms_geometries.add(MULTI_GEOMETRY);
 		ms_geometries.add(MODEL);
-
-        /*
-        ms_dateFormats.add(ISO_DATE_FMT);
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'hh:mm"));
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd hh:mm"));
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'hh"));
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd hh"));
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd"));
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));
-		ms_dateFormats.add(new SimpleDateFormat("yyyy"));
-		*/
 	}
 
 	/**
@@ -227,7 +213,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					}
 					switch (e.getEventType()) {
 					case XMLStreamReader.START_ELEMENT:
-						return handleStartElement(e);
+						IGISObject se = handleStartElement(e);
+						if (se == NullObject.getInstance())
+							break;
+						return se; // start element is GISObject or null
 					case XMLStreamReader.END_ELEMENT:
 						IGISObject rval = handleEndElement(e);
 						if (rval != null)
@@ -280,6 +269,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				StartElement sl = ee.asStartElement();
 				QName name = sl.getName();
 				String localname = name.getLocalPart();
+				//TODO: if schema aliases then lookup localname
+				//System.out.println(localname);//debug
 				if (!handleProperties(cs, ee, localname)) {
 					// Ignore other attributes
 				}
@@ -338,7 +329,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 return true;
             }
         } catch (XMLStreamException e) {
-            log.error("Faled to handle: " + localname, e);
+            log.error("Failed to handle: " + localname, e);
         }
         return false;
 	}
@@ -558,7 +549,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				return;
 			}
 		}
-
 	}
 
 	/**
@@ -592,7 +582,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						cs.setEndTime(parseDate(time.trim()));
 					}
 				} catch (ParseException e) {
-					throw new XMLStreamException("Found bad time: " + time, e);
+					log.warn("Ignoring bad time: " + time + ": " + e);
 				}
 			}
 			if (foundEndTag(next, tag.getLocalPart())) {
@@ -610,15 +600,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @throws ParseException 
 	 */
 	public static Date parseDate(String datestr) throws ParseException {
-        DateTimeFormatter fmt = ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.UTC);
-        try {
-            return new Date(fmt.parseDateTime(datestr).getMillis());
-        } catch (IllegalArgumentException e) {
-            throw new ParseException(e.getMessage(), 0);
-            // e.g. org.joda.time.IllegalFieldValueException: Cannot parse "2006-09-16T18:60:47Z": Value 60 for minuteOfHour must be in the range [0,59]
-        }
+	        DateTimeFormatter fmt = ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.UTC);
+	        try {
+	            return new Date(fmt.parseDateTime(datestr).getMillis());
+	        } catch (IllegalArgumentException e) {
+	            throw new ParseException(e.getMessage(), 0);
+	            // e.g. org.joda.time.IllegalFieldValueException: Cannot parse "2006-09-16T18:60:47Z": Value 60 for minuteOfHour must be in the range [0,59]
+	        }
         /*
-        ParseException e = null;
+	        ParseException e = null;
 		for(DateFormat fmt : ms_dateFormats) {
 			try {
 				return fmt.parse(datestr);
@@ -717,7 +707,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @throws XMLStreamException
 	 */
 	private void handlePolyStyle(Style style) throws XMLStreamException {
-		Color color = Color.black;
+		Color color = Color.white;
 		boolean fill = true;
 		boolean outline = true;
 		while (true) {
@@ -782,16 +772,26 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 */
 	private void handleLineStyle(Style style) throws XMLStreamException {
 		double width = 1;
-		Color color = Color.black;
+		Color color = Color.white;
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (e.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(WIDTH)) {
-					width = Double.parseDouble(stream.getElementText());
+					String value = stream.getElementText();
+					try {
+						width = Double.parseDouble(value);
+					} catch (NumberFormatException nfe) {
+						log.warn("Invalid width value: " + value);
+					}
 				} else if (name.equals(COLOR)) {
-					color = parseColor(stream.getElementText());
+					String value = stream.getElementText();
+					color = parseColor(value);
+					if (color == null) {
+						log.warn("Invalid LineStyle color: " + value);
+						color = Color.white; // use default
+					}
 				}
 			}
 			if (foundEndTag(e, LINE_STYLE)) {
@@ -880,28 +880,38 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 */
 	private void handleIconStyle(Style style) throws XMLStreamException {
 		String url = null;
-		double scale = 1.0;
-		Color color = Color.black;
+		double scale = 1.0;		// default value
+		Color color = Color.white;	// default="ffffffff"
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (e.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(SCALE)) {
-					scale = Double.parseDouble(stream.getElementText());
+					String value = stream.getElementText();
+					try {
+						scale = Double.parseDouble(value);
+					} catch (NumberFormatException nfe) {
+						log.warn("Invalid scale value: " + value);
+					}
 				} else if (name.equals(COLOR)) {
-					color = parseColor(stream.getElementText());
+					String value = stream.getElementText();
+					color = parseColor(value);
+					if (color == null) {
+						log.warn("Invalid IconStyle color: " + value);
+						color = Color.white; // use default="ffffffff"
+					}
 				} else if (name.equals(ICON)) {
 					url = parseIconHref();
 				}
 			}
 			if (foundEndTag(e, ICON_STYLE)) {
-                try {
-                    style.setIconStyle(color, scale, url);
-                } catch (IllegalArgumentException iae) {
-                    log.error("Invalid style", iae);
-                }
-                return;
+				try {
+					style.setIconStyle(color, scale, url);
+				} catch (IllegalArgumentException iae) {
+					log.warn("Invalid style: " + iae);
+				}
+				return;
 			}
 		}
 	}
@@ -909,10 +919,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	/**
 	 * @param e
 	 * @return
+	 * @throws javax.xml.stream.XMLStreamException
 	 */
-	private IGISObject handleStartElement(XMLEvent e) {
+	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException, IOException {
 		StartElement se = e.asStartElement();
 		String localname = se.getName().getLocalPart();
+		//System.out.println(localname); //debug
 		try {
 			if (ms_features.contains(localname)) {
 				return handleFeature(e);
@@ -920,39 +932,55 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				return handleSchema(se, localname);
 			} else if (ms_containers.contains(localname)) {
 				return handleContainer(se);
-            } else if (NETWORK_LINK_CONTROL.equals(localname)) {
-                handleNetworkLinkControl(stream, localname);
-            } else {
+			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
+				handleNetworkLinkControl(stream, localname);
+			} else if (STYLE.equals(localname)) {
+				//System.out.println("skipping found style out of order");
+				try {
+					skipNextElement(stream, localname);
+				} catch (XMLStreamException xe) {
+					final IOException e2 = new IOException();
+					e2.initCause(xe);
+					throw e2;
+				}
+			} else {
 				// Look for next start element and recurse
 				e = stream.nextTag();
-                if (e != null && e.getEventType() == XMLEvent.START_ELEMENT) {
+				if (e != null && e.getEventType() == XMLEvent.START_ELEMENT) {
 					return handleStartElement(e);
 				}
-            }
+			}
 		} catch (XMLStreamException e1) {
-			throw new RuntimeException(e1);
+			log.warn("Failed at element: " + localname);
+			skipNextElement(stream, localname);
 		}
 
-		return null;
+		// return non-null NullObject to skip but not end parsing...
+		return NullObject.getInstance();
 	}
 
-    /**
+	/**
 	 * @param element
 	 * @param localname
 	 * @return
 	 * @throws XMLStreamException
 	 */
-    private void handleNetworkLinkControl(XMLEventReader element, String localname) throws XMLStreamException {
-        // TODO: implement NetworkLinkControl wrapper 
-        while (true) {
+	private void handleNetworkLinkControl(XMLEventReader element, String localname) throws XMLStreamException {
+		// TODO: implement NetworkLinkControl object
+		log.debug("skip NetworkLinkControl");
+		skipNextElement(element, localname);
+	}
+
+	private void skipNextElement(XMLEventReader element, String localname) throws XMLStreamException {
+		while (true) {
 			XMLEvent next = element.nextEvent();
 			if (next == null || foundEndTag(next, localname)) {
 				break;
 			}
-        }
-    }
+		}
+	}
 
-    /**
+	/**
 	 * @param element
 	 * @param localname
 	 * @return
@@ -960,47 +988,52 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 */
 	private IGISObject handleSchema(StartElement element, String localname)
 			throws XMLStreamException {
-		XMLEvent next;
 		Schema s = new Schema();
 		buffered.add(s);
-		try {
-			Attribute id = element.getAttributeByName(new QName(ID));
-			Attribute name = element.getAttributeByName(new QName(NAME));
-			if (name != null)
-				s.setName(name.getValue());
-			if (id != null)
-				s.setId(new URI(id.getValue()));	
-		} catch (URISyntaxException e) {
-			throw new XMLStreamException(e);
+		Attribute name = element.getAttributeByName(new QName(NAME));
+		if (name != null)
+			s.setName(name.getValue());
+		// add parent attribute for old-style KML
+		Attribute parent = element.getAttributeByName(new QName(PARENT));
+		if (parent != null) {
+			s.setParent(parent.getValue());
+			if (name != null && PLACEMARK.equals(s.getParent())) {
+				// TODO: add alias to schema list
+			}
 		}
+		Attribute id = element.getAttributeByName(new QName(ID));
+		if (id != null)
+			try {
+				s.setId(new URI(id.getValue()));
+			} catch (URISyntaxException e) {
+				//throw new XMLStreamException(e);
+				log.warn("Invalid schema id " + id, e);
+			}
 
 		int gen = 0;
 		while (true) {
-			next = stream.nextEvent();
+			XMLEvent next = stream.nextEvent();
 			if (next == null)
 				break;
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				if (foundStartTag(se, SIMPLE_FIELD)) {
 					Attribute fname = se.getAttributeByName(new QName(NAME));
-					String fieldname = null;
-					if (fname != null) {
-						fieldname = fname.getValue();
-					} else {
-						fieldname = "gen" + gen++;
+					String fieldname = fname != null ? fname.getValue() : "gen" + gen++;
+					try {
+						SimpleField field = new SimpleField(fieldname);
+						Attribute type = se.getAttributeByName(new QName(TYPE));
+						if (type != null) {
+							SimpleField.Type ttype = SimpleField.Type.valueOf(type
+									.getValue().toUpperCase());
+							field.setType(ttype);
+						}
+						String displayName = parseDisplayName(SIMPLE_FIELD);
+						field.setDisplayName(displayName);
+						s.put(fieldname, field);
+					} catch (IllegalArgumentException e) {
+						log.warn("Invalid schema field " + fieldname + ": " + e.getMessage());
 					}
-					SimpleField field = new SimpleField(fieldname);
-					s.put(fieldname, field);
-					Attribute type = se.getAttributeByName(new QName(TYPE));
-					
-					if (type != null) {
-						SimpleField.Type ttype = SimpleField.Type.valueOf(type
-								.getValue().toUpperCase());
-						field.setType(ttype);
-					}
-					
-					String displayName = parseDisplayName(SIMPLE_FIELD);
-					field.setDisplayName(displayName);
 				}
 			} else if (foundEndTag(next, SCHEMA)) {
 				break;
@@ -1049,7 +1082,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		boolean ground = GROUND_OVERLAY.equals(type);
 		boolean network = NETWORK_LINK.equals(type);
 		boolean isOverlay = screen || photo || ground;
-		Feature fs = null;
+		Feature fs;
 		if (placemark) {
 			fs = new Feature();
 		} else if (screen) {
@@ -1060,9 +1093,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			fs = new GroundOverlay();
 		} else if (network) {
 			fs = new NetworkLink();
-		} else {
-			throw new RuntimeException("Found new unhandled feature type "
-					+ type);
+		} else { 
+			log.error("Found new unhandled feature type: " + type);
+			return NullObject.getInstance();
 		}
 
 		buffered.addFirst(fs);
@@ -1082,53 +1115,68 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						if (geo != null) {
 							fs.setGeometry(geo);
 						}
-					} else if (ground && LAT_LON_BOX.equals(localname)) {
-						handleLatLonBox((GroundOverlay) fs, sl);
-					} else if (screen && OVERLAY_XY.equals(localname)) {
-						ScreenLocation val = handleScreenLocation(sl);
-						((ScreenOverlay) fs).setOverlay(val);
-					} else if (screen && SCREEN_XY.equals(localname)) {
-						ScreenLocation val = handleScreenLocation(sl);
-						((ScreenOverlay) fs).setScreen(val);
-					} else if (screen && ROTATION_XY.equals(localname)) {
-						ScreenLocation val = handleScreenLocation(sl);
-						((ScreenOverlay) fs).setRotation(val);
-					} else if (screen && SIZE.equals(localname)) {
-						ScreenLocation val = handleScreenLocation(sl);
-						((ScreenOverlay) fs).setSize(val);
-					} else if (screen && ROTATION.equals(localname)) {
-						Double rot = new Double(stream.getElementText());
-						((ScreenOverlay) fs).setRotationAngle(rot);
-					} else if (isOverlay && COLOR.equals(localname)) {
-						((Overlay) fs).setColor(parseColor(stream
-								.getElementText()));
-					} else if (isOverlay && DRAW_ORDER.equals(localname)) {
-						((Overlay) fs).setDrawOrder(Integer.parseInt(stream
-								.getElementText()));
-					} else if (isOverlay && ICON.equals(localname)) {
-						((Overlay) fs).setIcon(handleTaggedData(localname));
-					} else if (ground && ALTITUDE.equals(localname)) {
-						String text = stream.getElementText();
-						if (StringUtils.isNotBlank(text)) {
-							((GroundOverlay) fs).setAltitude(new Double(text));
+					} else if (isOverlay) {
+						if (COLOR.equals(localname)) {
+							((Overlay) fs).setColor(parseColor(stream
+									.getElementText()));
+						} else if (DRAW_ORDER.equals(localname)) {
+							((Overlay) fs).setDrawOrder(Integer.parseInt(stream
+									.getElementText()));
+						} else if (ICON.equals(localname)) {
+							((Overlay) fs).setIcon(handleTaggedData(localname));
 						}
-					} else if (ground && ALTITUDE_MODE.equals(localname)) {
-						((GroundOverlay) fs).setAltitudeMode(stream
-								.getElementText());
+						if (ground) {
+							if (LAT_LON_BOX.equals(localname)) {
+								handleLatLonBox((GroundOverlay) fs, sl);
+							} else if (ALTITUDE.equals(localname)) {
+								String text = stream.getElementText();
+								if (StringUtils.isNotBlank(text)) {
+									((GroundOverlay) fs).setAltitude(new Double(text));
+								}
+							} else if (ALTITUDE_MODE.equals(localname)) {
+								((GroundOverlay) fs).setAltitudeMode(stream
+										.getElementText());
+							}
+						} else if (screen) {
+							if (OVERLAY_XY.equals(localname)) {
+								ScreenLocation val = handleScreenLocation(sl);
+								((ScreenOverlay) fs).setOverlay(val);
+							} else if (SCREEN_XY.equals(localname)) {
+								ScreenLocation val = handleScreenLocation(sl);
+								((ScreenOverlay) fs).setScreen(val);
+							} else if (ROTATION_XY.equals(localname)) {
+								ScreenLocation val = handleScreenLocation(sl);
+								((ScreenOverlay) fs).setRotation(val);
+							} else if (SIZE.equals(localname)) {
+								ScreenLocation val = handleScreenLocation(sl);
+								((ScreenOverlay) fs).setSize(val);
+							} else if (ROTATION.equals(localname)) {
+								String val = stream.getElementText();
+								try {
+									double rot = Double.parseDouble(val);
+									if (Math.abs(rot) <= 180)
+										((ScreenOverlay) fs).setRotationAngle(rot);
+									else
+										log.warn("Invalid ScreenOverlay rotation value " + val);
+								} catch (NumberFormatException nfe) {
+									log.warn("Invalid ScreenOverlay rotation " + val + ": " + nfe);
+								}
+							}
+						}
 					} else if (network) {
-                        if (REFRESH_VISIBILITY.equals(localname)) {
-                            ((NetworkLink) fs).setRefreshVisibility(isTrue(stream
-                                    .getElementText()));
-                        } else if (FLY_TO_VIEW.equals(localname)) {
-                            ((NetworkLink) fs).setFlyToView(isTrue(stream
-                                    .getElementText()));
-                        } else if (LINK.equals(localname)) {
-                            ((NetworkLink) fs).setLink(handleTaggedData(localname));
-                        } else if (URL.equals(localname)) {
-                            ((NetworkLink) fs).setLink(handleTaggedData(localname));
-                        }
-                    }
-                }
+						if (REFRESH_VISIBILITY.equals(localname)) {
+							((NetworkLink) fs).setRefreshVisibility(isTrue(stream
+									.getElementText()));
+						} else if (FLY_TO_VIEW.equals(localname)) {
+							((NetworkLink) fs).setFlyToView(isTrue(stream
+									.getElementText()));
+						} else if (LINK.equals(localname)) {
+							((NetworkLink) fs).setLink(handleTaggedData(localname));
+						} else if (URL.equals(localname)) {
+							((NetworkLink) fs).setLink(handleTaggedData(localname));
+						}
+					}
+				}
 			} else if (foundEndTag(ee, se.getName().getLocalPart())) {
 				break; // End of feature
 			}
@@ -1204,6 +1252,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * 
 	 * @param overlay
 	 * @param sl
+     * @throws javax.xml.stream.XMLStreamException
 	 */
 	private void handleLatLonBox(GroundOverlay overlay, StartElement sl)
 			throws XMLStreamException {
@@ -1219,19 +1268,25 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				String sename = se.getName().getLocalPart();
 				String value = stream.getElementText();
 				if (StringUtils.isNotBlank(value)) {
-					Double angle = new Double(value.trim());
-					if (NORTH.equals(sename)) {
-						overlay.setNorth(angle);
-					} else if (SOUTH.equals(sename)) {
-						overlay.setSouth(angle);
-					} else if (EAST.equals(sename)) {
-						overlay.setEast(angle);
-					} else if (WEST.equals(sename)) {
-						overlay.setWest(angle);
-					} else if (ROTATION.equals(sename)) {
-						overlay.setRotation(angle);
-					}
-				}
+                    try {
+                        Double angle = Double.valueOf(value.trim());
+                        if (NORTH.equals(sename)) {
+                            overlay.setNorth(angle);
+                        } else if (SOUTH.equals(sename)) {
+                            overlay.setSouth(angle);
+                        } else if (EAST.equals(sename)) {
+                            overlay.setEast(angle);
+                        } else if (WEST.equals(sename)) {
+                            overlay.setWest(angle);
+                        } else if (ROTATION.equals(sename)) {
+                            overlay.setRotation(angle);
+                        }
+                    } catch (NumberFormatException nfe) {
+                        log.error("Invalid GroundOverlay angle " + value + " in " + sename);
+                    } catch (IllegalArgumentException nfe) {
+                        log.error("Invalid GroundOverlay value in " + sename + ": " + nfe);
+                    }
+                }
 			}
 		}
 	}
