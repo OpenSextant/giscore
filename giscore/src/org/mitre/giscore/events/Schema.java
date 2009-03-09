@@ -61,7 +61,7 @@ public class Schema implements IGISObject {
 	 */
 	public Schema() {
 		try {
-			id = new URI("#s_" + ms_idgen.incrementAndGet());
+			id = new URI("s_" + ms_idgen.incrementAndGet());
 			name = "schema_" + ms_idgen.get();
 			nid = ms_idgen.get();
 		} catch (URISyntaxException e) {
@@ -120,6 +120,7 @@ public class Schema implements IGISObject {
 
     /**
      * Return parent. Used only in old-style KML 2.0 documents.
+	 * This should normally be null.
      * @return parent
      */
     public String getParent() {
