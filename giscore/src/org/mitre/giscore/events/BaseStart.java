@@ -38,13 +38,14 @@ import org.apache.commons.lang.builder.ToStringStyle;
  */
 public abstract class BaseStart implements IGISObject, Serializable {
 	private static final long serialVersionUID = 1L;
+
 	protected String name;
 	protected String description;
 	protected URI schema;
 	protected Date startTime;
 	protected Date endTime;
 	protected String styleUrl;
-	protected Map<SimpleField, Object> extendedData = new HashMap<SimpleField, Object>();
+	protected final Map<SimpleField, Object> extendedData = new HashMap<SimpleField, Object>();
 
 	/**
 	 * @return the name
