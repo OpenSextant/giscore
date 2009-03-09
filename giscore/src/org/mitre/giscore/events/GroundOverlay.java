@@ -115,13 +115,16 @@ public class GroundOverlay extends Overlay {
      * Set angle of rotation of the overlay image about its center, in degrees
      * counterclockwise starting from north. The default is 0 (north).
      *
-     * @param rotation angle of rotation
+     * @param rotationAngle angle of rotation
      * @throws IllegalArgumentException if rotation angle is out of range [-180,+180]
 	 */
-	public void setRotation(Double rotation) {
-        if (rotation != null && (Double.isNaN(rotation) || rotation < -180 || rotation > 180))
-            throw new IllegalArgumentException("Rotation out of range [-180,+180]: " + rotation);        
-        this.rotation = rotation;
+	public void setRotation(Double rotationAngle) {
+        if (rotationAngle != null) {
+            double rotation = rotationAngle;
+            if (Double.isNaN(rotation) || rotation < -180 || rotation > 180)
+                throw new IllegalArgumentException("Rotation out of range [-180,+180]: " + rotation);
+        }
+        this.rotation = rotationAngle;
 	}
 
 	/**
