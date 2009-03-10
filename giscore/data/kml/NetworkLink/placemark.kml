@@ -1,6 +1,7 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Placemark id="p">
     <name>P</name>
+    <description>Test Placemark</description>
     <Point>
       <coordinates>1,1</coordinates>
     </Point>
