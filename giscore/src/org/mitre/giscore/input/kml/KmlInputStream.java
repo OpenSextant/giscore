@@ -313,10 +313,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
             } else if (ms_attributes.contains(localname)) {
                 // Skip, but consume
                 return true;
-            } else if (localname.equals(SNIPPET)) {
-                handleSnippet(feature, ee);
+			} else if (localname.equals(STYLE_URL)) {
+                feature.setStyleUrl(stream.getElementText());
                 return true;
-            } else if (localname.equals(REGION)) {
+			} else if (localname.equals(REGION)) {
                 handleRegion(feature, ee);
                 return true;
             } else if (localname.equals(TIME_SPAN) || localname.equals(TIME_STAMP)) {
@@ -328,17 +328,22 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
             } else if (localname.equals(LOOK_AT) || localname.equals(CAMERA)) {
                 handleAbstractView(feature, ee);
                 return true;
-            } else if (localname.equals(METADATA)) {
-                handleMetadata(feature, ee);
-                return true;
-            } else if (localname.equals(EXTENDED_DATA)) {
+			} else if (localname.equals(EXTENDED_DATA)) {
                 handleExtendedData(feature, ee);
                 return true;
-            } else if (localname.equals(STYLE_URL)) {
-                feature.setStyleUrl(stream.getElementText());
+			} else if (localname.equals(METADATA)) {
+                handleMetadata(feature, ee);
                 return true;
-            }
-        } catch (XMLStreamException e) {
+			} else if (localname.equals(SNIPPET)) {
+                handleSnippet(feature, ee); // Snippet
+                return true;
+			} else if (localname.equals("snippet")) {
+				handleSnippet(feature, ee); // snippet (deprecated in 2.2)
+				// Note: schema shows Snippet is deprecated but documentation and examples
+				// seem to indicate snippet is deprecated...
+				return true;
+			}
+		} catch (XMLStreamException e) {
             log.error("Failed to handle: " + localname, e);
         }
         return false;
@@ -372,14 +377,24 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					Attribute url = se
 							.getAttributeByName(new QName(SCHEMA_URL));
 					if (url != null) {
-						handleSchemaData(cs, url);
+						handleSchemaData(cs);
+						String uri = url.getValue();
 						try {
-							cs.setSchema(new URI(url.getValue()));
+							cs.setSchema(new URI(uri));
 						} catch (URISyntaxException e) {
-							throw new XMLStreamException(e);
+							log.error("Failed to handle SchemaData schemaUrl=" + uri , e);
 						}
 					}
 				}
+				// Note external namespace contents not supported
+				// http://code.google.com/apis/kml/documentation/extendeddata.html
+				/*
+					<ExtendedData xmlns:camp="http://campsites.com">
+					  <camp:number>14</camp:number>
+					  <camp:parkingSpaces>2</camp:parkingSpaces>
+					  <camp:tentSites>4</camp:tentSites>
+					</ExtendedData>
+				 */
 			} else if (foundEndTag(next, EXTENDED_DATA)) {
 				return;
 			}
@@ -419,11 +434,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
-	 * @param cs
-	 * @param url
+	 * @param cs Feature/Container for ExtendedData tag
 	 * @throws XMLStreamException
 	 */
-	private void handleSchemaData(BaseStart cs, Attribute url)
+	private void handleSchemaData(BaseStart cs)
 			throws XMLStreamException {
 		XMLEvent next;
 		while (true) {
@@ -764,7 +778,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(SCALE)) {
-					scale = Double.parseDouble(stream.getElementText());
+					String value = stream.getElementText(); 
+					try {
+						scale = Double.parseDouble(value);
+					} catch (NumberFormatException nfe) {
+						log.warn("Invalid scale value: " + value);
+					}
 				} else if (name.equals(COLOR)) {
 					color = parseColor(stream.getElementText());
 				}
@@ -927,17 +946,20 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
-	 * @param e
-	 * @return
-	 * @throws javax.xml.stream.XMLStreamException
+	 * @param e current XML element
+	 * @return IGISObject representing current element,
+	 * 			NullObject if failed to parse and unable to skip to end tag for that element
+	 * @throws XMLStreamException 
+	 * @throws IOException if encountered NetworkLinkControl or out of order Style
+	 * 			and failed to skip to end tag for that element.
 	 */
 	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException, IOException {
 		StartElement se = e.asStartElement();
 		String localname = se.getName().getLocalPart();
-		String elementName = localname; // differs from localname if aliased
+		String elementName = localname; // differs from localname if aliased by Schema mapping
 		//System.out.println(localname); //debug
 		// check if element has been aliased in Schema
-		// only used for old-style KML 2.0 Schema defs with "parent" attribute.
+		// only used for old-style KML 2.0/2.1 Schema defs with "parent" attribute.
 		// generally only Placemarks are aliased. Not much use to alias Document or Folder elements, etc.
 		if (schemaAliases != null) {
 			String newName = schemaAliases.get(elementName);
@@ -956,9 +978,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} else if (SCHEMA.equals(localname)) {
 				return handleSchema(se, localname);
 			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
-				handleNetworkLinkControl(stream, localname);
+				try {
+					handleNetworkLinkControl(stream, localname);
+				} catch (XMLStreamException xe) {
+					final IOException e2 = new IOException();
+					e2.initCause(xe);
+					throw e2;
+				}
 			} else if (STYLE.equals(localname)) {
-				//System.out.println("skipping found style out of order");
+				// System.out.println("XXX: skipping found style out of order");
 				try {
 					skipNextElement(stream, localname);
 				} catch (XMLStreamException xe) {
@@ -1014,24 +1042,21 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		Schema s = new Schema();
 		buffered.add(s);
 		Attribute attr = element.getAttributeByName(new QName(NAME));
-		String name = null;
-		if (attr != null) name = attr.getValue();			
-		String parent = null;
+		String name = getNonEmptyAttrValue(attr);
+
 		// get parent attribute for old-style KML 2.0/2.1 which aliases KML elements
 		// (e.g. Placemarks) with user-defined ones.
 		attr = element.getAttributeByName(new QName(PARENT));
-		if (attr != null && attr.getValue() != null) {
-			String parentVal = attr.getValue().trim();
-			if (parentVal.length() != 0) parent = parentVal;
-		}
+		String parent = getNonEmptyAttrValue(attr);
 		Attribute id = element.getAttributeByName(new QName(ID));
-		if (id != null)
+		if (id != null) {
+			String uri = id.getValue();
 			try {
-				s.setId(new URI(id.getValue()));
+				s.setId(new URI(uri));
 			} catch (URISyntaxException e) {
-				//throw new XMLStreamException(e);
-				log.warn("Invalid schema id " + id, e);
+				log.warn("Invalid schema id " + uri, e);
 			}
+		}
 
 		int gen = 0;
 		while (true) {
@@ -1052,7 +1077,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						if (type != null) {
 							String typeValue = type.getValue();
 							// old-style "wstring" is just a string type
-							 if (StringUtils.isNotEmpty(typeValue) && !"wstring".equalsIgnoreCase(typeValue))
+							if (StringUtils.isNotEmpty(typeValue) && !"wstring".equalsIgnoreCase(typeValue))
 								ttype = SimpleField.Type.valueOf(typeValue.toUpperCase());
 						}
 						field.setType(ttype);
@@ -1063,15 +1088,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						log.warn("Invalid schema field " + fieldname + ": " + e.getMessage());
 					}
 				} else if (foundStartTag(se, PARENT)) {
-					 // parent can only appear as Schema child element in KML 2.0 or 2.1
+					 // parent should only appear as Schema child element in KML 2.0 or 2.1
 					String parentVal = stream.getElementText();
 					if (StringUtils.isNotEmpty(parentVal))
-						parent = parentVal;
+						parent = parentVal.trim();
 				} else if (foundStartTag(se, NAME)) {
-					 // name can only appear as Schema child element in KML 2.0 or 2.1
+					 // name should only appear as Schema child element in KML 2.0 or 2.1
 					String nameVal = stream.getElementText();
 					if (StringUtils.isNotEmpty(nameVal))
-						name = nameVal;
+						name = nameVal.trim();
 				}
 			} else if (foundEndTag(next, SCHEMA)) {
 				break;
@@ -1088,11 +1113,27 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				if (schemaAliases == null)
 					schemaAliases = new HashMap<String, String>();
 				schemaAliases.put(name, parent);
-				// log.info(schemaAliases.toString());
 			}
 		}
 		
 		return buffered.removeFirst();
+	}
+
+	/**
+	 * Returns non-empty text value from attribute
+	 * @param attr Attribute
+	 * @return non-empty text value trimmed from attribute,
+	 * 			null if empty
+	 */
+	private static String getNonEmptyAttrValue(Attribute attr) {
+		if (attr != null) {
+			String value = attr.getValue();
+			if (value != null) {
+				value = value.trim();
+				if (value.length() != 0) return value;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -1165,11 +1206,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				StartElement sl = ee.asStartElement();
 				QName name = sl.getName();
 				String localname = name.getLocalPart();
-				// TODO: if element is aliased Placemark then metdata fields won't be picked up
-				// could treat as ExtendedData if want to preserve data.
+				// Note: if element is aliased Placemark then metadata fields won't be saved
+				// could treat as ExtendedData if want to preserve this data.
 				if (!handleProperties(fs, ee, localname)) {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
+						// Point, LineString, Polygon, Model, etc.
 						Geometry geo = handleGeometry(sl);
 						if (geo != null) {
 							fs.setGeometry(geo);
@@ -1502,24 +1544,27 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 				if (event.asStartElement().getName().getLocalPart().equals(
 						COORDINATES)) {
-					String text = stream.getElementText().trim();
+					String text = stream.getElementText();
 					// allow sloppy KML with whitespace appearing before/after
-					// lat and lon values
-					// e.g. <coordinates>-121.9921875, 37.265625</coordinates>
+					// lat and lon values; e.g. <coordinates>-121.9921875, 37.265625</coordinates>
 					// http://kml-samples.googlecode.com/svn/trunk/kml/ListStyle/radio-folder-vis.kml
-					if (!StringUtils.isEmpty(text)) {
+					if (StringUtils.isNotEmpty(text)) {
 						String parts[] = text.split(",");
 						if (parts.length > 1) {
-							double dlon = Double.parseDouble(parts[0]);
-							double dlat = Double.parseDouble(parts[1]);
-							Longitude lon = new Longitude(dlon, Angle.DEGREES);
-							Latitude lat = new Latitude(dlat, Angle.DEGREES);
-							if (parts.length < 3) {
-								rval = new Point(new Geodetic2DPoint(lon, lat));
-							} else {
-								double elev = Double.parseDouble(parts[2]);
-								rval = new Point(new Geodetic3DPoint(lon, lat,
-										elev));
+							try {
+								double dlon = Double.parseDouble(parts[0]);
+								double dlat = Double.parseDouble(parts[1]);
+								Longitude lon = new Longitude(dlon, Angle.DEGREES);
+								Latitude lat = new Latitude(dlat, Angle.DEGREES);
+								if (parts.length < 3) {
+									rval = new Point(new Geodetic2DPoint(lon, lat));
+								} else {
+									double elev = Double.parseDouble(parts[2]);
+									rval = new Point(new Geodetic3DPoint(lon, lat,
+											elev));
+								}
+							} catch (NumberFormatException nfe) {
+								log.warn("Invalid coordinate: " + text + ": " + nfe);
 							}
 						}
 					}
