@@ -29,23 +29,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.mitre.giscore.events.BaseStart;
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.GroundOverlay;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.Overlay;
-import org.mitre.giscore.events.PhotoOverlay;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.ScreenLocation;
-import org.mitre.giscore.events.ScreenOverlay;
-import org.mitre.giscore.events.SimpleField;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.events.StyleMap;
-import org.mitre.giscore.events.TaggedMap;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
@@ -352,16 +336,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
 		if (overlay instanceof GroundOverlay) {
 			GroundOverlay go = (GroundOverlay) overlay;
-			handleSimpleElement(ALTITUDE, go.getAltitude());
-			handleSimpleElement(ALTITUDE_MODE, go.getAltitudeMode());
+			handleNonNullSimpleElement(ALTITUDE, go.getAltitude());
+			handleNonNullSimpleElement(ALTITUDE_MODE, go.getAltitudeMode());
 			writer.writeStartElement(LAT_LON_BOX);
-			handleSimpleElement(NORTH, go.getNorth());
-			handleSimpleElement(SOUTH, go.getSouth());
-			handleSimpleElement(EAST, go.getEast());
-			handleSimpleElement(WEST, go.getWest());
-            Double rot = go.getRotation();
-            if (rot != null)
-                handleSimpleElement(ROTATION, rot);
+			handleNonNullSimpleElement(NORTH, go.getNorth());
+			handleNonNullSimpleElement(SOUTH, go.getSouth());
+			handleNonNullSimpleElement(EAST, go.getEast());
+			handleNonNullSimpleElement(WEST, go.getWest());
+			handleNonNullSimpleElement(ROTATION, go.getRotation());
             writer.writeEndElement();
 		} else if (overlay instanceof PhotoOverlay) {
 			// PhotoOverlay po = (PhotoOverlay) overlay;
@@ -372,13 +354,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			handleXY(SCREEN_XY, so.getScreen());
 			handleXY(ROTATION_XY, so.getRotation());
 			handleXY(SIZE, so.getSize());
-            Double rot = so.getRotationAngle();
-            if (rot != null)
-                handleSimpleElement(ROTATION, rot);
+			handleNonNullSimpleElement(ROTATION, so.getRotationAngle());
 		}
 	}
 
-    // elements associated with Kml22 LinkType in sequence order
+	private void handleNonNullSimpleElement(String tag, Object content) throws XMLStreamException {
+		if (content != null) handleSimpleElement(tag, content);
+	}
+
+	// elements associated with Kml22 LinkType in sequence order
     // for Icon, Link, and Url elements
     private static final String[] LINK_TYPE_TAGS = {
           "href",
@@ -639,7 +623,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		if (b.length() > 0) {
 			b.append(' ');
 		}
-		Geodetic2DPoint p2d = (Geodetic2DPoint) point.getCenter();
+		Geodetic2DPoint p2d = point.getCenter();
 		b.append(p2d.getLongitude().inDegrees());
 		b.append(',');
 		b.append(p2d.getLatitude().inDegrees());
@@ -649,7 +633,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			b.append(p3d.getElevation());
 		}
 	}
-
+	
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -663,14 +647,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			writer.writeStartElement(SCHEMA);
 			writer.writeAttribute(NAME, schema.getName());
 			writer.writeAttribute(ID, schema.getId().toString());
-            /*
-            // parent attribute may exist from old-style KML 2.0 documents
-            // but is not valid in KML 2.2 so should not be exported...
-            // otherwise KL is not valid.
-            String parent = schema.getParent();
-            if (parent != null)
-                writer.writeAttribute(PARENT, parent);
-            */
             for (String name : schema.getKeys()) {
 				SimpleField field = schema.get(name);
 				if (field.getType().isGeometry()) {
@@ -796,7 +772,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		handleSimpleElement(SCALE, Double.toString(style.getIconScale()));
 		if (style.getIconUrl() != null) {
 			writer.writeStartElement(ICON);
-			handleSimpleElement(HREF, style.getIconUrl());
+			if (style.getIconUrl() != null)
+				handleSimpleElement(HREF, style.getIconUrl());
 			writer.writeEndElement();
 		}
         /*
