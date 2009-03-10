@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.1">
+<!-- 
+
+Subset of TimeStamp example showing
+inherited iconStyle for those Placemarks w/o styleUrl
+
+original: http://code.google.com/apis/kml/documentation/TimeStamp_example.kml
+
+-->
+  <Document>
+    <name>Points with TimeStamps</name>
+    <styleUrl>#hiker-icon</styleUrl>
+    <Style id="paddle-a">
+      <IconStyle>
+        <Icon>
+          <href>http://maps.google.com/mapfiles/kml/paddle/A.png</href>
+        </Icon>
+        <hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+      </IconStyle>
+    </Style>
+    <Style id="paddle-b">
+      <IconStyle>
+        <Icon>
+          <href>http://maps.google.com/mapfiles/kml/paddle/B.png</href>
+        </Icon>
+        <hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+      </IconStyle>
+    </Style>
+    <Style id="hiker-icon">
+      <IconStyle>
+        <Icon>
+          <href>http://maps.google.com/mapfiles/ms/icons/hiker.png</href>
+        </Icon>
+        <hotSpot x="0" y=".5" xunits="fraction" yunits="fraction"/>
+      </IconStyle>
+    </Style>
+    <Placemark>
+      <name>1</name>
+      <styleUrl>#paddle-a</styleUrl>
+      <Point>
+        <coordinates>-122.536226,37.86047,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>2</name>
+      <Point>
+        <coordinates>-122.536422,37.860303,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>3</name>
+      <Point>
+        <coordinates>-122.536688,37.860072,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>4</name>
+      <styleUrl>#paddle-b</styleUrl>
+      <Point>
+        <coordinates>-122.536923,37.859855,0</coordinates>
+      </Point>
+    </Placemark>
+  </Document>
+</kml>
