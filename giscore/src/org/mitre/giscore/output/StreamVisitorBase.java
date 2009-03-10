@@ -18,14 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.output;
 
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.GroundOverlay;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.events.StyleMap;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
@@ -47,7 +40,6 @@ import org.mitre.giscore.geometry.Polygon;
  *
  */
 public class StreamVisitorBase {
-
 	
 	/**
 	 * Default behavior ignores containers
@@ -188,4 +180,8 @@ public class StreamVisitorBase {
     public void visit(GroundOverlay overlay) {
         // do nothing
     }
+
+	public void visit(Comment comment) {
+		// do nothing
+	}
 }
