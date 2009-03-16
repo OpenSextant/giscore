@@ -22,14 +22,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -44,24 +37,7 @@ import javax.xml.stream.events.XMLEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.events.BaseStart;
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.GroundOverlay;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.NullObject;
-import org.mitre.giscore.events.Overlay;
-import org.mitre.giscore.events.PhotoOverlay;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.ScreenLocation;
-import org.mitre.giscore.events.ScreenOverlay;
-import org.mitre.giscore.events.SimpleField;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.events.StyleMap;
-import org.mitre.giscore.events.TaggedMap;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
@@ -218,7 +194,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						IGISObject se = handleStartElement(e);
 						if (se == NullObject.getInstance())
 							break;
-						return se; // start element is GISObject or null
+						return se; // start element is GISObject or null (indicating EOF)
 					case XMLStreamReader.END_ELEMENT:
 						IGISObject rval = handleEndElement(e);
 						if (rval != null)
@@ -974,26 +950,45 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (ms_features.contains(elementName)) {
 				return handleFeature(e, elementName);
 			} else if (ms_containers.contains(elementName)) {
+				//System.out.println("** handle container: " + elementName);
 				return handleContainer(se);
 			} else if (SCHEMA.equals(localname)) {
 				return handleSchema(se, localname);
 			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
 				try {
-					handleNetworkLinkControl(stream, localname);
+                    skipNextElement(stream, localname);
+                    return new Comment("placeholder for " + localname);
+                    //handleNetworkLinkControl(stream, localname);
 				} catch (XMLStreamException xe) {
 					final IOException e2 = new IOException();
 					e2.initCause(xe);
 					throw e2;
 				}
 			} else if (STYLE.equals(localname)) {
-				// System.out.println("XXX: skipping found style out of order");
-				try {
+                StringBuilder sb = new StringBuilder();
+                sb.append("placeholder for style");
+                int count = 0;
+                for(Iterator it = se.getAttributes(); it.hasNext(); ) {
+                    Object o = it.next();
+                    if (o instanceof Attribute) {
+                        Attribute a = (Attribute)o;
+                        count++;
+                        sb.append("\n\t").append(a.getName()).append("=").append(a.getValue());
+                    }
+                }
+
+                //System.out.println("XXX: skipping found style out of order");
+				//handleStyle(null, e);
+				//return buffered.removeFirst();
+                try {
 					skipNextElement(stream, localname);
 				} catch (XMLStreamException xe) {
 					final IOException e2 = new IOException();
 					e2.initCause(xe);
 					throw e2;
 				}
+                if (count != 0) sb.append(" \n");
+                return new Comment(sb.toString());
 			} else {
 				// Look for next start element and recurse
 				e = stream.nextTag();
