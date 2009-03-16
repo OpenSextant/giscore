@@ -39,12 +39,13 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 		IGISOutputStream {	
 	protected OutputStream stream;
 	protected XMLStreamWriter writer;
-	protected XMLOutputFactory factory = null; 
+	protected XMLOutputFactory factory; 
 	
 	/**
 	 * Ctor
 	 * 
 	 * @param stream
+     * @throws javax.xml.stream.XMLStreamException
 	 */
 	public XmlOutputStreamBase(OutputStream stream) throws XMLStreamException {
 		if (stream == null) {
@@ -52,7 +53,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 		}
 		this.stream = stream;
 		factory = createFactory();
-		writer = factory.createXMLStreamWriter(stream);
+        writer = factory.createXMLStreamWriter(stream);
 	}
 
 	/**
@@ -122,15 +123,18 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 	/**
 	 * Handle a simple element with text, a common case for kml
 	 * 
-	 * @param tag
-	 * @param content
+	 * @param tag local name of the tag, may not be null
+	 * @param content Content to write as parsed character data, if null then an empty XML element is written
 	 * @throws XMLStreamException
 	 */
 	protected void handleSimpleElement(String tag, Object content)
 			throws XMLStreamException {
-		if (content == null) content = " ";
-		writer.writeStartElement(tag);
-		handleCharacters(content.toString());
-		writer.writeEndElement();
-	}
+        if (content == null)
+            writer.writeEmptyElement(tag);
+        else {
+            writer.writeStartElement(tag);
+            handleCharacters(content.toString());
+            writer.writeEndElement();
+        }
+    }
 }
