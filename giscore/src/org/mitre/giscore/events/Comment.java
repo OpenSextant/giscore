@@ -65,7 +65,7 @@ public class Comment implements IGISObject, Serializable {
 	 *         <code>Comment</code>
 	 */
 	public String toString() {
-		return new StringBuffer()
+		return new StringBuilder()
 			.append("[Comment: ")
 			.append(text)
 			.append(']')
