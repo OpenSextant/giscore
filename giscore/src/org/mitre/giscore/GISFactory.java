@@ -138,7 +138,9 @@ public class GISFactory {
 						"Cannot create an output stream for type " + type);
 			}
 		} catch (XMLStreamException e) {
-			throw new IOException(e);
+			final IOException e2 = new IOException();
+			e2.initCause(e);
+			throw e2;
 		}
 	}
 

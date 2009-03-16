@@ -13,7 +13,7 @@
 		<artifact name="giscore-javadoc" type="javadoc" ext="jar" />
 	</publications>
 	<dependencies>
-		<dependency org="org.mitre.itf" name="geodesy" rev="1.9.0" />
+		<dependency org="org.mitre.itf" name="geodesy" rev="1.9.1.0" />
 		<dependency org="commons-lang" name="commons-lang" rev="2.4">
 			<exclude org="commons-logging" module="commons-logging" />
 		</dependency>

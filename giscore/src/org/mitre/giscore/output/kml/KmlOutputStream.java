@@ -100,7 +100,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             writer.writeEndDocument();
 			super.close();
 		} catch (XMLStreamException e) {
-			throw new IOException(e);
+			final IOException e2 = new IOException();
+			e2.initCause(e);
+			throw e2;
 		}
 	}
 

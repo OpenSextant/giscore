@@ -75,7 +75,9 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 			writer.close();
 			IOUtils.closeQuietly(stream);
 		} catch (XMLStreamException e) {
-			throw new IOException(e);
+			final IOException e2 = new IOException();
+			e2.initCause(e);
+			throw e2;
 		}
 	}
 

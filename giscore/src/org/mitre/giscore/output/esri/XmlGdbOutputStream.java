@@ -344,7 +344,9 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			super.close();
 			sorter.cleanup();
 		} catch (XMLStreamException e) {
-			throw new IOException(e);
+			final IOException e2 = new IOException();
+			e2.initCause(e);
+			throw e2;
 		}
 	}
 
