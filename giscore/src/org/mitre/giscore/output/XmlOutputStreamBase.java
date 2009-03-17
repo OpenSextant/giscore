@@ -36,8 +36,9 @@ import org.mitre.giscore.events.IGISObject;
  * 
  */
 public class XmlOutputStreamBase extends StreamVisitorBase implements
-		IGISOutputStream {	
-	protected OutputStream stream;
+		IGISOutputStream {
+
+    protected OutputStream stream;
 	protected XMLStreamWriter writer;
 	protected XMLOutputFactory factory; 
 	
@@ -73,12 +74,13 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 		try {
 			writer.flush();
 			writer.close();
-			IOUtils.closeQuietly(stream);
 		} catch (XMLStreamException e) {
 			final IOException e2 = new IOException();
 			e2.initCause(e);
 			throw e2;
-		}
+		} finally {
+            IOUtils.closeQuietly(stream);
+        }
 	}
 
 	/*
