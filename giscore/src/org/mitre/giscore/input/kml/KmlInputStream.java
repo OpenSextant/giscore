@@ -101,7 +101,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private XMLEventReader stream;
 	private final LinkedList<IGISObject> buffered = new LinkedList<IGISObject>();
 
-	private static XMLInputFactory ms_fact;
+	private static final XMLInputFactory ms_fact;
 	private static final Set<String> ms_features = new HashSet<String>();
 	private static final Set<String> ms_containers = new HashSet<String>();
 	private static final Set<String> ms_attributes = new HashSet<String>();
@@ -484,12 +484,13 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			throws XMLStreamException {
 		StartElement se = ee.asStartElement();
 		XMLEvent next;
+        String localname = se.getName().getLocalPart();
 
-		while (true) {
+        while (true) {
 			next = stream.nextEvent();
 			if (next == null)
 				return;
-			if (foundEndTag(next, se.getName().getLocalPart()))
+			if (foundEndTag(next, localname))
 				return;
 		}
 	}
