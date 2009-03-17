@@ -27,7 +27,6 @@ import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.StreamVisitorBase;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 
-
 /**
  * We've seen the start of a feature set. The start of the feature set has all
  * the available information about the feature. After the start of a feature,
@@ -114,7 +113,9 @@ public class Feature extends BaseStart {
 		} else if (geometry != null && other.geometry != null) {
 			Geodetic2DBounds bb1 = geometry.getBoundingBox();
 			Geodetic2DBounds bb2 = other.geometry.getBoundingBox();
-			if (! bb1.equals(bb2, 1e-5)) return false;
+            if (bb1 == null) {
+                if (bb2 != null) return false;
+            } else if (! bb1.equals(bb2, 1e-5)) return false;
 			if (geometry.getNumPoints() != other.geometry.getNumPoints()) return false;
 			return true;
 		} else {
@@ -123,4 +124,3 @@ public class Feature extends BaseStart {
 		
 	}
 }
-
