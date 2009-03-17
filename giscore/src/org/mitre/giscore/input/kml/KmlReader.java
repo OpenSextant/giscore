@@ -165,13 +165,12 @@ public class KmlReader implements IKml {
                             if (!gisNetworkLinks.contains(uri)) {
                                 gisNetworkLinks.add(uri);
                                 if (networkLinks != null) {
-                                    StringBuilder buf = new StringBuilder("Placeholder for NetworkLink");
-                                    buf.append(" href=").append(uri);
-                                    features.add(new Comment(buf.toString()));
+                                    //StringBuilder buf = new StringBuilder("Placeholder for NetworkLink");
+                                    //buf.append(" href=").append(uri);
+                                    //features.add(new Comment(buf.toString()));
                                     networkLinks.add(uri);
                                 }
-                                else
-                                    features.add(link);
+                                features.add(link);
                             }
                             else System.out.println("\t*** skipping networklink with dup href");
                         } else
