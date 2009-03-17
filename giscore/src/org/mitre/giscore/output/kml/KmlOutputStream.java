@@ -39,6 +39,7 @@ import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlInputStream;
+import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.output.XmlOutputStreamBase;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
@@ -386,8 +387,19 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         writer.writeStartElement(elementName);
         for (String tag : LINK_TYPE_TAGS) {
             String val = map.get(tag);
-            if (val != null && val.length() != 0)
+            if (val != null && val.length() != 0) {
+                if (tag.equals(HREF) && val.startsWith("kmz") && val.indexOf("file=") > 0) {
+                    // replace internal URI (which is used to associate link with parent KMZ file)
+                    // with the relative target URL from original KMZ file.
+                    try {
+                        UrlRef urlRef = new UrlRef(new URI(val));
+                        val = urlRef.getKmzRelPath();
+                    } catch (Exception e) {
+                        // ignore
+                    }
+                }
                 handleSimpleElement(tag, val);
+            }
         }
         writer.writeEndElement();
     }
@@ -872,4 +884,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 		writer.writeEndElement();
 	}
+
+    /**
+     *
+     * @return true if there are any elements on the waitingElements list
+     */
+    public boolean isWaiting() {
+        return waitingElements.size() != 0;
+    }
 }
