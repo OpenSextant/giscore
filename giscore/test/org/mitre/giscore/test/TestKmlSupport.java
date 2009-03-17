@@ -19,7 +19,7 @@
 package org.mitre.giscore.test;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -34,6 +34,7 @@ import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.apache.commons.io.IOUtils;
@@ -47,7 +48,7 @@ public class TestKmlSupport extends TestGISBase {
 	 * Base path to test directories
 	 */
 	public static final String base_path = "data/kml/";
-	
+
 	@Test public void testAtom() throws Exception {
 		runTestsOnDir("atom");
 	}
@@ -96,7 +97,7 @@ public class TestKmlSupport extends TestGISBase {
 		runTestsOnDir("listview");
 	}
 	
-	@Test public void tesMetadata() throws Exception {
+	@Test public void testMetadata() throws Exception {
 		runTestsOnDir("Metadata");
 	}
 	
@@ -147,7 +148,7 @@ public class TestKmlSupport extends TestGISBase {
 	 */
 	private void runTestsOnDir(String dirname) throws IOException {
 		File dir = new File(base_path, dirname);
-		File contents[] = dir.listFiles();
+        File contents[] = dir.listFiles();
 		if (contents != null) {
 			for(File testcase : contents) {
 				if (testcase.isFile() && testcase.getName().endsWith(".kml")) {
@@ -169,12 +170,13 @@ public class TestKmlSupport extends TestGISBase {
 		System.out.println("Testing " + testcase);
         File temp = null;
         FileInputStream fs = new FileInputStream(testcase);
+        List<IGISObject> elements = new ArrayList<IGISObject>();
+        //List<IGISObject> elements2 = new ArrayList<IGISObject>();
         try {
             IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
 		    temp = createTemp("test", ".kml");
             OutputStream fos = new FileOutputStream(temp);
             IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
-            List<IGISObject> elements = new ArrayList<IGISObject>();
             IGISObject current;
             while ((current = is.read()) != null) {
                 os.write(current);
@@ -192,19 +194,42 @@ public class TestKmlSupport extends TestGISBase {
             is = GISFactory.getInputStream(DocumentType.KML, fs);
             int index = 0;
             while ((current = is.read()) != null) {
+                //elements2.add(current);
                 if (index >= elements.size()) {
-                    assertTrue("Found at least one extra element " + current, false);
+                    fail("Found at least one extra element " + current);
                 }
-                checkApproximatelyEquals(elements.get(index), current);
-                index++;
+                IGISObject prev = elements.get(index++);
+                if (prev instanceof Schema) {
+                    Schema schema = (Schema)prev;
+                    // if schema aliasing is used by presence of parent element or attribute
+                    // (old-style KML schema feature) then skip approx test for this element
+                    if (schema.getParent() != null)
+                        continue;
+                }
+                checkApproximatelyEquals(prev, current);
             }
             is.close();
+        } catch (AssertionError e) {
+            System.out.println(" *Failed in testcase: " + testcase.getName());
+            // System.out.println(" *temp=" + temp);
+            /*
+                for(Object o : elements) {
+                    System.out.println(" >" + o.getClass().getName());
+                }
+                System.out.println();
+                for(Object o : elements2) {
+                    System.out.println(" <" + o.getClass().getName());
+                }
+                System.out.println("\nelts1=" + elements);
+                System.out.println("\nelts2=" + elements2);
+                System.out.println();
+                */
+            throw e;
         } finally {
             IOUtils.closeQuietly(fs);
             if (temp != null && temp.exists()) temp.delete();
         }
 	}
-
 
 	/**
 	 * For most objects they need to be exactly the same, but for some we can 
@@ -218,10 +243,21 @@ public class TestKmlSupport extends TestGISBase {
 				Feature.class.isAssignableFrom(test.getClass())) {
 			Feature sf = (Feature) source;
 			Feature tf = (Feature) test;
-			
-			assertTrue(sf.approximatelyEquals(tf));			
-		} else {
+
+            if (!sf.approximatelyEquals(tf)) {
+                System.out.format(" *Failed approximatelyEquals\n\tsrc=%s\n\ttest=%s%n",
+                  sf.getClass().getName(), tf.getClass().getName());
+                /*
+                System.out.println(" source=" + sf);
+                System.out.println("--");
+                System.out.println(" test=" + tf);
+                System.out.println("--");
+                */
+                fail("approximatelyEquals");
+            }
+        } else {
 			assertEquals(source, test);
 		}
 	}
 }
+
