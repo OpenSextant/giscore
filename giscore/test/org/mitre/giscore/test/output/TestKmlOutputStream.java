@@ -18,11 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.output;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,7 +32,7 @@ import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.test.TestGISBase;
-import org.mitre.giscore.test.input.TestKmlInputStream;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Test the output stream
@@ -47,7 +43,7 @@ import org.mitre.giscore.test.input.TestKmlInputStream;
 public class TestKmlOutputStream extends TestGISBase {
 	@Test
 	public void testSimpleCase() throws Exception {
-		doTest(TestKmlInputStream.class.getResourceAsStream("7084.kml"));
+		doTest(getStream("7084.kml"));
 	}
 	
 	/**
@@ -57,42 +53,47 @@ public class TestKmlOutputStream extends TestGISBase {
 	 */
 	@Test
 	public void testCase2() throws Exception {
-		doTest(TestKmlInputStream.class.getResourceAsStream("KML_sample1.kml"));
+		doTest(getStream("KML_sample1.kml"));
 	}
 	
 	@Test
 	public void testCase3() throws Exception {
-		doTest(TestKmlInputStream.class.getResourceAsStream("schema_example.kml"));
+		doTest(getStream("schema_example.kml"));
 	}	
 
 	public void doTest(InputStream fs) throws Exception {
-		IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
-		File temp = createTemp("test", ".kml");
-		OutputStream fos = new FileOutputStream(temp);
-		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
-		List<IGISObject> elements = new ArrayList<IGISObject>();
-		IGISObject current;
-		while ((current = is.read()) != null) {
-			os.write(current);
-			elements.add(current);
-		}
+        File temp = null;
+        try {
+            IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
+		    temp = createTemp("test", ".kml");
+            OutputStream fos = new FileOutputStream(temp);
+            IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
+            List<IGISObject> elements = new ArrayList<IGISObject>();
+            IGISObject current;
+            while ((current = is.read()) != null) {
+                os.write(current);
+                elements.add(current);
+            }
 
-		is.close();
-		fs.close();
+            is.close();
+            fs.close();
 
-		os.close();
-		fos.close();
+            os.close();
+            fos.close();
 
-		// Test for equivalence
-		fs = new FileInputStream(temp);
-		is = GISFactory.getInputStream(DocumentType.KML, fs);
-		int index = 0;
-		while ((current = is.read()) != null) {
-			checkApproximatelyEquals(elements.get(index++), current);
-		}
-		is.close();
-		fs.close();
-	}
+            // Test for equivalence
+            fs = new FileInputStream(temp);
+            is = GISFactory.getInputStream(DocumentType.KML, fs);
+            int index = 0;
+            while ((current = is.read()) != null) {
+                checkApproximatelyEquals(elements.get(index++), current);
+            }
+            is.close();
+        } finally {
+            IOUtils.closeQuietly(fs);
+            if (temp != null && temp.exists()) temp.delete();
+        }
+    }
 	
 	/**
 	 * For most objects they need to be exactly the same, but for some we can 
@@ -111,11 +112,17 @@ public class TestKmlOutputStream extends TestGISBase {
 			if (! ae) {		
 				System.err.println("Source: " + source);
 				System.err.println("Test: " + test);
-				assertTrue("Found unequal objects", false);
+				fail("Found unequal objects");
 			}
 		} else {
 			assertEquals(source, test);
 		}
-		
 	}
+
+    private InputStream getStream(String filename) throws FileNotFoundException {
+        File file = new File("test/org/mitre/giscore/test/input/" + filename);
+        if (file.exists()) return new FileInputStream(file);
+        System.out.println("File does not exist: " + file);
+        return getClass().getResourceAsStream(filename);
+    }
 }

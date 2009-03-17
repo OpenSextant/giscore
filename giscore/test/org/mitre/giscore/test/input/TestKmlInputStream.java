@@ -24,6 +24,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
 
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
@@ -44,8 +47,8 @@ import org.mitre.giscore.input.IGISInputStream;
 public class TestKmlInputStream {
 	@Test
 	public void testTinySample() throws Exception {
-		InputStream stream = getClass().getResourceAsStream("7084.kml");
-		IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
+		InputStream stream = getStream("7084.kml");
+        IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
 
 		IGISObject firstN[] = new IGISObject[10];
 		for(int i = 0; i < firstN.length; i++) {
@@ -64,9 +67,9 @@ public class TestKmlInputStream {
 		assertTrue(firstN[6] instanceof Feature);
 		assertTrue(firstN[7] instanceof ContainerEnd);
 	}
-	
-	@Test public void testLargerSample() throws Exception {
-		InputStream stream = getClass().getResourceAsStream("KML_sample1.kml");
+
+    @Test public void testLargerSample() throws Exception {
+		InputStream stream = getStream("KML_sample1.kml");
 		IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
 		
 		IGISObject firstN[] = new IGISObject[100];
@@ -77,7 +80,7 @@ public class TestKmlInputStream {
 	}
 	
 	@Test public void testSchemaSample() throws Exception {
-		InputStream stream = getClass().getResourceAsStream("schema_example.kml");
+		InputStream stream = getStream("schema_example.kml");
 		IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
 		
 		IGISObject firstN[] = new IGISObject[10];
@@ -86,7 +89,13 @@ public class TestKmlInputStream {
 		}
 		System.out.println(firstN);
 	}
-	
-	
+
+    private InputStream getStream(String filename) throws FileNotFoundException {
+        File file = new File("test/org/mitre/giscore/test/input/" + filename);
+        if (file.exists()) return new FileInputStream(file);
+        System.out.println("File does not exist: " + file);
+        return getClass().getResourceAsStream(filename);
+    }
+
 }
 
