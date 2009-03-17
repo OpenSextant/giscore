@@ -646,13 +646,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 */
 	private void handleSnippet(BaseStart cs, XMLEvent ee)
 			throws XMLStreamException {
+        StartElement se = ee.asStartElement();
 		XMLEvent next;
+        String localname = se.getName().getLocalPart();
 
 		while (true) {
 			next = stream.nextEvent();
 			if (next == null)
 				return;
-			if (foundEndTag(next, SNIPPET)) {
+			if (foundEndTag(next, localname)) {
 				return;
 			}
 		}
@@ -1323,7 +1325,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * 
 	 * @param localname
 	 *            the localname, assumed not <code>null</code>.
-	 * @return the map, never <code>null</code>
+	 * @return the map, null if no non-empty values are found
 	 * @throws XMLStreamException
 	 */
 	private TaggedMap handleTaggedData(String localname)
@@ -1338,10 +1340,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				StartElement se = event.asStartElement();
 				String sename = se.getName().getLocalPart();
 				String value = stream.getElementText();
-				rval.put(sename, value);
+                // ignore empty elements; e.g. <Icon><href /></Icon>
+                if (value != null && value.length() != 0)
+                    rval.put(sename, value);
 			}
 		}
-		return rval;
+		return rval.size() == 0 ? null : rval;
 	}
 
 	/**
