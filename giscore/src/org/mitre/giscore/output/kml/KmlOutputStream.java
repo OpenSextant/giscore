@@ -65,12 +65,14 @@ import org.joda.time.DateTimeZone;
  * 
  */
 public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
-	private List<IGISObject> waitingElements = new ArrayList<IGISObject>();
+
+    private final List<IGISObject> waitingElements = new ArrayList<IGISObject>();
 	private static final DecimalFormat ms_float_fmt =
 		new DecimalFormat("##0.####");
 	private static final DecimalFormat ms_int_fmt =
 		new DecimalFormat("###,###");
     private DateTimeFormatter dateFormatter;
+    
     /**
 	 * Ctor
 	 * 
@@ -98,12 +100,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			writer.writeEndElement();
             writer.writeCharacters("\n");
             writer.writeEndDocument();
-			super.close();
 		} catch (XMLStreamException e) {
 			final IOException e2 = new IOException();
 			e2.initCause(e);
 			throw e2;
-		}
+		} finally {
+            super.close();
+        }
 	}
 
 	/*
@@ -197,7 +200,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 					for (SimpleField field : feature.getFields()) {
 						Object value = feature.getData(field);
 						writer.writeStartElement(DATA);
-						writer.writeAttribute("name", field.getName());
+						writer.writeAttribute(NAME, field.getName());
 						handleSimpleElement(VALUE, formatValue(field.getType(),
 								value));
 						writer.writeEndElement();
