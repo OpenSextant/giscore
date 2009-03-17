@@ -35,9 +35,10 @@ import org.mitre.itf.geodesy.Longitude;
  * @author Paul Silvey
  */
 public class Point extends Geometry {
-	private static final long serialVersionUID = 1L;
+    
+    private static final long serialVersionUID = 1L;
 
-	private Geodetic2DPoint pt; // or extended Geodetic3DPoint
+	private final Geodetic2DPoint pt; // or extended Geodetic3DPoint
 
 	/**
 	 * Ctor, create a point given a lat and lon value in a WGS84 spatial
@@ -49,10 +50,8 @@ public class Point extends Geometry {
 	 *            the longitude in degrees
 	 */
 	public Point(double lat, double lon) {
-		pt = new Geodetic2DPoint(new Longitude(lon,
-				Angle.DEGREES), new Latitude(lat, Angle.DEGREES));
-		numParts = 1;
-		numPoints = 1;
+        this(new Geodetic2DPoint(new Longitude(lon,
+				Angle.DEGREES), new Latitude(lat, Angle.DEGREES)));
 	}
 
 	/**
