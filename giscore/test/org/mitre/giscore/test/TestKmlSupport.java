@@ -36,7 +36,7 @@ import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
-
+import org.apache.commons.io.IOUtils;
 
 /**
  * @author DRAND
@@ -167,38 +167,42 @@ public class TestKmlSupport extends TestGISBase {
 	 */
 	private void doTest(File testcase) throws IOException {
 		System.out.println("Testing " + testcase);
-		FileInputStream fs = new FileInputStream(testcase);
-		IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
-		File temp = createTemp("test", ".kml");
-		OutputStream fos = new FileOutputStream(temp);
-		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
-		List<IGISObject> elements = new ArrayList<IGISObject>();
-		IGISObject current;
-		while ((current = is.read()) != null) {
-			os.write(current);
-			elements.add(current);
-		}
+        File temp = null;
+        FileInputStream fs = new FileInputStream(testcase);
+        try {
+            IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
+		    temp = createTemp("test", ".kml");
+            OutputStream fos = new FileOutputStream(temp);
+            IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
+            List<IGISObject> elements = new ArrayList<IGISObject>();
+            IGISObject current;
+            while ((current = is.read()) != null) {
+                os.write(current);
+                elements.add(current);
+            }
 
-		is.close();
-		fs.close();
+            is.close();
+            fs.close();
 
-		os.close();
-		fos.close();
+            os.close();
+            fos.close();
 
-		// Test for equivalence
-		fs = new FileInputStream(temp);
-		is = GISFactory.getInputStream(DocumentType.KML, fs);
-		int index = 0;
-		while ((current = is.read()) != null) {
-			if (index >= elements.size()) {
-				assertTrue("Found at least one extra element " + current, false);
-			}
-			checkApproximatelyEquals(elements.get(index), current);
-			index++;
-		}
-		is.close();
-		fs.close();
-		 
+            // Test for equivalence
+            fs = new FileInputStream(temp);
+            is = GISFactory.getInputStream(DocumentType.KML, fs);
+            int index = 0;
+            while ((current = is.read()) != null) {
+                if (index >= elements.size()) {
+                    assertTrue("Found at least one extra element " + current, false);
+                }
+                checkApproximatelyEquals(elements.get(index), current);
+                index++;
+            }
+            is.close();
+        } finally {
+            IOUtils.closeQuietly(fs);
+            if (temp != null && temp.exists()) temp.delete();
+        }
 	}
 
 
@@ -219,6 +223,5 @@ public class TestKmlSupport extends TestGISBase {
 		} else {
 			assertEquals(source, test);
 		}
-		
 	}
 }
