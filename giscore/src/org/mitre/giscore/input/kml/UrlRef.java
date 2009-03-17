@@ -138,14 +138,14 @@ public class UrlRef {
         // so need to convert back to spaces to match exactly how it is stored in KMZ file
         int ind = kmzPath.indexOf("%20");
         if (ind != -1) {
-            kmzPath = kmzPath.replaceAll("%20", " "); // unescape all escaped whitespace chars
+            kmzPath = kmzPath.replace("%20", " "); // unescape all escaped whitespace chars
         }
         ZipInputStream zis = new ZipInputStream(url.openStream());
         ZipEntry entry;
         while ((entry = zis.getNextEntry()) != null) {
             String name = entry.getName();
             if (ind != -1)
-                name = name.replaceAll("%20", " "); // unescape all escaped whitespace chars
+                name = name.replace("%20", " "); // unescape all escaped whitespace chars
             // find matching KML file in archive
             if (kmzPath.equals(name)) {
                 return zis;

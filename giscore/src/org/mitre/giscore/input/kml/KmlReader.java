@@ -327,7 +327,7 @@ public class KmlReader implements IKml {
 
             // add httpQuery parameters to URL
             // unscape HTML encoding &amp; -> &
-            //href +=  + httpQuery.replaceAll("&amp;", "&");
+            //href +=  + httpQuery.replace("&amp;", "&");
         }
 
         /*
@@ -435,7 +435,7 @@ public class KmlReader implements IKml {
         URI uri = null;
         try {
             if (href.indexOf(' ') != -1) {
-                href = href.replaceAll(" ", "%20"); // escape all whitespace otherwise new URI() throws an exception
+                href = href.replace(" ", "%20"); // escape all whitespace otherwise new URI() throws an exception
                 //log.debug("Escape whitespace in URL: " + href);//gjm
             }
             // check if URL is absolute otherwise its relative to base URL if defined
