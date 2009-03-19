@@ -72,7 +72,6 @@ import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.geometry.Ring;
 import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
-import com.esri.arcgis.interop.Variant;
 
 /**
  * Opens the GDB or shapefile to return the contained information. The
@@ -132,11 +131,6 @@ public class GdbInputStream extends GISInputStreamBase {
 	 * Features are named with sequential numbers
 	 */
 	private long fnumber = 0;
-	/**
-	 * Buffered elements that should be returned. This allows a single call to
-	 * read to find several elements and return them in the right order.
-	 */
-	private final LinkedList<IGISObject> buffered = new LinkedList<IGISObject>();
 
 	/**
 	 * Ctor
@@ -270,54 +264,6 @@ public class GdbInputStream extends GISInputStreamBase {
 		}
 		feature.setName("f" + fnumber++);
 		return feature;
-	}
-
-	/**
-	 * Convert the variant back to a natural java object
-	 * 
-	 * @param value
-	 *            the variant value
-	 * @return null if the variant is <code>null</code> or the type cannot be
-	 *         converted, otherwise a natural conversion
-	 */
-	private Object makeJavaObject(Variant value) {
-		if (value == null)
-			return null;
-		switch (value.vt) {
-		case Variant.VT_BOOL:
-			return value.getBOOL();
-		case Variant.VT_BSTR:
-		case Variant.VT_BSTR_BLOB:
-			return value.getBSTR();
-		case Variant.VT_DATE:
-			return value.getDATE();
-		case Variant.VT_DECIMAL:
-			return value.getDECIMAL().doubleValue();
-		case Variant.VT_I1:
-			return value.getI1();
-		case Variant.VT_UI1:
-			return value.getUI1();
-		case Variant.VT_I2:
-			return value.getI2();
-		case Variant.VT_INT:
-			return value.getINT();
-		case Variant.VT_I4:
-			return value.getI4();
-		case Variant.VT_UI2:
-		case Variant.VT_UI4:
-		case Variant.VT_UINT:
-			return value.getUI4();
-		case Variant.VT_I8:
-			return value.getI8();
-		case Variant.VT_UI8:
-			return value.getI8();
-		case Variant.VT_R4:
-			return value.getR4();
-		case Variant.VT_R8:
-			return value.getR8();
-		default:
-			return null;
-		}
 	}
 
 	/**
