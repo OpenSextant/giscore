@@ -42,6 +42,7 @@ import javax.xml.stream.XMLStreamException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.helpers.ISO8601DateFormat;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
@@ -79,7 +80,6 @@ import com.esri.arcgis.geodatabase.IFeatureCursor;
 import com.esri.arcgis.geodatabase.IFeatureWorkspace;
 import com.esri.arcgis.geodatabase.IFeatureWorkspaceProxy;
 import com.esri.arcgis.geodatabase.IField;
-import com.esri.arcgis.geodatabase.IFieldChecker;
 import com.esri.arcgis.geodatabase.IFields;
 import com.esri.arcgis.geodatabase.IWorkspaceFactory;
 import com.esri.arcgis.geodatabase.IWorkspaceName;
@@ -87,7 +87,6 @@ import com.esri.arcgis.geodatabase.Workspace;
 import com.esri.arcgis.geodatabase.WorkspaceFactory;
 import com.esri.arcgis.geodatabase.esriFeatureType;
 import com.esri.arcgis.geodatabase.esriFieldType;
-import com.esri.arcgis.geodatabase.esriTableNameErrorType;
 import com.esri.arcgis.geometry.IGeometry;
 import com.esri.arcgis.geometry.ISpatialReference;
 import com.esri.arcgis.geometry.Multipoint;
@@ -99,12 +98,8 @@ import com.esri.arcgis.geometry.esriSRGeoCSType;
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.interop.Cleaner;
 import com.esri.arcgis.interop.Variant;
-import com.esri.arcgis.system.AoInitialize;
-import com.esri.arcgis.system.EngineInitializer;
 import com.esri.arcgis.system.IName;
 import com.esri.arcgis.system.IUID;
-import com.esri.arcgis.system.esriLicenseProductCode;
-import org.apache.log4j.helpers.ISO8601DateFormat;
 
 /**
  * Output the GIS information using the ArcObjects Java API. This results in a
@@ -175,26 +170,12 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		shape.setLength(0);
 		shape.setRequired(true);
 
+		ESRIInitializer.initialize();
+
 		try {
-			// Step 1: Initialize the Java Componet Object Model (COM) Interop.
-			EngineInitializer.initializeEngine();
-
-			// Step 2: Initialize a valid license.
-			// new AoInitialize().initialize
-			// (esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB);
-			new AoInitialize()
-					.initialize(esriLicenseProductCode.esriLicenseProductCodeArcEditor);
-
 			spatialRefEnv = new SpatialReferenceEnvironment();
-		} catch (AutomationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		} catch (Exception e) {
+			logger.error("Problem creating spatial reference environment", e);
 		}
 	}
 

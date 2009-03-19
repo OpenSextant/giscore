@@ -19,13 +19,16 @@
 package org.mitre.giscore;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.List;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.mitre.giscore.input.IGISInputStream;
+import org.mitre.giscore.input.gdb.GdbInputStream;
 import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
@@ -48,11 +51,15 @@ public class GISFactory {
 	 * @param stream
 	 *            an input stream to the document or document contents, never
 	 *            <code>null</code>.
+	 * @param arguments
+	 *            the additional arguments needed by the constructor, the type
+	 *            or types depend on the constructor
 	 * @return a gis input stream, never <code>null</code>
 	 * @throws IOException
 	 */
+	@SuppressWarnings("unchecked")
 	public static IGISInputStream getInputStream(DocumentType type,
-			InputStream stream) throws IOException {
+			InputStream stream, Object... arguments) throws IOException {
 		if (type == null) {
 			throw new IllegalArgumentException("type should never be null");
 		}
@@ -63,16 +70,57 @@ public class GISFactory {
 		if (DocumentType.KML.equals(type)) {
 			return new KmlInputStream(stream);
 		} else if (DocumentType.Shapefile.equals(type)) {
-			throw new UnsupportedOperationException(
-					"Shapefile not yet implemented");
+			checkArguments(new Class[] { String.class }, arguments,
+					new boolean[] { false });
+			return new GdbInputStream(type, stream, arguments);
 		} else if (DocumentType.XmlGDB.equals(type)) {
-			throw new UnsupportedOperationException(
-					"Xml Geodatabase not yet implemented");
+			checkArguments(new Class[] { String.class }, arguments,
+					new boolean[] { false });
+			return new GdbInputStream(type, stream, arguments);
 		} else {
 			throw new UnsupportedOperationException(
 					"Cannot create an input stream for type " + type);
 		}
 	}
+	
+	/**
+	 * Input stream factory
+	 * 
+	 * @param type
+	 *            the type of the document, never <code>null</code>.
+	 * @param file
+	 *            a file containing the document, never <code>null</code>
+	 * @param arguments
+	 *            the additional arguments needed by the constructor, the type
+	 *            or types depend on the constructor
+	 * @return a gis input stream, never <code>null</code>
+	 * @throws IOException
+	 */
+	@SuppressWarnings("unchecked")
+	public static IGISInputStream getInputStream(DocumentType type,
+			File file, Object... arguments) throws IOException {
+		if (type == null) {
+			throw new IllegalArgumentException("type should never be null");
+		}
+		if (file == null || !file.exists()) {
+			throw new IllegalArgumentException("file should never be null and must exist");
+		}
+
+		if (DocumentType.KML.equals(type)) {
+			return new KmlInputStream(new FileInputStream(file));
+		} else if (DocumentType.Shapefile.equals(type)) {
+			checkArguments(new Class[] { String.class }, arguments,
+					new boolean[] { false });
+			return new GdbInputStream(type, file, arguments);
+		} else if (DocumentType.FileGDB.equals(type)) {
+			checkArguments(new Class[] { String.class }, arguments,
+					new boolean[] { false });
+			return new GdbInputStream(type, file, arguments);
+		} else {
+			throw new UnsupportedOperationException(
+					"Cannot create an input stream for type " + type);
+		}
+	}	
 
 	/**
 	 * Output stream factory

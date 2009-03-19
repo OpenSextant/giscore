@@ -99,6 +99,11 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
     private InputStream is;
 	private XMLEventReader stream;
+	/**
+	 * Buffered elements that should be returned. This allows a single
+	 * call to read to find several elements and return them in the right
+	 * order. 
+	 */
 	private final LinkedList<IGISObject> buffered = new LinkedList<IGISObject>();
 
 	private static final XMLInputFactory ms_fact;
