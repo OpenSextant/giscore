@@ -23,13 +23,40 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.text.DecimalFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.mitre.giscore.events.*;
+import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.mitre.giscore.events.BaseStart;
+import org.mitre.giscore.events.Comment;
+import org.mitre.giscore.events.ContainerEnd;
+import org.mitre.giscore.events.ContainerStart;
+import org.mitre.giscore.events.DocumentStart;
+import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.events.GroundOverlay;
+import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.NetworkLink;
+import org.mitre.giscore.events.Overlay;
+import org.mitre.giscore.events.PhotoOverlay;
+import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.ScreenLocation;
+import org.mitre.giscore.events.ScreenOverlay;
+import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.events.Style;
+import org.mitre.giscore.events.StyleMap;
+import org.mitre.giscore.events.TaggedMap;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
@@ -43,9 +70,6 @@ import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.output.XmlOutputStreamBase;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.joda.time.DateTimeZone;
 
 /**
  * The kml output stream creates a result KML file using the given output

@@ -1,23 +1,38 @@
 package org.mitre.giscore.input.kml;
 
-import org.mitre.giscore.input.IGISInputStream;
-import org.mitre.giscore.GISFactory;
-import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.events.*;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URL;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.MalformedURLException;
-import java.io.*;
-import java.util.*;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
-import java.util.zip.ZipInputStream;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.events.GroundOverlay;
+import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.NetworkLink;
+import org.mitre.giscore.events.TaggedMap;
+import org.mitre.giscore.input.IGISInputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Wrapper to KmlInputStream that handles various house cleaning of parsing KML sources:

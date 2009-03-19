@@ -16,17 +16,20 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.kml;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.apache.commons.io.IOUtils;
-
-import java.net.*;
-import java.io.InputStream;
-import java.io.IOException;
-import java.io.FileNotFoundException;
 import java.io.BufferedInputStream;
-import java.util.zip.ZipInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import org.apache.commons.io.IOUtils;
 
 /**
  * UrlRef manages the encoding/decoding of internally created

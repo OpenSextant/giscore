@@ -1,7 +1,8 @@
 package org.mitre.giscore.events;
 
-import org.mitre.giscore.output.StreamVisitorBase;
 import java.io.Serializable;
+
+import org.mitre.giscore.output.StreamVisitorBase;
 
 /**
  * Represents a Comment object. In XML would
