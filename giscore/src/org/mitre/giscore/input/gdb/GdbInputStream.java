@@ -27,7 +27,6 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
@@ -97,10 +96,6 @@ public class GdbInputStream extends GISInputStreamBase {
 	private IWorkspaceFactory factory = null;
 
 	/**
-	 * An optional list of sortable field names
-	 */
-	private String sortlist = null;
-	/**
 	 * The workspace
 	 */
 	private IWorkspace workspace;
@@ -138,13 +133,8 @@ public class GdbInputStream extends GISInputStreamBase {
 	 *            the type used
 	 * @param stream
 	 *            the stream containing a zip archive of the file gdb
-	 * @param arguments
-	 *            an argument vector that is option which may have one element,
-	 *            a list containing field names to sort the features on
-	 *            retrieval.
 	 */
-	public GdbInputStream(DocumentType type, InputStream stream,
-			Object[] arguments) {
+	public GdbInputStream(DocumentType type, InputStream stream) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
@@ -155,19 +145,11 @@ public class GdbInputStream extends GISInputStreamBase {
 	 *            the type used
 	 * @param file
 	 *            the location of the file GDB or of the shapefile
-	 * @param arguments
-	 *            an argument vector that is option which may have one element,
-	 *            a list containing field names to sort the features on
-	 *            retrieval.
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 */
-	public GdbInputStream(DocumentType type, File file, Object[] arguments)
+	public GdbInputStream(DocumentType type, File file)
 			throws UnknownHostException, IOException {
-		if (arguments != null && arguments.length > 0) {
-			sortlist = (String) arguments[0];
-		}
-
 		if (type.equals(DocumentType.FileGDB)) {
 			factory = new FileGDBWorkspaceFactory();
 		} else if (type.equals(DocumentType.PersonalGDB)) {
@@ -214,9 +196,6 @@ public class GdbInputStream extends GISInputStreamBase {
 				} else {
 					FeatureClass fclass = new FeatureClass(currentDataset);
 					QueryFilter filter = new QueryFilter();
-					if (StringUtils.isNotBlank(sortlist)) {
-						filter.setPostfixClause(sortlist);
-					}
 					cursor = fclass.search(filter, true);
 					return makeSchema(fclass);
 				}

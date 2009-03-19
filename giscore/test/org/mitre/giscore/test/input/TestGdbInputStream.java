@@ -38,7 +38,7 @@ import org.mitre.giscore.input.IGISInputStream;
 public class TestGdbInputStream {
 	@Test public void testFileGdbInput() throws Exception {
 		IGISInputStream gis = GISFactory.getInputStream(DocumentType.FileGDB, 
-				new File("data/gdb/test20090312163935.gdb"), "LPATH A");
+				new File("data/gdb/test20090312163935.gdb"));
 		int schema_count = 0;
 		int total = 0;
 		IGISObject gisobject = null;
@@ -58,12 +58,44 @@ public class TestGdbInputStream {
 			} else if (gisobject instanceof Feature) {
 				Feature f = (Feature) gisobject;
 				String path = (String) f.getData(lpath);
-				if (lastpath != null) {
-					System.err.println("Path: " + path);
-				}
-				lastpath = path;
+				assertNotNull(path);
 			}
 		}
 		assertEquals(1, schema_count);
 	}
+	
+	/** 
+	 * Present to test specific file from EH, but the file is not checked 
+	 * into the tree. Uncomment to use.
+	 * 
+	 * @throws Exception
+	 */
+//	@Test public void testFileGdbInput2() throws Exception {
+//		IGISInputStream gis = GISFactory.getInputStream(DocumentType.FileGDB, 
+//				new File("data/gdb/eh_fgdb92_20090314153313.gdb"));
+//		int schema_count = 0;
+//		int total = 0;
+//		IGISObject gisobject = null;
+//		SimpleField lpath = null;
+//		String lastpath = null;
+//		while((gisobject = gis.read()) != null) {
+//			total++;
+//			if (gisobject instanceof Schema) {
+//				Schema s = (Schema) gisobject;
+//				if (lpath == null) {
+//					lpath = s.get("lpath");
+//				}
+//				schema_count++;
+//				assertTrue(s.getKeys() != null && s.getKeys().size() > 0);
+//				assertNotNull(s.getOidField());
+//				assertNotNull(lpath);
+//			} else if (gisobject instanceof Feature) {
+//				Feature f = (Feature) gisobject;
+//				String path = (String) f.getData(lpath);
+//				assertNotNull(path);
+//			}
+//		}
+//		System.err.println("Schema count is " + schema_count);
+//		System.err.println("Total objects is " + total);
+//	}
 }

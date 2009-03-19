@@ -69,13 +69,9 @@ public class GISFactory {
 		if (DocumentType.KML.equals(type)) {
 			return new KmlInputStream(stream);
 		} else if (DocumentType.Shapefile.equals(type)) {
-			checkArguments(new Class[] { String.class }, arguments,
-					new boolean[] { false });
-			return new GdbInputStream(type, stream, arguments);
-		} else if (DocumentType.XmlGDB.equals(type)) {
-			checkArguments(new Class[] { String.class }, arguments,
-					new boolean[] { false });
-			return new GdbInputStream(type, stream, arguments);
+			return new GdbInputStream(type, stream);
+		} else if (DocumentType.FileGDB.equals(type)) {
+			return new GdbInputStream(type, stream);
 		} else {
 			throw new UnsupportedOperationException(
 					"Cannot create an input stream for type " + type);
@@ -108,13 +104,9 @@ public class GISFactory {
 		if (DocumentType.KML.equals(type)) {
 			return new KmlInputStream(new FileInputStream(file));
 		} else if (DocumentType.Shapefile.equals(type)) {
-			checkArguments(new Class[] { String.class }, arguments,
-					new boolean[] { false });
-			return new GdbInputStream(type, file, arguments);
+			return new GdbInputStream(type, file);
 		} else if (DocumentType.FileGDB.equals(type)) {
-			checkArguments(new Class[] { String.class }, arguments,
-					new boolean[] { false });
-			return new GdbInputStream(type, file, arguments);
+			return new GdbInputStream(type, file);
 		} else {
 			throw new UnsupportedOperationException(
 					"Cannot create an input stream for type " + type);
