@@ -134,6 +134,30 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
 	}
 
+	/**
+	 * Flush and close XMLStreamWriter but not the outputStream
+	 *
+	 * @throws IOException
+	 * @see org.mitre.giscore.output.IGISOutputStream#close()
+	 */
+	public void closeWriter() throws IOException {
+		try {
+			try {
+				writer.writeEndElement();
+				writer.writeCharacters("\n");
+				writer.writeEndDocument();
+			} finally {
+				writer.flush();
+				writer.close();
+				// don't call super.close() which closes the outputStream
+			}
+		} catch (XMLStreamException e) {
+			final IOException e2 = new IOException();
+			e2.initCause(e);
+			throw e2;
+		}
+	}
+
 	/*
 	 * (non-Javadoc)
 	 * 
