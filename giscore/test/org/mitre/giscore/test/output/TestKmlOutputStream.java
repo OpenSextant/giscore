@@ -147,7 +147,7 @@ public class TestKmlOutputStream extends TestGISBase {
 	 * @param source
 	 * @param test
 	 */
-	private void checkApproximatelyEquals(IGISObject source, IGISObject test) {
+	public static void checkApproximatelyEquals(IGISObject source, IGISObject test) {
 		if (source instanceof Feature && test instanceof Feature) {
 			Feature sf = (Feature) source;
 			Feature tf = (Feature) test;
