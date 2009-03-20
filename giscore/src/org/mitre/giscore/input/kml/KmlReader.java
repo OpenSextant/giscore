@@ -508,10 +508,12 @@ public class KmlReader implements IKml {
                     int oldFeatSize = linkedFeatures.size();
                     // need to add new networkLinks back to list to recursively import
                     readFromStream(is, linkedFeatures, networkLinks);
-                    if (oldFeatSize != linkedFeatures.size())
-                        System.out.println("\t*** got features from network links ***");
-                    if (oldSize != networkLinks.size())
-                        System.out.println("\t*** got new URLs from network links ***");
+                    if (log.isDebugEnabled()) {
+                        if (oldFeatSize != linkedFeatures.size())
+                            log.debug("*** got features from network links ***");
+                        if (oldSize != networkLinks.size())
+                            log.debug("*** got new URLs from network links ***");
+                    }
                 } catch (java.net.ConnectException e) {
                     log.error("Failed to import from network link: " + uri + "\n" + e);
                 } catch (FileNotFoundException e) {
