@@ -4,12 +4,16 @@ import org.junit.Test;
 import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.input.kml.KmlWriter;
 import org.mitre.giscore.events.*;
+import org.mitre.giscore.test.output.TestKmlOutputStream;
+import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.geometry.Point;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 import java.net.URI;
+import java.net.URL;
 
 import junit.framework.TestCase;
 
@@ -21,7 +25,7 @@ public class TestKmlReader extends TestCase {
 
     @Test
     public void test_read_write_Kml() {
-        checkDir(new File("data/kml")); // few errors
+        checkDir(new File("data/kml"));
     }
 
     private void checkDir(File dir) {
@@ -107,5 +111,40 @@ public class TestKmlReader extends TestCase {
 			// delete temp file
 			if (temp != null && temp.exists()) temp.delete();
 		}
+	}
+
+	/**
+     * Test loading KMZ file with network link contining embedded KML
+	 * then load the content from the networkLink.
+     *
+	 * @throws IOException if an I/O error occurs
+     */
+    @Test
+	public void testKmzNetworkLinks() throws IOException {
+		File file = new File("data/kml/kmz/dir/content.kmz");
+		KmlReader reader = new KmlReader(file);
+		List<IGISObject> features = reader.getFeatures();
+		List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
+		List<URI> networkLinks = reader.importFromNetworkLinks(linkedFeatures);
+		assertEquals(4, features.size());
+		assertEquals(1, networkLinks.size());
+		assertEquals(2, linkedFeatures.size());
+		IGISObject o = linkedFeatures.get(1); 
+		assertTrue(o instanceof Feature);
+		Feature ptFeat = (Feature)o;
+		Geometry geom = ptFeat.getGeometry();
+		assertTrue(geom instanceof Point);
+
+		// import same KMZ file as URL
+		URL url = file.toURI().toURL();
+		KmlReader reader2 = new KmlReader(url);
+		List<IGISObject> features2 = reader2.getFeatures();
+		List<IGISObject> linkedFeatures2 = new ArrayList<IGISObject>();
+		List<URI> networkLinks2 = reader2.importFromNetworkLinks(linkedFeatures2);
+		assertEquals(4, features2.size());
+		assertEquals(1, networkLinks2.size());
+		assertEquals(2, linkedFeatures2.size());
+		// NetworkLinked Feature -> DocumentStart + Feature
+		TestKmlOutputStream.checkApproximatelyEquals(ptFeat, linkedFeatures2.get(1));
 	}
 }
