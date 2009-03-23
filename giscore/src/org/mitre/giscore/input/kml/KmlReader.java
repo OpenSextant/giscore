@@ -1,3 +1,19 @@
+/*
+ *  KmlReader.java
+ *
+ *  @author Jason Mathews
+ *
+ *  (C) Copyright MITRE Corporation 2009
+ *
+ *  The program is provided "as is" without any warranty express or implied, including
+ *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  fitness for a particular purpose.  The Copyright owner will not be liable for any
+ *  damages suffered by you as a result of using the Program.  In no event will the
+ *  Copyright owner be liable for any special, indirect or consequential damages or
+ *  lost profits even if the Copyright owner has been advised of the possibility of
+ *  their occurrence.
+ *
+ */
 package org.mitre.giscore.input.kml;
 
 import java.io.BufferedInputStream;
@@ -39,11 +55,12 @@ import org.slf4j.LoggerFactory;
  *  -read from KMZ/KML files transparently
  *  -re-writing of URLs inside KMZ files and resolving relative URLs
  *  -removes duplicate networkLink URLs
+ *  -removes GroundOverlays missing icon URL
  *  -removes placemark/features that don't provide a geometry (Point, Line, etc)
- *  -resursively loading all features from networkLinks 
+ *  -recursively loading all features from networkLinks 
  * 
  * @author Jason Mathews, MITRE Corp.
- * Date: Mar 5, 2009 9:12:19 AM
+ * Created: Mar 5, 2009 9:12:19 AM
  */
 public class KmlReader implements IKml {
 
@@ -76,7 +93,7 @@ public class KmlReader implements IKml {
                 "clientName",   "Google+Earth",
                 "language",     "en"};
 
-        for (int i=0; i < labels.length; i+= 2)
+		for (int i = 0; i < labels.length; i += 2)
             httpQueryLabels.put(labels[i], labels[i+1]);
     }
 
