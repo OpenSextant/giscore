@@ -1,3 +1,19 @@
+/*
+ *  KmlWriter.java
+ *
+ *  @author Jason Mathews
+ *
+ *  (C) Copyright MITRE Corporation 2009
+ *
+ *  The program is provided "as is" without any warranty express or implied, including
+ *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  fitness for a particular purpose.  The Copyright owner will not be liable for any
+ *  damages suffered by you as a result of using the Program.  In no event will the
+ *  Copyright owner be liable for any special, indirect or consequential damages or
+ *  lost profits even if the Copyright owner has been advised of the possibility of
+ *  their occurrence.
+ *
+ */
 package org.mitre.giscore.input.kml;
 
 import org.apache.commons.io.IOUtils;
@@ -17,16 +33,16 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Wrapper to KmlOutputStream that handles the common steps needed to create
+ * Wrapper to KmlOutputStream for handling the common steps needed to create
  * basic KML or KMZ files.
  * 
  * Advanced KML support should use the KmlOutputStream class directly. 
  *
  * Handles the following tasks:
  *
- * - write to KMZ/KML files transparently. If file has a .kmz file extension then a KMZ file
- *    is created with that file name.
- * - discards empty containers with ContainerStart is followed by a ContainerEnd element
+ * - write to KMZ/KML files transparently. If file has a .kmz file extension then a KMZ (ZIP)
+ *    file is created with that file name.
+ * - discards empty containers if ContainerStart is followed by a ContainerEnd element
  *    in a successive write() call.
  * - write Files or contents from inputStream to entries in KMZ for networkLinked content,
  *    overlay images, etc.
@@ -34,7 +50,7 @@ import java.util.zip.ZipOutputStream;
  * Complements the KmlReader class.
  * 
  * @author Jason Mathews, MITRE Corp.
- * Date: Mar 13, 2009 10:06:17 AM
+ * Created: Mar 13, 2009 10:06:17 AM
  */
 public class KmlWriter {
 
@@ -43,9 +59,22 @@ public class KmlWriter {
     private KmlOutputStream kos;
     private ZipOutputStream zoS;
     private ContainerStart waiting;
+	private boolean compressed;
 
-    public KmlWriter(File file) throws IOException {
-        boolean compressed = (file.getName().toLowerCase().endsWith(".kmz"));
+	/**
+	 * Construct a KmlWriter whiuch starts writing a KML document into
+	 * the specified KML or KMZ file.  If filename ends with .kmz extension
+	 * then a compressed KMZ (ZIP) file is produced with the main KML document
+	 * stored as "doc.kml" in the root directory.
+	 * 
+	 * For details on .KMZ files see "Creating a .kmz Archive" section
+	 * of http://code.google.com/apis/kml/documentation/kml_21tutorial.html
+	 * 
+	 * @param file the file to be opened for writing.
+	 * @throws IOException if an I/O error occurs
+	 */
+	public KmlWriter(File file) throws IOException {
+        compressed = (file.getName().toLowerCase().endsWith(".kmz"));
         OutputStream os = new FileOutputStream(file);
         try {
             if (compressed) {
@@ -66,33 +95,46 @@ public class KmlWriter {
         kos.write(new DocumentStart(DocumentType.KML));
     }
 
-    public void write(File file, String localName) throws IOException {
-		write(new FileInputStream(file), localName);
+	/**
+	 * Write file contents into entry of compressed KMZ file.  File can itself be
+	 * KML, image, model or other file.  Contents are not parsed or validated.
+	 * This must be called after entire KML for main document "doc.kml" is written.
+	 *
+	 * @param file file to write into the KMZ
+	 * @param entryName the entry name for file as it will appear in the KMZ
+	 * @throws IOException if an I/O error occurs
+	 * @throws IllegalArgumentException if arguments are null or KmlWriter is not writing
+	 * 			a compressed KMZ file
+	 */
+	public void write(File file, String entryName) throws IOException {
+		write(new FileInputStream(file), entryName);
     }
 
 	/**
 	 * Write contents from InputStream into file named localName in compressed KMZ file.
-	 * This must be done after entire KML for main document doc.kml is written.
+	 * This must be called after entire KML for main document doc.kml is written.
 	 *
-	 * @param is InputStream 
-	 * @param localName
+	 * @param is InputStream to write into the KMZ 
+	 * @param entryName the entry name for file as it will appear in the KMZ.
+	 * 					This should be a root-level or relative file path (e.g. myOtherData.kml or images/image.png).
 	 * @throws IOException if an I/O error occurs
 	 * @throws IllegalArgumentException if arguments are null or KmlWriter is not writing
 	 * 			a compressed KMZ file 
 	 */
-	public void write(InputStream is, String localName) throws IOException {
+	public void write(InputStream is, String entryName) throws IOException {
 		if (is == null) throw new IllegalArgumentException("InputStream cannot be null"); 
         try {
-			if (zoS == null)
-            	throw new IllegalArgumentException("Not a compressed KMZ file");
-        	if (StringUtils.isBlank(localName))
+			if (!compressed)
+            	throw new IllegalArgumentException("Not a compressed KMZ file. Cannot add arbitrary content to non-KMZ output.");
+        	if (StringUtils.isBlank(entryName))
             	throw new IllegalArgumentException("localName must be non-blank file name");
+			if (zoS == null) throw new IOException("stream is alreay closed");
 			if (kos != null) {
 				kos.closeWriter();
 				kos = null;
+				zoS.closeEntry();
 			}
-			zoS.closeEntry();
-			ZipEntry zEnt = new ZipEntry(localName.trim());
+			ZipEntry zEnt = new ZipEntry(entryName.trim());
 			zoS.putNextEntry(zEnt);
 			// copy input to output
 			// write contents to entry within compressed KMZ file
@@ -104,7 +146,8 @@ public class KmlWriter {
 	}
 
 	/**
-	 *
+	 * Write GISObject into KML output stream.
+	 * 
 	 * @param object IGISObject object to write
 	 * 
 	 * @throws RuntimeException if failed with XMLStreamException
@@ -154,19 +197,20 @@ public class KmlWriter {
 				kos.closeWriter();
 				kos = null;
 			} catch (IOException e) {
-				log.warn("Failed to close", e);
+				log.warn("Failed to close writer", e);
 			}
 
         if (zoS != null) {
             try {
                 zoS.closeEntry();
             } catch (IOException e) {
-                log.error("Failed to closeEntry", e);
+                log.error("Failed to close Zip Entry", e);
             }
 			IOUtils.closeQuietly(zoS);
+			zoS = null;
 		}
 
         waiting = null;
     }
-
+		
 }
