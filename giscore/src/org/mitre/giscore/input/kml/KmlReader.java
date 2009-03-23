@@ -54,6 +54,8 @@ import org.slf4j.LoggerFactory;
  * Wrapper to KmlInputStream that handles various house cleaning of parsing KML sources:
  *  -read from KMZ/KML files transparently
  *  -re-writing of URLs inside KMZ files and resolving relative URLs
+ *  -rewrites URLs of NetworkLinks and GroundOverlays with respect to parent URL.
+ *   Use UrlRef to get InputStream of links and resolve URI to original.
  *  -removes duplicate networkLink URLs
  *  -removes GroundOverlays missing icon URL
  *  -removes placemark/features that don't provide a geometry (Point, Line, etc)
@@ -212,11 +214,18 @@ public class KmlReader implements IKml {
                         GroundOverlay o = (GroundOverlay)gisObj;
                         TaggedMap icon = o.getIcon();
                         String href = icon != null ? getTrimmedValue(icon, HREF) : null;
-                        if (href != null) // && icon.get(HREF) != null)
-                            // can we have a GroundOverlay WO LINK ??
-                            features.add(gisObj);
-                        else
-                            System.out.println("\t*** skipping null GroundOverlay href");
+						if (href == null) {
+							System.out.println("\t*** skipping null GroundOverlay href");
+						} else {
+							URI uri = getLink(href);
+							if (uri != null) {
+								href = uri.toString();
+								// store rewritten overlay URL back to property store
+								icon.put(HREF, href);
+								// can we have a GroundOverlay WO LINK ??
+								features.add(gisObj);
+							}
+						}
                     } else {
                         // include only those features with geometries: ignore camera, model, etc.
                         // e.g. Placemark with Model geometry (not yet supported)
