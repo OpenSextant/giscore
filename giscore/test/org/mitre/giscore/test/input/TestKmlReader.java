@@ -2,20 +2,27 @@ package org.mitre.giscore.test.input;
 
 import org.junit.Test;
 import org.mitre.giscore.input.kml.KmlReader;
-import org.mitre.giscore.input.kml.KmlWriter;
+import org.mitre.giscore.input.kml.IKml;
+import org.mitre.giscore.input.kml.UrlRef;
+import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.test.output.TestKmlOutputStream;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Point;
+import org.apache.commons.io.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.ArrayList;
 import java.net.URI;
 import java.net.URL;
+import java.awt.image.BufferedImage;
 
 import junit.framework.TestCase;
+
+import javax.imageio.ImageIO;
 
 /**
  * @author Jason Mathews, MITRE Corp.
@@ -146,5 +153,40 @@ public class TestKmlReader extends TestCase {
 		assertEquals(2, linkedFeatures2.size());
 		// NetworkLinked Feature -> DocumentStart + Feature
 		TestKmlOutputStream.checkApproximatelyEquals(ptFeat, linkedFeatures2.get(1));
+	}
+
+	/**
+     * Test ground overlays with KML from URL and KMZ from file targets
+     */
+    @Test
+	public void testOverlay() throws Exception {
+		checkGroundOverlay(new KmlReader(new File("data/kml/GroundOverlay/etna.kmz")));
+		// target overlay URI -> kmzfile:/C:/projects/giscore/data/kml/GroundOverlay/etna.kmz?file=etna.jpg
+		checkGroundOverlay(new KmlReader(new File("data/kml/GroundOverlay/etna.kml").toURI().toURL()));
+		// target overlay URI -> file:/C:/projects/giscore/data/kml/GroundOverlay/etna.jpg
+	}
+
+	private void checkGroundOverlay(KmlReader reader) throws Exception {
+		List<IGISObject> features = reader.getFeatures();
+		assertEquals(2, features.size());
+		IGISObject obj = features.get(1);
+		assertTrue(obj instanceof GroundOverlay);
+		GroundOverlay o = (GroundOverlay)obj;
+		TaggedMap icon = o.getIcon();
+		String href = icon != null ? icon.get(IKml.HREF) : null;
+		assertNotNull(href);
+		//System.out.println(href);
+		UrlRef urlRef = new UrlRef(new URI(href));
+		//System.out.println(urlRef);
+		InputStream is = null;
+		try {
+			is = urlRef.getInputStream();
+			BufferedImage img = ImageIO.read(is);
+			assertNotNull(img);
+			assertEquals(418, img.getHeight());
+			assertEquals(558, img.getWidth());
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
 	}
 }
