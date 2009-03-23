@@ -14,7 +14,7 @@
  *  their occurrence.
  *
  */
-package org.mitre.giscore.input.kml;
+package org.mitre.giscore.output.kml;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -23,7 +23,6 @@ import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.DocumentStart;
 import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
