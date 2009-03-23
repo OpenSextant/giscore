@@ -2,7 +2,7 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <GroundOverlay>
     <name>Large-scale overlay on terrain</name>
-    <visibility>0</visibility>
+    <visibility>1</visibility>
     <description>Overlay shows Mount Etna erupting on July 13th, 2001.</description>
     <LookAt>
       <longitude>15.02468937557116</longitude>
