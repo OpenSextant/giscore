@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Examples of temporal features:
+
+	1) timeStamp placemark - start marker marks earlier time in dataset
+	2) TimeSpan only end time
+	3) TimeSpan both begin and end time
+	4) TimeSpan with only begin time
+	5) timeStamp placemark - end marker marks latest time in dataset
+	6) no time -> static placemark
+-->
+<kml xmlns="http://earth.google.com/kml/2.1">
+    <Document>
+
+        <Placemark>
+            <name>startPointMarker</name>
+            <description>point 1</description>
+            <TimeStamp>
+                <when>2008-08-12T20:16:00Z</when>
+            </TimeStamp>
+            <Point>
+                <coordinates>-76.72894181350101,39.104144789924,8.5</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>no-start-time-point</name>
+            <description>point 2</description>
+            <TimeSpan>
+                <end>2008-08-12T20:16:10Z</end>
+            </TimeSpan>
+            <Point>
+                <coordinates>-76.72756248803701,39.104244115439,14.5</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>start-end-time-point</name>
+            <description>point 3</description>
+            <TimeSpan>
+                <begin>2008-08-12T20:16:20Z</begin>
+                <end>2008-08-12T20:16:30Z</end>
+            </TimeSpan>
+            <Point>
+                <coordinates>-76.72727574323801,39.102729087014005,19.5</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>no-end-time-point</name>
+            <description>point 4</description>
+            <TimeSpan>
+                <begin>2008-08-12T20:16:40Z</begin>
+            </TimeSpan>
+            <Point>
+                <coordinates>-76.726920769773,39.100620200974,13.0</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>endPointMarker</name>
+            <description>point 5</description>
+            <TimeStamp>
+                <when>2008-08-12T20:16:50Z</when>
+            </TimeStamp>
+            <Point>
+                <coordinates>-76.72668766913401,39.099571373827004,16.0</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>noTime-StaticMarker</name>
+            <description>point 6</description>
+            <Point>
+                <coordinates>-76.725516550066,39.099512700527,15.0</coordinates>
+            </Point>
+        </Placemark>
+
+    </Document>
+</kml>
+
