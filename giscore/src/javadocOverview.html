@@ -1,0 +1,48 @@
+<!--
+ * (C) Copyright MITRE Corporation 2009
+ *
+ *  The program is provided "as is" without any warranty express or implied, including
+ *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  fitness for a particular purpose.  The Copyright owner will not be liable for any
+ *  damages suffered by you as a result of using the Program.  In no event will the
+ *  Copyright owner be liable for any special, indirect or consequential damages or
+ *  lost profits even if the Copyright owner has been advised of the possibility of
+ *  their occurrence.
+-->
+<html>
+<head><title>giscore</title></head>
+<body>
+The <a
+ href="http://developer.mitre.org/projects/giscore" target="_blank"><span
+ style="font-weight: bold;">giscore</span></a> package provides the capability to perform streaming
+ input and output of data from GIS representation file formats, such as ESRI Shapefiles or geo-databases (GDB),
+ and Google Earth KML.  <em>giscore</em> is a standalone Java library that uses StAX (STreaming Api for Xml processing)
+ to process XML an element at a time rather than read entire document into memory in a DOM-like structure.
+The geometric classes include points, lines, rings, polygons and provide all the validation
+needed to enforce the integrity of a valid geometric representation.
+<P/>
+A KmlReader class transparently handles KML and compressed KMZ files by file or URL along with fetching all NetworkLinks.
+Likewise, a KmlWriter class handles creation of KML or KMZ files and optionally allowing adding other files
+as entries in the KMZ (ZIP) file. All versions of KML specifications are imported so don't need to restrict to the latest
+OGC KML 2.2 spec or the older 2.1 and 2.0 specifications which have some incompatibilities.
+Some deprecated and removed features from older KML specs are implemented to support importing of legacy KML data,
+but the export creates KML against the KML 2.2 so some deprecated/deleted features may not be preserved on output
+without some conversion. The API takes care of most dirty details.
+<P/>
+While some fine-grain customization may be lost in translation (e.g. KML regions, models,
+ballon styles, etc.), the basic geospatial and temporal data is preserved in a common representation.
+The feature structure can be exported to these standard formats once the common representation 
+is created programmically or imported from an existing source.
+<P/>
+This package uses the <a 
+href="http://developer.mitre.org/projects/gis-geodesy" target="_blank">geodesy</a>
+package as a core implementation of 2D and 3D points, arcs, ellipses, and bounding boxes in
+an earth-oriented spatial reference system.
+<P/>
+Some test ESRI shape and KML files for countries of the world (circa 2002) are
+available <a
+ href="http://picard.mitre.org/TransFusion/dat/Countries_2002/" target="_blank">here</a>
+in addition to the ones provides in the distribution in the data directory.
+</p>
+</body>
+</html>
