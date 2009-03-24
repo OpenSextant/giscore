@@ -23,22 +23,14 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Formatter;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.mitre.giscore.events.BaseStart;
 import org.mitre.giscore.events.Comment;
 import org.mitre.giscore.events.ContainerEnd;
@@ -96,7 +88,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		new DecimalFormat("##0.####");
 	private static final DecimalFormat ms_int_fmt =
 		new DecimalFormat("###,###");
-    private DateTimeFormatter dateFormatter;
+	private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss'Z'";	
+	private DateFormat dateFormatter;
     
     /**
 	 * Ctor
@@ -193,11 +186,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 	}
 
-    private DateTimeFormatter getDateFormatter() {
+    private DateFormat getDateFormatter() {
         if (dateFormatter == null) {
-            dateFormatter = ISODateTimeFormat.dateTimeNoMillis()
-						.withZone(DateTimeZone.UTC);
-        }
+			DateFormat thisDateFormatter = new SimpleDateFormat(ISO_DATE_FMT);
+			thisDateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+			dateFormatter = thisDateFormatter;
+		}
         return dateFormatter;
     }
 
@@ -222,20 +216,20 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				if (endTime == null) {
                     // start time with no end time
                     writer.writeStartElement(TIME_SPAN);
-                    handleSimpleElement(BEGIN, getDateFormatter().print(startTime.getTime()));
+                    handleSimpleElement(BEGIN, getDateFormatter().format(startTime.getTime()));
                 } else if (endTime.equals(startTime)) {
                     writer.writeStartElement(TIME_STAMP);
-                    handleSimpleElement(WHEN, getDateFormatter().print(startTime.getTime()));
+                    handleSimpleElement(WHEN, getDateFormatter().format(startTime.getTime()));
                 } else {
                     writer.writeStartElement(TIME_SPAN);
-                    handleSimpleElement(BEGIN, getDateFormatter().print(startTime.getTime()));
-                    handleSimpleElement(END, getDateFormatter().print(endTime.getTime()));
+                    handleSimpleElement(BEGIN, getDateFormatter().format(startTime.getTime()));
+                    handleSimpleElement(END, getDateFormatter().format(endTime.getTime()));
                 }
                 writer.writeEndElement();
             } else if (endTime != null) {
                     // end time with no start time
                     writer.writeStartElement(TIME_SPAN);
-					handleSimpleElement(END, getDateFormatter().print(endTime.getTime()));
+					handleSimpleElement(END, getDateFormatter().format(endTime.getTime()));
 					writer.writeEndElement();
             }
 
@@ -296,7 +290,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				}
 			}
 			if (val instanceof Date) {
-                return getDateFormatter().print(((Date)val).getTime());
+                return getDateFormatter().format(((Date)val).getTime());
 			} else {
 				return val.toString();
 			}
