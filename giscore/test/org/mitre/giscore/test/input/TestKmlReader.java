@@ -133,7 +133,7 @@ public class TestKmlReader extends TestCase {
 		List<IGISObject> features = reader.getFeatures();
 		List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
 		List<URI> networkLinks = reader.importFromNetworkLinks(linkedFeatures);
-		assertEquals(4, features.size());
+		assertEquals(5, features.size());
 		assertEquals(1, networkLinks.size());
 		assertEquals(2, linkedFeatures.size());
 		IGISObject o = linkedFeatures.get(1); 
@@ -148,7 +148,7 @@ public class TestKmlReader extends TestCase {
 		List<IGISObject> features2 = reader2.getFeatures();
 		List<IGISObject> linkedFeatures2 = new ArrayList<IGISObject>();
 		List<URI> networkLinks2 = reader2.importFromNetworkLinks(linkedFeatures2);
-		assertEquals(4, features2.size());
+		assertEquals(5, features2.size());
 		assertEquals(1, networkLinks2.size());
 		assertEquals(2, linkedFeatures2.size());
 		// NetworkLinked Feature -> DocumentStart + Feature

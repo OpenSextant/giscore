@@ -227,11 +227,6 @@ public class KmlReader implements IKml {
 							}
 						}
                     } else {
-                        // include only those features with geometries: ignore camera, model, etc.
-                        // e.g. Placemark with Model geometry (not yet supported)
-                        if (type == Feature.class && ((Feature)gisObj).getGeometry() == null)
-                            System.out.println("\t*** skipping null geometry: " + type.getName());
-                        else
                             features.add(gisObj);
                     }
                 } else {
