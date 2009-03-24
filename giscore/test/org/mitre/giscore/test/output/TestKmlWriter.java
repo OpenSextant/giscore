@@ -246,7 +246,6 @@ public class TestKmlWriter extends TestCase {
 				assertEquals("endTime compare @" + i, expEndTime, endFmt);
 			}
 
-			/*
 			KmlWriter writer = new KmlWriter(temp);
 			for (IGISObject o : objs) {
 				writer.write(o);
@@ -255,7 +254,10 @@ public class TestKmlWriter extends TestCase {
 
 			reader = new KmlReader(temp);
 			List<IGISObject> objs2 = reader.getFeatures();
-			*/
+			assertEquals(14, objs2.size());
+			for (int i = 0; i < objs.size(); i++) {
+				TestKmlOutputStream.checkApproximatelyEquals(objs.get(i), objs2.get(i));
+			}
 		} finally {
 			if (temp.exists()) temp.delete();
 		}
