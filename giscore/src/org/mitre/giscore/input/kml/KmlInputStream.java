@@ -154,7 +154,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
-	 * Ctor
+	 * Creates a <code>KmlInputStream</code>
+     * and saves its argument, the input stream
+     * <code>input</code>, for later use. 
 	 * 
 	 * @param input
 	 *            input stream for the kml file, never <code>null</code>
@@ -176,28 +178,39 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.mitre.giscore.input.IGISInputStream#close()
+	/**
+	 * Closes this input stream and releases any system resources 
+     * associated with the stream.
+	 * Once the stream has been closed, further read() invocations may throw an IOException.
+     * Closing a previously closed stream has no effect.
 	 */
 	public void close() {
-		IOUtils.closeQuietly(is);
+		if (stream != null)
+			try {
+				stream.close();
+			} catch (XMLStreamException e) {
+				log.warn("Failed to close reader", e);
+			}
+		if (is != null) {
+			IOUtils.closeQuietly(is);
+			is = null;
+		}
 	}
 
 	/**
 	 * Push an object back into the read queue
 	 * 
-	 * @param o
+	 * @param o object to push onto queue
 	 */
 	public void pushback(IGISObject o) {
 		buffered.addFirst(o);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.mitre.giscore.input.IGISInputStream#read()
+	/**
+	 * Reads the next <code>IGISObject</code> from the InputStream.
+	 *
+	 * @return next <code>IGISObject</code>, null if end of stream reached
+	 * @throws IOException if an I/O error occurs
 	 */
 	public IGISObject read() throws IOException {
 		if (hasSaved()) {
