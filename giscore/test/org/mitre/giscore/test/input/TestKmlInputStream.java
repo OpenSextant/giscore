@@ -39,6 +39,7 @@ import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.StyleMap;
 import org.mitre.giscore.input.IGISInputStream;
+import org.apache.commons.io.IOUtils;
 
 /**
  * @author DRAND
@@ -48,46 +49,79 @@ public class TestKmlInputStream {
 	@Test
 	public void testTinySample() throws Exception {
 		InputStream stream = getStream("7084.kml");
-        IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
+		try {
+			IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
 
-		IGISObject firstN[] = new IGISObject[10];
-		for(int i = 0; i < firstN.length; i++) {
-			firstN[i] = kis.read();
+			IGISObject firstN[] = new IGISObject[10];
+			for(int i = 0; i < firstN.length; i++) {
+				firstN[i] = kis.read();
+			}
+			assertNotNull(firstN[7]);
+			assertNull(firstN[8]);
+			assertTrue(firstN[0] instanceof DocumentStart);
+			DocumentStart ds = (DocumentStart) firstN[0];
+			assertEquals(DocumentType.KML, ds.getType());
+			assertTrue(firstN[1] instanceof Style);
+			assertTrue(firstN[2] instanceof Style);
+			assertTrue(firstN[3] instanceof StyleMap);
+			assertTrue(firstN[4] instanceof ContainerStart);
+			assertTrue(firstN[5] instanceof Feature);
+			assertTrue(firstN[6] instanceof Feature);
+			assertTrue(firstN[7] instanceof ContainerEnd);
+		} finally {
+		    IOUtils.closeQuietly(stream);
 		}
-		assertNotNull(firstN[7]);
-		assertNull(firstN[8]);
-		assertTrue(firstN[0] instanceof DocumentStart);
-		DocumentStart ds = (DocumentStart) firstN[0];
-		assertEquals(DocumentType.KML, ds.getType());
-		assertTrue(firstN[1] instanceof Style);
-		assertTrue(firstN[2] instanceof Style);
-		assertTrue(firstN[3] instanceof StyleMap);
-		assertTrue(firstN[4] instanceof ContainerStart);
-		assertTrue(firstN[5] instanceof Feature);
-		assertTrue(firstN[6] instanceof Feature);
-		assertTrue(firstN[7] instanceof ContainerEnd);
 	}
 
-    @Test public void testLargerSample() throws Exception {
-		InputStream stream = getStream("KML_sample1.kml");
-		IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
-		
-		IGISObject firstN[] = new IGISObject[100];
-		for(int i = 0; i < firstN.length; i++) {
-			firstN[i] = kis.read();
+	/**
+	 * Test calling close() multiple times does not throw an exception
+	 * @throws Exception
+	 */
+	@Test
+	public void testClose() throws Exception {
+		InputStream stream = getStream("7084.kml");
+		try {
+			IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
+			while (kis.read() != null) {
+				// nothing
+			}
+			assertNull(kis.read());
+			kis.close();
+			assertNull(kis.read());
+			kis.close();
+		} finally {
+		    IOUtils.closeQuietly(stream);
 		}
-		System.out.println(firstN);
+	}
+
+	@Test public void testLargerSample() throws Exception {
+		InputStream stream = getStream("KML_sample1.kml");
+		try {
+			IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
+
+			IGISObject firstN[] = new IGISObject[100];
+			for(int i = 0; i < firstN.length; i++) {
+				firstN[i] = kis.read();
+			}
+			System.out.println(firstN);
+		} finally {
+		    IOUtils.closeQuietly(stream);
+		}
 	}
 	
 	@Test public void testSchemaSample() throws Exception {
 		InputStream stream = getStream("schema_example.kml");
-		IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
-		
-		IGISObject firstN[] = new IGISObject[10];
-		for(int i = 0; i < firstN.length; i++) {
-			firstN[i] = kis.read();
+		try {
+			IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
+
+			IGISObject firstN[] = new IGISObject[10];
+			for(int i = 0; i < firstN.length; i++) {
+				firstN[i] = kis.read();
+			}
+			System.out.println(firstN);
+		} finally {
+		    IOUtils.closeQuietly(stream);
 		}
-		System.out.println(firstN);
 	}
 
     private InputStream getStream(String filename) throws FileNotFoundException {
