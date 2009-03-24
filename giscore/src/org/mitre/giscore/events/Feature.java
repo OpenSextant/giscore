@@ -18,6 +18,9 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -25,6 +28,8 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 
 /**
@@ -34,17 +39,43 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  * 
  * @author DRAND
  */
-public class Feature extends BaseStart {	
+public class Feature extends BaseStart {
 	private static final long serialVersionUID = 1L;
-	
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @seeorg.mitre.giscore.events.BaseStart#readData(org.mitre.giscore.utils.
+	 * SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+		geometry = (Geometry) in.readObject();
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.mitre.giscore.events.BaseStart#writeData(java.io.DataOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+		out.writeObject(geometry);
+	}
+
 	private Geometry geometry;
-	
+
 	/**
 	 * Ctor
 	 */
 	public Feature() {
 	}
-	
+
 	/**
 	 * @return the geometry
 	 */
@@ -53,7 +84,8 @@ public class Feature extends BaseStart {
 	}
 
 	/**
-	 * @param geometry the geometry to set
+	 * @param geometry
+	 *            the geometry to set
 	 */
 	public void setGeometry(Geometry geometry) {
 		this.geometry = geometry;
@@ -67,8 +99,8 @@ public class Feature extends BaseStart {
 	}
 
 	public void accept(StreamVisitorBase visitor) {
-    	visitor.visit(this);
-    }
+		visitor.visit(this);
+	}
 
 	/**
 	 * The approximately equals method checks all the fields for equality with
@@ -79,19 +111,20 @@ public class Feature extends BaseStart {
 	public boolean approximatelyEquals(Feature other) {
 		EqualsBuilder eb = new EqualsBuilder();
 		boolean fields = eb.append(description, other.description) //
-			.append(name, other.name) //
-			.append(schema, other.schema) //
-			.append(styleUrl, other.styleUrl) // 
-			.append(endTime, other.endTime) //
-			.append(startTime, other.startTime).isEquals();
-		
-		if (! fields) return false;
-		
+				.append(name, other.name) //
+				.append(schema, other.schema) //
+				.append(styleUrl, other.styleUrl) // 
+				.append(endTime, other.endTime) //
+				.append(startTime, other.startTime).isEquals();
+
+		if (!fields)
+			return false;
+
 		// Check extended data
 		Set<SimpleField> maximalSet = new HashSet<SimpleField>();
 		maximalSet.addAll(extendedData.keySet());
 		maximalSet.addAll(other.extendedData.keySet());
-		for(SimpleField fieldname : maximalSet) {
+		for (SimpleField fieldname : maximalSet) {
 			Object val1 = extendedData.get(fieldname);
 			Object val2 = other.extendedData.get(fieldname);
 			if (val1 != null && val2 != null) {
@@ -106,21 +139,24 @@ public class Feature extends BaseStart {
 				return false;
 			}
 		}
-		
+
 		// Check geometry for equivalence
-		if (geometry == null && other.geometry == null) { 
+		if (geometry == null && other.geometry == null) {
 			return true;
 		} else if (geometry != null && other.geometry != null) {
 			Geodetic2DBounds bb1 = geometry.getBoundingBox();
 			Geodetic2DBounds bb2 = other.geometry.getBoundingBox();
-            if (bb1 == null) {
-                if (bb2 != null) return false;
-            } else if (! bb1.equals(bb2, 1e-5)) return false;
-			if (geometry.getNumPoints() != other.geometry.getNumPoints()) return false;
+			if (bb1 == null) {
+				if (bb2 != null)
+					return false;
+			} else if (!bb1.equals(bb2, 1e-5))
+				return false;
+			if (geometry.getNumPoints() != other.geometry.getNumPoints())
+				return false;
 			return true;
 		} else {
 			return false;
 		}
-		
+
 	}
 }

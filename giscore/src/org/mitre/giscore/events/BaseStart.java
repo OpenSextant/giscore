@@ -18,17 +18,31 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.Externalizable;
+import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.mitre.giscore.events.SimpleField.Type;
+import org.mitre.giscore.utils.IDataSerializable;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
+
+import com.sun.org.apache.xml.internal.utils.UnImplNode;
 
 /**
  * Base class for start.
@@ -36,10 +50,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @author DRAND
  * 
  */
-public abstract class BaseStart implements IGISObject, Serializable {
-	
-	private static final long serialVersionUID = 1L;
-
+public abstract class BaseStart implements IGISObject, IDataSerializable {
 	protected String name;
 	protected String description;
 	protected URI schema;
@@ -77,7 +88,7 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	
+
 	/**
 	 * @return the styleUrl
 	 */
@@ -86,7 +97,8 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	}
 
 	/**
-	 * @param styleUrl the styleUrl to set
+	 * @param styleUrl
+	 *            the styleUrl to set
 	 */
 	public void setStyleUrl(String styleUrl) {
 		this.styleUrl = styleUrl;
@@ -100,7 +112,8 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	}
 
 	/**
-	 * @param startTime the startTime to set
+	 * @param startTime
+	 *            the startTime to set
 	 */
 	public void setStartTime(Date startTime) {
 		this.startTime = startTime;
@@ -114,22 +127,24 @@ public abstract class BaseStart implements IGISObject, Serializable {
 	}
 
 	/**
-	 * @param endTime the endTime to set
+	 * @param endTime
+	 *            the endTime to set
 	 */
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
 	}
 
 	/**
-	 * @return the schema, may be <code>null</code> if there's no reference
-	 * to a schema
+	 * @return the schema, may be <code>null</code> if there's no reference to a
+	 *         schema
 	 */
 	public URI getSchema() {
 		return schema;
 	}
 
 	/**
-	 * @param schema the schema to set
+	 * @param schema
+	 *            the schema to set
 	 */
 	public void setSchema(URI schema) {
 		this.schema = schema;
@@ -182,6 +197,73 @@ public abstract class BaseStart implements IGISObject, Serializable {
 					"field should never be null or empty");
 		}
 		return extendedData.get(field);
+	}
+
+	/**
+	 * Read object from the data stream.
+	 * 
+	 * @param in
+	 *            the input stream, never <code>null</code>
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 */
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException, IllegalAccessException {
+		try {
+			name = in.readString();
+			description = in.readString();
+			String schemaStr = in.readString(); 
+			schema = schemaStr != null ? new URI(schemaStr) : null;
+			styleUrl = in.readString();
+			long val = in.readLong();
+			if (val > -1) {
+				startTime = new Date(val);
+			} else {
+				startTime = null;
+			}
+			val = in.readLong();
+			if (val > -1) {
+				endTime = new Date(val);
+			} else {
+				endTime = null;
+			}
+		} catch (URISyntaxException e) {
+			throw new IOException(e);
+		}
+		int cnt = in.readInt();
+		for(int i = 0; i < cnt; i++) {
+			SimpleField field = (SimpleField) in.readObject();
+			Object val = in.readScalar();
+			extendedData.put(field, val);
+		}
+
+	}
+
+	/**
+	 * Write the object to the data stream
+	 * 
+	 * @param out
+	 * @throws IOException
+	 */
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		out.writeString(name);
+		out.writeString(description);
+		out.writeString(schema.toString());
+		out.writeString(styleUrl);
+		if (startTime != null)
+			out.writeLong(startTime.getTime());
+		else 
+			out.writeLong(-1);
+		if (endTime != null)
+			out.writeLong(endTime.getTime());
+		else 
+			out.writeLong(-1);
+		int cnt = extendedData.size();
+		out.writeInt(cnt);
+		for(Map.Entry<SimpleField, Object> entry : extendedData.entrySet()) {
+			out.writeObject(entry.getKey());
+			out.writeScalar(entry.getValue());
+		}
 	}
 
 	/*

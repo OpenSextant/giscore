@@ -18,8 +18,12 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.io.IOException;
+
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.input.kml.IKml;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 /**
  * This element draws an image overlay draped onto the terrain. The <href> child
@@ -32,8 +36,6 @@ import org.mitre.giscore.input.kml.IKml;
  * 
  */
 public class GroundOverlay extends Overlay {
-	private static final long serialVersionUID = 1L;
-	
 	private Double north, south, east, west, rotation, altitude;
 	private String altitudeMode;
 
@@ -199,4 +201,39 @@ public class GroundOverlay extends Overlay {
 			return false;
 		}
 	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.events.Overlay#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+		altitude = in.readDouble();
+		east = in.readDouble();
+		north = in.readDouble();
+		rotation = in.readDouble();
+		south = in.readDouble();
+		west = in.readDouble();
+		altitudeMode = in.readString();
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.events.Overlay#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+		out.writeDouble(altitude != null ? altitude : 0.0);
+		out.writeDouble(east != null ? east : 0.0);
+		out.writeDouble(north != null ? north : 0.0);
+		out.writeDouble(rotation != null ? rotation : 0.0);
+		out.writeDouble(south != null ? south : 0.0);
+		out.writeDouble(west != null ? west : 0.0);
+		out.writeString(altitudeMode);
+	}
+	
+	
 }

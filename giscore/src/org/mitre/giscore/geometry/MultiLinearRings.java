@@ -15,12 +15,15 @@
  ***************************************************************************/
 package org.mitre.giscore.geometry;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic3DBounds;
 import org.slf4j.Logger;
@@ -168,4 +171,26 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
     public void accept(StreamVisitorBase visitor) {
     	visitor.visit(this);
     }
+    
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+    @SuppressWarnings("unchecked")
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException, IllegalAccessException {
+		super.readData(in);
+		List<LinearRing> lrlist = (List<LinearRing>) in.readObjectCollection();
+		init(lrlist, false);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+		out.writeObjectCollection(ringList);
+	}
 }

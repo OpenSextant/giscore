@@ -18,7 +18,15 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.io.IOException;
 import java.util.HashMap;
+import java.util.Map;
+
+import org.mitre.giscore.utils.IDataSerializable;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
+
+import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
 
 /**
  * There are a number of elements in KML that simply need their data 
@@ -27,7 +35,7 @@ import java.util.HashMap;
  * @author DRAND
  *
  */
-public class TaggedMap extends HashMap<String, String> {
+public class TaggedMap extends HashMap<String, String> implements IDataSerializable {
 	private static final long serialVersionUID = 1L;
 	
 	/**
@@ -52,5 +60,35 @@ public class TaggedMap extends HashMap<String, String> {
 	 */
 	public String getTag() {
 		return tag;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		tag = in.readString();
+		int count = in.readInt();
+		for(int i = 0; i < count; i++) {
+			String key = in.readString();
+			String value = in.readString();
+			put(key, value);
+		}
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		out.writeString(tag);
+		out.writeInt(size());
+		for(Map.Entry<String,String> entry : entrySet()) {
+			out.writeString(entry.getKey());
+			out.writeString(entry.getValue());
+		}
 	}
 }

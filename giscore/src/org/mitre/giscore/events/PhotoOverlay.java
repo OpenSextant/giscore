@@ -25,8 +25,6 @@ import org.mitre.giscore.input.kml.IKml;
  *
  */
 public class PhotoOverlay extends Overlay {
-	private static final long serialVersionUID = 1L;
-	
 	/**
 	 * @return the type
 	 */

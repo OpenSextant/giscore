@@ -15,12 +15,15 @@
  ***************************************************************************/
 package org.mitre.giscore.geometry;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic3DBounds;
 import org.slf4j.Logger;
@@ -45,7 +48,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiPolygons.class);
 
-    private final List<Polygon> polygonList, publicPolygonList;
+    private List<Polygon> polygonList, publicPolygonList;
 
     /**
      * This method returns an iterator for cycling through the Polygons in this Object.
@@ -78,7 +81,15 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
         if (polygonList == null || polygonList.size() < 1)
             throw new IllegalArgumentException("MultiPolygons must contain " +
                     "at least 1 Polygons object");
-        // Make sure all the polygons have the same number of dimensions (2D or 3D)
+        init(polygonList);
+    }
+
+    /**
+     * Initialize
+     * @param polygonList
+     */
+	private void init(List<Polygon> polygonList) {
+		// Make sure all the polygons have the same number of dimensions (2D or 3D)
         is3D = polygonList.get(0).is3D();
         numParts = 0;
         numPoints = 0;
@@ -108,7 +119,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
         }
         this.polygonList = polygonList;
 		this.publicPolygonList = Collections.unmodifiableList(polygonList);
-    }
+	}
 
     /**
      * Tests whether this MultiPolygons geometry is a container for otherGeom's type.
@@ -135,4 +146,25 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
     public void accept(StreamVisitorBase visitor) {
     	visitor.visit(this);
     }
+    
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException, IllegalAccessException {
+		super.readData(in);
+		List<Polygon> plist = (List<Polygon>) in.readObjectCollection();
+		init(plist);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+		out.writeObjectCollection(polygonList);
+	}
 }

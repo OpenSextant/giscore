@@ -15,12 +15,15 @@
  ***************************************************************************/
 package org.mitre.giscore.geometry;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DBounds;
@@ -44,7 +47,7 @@ public class Line extends Geometry implements Iterable<Point> {
 	
     private static final Logger log = LoggerFactory.getLogger(Line.class);
 
-    private final List<Point> pointList, publicPointList;
+    private List<Point> pointList, publicPointList;
     private boolean idlWrap;  // International Date Line Wrap
 
     /**
@@ -77,7 +80,15 @@ public class Line extends Geometry implements Iterable<Point> {
     public Line(List<Point> pts) throws IllegalArgumentException {
         if (pts == null || pts.size() < 2)
             throw new IllegalArgumentException("Line must contain at least 2 Points");
-        // Make sure all the points have the same number of dimensions (2D or 3D)
+        init(pts);
+    }
+
+    /**
+     * Initialize given a set of points
+     * @param pts
+     */
+	private void init(List<Point> pts) {
+		// Make sure all the points have the same number of dimensions (2D or 3D)
         is3D = pts.get(0).is3D();
         for (Point p : pts) {
             if (is3D != p.is3D()) {
@@ -112,7 +123,7 @@ public class Line extends Geometry implements Iterable<Point> {
 		publicPointList = Collections.unmodifiableList(pointList);
         numParts = 1;
         numPoints = pts.size();
-    }
+	}
 
     /**
      * This predicate method is used to tell if this Ring has positive Longitude points
@@ -138,4 +149,29 @@ public class Line extends Geometry implements Iterable<Point> {
     public void accept(StreamVisitorBase visitor) {
     	visitor.visit(this);
     }
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+    @SuppressWarnings("unchecked")
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+		idlWrap = in.readBoolean();
+		List<Point> plist = (List<Point>) in.readObjectCollection();
+		init(plist);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+		out.writeBoolean(idlWrap);
+		out.writeObjectCollection(pointList);
+	}
+  
 }

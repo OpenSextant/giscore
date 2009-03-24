@@ -15,12 +15,15 @@
  ***************************************************************************/
 package org.mitre.giscore.geometry;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic3DBounds;
 import org.slf4j.Logger;
@@ -40,7 +43,8 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiLine.class);
 
-    private final List<Line> lineList, publicLineList;
+    private List<Line> lineList;
+	private List<Line> publicLineList;
 
     /**
      * This method returns an iterator for cycling through Lines in this MultiLine.
@@ -72,7 +76,15 @@ public class MultiLine extends Geometry implements Iterable<Line> {
     public MultiLine(List<Line> lines) throws IllegalArgumentException {
         if (lines == null || lines.size() < 1)
             throw new IllegalArgumentException("MultiLine must contain at least 1 Line");
-        // Make sure all the lines have the same number of dimensions (2D or 3D)
+        init(lines);
+    }
+
+    /**
+     * Initialize
+     * @param lines
+     */
+	private void init(List<Line> lines) {
+		// Make sure all the lines have the same number of dimensions (2D or 3D)
         is3D = lines.get(0).is3D();
         numParts = lines.size();
         numPoints = 0;
@@ -102,7 +114,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
         }
         lineList = lines;
 		publicLineList = Collections.unmodifiableList(lineList);
-    }
+	}
 
     /**
      * Tests whether this MultiLine geometry is a container for otherGeom's type.
@@ -127,4 +139,25 @@ public class MultiLine extends Geometry implements Iterable<Line> {
     public void accept(StreamVisitorBase visitor) {
     	visitor.visit(this);
     }
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+    @SuppressWarnings("unchecked")
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException, IllegalAccessException {
+		super.readData(in);
+		List<Line> llist = (List<Line>) in.readObjectCollection();
+		init(llist);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+		out.writeObjectCollection(lineList);
+	}
 }

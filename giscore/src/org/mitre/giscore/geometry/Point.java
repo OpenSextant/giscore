@@ -15,7 +15,11 @@
  ***************************************************************************/
 package org.mitre.giscore.geometry;
 
+import java.io.IOException;
+
 import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Angle;
 import org.mitre.itf.geodesy.GeoPoint;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
@@ -38,7 +42,7 @@ public class Point extends Geometry {
     
     private static final long serialVersionUID = 1L;
 
-	private final Geodetic2DPoint pt; // or extended Geodetic3DPoint
+	private Geodetic2DPoint pt; // or extended Geodetic3DPoint
 
 	/**
 	 * Ctor, create a point given a lat and lon value in a WGS84 spatial
@@ -149,5 +153,28 @@ public class Point extends Geometry {
 
 	public void accept(StreamVisitorBase visitor) {
 		visitor.visit(this);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+		Angle lat = readAngle(in);
+		Angle lon = readAngle(in);
+		pt = new Geodetic2DPoint(new Longitude(lon), new Latitude(lat));
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+		writeAngle(out, pt.getLatitude());
+		writeAngle(out, pt.getLongitude());
 	}
 }

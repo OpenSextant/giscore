@@ -1,7 +1,7 @@
 /****************************************************************************************
- *  IGISObject.java
+ *  TestObjectPersistence.java
  *
- *  Created: Jan 26, 2009
+ *  Created: Mar 24, 2009
  *
  *  @author DRAND
  *
@@ -16,27 +16,13 @@
  *  their occurrence.
  *
  ***************************************************************************************/
-package org.mitre.giscore.events;
+package org.mitre.giscore.test.input;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.Map;
-
-import org.mitre.giscore.geometry.VisitableGeometry;
 
 /**
- * GISObject is primarily a marker interface for all the objects that are part
- * of the GIS core manipulation package.
- * 
  * @author DRAND
+ *
  */
-public interface IGISObject extends VisitableGeometry {
-	/**
-	 * The id of the style referenced by the given feature or container
-	 */
-	public static final String STYLE_PROP = "styleUrl";
+public class TestObjectPersistence {
+
 }

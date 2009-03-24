@@ -15,12 +15,16 @@
  ***************************************************************************/
 package org.mitre.giscore.geometry;
 
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DBounds;
@@ -42,7 +46,7 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiPoint.class);
 
-    private final List<Point> pointList, publicPointList;
+    private List<Point> pointList, publicPointList;
 
     /**
      * This method returns an iterator for cycling through the geodetic Points in this MultiPoint.
@@ -74,7 +78,15 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
     public MultiPoint(List<Point> pts) throws IllegalArgumentException {
         if (pts == null || pts.size() < 1)
             throw new IllegalArgumentException("MultiPoint must contain at least 1 Point");
-        // Make sure all the points have the same number of dimensions (2D or 3D)
+        init(pts);
+    }
+
+    /**
+     * Initialize
+     * @param pts
+     */
+	private void init(List<Point> pts) {
+		// Make sure all the points have the same number of dimensions (2D or 3D)
         is3D = pts.get(0).is3D();
         for (Point p : pts) {
             if (is3D != p.is3D()) {
@@ -90,7 +102,7 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 		publicPointList = Collections.unmodifiableList(pointList);
         numPoints = pts.size();
         numParts = numPoints;      // We might choose to make this 1 instead of numPoints
-    }
+	}
 
     /**
      * Tests whether this MultiPoint geometry is a container for otherGeom's type.
@@ -115,4 +127,32 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
     public void accept(StreamVisitorBase visitor) {
     	visitor.visit(this);
     }
+    
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+		int pcount = in.readInt();
+		ArrayList<Point> plist = new ArrayList<Point>();
+		for(int i = 0; i < pcount; i++) {
+			plist.add((Point) in.readObject());
+		}
+		init(plist);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+		out.writeInt(pointList != null ? pointList.size() : 0);
+		for(Point p : pointList) {
+			out.writeObject(p);
+		}
+	}
 }

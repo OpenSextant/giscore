@@ -24,7 +24,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
+import java.io.DataInputStream;
 import java.io.OutputStream;
 import java.net.UnknownHostException;
 import java.util.Date;
@@ -63,6 +63,7 @@ import org.mitre.giscore.output.FeatureSorter;
 import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -416,7 +417,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			return;
 		}
 		InputStream is = new FileInputStream(ffile);
-		ObjectInputStream ois = new ObjectInputStream(is);
+		DataInputStream dis = new DataInputStream(is);
+		SimpleObjectInputStream ois = new SimpleObjectInputStream(dis);
 		IFeatureBuffer buffer = fc.createFeatureBuffer();
 		IFeatureCursor cursor = fc.IFeatureClass_insert(true);
 		try {
@@ -465,10 +467,15 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			// Ignore
 		} catch (ClassNotFoundException e) {
 			logger.error("Referenced class not available", e);
+		} catch (InstantiationException e) {
+			logger.error("Referenced class not available (instantiation)", e);
+		} catch (IllegalAccessException e) {
+			logger.error("Referenced class not available (access)", e);
 		} finally {
 			cursor.flush();
 			Cleaner.release(cursor);
-			IOUtils.closeQuietly(ois);
+			ois.close();
+			IOUtils.closeQuietly(dis);
 			IOUtils.closeQuietly(is);
 		}
 

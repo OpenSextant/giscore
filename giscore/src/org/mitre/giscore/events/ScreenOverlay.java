@@ -18,17 +18,19 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.io.IOException;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.mitre.giscore.input.kml.IKml;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 /**
  * A kind of feature that contains an image overlayed on the screen.
  * 
  * @author DRAND
  */
-public class ScreenOverlay extends Overlay {
-	private static final long serialVersionUID = 1L;
-	
+public class ScreenOverlay extends Overlay {	
 	private ScreenLocation overlay;      // overlayXY
 	private ScreenLocation screen;       // screenXY
 	private ScreenLocation rotation;     // rotationXY
@@ -141,4 +143,35 @@ public class ScreenOverlay extends Overlay {
 			.append(rotation, sother.rotation) //
 			.isEquals();
 	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.events.Overlay#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+		overlay = (ScreenLocation) in.readObject();
+		rotation = (ScreenLocation) in.readObject();
+		screen = (ScreenLocation) in.readObject();
+		size = (ScreenLocation) in.readObject();
+		rotationAngle = in.readDouble();
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.events.Overlay#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+		out.writeObject(overlay);
+		out.writeObject(rotation);
+		out.writeObject(screen);
+		out.writeObject(size);
+		out.writeDouble(rotationAngle != null ? rotationAngle : 0.0);
+	}
+	
+	
 }

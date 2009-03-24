@@ -1,7 +1,7 @@
 /****************************************************************************************
- *  IGISObject.java
+ *  IDataSerializable.java
  *
- *  Created: Jan 26, 2009
+ *  Created: Mar 23, 2009
  *
  *  @author DRAND
  *
@@ -16,27 +16,32 @@
  *  their occurrence.
  *
  ***************************************************************************************/
-package org.mitre.giscore.events;
+package org.mitre.giscore.utils;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Date;
-import java.util.Map;
-
-import org.mitre.giscore.geometry.VisitableGeometry;
 
 /**
- * GISObject is primarily a marker interface for all the objects that are part
- * of the GIS core manipulation package.
- * 
  * @author DRAND
+ *
  */
-public interface IGISObject extends VisitableGeometry {
+public interface IDataSerializable {
+
 	/**
-	 * The id of the style referenced by the given feature or container
+	 * Read object from the data stream.
+	 * 
+	 * @param in
+	 *            the input stream, never <code>null</code>
+	 * @throws IOException
+	 * @throws ClassNotFoundException
 	 */
-	public static final String STYLE_PROP = "styleUrl";
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException, IllegalAccessException;
+
+	/**
+	 * Write the object to the data stream
+	 * 
+	 * @param out
+	 * @throws IOException
+	 */
+	public void writeData(SimpleObjectOutputStream out) throws IOException;
 }

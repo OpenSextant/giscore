@@ -18,12 +18,16 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.io.IOException;
 import java.io.Serializable;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.mitre.giscore.utils.IDataSerializable;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 /**
  * Represents a specific point on the screen, either measure in a percentage
@@ -33,9 +37,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @author DRAND
  *
  */
-public class ScreenLocation implements Serializable {
-	private static final long serialVersionUID = 1L;
-
+public class ScreenLocation implements IDataSerializable {
 	public enum UNIT {
         PIXELS("pixels"), 
 		FRACTION("fraction"), 
@@ -73,5 +75,29 @@ public class ScreenLocation implements Serializable {
 	@Override
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		x = in.readDouble();
+		xunit = UNIT.valueOf(in.readString());
+		y = in.readDouble();
+		yunit = UNIT.valueOf(in.readString());
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		out.writeDouble(x);
+		out.writeString(xunit.name());
+		out.writeDouble(y);
+		out.writeString(yunit.name());
 	}	
 }

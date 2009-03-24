@@ -18,12 +18,15 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
-import java.io.Serializable;
+import java.io.IOException;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.mitre.giscore.utils.IDataSerializable;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 /**
  * A descriptor for a given schema field. A given field is described by its
@@ -32,7 +35,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * 
  * @author DRAND
  */
-public class SimpleField implements Serializable {
+public class SimpleField implements IDataSerializable {
 	private static final long serialVersionUID = 1L;
 
 	public static enum Type {
@@ -126,6 +129,13 @@ public class SimpleField implements Serializable {
 		this.name = name;
 		displayName = name;
 		type = Type.STRING;
+	}
+
+	/**
+	 * No args ctor
+	 */
+	public SimpleField() {
+
 	}
 
 	/**
@@ -311,5 +321,39 @@ public class SimpleField implements Serializable {
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this,
 				ToStringStyle.MULTI_LINE_STYLE);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		setAliasName(in.readString());
+		setDisplayName(in.readString());
+		setLength((Integer) in.readScalar());
+		setModelName(in.readString());
+		setName(in.readString());
+		setPrecision((Integer) in.readScalar());
+		setScale((Integer) in.readScalar());
+		String type = in.readString();
+		setType(Type.valueOf(type));
+		
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		out.writeScalar(getAliasName());
+		out.writeScalar(getDisplayName());
+		out.writeScalar(getLength());
+		out.writeScalar(getModelName());
+		out.writeScalar(getName());
+		out.writeScalar(getPrecision());
+		out.writeScalar(getScale());
+		out.writeString(getType().name());
 	}
 }

@@ -19,8 +19,11 @@
 package org.mitre.giscore.events;
 
 import java.awt.Color;
+import java.io.IOException;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 /**
  * Abstract overlay class is a parent to the specific classes for each
@@ -97,5 +100,33 @@ public abstract class Overlay extends Feature {
 		EqualsBuilder eb = new EqualsBuilder();
 		return eb.append(color, other.color).append(drawOrder, other.drawOrder)
 				.append(icon, other.icon).isEquals();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.events.Feature#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+		int rgb = in.readInt();
+		color = new Color(rgb);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.events.Feature#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {	
+		super.writeData(out);
+		if (color != null) {
+			out.writeInt(color.getRGB());
+		} else {
+			out.writeInt(0);
+		}
+		out.writeInt(drawOrder);
+		out.writeObject(icon);
+		
 	}
 }

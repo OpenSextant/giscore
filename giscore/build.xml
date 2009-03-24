@@ -140,13 +140,17 @@
 	<target name="publish" depends="jar, javadoc, sourcejar">		
 		<!-- Update before publishing. ivy:buildnumber should be usable here but
 			was failing for some reason. FIXME -->
-		<property name="rev" value="0.3.6" />
+		<property name="rev" value="0.3.7" />
 		<ivy:resolve revision="${rev}" file="${basedir}/ivy.xml" 
 			resolveid="ivyres" />
 		<ivy:deliver revision="${rev}" resolveid="ivyres" 
 			deliverpattern="${rel}/ivy.xml" />
 		<ivy:makepom ivyfile="${basedir}/rel/ivy.xml" pomfile="${rel}/giscore.pom" 
-			settingsref="ivy.instance" />
+			settingsref="ivy.instance">
+			<mapping conf="compile" scope="compile" />
+			<mapping conf="runtime" scope="runtime" />
+			<mapping conf="test" scope="test" />
+		</ivy:makepom>		
 		<ivy:publish resolver="ssh" revision="${rev}" update="true" >
 			<artifacts pattern="rel/[artifact].[ext]" />
 			<artifacts pattern="rel/jars/[artifact].[ext]" />

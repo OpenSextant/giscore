@@ -18,6 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.output;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -37,6 +38,7 @@ import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 
 /**
@@ -84,7 +86,7 @@ public class FeatureSorter {
 	 * The output streams must be held open while features are being sorted. 
 	 * Otherwise the output stream becomes corrupted, at least sometimes.
 	 */
-	private Map<FeatureKey, ObjectOutputStream> dataStreamMap = null;
+	private Map<FeatureKey, SimpleObjectOutputStream> dataStreamMap = null;
 	/**
 	 * The class keeps track of the overall extent of the features in a
 	 * particular collection.
@@ -151,7 +153,7 @@ public class FeatureSorter {
 			if (feature.getGeometry() != null)
 				geoclass = feature.getGeometry().getClass();
 			FeatureKey key = new FeatureKey(s, geoclass, feature.getClass());
-			ObjectOutputStream stream = null;
+			SimpleObjectOutputStream stream = null;
 			if (!key.equals(currentKey)) {
 				currentKey = key;
 				File stemp = dataFileMap.get(key);
@@ -159,7 +161,8 @@ public class FeatureSorter {
 					stemp = File.createTempFile("gdbrecordset", ".data");
 					dataFileMap.put(key, stemp);
 					FileOutputStream os = new FileOutputStream(stemp, true);
-					ObjectOutputStream oos = new ObjectOutputStream(os);
+					DataOutputStream dos = new DataOutputStream(os);
+					SimpleObjectOutputStream oos = new SimpleObjectOutputStream(dos);
 					dataStreamMap.put(key, oos);
 				}
 			}
@@ -272,9 +275,9 @@ public class FeatureSorter {
 	 */
 	public void close() throws IOException {
 		if (dataStreamMap != null) {
-			for(OutputStream os : dataStreamMap.values()) {
+			for(SimpleObjectOutputStream os : dataStreamMap.values()) {
 				os.flush();
-				IOUtils.closeQuietly(os);
+				os.close();
 				dataStreamMap = null;
 			}
 		}
@@ -305,7 +308,7 @@ public class FeatureSorter {
 		schemata = new HashMap<URI, Schema>();
 		internalSchema = new HashMap<Set<SimpleField>, Schema>();
 		dataFileMap = new HashMap<FeatureKey, File>();
-		dataStreamMap = new HashMap<FeatureKey, ObjectOutputStream>();
+		dataStreamMap = new HashMap<FeatureKey, SimpleObjectOutputStream>();
 		boundingBoxes = new HashMap<FeatureKey, Geodetic2DBounds>();
 		currentKey = null;
 	}
