@@ -156,6 +156,30 @@ public class TestKmlReader extends TestCase {
 	}
 
 	/**
+     * Test loading KMZ file with 2 levels of network links
+	 * recursively loading each NetworkLink.
+     *
+	 * @throws IOException if an I/O error occurs
+     */
+    @Test
+	public void testMultiLevelNetworkLinks() throws IOException {
+		File file = new File("data/kml/NetworkLink/multiLevelNetworkLinks2.kmz");
+		KmlReader reader = new KmlReader(file);
+		List<IGISObject> objs = reader.getFeatures();
+		assertEquals(6, objs.size());
+		List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
+		List<URI> networkLinks = reader.importFromNetworkLinks(linkedFeatures);
+		
+		assertEquals(2, networkLinks.size());
+		assertEquals(9, linkedFeatures.size());
+		IGISObject o = linkedFeatures.get(8);
+		assertTrue(o instanceof Feature);
+		Feature ptFeat = (Feature)o;
+		Geometry geom = ptFeat.getGeometry();
+		assertTrue(geom instanceof Point);
+	}
+
+	/**
      * Test ground overlays with KML from URL and KMZ from file targets
      */
     @Test
