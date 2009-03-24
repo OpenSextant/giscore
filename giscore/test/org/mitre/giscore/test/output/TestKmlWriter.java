@@ -7,6 +7,7 @@ import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
+import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
@@ -23,13 +24,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.*;
 import java.util.zip.ZipFile;
+import java.text.SimpleDateFormat;
 
 /**
  * @author Jason Mathews, MITRE Corp.
  * Date: Mar 20, 2009 11:54:04 AM
  */
 public class TestKmlWriter extends TestCase {
-	
+
 	public void test_NetworkLink_Kmz() throws IOException, XMLStreamException {
 		File temp = File.createTempFile("test", ".kmz");
 		//File temp = new File("test.kmz");
@@ -68,7 +70,7 @@ public class TestKmlWriter extends TestCase {
 
 			writer.close();
 
-			KmlReader reader = new KmlReader(temp); 
+			KmlReader reader = new KmlReader(temp);
 			List<IGISObject> objs = reader.getFeatures();
 			// System.out.println(objs);
 			/*
@@ -122,7 +124,7 @@ public class TestKmlWriter extends TestCase {
 			  org.mitre.giscore.events.Feature - feature 5 no time -> static placemark
 			  org.mitre.giscore.events.ContainerEnd
 			 */
-			
+
 			List<Feature> features = new ArrayList<Feature>(6);
 			for (IGISObject o : objs) {
 				if (o instanceof Feature)
@@ -159,7 +161,7 @@ public class TestKmlWriter extends TestCase {
 			// feature 4 timeStamp placemark - end marker marks latest time in dataset
 			Date lastEndTime = features.get(4).getEndTime();
 			assertNotNull(lastEndTime);
-			
+
 			// feature 5 no time -> static placemark
 			assertNull(features.get(5).getStartTime());
 			assertNull(features.get(5).getEndTime());
@@ -187,6 +189,73 @@ public class TestKmlWriter extends TestCase {
 			for (int i = 0; i < objs.size(); i++) {
 				TestKmlOutputStream.checkApproximatelyEquals(objs.get(i), objs2.get(i));
 			}
+		} finally {
+			if (temp.exists()) temp.delete();
+		}
+	}
+
+	private final String[] timestamps = {
+			"2009-01-01T00:00:00.000Z	2009-01-01T00:00:00.000Z", // when 2007
+			"2009-01-01T00:00:00.000Z	2009-01-01T00:00:00.000Z", // span 2007
+			"2009-03-01T00:00:00.000Z	2009-03-01T00:00:00.000Z", // when 2009-03
+			"2009-03-01T00:00:00.000Z	2009-03-01T00:00:00.000Z", // span 2009-03
+			"2009-03-14T00:00:00.000Z	2009-03-14T00:00:00.000Z", // when 2009-03-14
+			"2009-03-14T00:00:00.000Z	2009-03-14T00:00:00.000Z", // span 2009-03-14
+			"2009-03-14T21:06:30.000Z	2009-03-14T21:06:30.000Z", // when 2009-03-14T21:06:30Z
+			"2009-03-14T21:06:00.000Z	2009-03-14T21:06:59.000Z", // span 2009-03-14T21:06Z
+			"2009-03-14T18:10:46.000Z	2009-03-14T18:10:46.000Z", // when 2009-03-14T21:10:46+03:00
+			"2009-03-14T21:10:50.000Z	2009-03-14T21:10:50.000Z", // when 2009-03-14T16:10:50-05:00
+			"2009-03-14T21:10:50.000Z	2009-03-14T21:10:50.000Z"  // when 2009-03-14T16:10:50 (no timezone assumes UTC)
+	};
+
+	public void test_Time_Feature() throws Exception {
+		File input = new File("data/kml/time/timestamps.kml");
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+		File temp = File.createTempFile("test1", ".kml");
+		try {
+			KmlReader reader = new KmlReader(input);
+			List<IGISObject> objs = reader.getFeatures();
+
+			//System.out.println(objs);
+			//System.out.println("# features=" + objs.size());
+			// assertEquals(9, objs.size());
+
+			List<Feature> features = new ArrayList<Feature>(11);
+			for (IGISObject o : objs) {
+				if (o instanceof Feature)
+					features.add((Feature)o);
+			}
+			assertEquals(11, features.size());
+
+			SimpleDateFormat df = new SimpleDateFormat(IKml.ISO_DATE_FMT);
+        	df.setTimeZone(tz);
+
+			for (int i = 0; i < features.size(); i++) {
+				Feature f = features.get(i);
+				Date start = f.getStartTime();
+				Date end = f.getEndTime();
+				String startFmt = start == null ? null : df.format(start);
+				String endFmt = end == null ? null : df.format(end);
+				System.out.println("\n >" + f.getClass().getName());
+				System.out.format("\t%s\t%s%n", startFmt, endFmt);
+				String[] startEnd = timestamps[i].split("\t");
+				String expStartTime = startEnd[0];
+				String expEndTime = startEnd[1];
+				System.out.println("\t" + expStartTime + "\t"+ expEndTime );
+				assertEquals("startTime compare @" + i, expStartTime, startFmt);
+				assertEquals("endTime compare @" + i, expEndTime, endFmt);
+			}
+
+			/*
+			KmlWriter writer = new KmlWriter(temp);
+			for (IGISObject o : objs) {
+				writer.write(o);
+			}
+			writer.close();
+
+			reader = new KmlReader(temp);
+			List<IGISObject> objs2 = reader.getFeatures();
+			*/
 		} finally {
 			if (temp.exists()) temp.delete();
 		}
