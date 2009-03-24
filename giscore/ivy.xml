@@ -35,7 +35,6 @@
 		<dependency org="com.esri.arcgis" name="arcobjects" rev="9.3">
 			<!--conf name="default" /-->
 		</dependency>
-		<dependency org="joda-time" name="joda-time" rev="1.5.2" />
 		<!-- junit is only need in the test configuration-->
 		<dependency org="junit" name="junit" rev="4.5" conf="test->default"/>
 		<exclude org="commons-logging" module="commons-logging" />
