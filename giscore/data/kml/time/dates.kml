@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+
+ Examples of date (YYYY-MM-DD) timestamps (e.g. "1997-07-16")
+
+ Google Earth client treats following two time durations
+ the same as a single instant at 2007-03-14T00:00:00Z
+ not with the end at 23:59:59.
+
+            <TimeStamp>
+                <when>2007-03-13</when>
+            </TimeStamp>
+
+            <TimeSpan>
+                <begin>2007-03-14</begin>
+                <end>2007-03-14</end>
+            </TimeSpan>
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <Document>
+        <name>TimeStamp'ed Points</name>
+	<open>1</open>
+        <Placemark>
+            <name>when 2007-03-13</name>
+            <TimeStamp>
+                <when>2007-03-13</when>
+            </TimeStamp>
+            <Point>
+                <coordinates>-122.537116,37.85961000000001,0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark>
+            <name>span 2007-03-14</name>
+            <TimeSpan>
+                <begin>2007-03-14</begin>
+                <end>2007-03-14</end>
+            </TimeSpan>
+            <Point>
+                <coordinates>-122.537298,37.859336,0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark>
+            <name>when 2007-03-15</name>
+            <TimeStamp>
+                <when>2007-03-15</when>
+            </TimeStamp>
+            <Point>
+                <coordinates>-122.537469,37.85907,0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark>
+            <name>span 2007-03-16T12:00-16:00Z</name>
+            <TimeSpan>
+                <begin>2007-03-16T12:00:00Z</begin>
+                <end>2007-03-16T16:00:00Z</end>
+            </TimeSpan>
+            <Point>
+                <coordinates>-122.537635,37.858822,0</coordinates>
+            </Point>
+        </Placemark>
+    </Document>
+</kml>

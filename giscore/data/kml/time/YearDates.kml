@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+
+ Examples of gYear (YYYY) timestamps (e.g. 2007)
+
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <Document>
+        <name>TimeStamp'ed Points</name>
+	<open>1</open>
+        <Placemark>
+            <name>when 2007</name>
+            <TimeStamp>
+                <when>2007</when>
+            </TimeStamp>
+            <Point>
+                <coordinates>-122.537116,37.85961000000001,0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark>
+            <name>span 2008</name>
+            <TimeSpan>
+                <begin>2008</begin>
+                <end>2008</end>
+            </TimeSpan>
+            <Point>
+                <coordinates>-122.537298,37.859336,0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark>
+            <name>span 2009-01</name>
+            <TimeSpan>
+                <begin>2009-01-01T00:00:00Z</begin>
+                <end>2009-01-30T23:00:00Z</end>
+            </TimeSpan>
+            <Point>
+                <coordinates>-122.537635,37.858822,0</coordinates>
+            </Point>
+        </Placemark>
+    </Document>
+</kml>

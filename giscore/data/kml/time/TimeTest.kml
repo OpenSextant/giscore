@@ -2,11 +2,11 @@
 <!--
 	Examples of temporal features:
 
-	1) timeStamp placemark - start marker marks earlier time in dataset
+	1) TimeStamp placemark - start marker marks earlier time in dataset
 	2) TimeSpan only end time
 	3) TimeSpan both begin and end time
 	4) TimeSpan with only begin time
-	5) timeStamp placemark - end marker marks latest time in dataset
+	5) TimeStamp placemark - end marker marks latest time in dataset
 	6) no time -> static placemark
 -->
 <kml xmlns="http://earth.google.com/kml/2.1">
