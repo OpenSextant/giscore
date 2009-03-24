@@ -49,12 +49,15 @@ public class GISFactory {
 	 *            the type of the document, never <code>null</code>.
 	 * @param stream
 	 *            an input stream to the document or document contents, never
-	 *            <code>null</code>.
+	 *            <code>null</code>. If stream is for a KMZ (ZIP) source
+	 *            then <code>KmlReader</code> should used instead.
 	 * @param arguments
 	 *            the additional arguments needed by the constructor, the type
 	 *            or types depend on the constructor
 	 * @return a gis input stream, never <code>null</code>
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
+	 * @throws IllegalArgumentException if type or stream are null
+	 * @see org.mitre.giscore.input.kml.KmlReader
 	 */
 	@SuppressWarnings("unchecked")
 	public static IGISInputStream getInputStream(DocumentType type,
@@ -84,12 +87,15 @@ public class GISFactory {
 	 * @param type
 	 *            the type of the document, never <code>null</code>.
 	 * @param file
-	 *            a file containing the document, never <code>null</code>
+	 *            a file containing the document, never <code>null</code>.
+	 *  		  If file is a KMZ (ZIP) file then <code>KmlReader</code> should used instead.
 	 * @param arguments
 	 *            the additional arguments needed by the constructor, the type
 	 *            or types depend on the constructor
 	 * @return a gis input stream, never <code>null</code>
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
+	 * @throws IllegalArgumentException if type or file are null
+	 * @see org.mitre.giscore.input.kml.KmlReader
 	 */
 	@SuppressWarnings("unchecked")
 	public static IGISInputStream getInputStream(DocumentType type,
@@ -121,12 +127,14 @@ public class GISFactory {
 	 *            <code>null</code>.
 	 * @param outputStream
 	 *            the output stream used to save the generated GIS file or
-	 *            files.
+	 *            files. If target output is KMZ then <code>KmlWriter</code> should be
+	 *            used instead.
 	 * @param arguments
 	 *            the additional arguments needed by the constructor, the type
 	 *            or types depend on the constructor
 	 * @return a gis output stream, never <code>null</code>.
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
+	 * @see org.mitre.giscore.output.kml.KmlWriter
 	 */
 	@SuppressWarnings("unchecked")
 	public static IGISOutputStream getOutputStream(DocumentType type,

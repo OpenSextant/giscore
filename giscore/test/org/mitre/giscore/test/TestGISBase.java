@@ -53,7 +53,7 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
  * @author DRAND
  */
 public class TestGISBase {
-	public static File tempdir = null;
+	public static File tempdir;
 	public static SimpleDateFormat FMT = new SimpleDateFormat("D-HH-mm-ss");
 	static {
 		// String dir = System.getProperty("java.io.tmpdir");

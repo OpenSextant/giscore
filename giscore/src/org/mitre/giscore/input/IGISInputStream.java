@@ -34,7 +34,7 @@ public interface IGISInputStream {
 	/**
 	 * @return the next gis object present in the source, or <code>null</code>
 	 * if there are no more objects present.
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	IGISObject read() throws IOException;
 	
