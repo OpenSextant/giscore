@@ -26,6 +26,9 @@ package org.mitre.giscore.input.kml;
 public interface IKml {
 	static final String KML_NS = "http://www.opengis.net/kml/2.2";
 
+	// default SimpleDateFormat format pattern to parse/format dates 
+	static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
+
 	static final String ADDRESS = "address";
 	static final String ALTITUDE = "altitude";
 	static final String ALTITUDE_MODE = "altitudeMode";
