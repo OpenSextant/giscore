@@ -21,16 +21,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.*;
+import java.text.SimpleDateFormat;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.text.DateFormat;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -38,35 +32,17 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
+import javax.xml.stream.events.EndElement;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.events.BaseStart;
-import org.mitre.giscore.events.Comment;
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.GroundOverlay;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.NullObject;
-import org.mitre.giscore.events.Overlay;
-import org.mitre.giscore.events.PhotoOverlay;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.ScreenLocation;
-import org.mitre.giscore.events.ScreenOverlay;
-import org.mitre.giscore.events.SimpleField;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.events.StyleMap;
-import org.mitre.giscore.events.TaggedMap;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
@@ -125,6 +101,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
     private InputStream is;
 	private XMLEventReader stream;
+
 	/**
 	 * Buffered elements that should be returned. This allows a single
 	 * call to read to find several elements and return them in the right
@@ -138,6 +115,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private static final Set<String> ms_attributes = new HashSet<String>();
 	private static final Set<String> ms_geometries = new HashSet<String>();
 	private HashMap<String, String> schemaAliases;
+
+	private static final List<DateFormat> ms_dateFormats = new ArrayList<DateFormat>();
+	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
+	private static DatatypeFactory fact;
 
 	static {
 		ms_fact = XMLInputFactory.newInstance();
@@ -161,6 +142,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		ms_geometries.add(POLYGON);
 		ms_geometries.add(MULTI_GEOMETRY);
 		ms_geometries.add(MODEL);
+
+		ms_dateFormats.add(new SimpleDateFormat(ISO_DATE_FMT)); // default: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"));
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd"));
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));
+		ms_dateFormats.add(new SimpleDateFormat("yyyy"));
+		for (DateFormat fmt : ms_dateFormats) {
+			fmt.setTimeZone(UTC);
+		}
 	}
 
 	/**
@@ -168,7 +158,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * 
 	 * @param input
 	 *            input stream for the kml file, never <code>null</code>
-	 * @throws XMLStreamException
+	 * @throws IOException if an I/O or parsing error occurs
+	 * @throws IllegalArgumentException if input is null
 	 */
 	public KmlInputStream(InputStream input) throws IOException {
 		if (input == null) {
@@ -603,7 +594,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				try {
                     if (foundStartTag(se, WHEN)) {
                         time = stream.getElementText();
-                        Date date = parseDate(time.trim()); 
+                        Date date = parseDate(time.trim());
                         cs.setStartTime(date);
                         cs.setEndTime(date);
                     } else if (foundStartTag(se, BEGIN)) {
@@ -613,6 +604,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						time = stream.getElementText();
 						cs.setEndTime(parseDate(time.trim()));
 					}
+				} catch (IllegalArgumentException e) {
+					log.warn("Ignoring bad time: " + time + ": " + e);
 				} catch (ParseException e) {
 					log.warn("Ignoring bad time: " + time + ": " + e);
 				}
@@ -624,32 +617,66 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
-	 * Try all available formats to parse the passed string. The method will
-	 * return if the parse succeeds, otherwise it remembers the last exception
-	 * and throws that if we exhaust the list of formats.
-	 * @param datestr
-	 * @return
-	 * @throws ParseException 
+	 * Parse kml:dateTimeType XML date/time field and convert to Date object.
+	 *
+	 * @param datestr  Lexical representation for one of XML Schema date/time datatypes.
+	 * @return <code>Date</code> created from the <code>lexicalRepresentation</code>.
+	 * @throws ParseException If the <code>lexicalRepresentation</code> is not a valid <code>Date</code>.
 	 */
 	public static Date parseDate(String datestr) throws ParseException {
-	        DateTimeFormatter fmt = ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.UTC);
-	        try {
-	            return new Date(fmt.parseDateTime(datestr).getMillis());
-	        } catch (IllegalArgumentException e) {
-	            throw new ParseException(e.getMessage(), 0);
-	            // e.g. org.joda.time.IllegalFieldValueException: Cannot parse "2006-09-16T18:60:47Z": Value 60 for minuteOfHour must be in the range [0,59]
-	        }
-        /*
-	        ParseException e = null;
-		for(DateFormat fmt : ms_dateFormats) {
-			try {
-				return fmt.parse(datestr);
-			} catch(ParseException pe) {
-				e = pe;
+		try {
+			if (fact == null) fact = DatatypeFactory.newInstance();
+			XMLGregorianCalendar o = fact.newXMLGregorianCalendar(datestr);
+			GregorianCalendar cal = o.toGregorianCalendar();
+			String type = o.getXMLSchemaType().getLocalPart();
+			boolean setTimeZone = true;
+			if ("dateTime".equals(type)) {
+				// dateTime (YYYY-MM-DDThh:mm:ssZ)
+				// dateTime (YYYY-MM-DDThh:mm:sszzzzzz)
+				// Second form gives the local time and then the ± conversion to UTC.
+				// Set timezone to UTC if other than dateTime formats with explicit timezones
+				// e.g. 2009-03-14T18:10:46+03:00, 2009-03-14T18:10:46-05:00
+				int ind = datestr.lastIndexOf('T') + 1; // index should never be -1 if type is dateTime
+				if (ind > 0 && (datestr.indexOf('+', ind) > 0 || datestr.indexOf('-', ind) > 0))
+					setTimeZone = false;
+				// if timeZone is missing (e.g. 2009-03-14T21:10:50) then 'Z' is assumed and UTC is used
 			}
+			if (setTimeZone) cal.setTimeZone(UTC);
+			//else datestr += "*";
+			//System.out.format("%-10s\t%s%n", type, datestr);
+			/*
+			  possible dateTime types: { dateTime, date, gYearMonth, gYear }
+			  if other than dateTime then must adjust the time to 0
+
+			  1997                      gYear        (YYYY)						1997-01-01T00:00:00.000Z
+			  1997-07                   gYearMonth   (YYYY-MM)					1997-07-01T00:00:00.000Z
+			  1997-07-16                date         (YYYY-MM-DD)				1997-07-16T00:00:00.000Z
+			  1997-07-16T07:30:15Z      dateTime (YYYY-MM-DDThh:mm:ssZ)			1997-07-16T07:30:15.000Z
+			  1997-07-16T07:30:15.30Z   dateTime     							1997-07-16T07:30:15.300Z
+			  1997-07-16T10:30:15+03:00 dateTime (YYYY-MM-DDThh:mm:sszzzzzz)	1997-07-16T07:30:15.000Z
+			 */
+			if (!"dateTime".equals(type)) {
+				cal.set(Calendar.HOUR_OF_DAY, 0);
+			}
+			return cal.getTime();
+		} catch (IllegalArgumentException iae) {
+			final ParseException e2 = new ParseException(iae.getMessage(), 0);
+			e2.initCause(iae);
+			throw e2;
+		} catch (DatatypeConfigurationException ce) {
+			// if unable to create factory then try brute force
+			log.error("Failed to get DatatypeFactory", ce);
+			// note this does not correctly handle dateTime (YYYY-MM-DDThh:mm:sszzzzzz) format 
+			ParseException e = null;
+			for (DateFormat fmt : ms_dateFormats) {
+				try {
+					return fmt.parse(datestr);
+				} catch (ParseException pe) {
+					e = pe;
+				}
+			}
+			throw e;
 		}
-		throw e;
-		*/
 	}
 
 	/**
