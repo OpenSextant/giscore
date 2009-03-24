@@ -71,6 +71,13 @@ public class Line extends Geometry implements Iterable<Point> {
 		return publicPointList;
 	}
 
+	/**
+	 * Empty ctor for object io
+	 */
+	public Line() {
+		//
+	}
+	
     /**
      * The Constructor takes a list of points and initializes a Geometry Object for this Line.
      *

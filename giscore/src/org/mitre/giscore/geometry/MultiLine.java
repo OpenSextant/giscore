@@ -67,6 +67,13 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 		return publicLineList;
 	}
 
+	/**
+	 * Empty ctor for object io
+	 */
+	public MultiLine() {
+		// 
+	}
+	
     /**
      * The Constructor takes a list of points and initializes a Geometry Object for this MultiPoint.
      *

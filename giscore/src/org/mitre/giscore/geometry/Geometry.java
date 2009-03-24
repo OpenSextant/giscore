@@ -155,10 +155,10 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * org.mitre.giscore.events.IGISObject#writeData(java.io.DataOutputStream)
 	 */
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
-		if (bbox != null) {
-			out.writeBoolean(true);
-		} else {
+		if (bbox == null) {
 			out.writeBoolean(false);
+		} else {
+			out.writeBoolean(true);
 			writeAngle(out, bbox.getNorthLat());
 			writeAngle(out, bbox.getSouthLat());
 			writeAngle(out, bbox.getEastLon());

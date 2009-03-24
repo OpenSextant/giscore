@@ -71,6 +71,13 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 		return publicPolygonList;
 	}
 
+	/**
+	 * Empty ctor for object io
+	 */
+	public MultiPolygons() {
+		//
+	}
+	
     /**
      * The Constructor takes a list of Polygon Objects to initialize this MultiPolygons object.
      *

@@ -68,6 +68,13 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	public Collection<Point> getPoints() {
 		return publicPointList;
 	}
+	
+	/**
+	 * Empty ctor for object io
+	 */
+	public MultiPoint() {
+		//
+	}
 
     /**
      * The Constructor takes a list of points and initializes a Geometry Object for this MultiPoint.

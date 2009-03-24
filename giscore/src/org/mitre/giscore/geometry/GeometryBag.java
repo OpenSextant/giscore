@@ -47,6 +47,13 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	Collection<Geometry> geometries = new ArrayList<Geometry>();
 
 	/**
+	 * Empty ctor for object io
+	 */
+	public GeometryBag() {
+		// 
+	}
+	
+	/**
 	 * Ctor
 	 * @param geometries List of Geometry objects to include in the bag
 	 */

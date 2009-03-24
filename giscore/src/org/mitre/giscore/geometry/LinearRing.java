@@ -191,6 +191,13 @@ public class LinearRing extends Geometry implements Iterable<Point> {
     }
 
     /**
+     * Empty ctor for object io
+     */
+    public LinearRing() {
+    	// 
+    }
+    
+    /**
      * This Constructor takes a bounding box and initializes a Geometry Object
      * for it. This ring will be clockwise.
      *

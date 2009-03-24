@@ -45,6 +45,13 @@ public class Point extends Geometry {
 	private Geodetic2DPoint pt; // or extended Geodetic3DPoint
 
 	/**
+	 * Empty ctor only for object IO
+	 */
+	public Point() {
+		// 
+	}
+	
+	/**
 	 * Ctor, create a point given a lat and lon value in a WGS84 spatial
 	 * reference system.
 	 * 

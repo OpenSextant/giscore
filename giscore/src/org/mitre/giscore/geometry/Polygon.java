@@ -59,6 +59,13 @@ public class Polygon extends Geometry implements Iterable<LinearRing> {
     private List<LinearRing> ringList, publicRingList;
 
     /**
+     * Empty ctor for object io
+     */
+    public Polygon() {
+    	// 
+    }
+    
+    /**
      * This Constructor takes an outer boundary ring and initializes a Geometry object for this Polygon
      * object. By default, it does not do topology validation. To do validation, use alternate
      * constructor.
