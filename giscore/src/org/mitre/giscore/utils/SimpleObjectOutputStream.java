@@ -20,10 +20,13 @@ package org.mitre.giscore.utils;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 
 /**
@@ -48,11 +51,11 @@ public class SimpleObjectOutputStream {
 	 * Ctor
 	 * @param s
 	 */
-	public SimpleObjectOutputStream(DataOutputStream s) {
+	public SimpleObjectOutputStream(OutputStream s) {
 		if (s == null) {
 			throw new IllegalArgumentException("s should never be null");
 		}
-		stream = s;
+		stream = new DataOutputStream(s);
 	}
 	
 	/**
@@ -116,6 +119,8 @@ public class SimpleObjectOutputStream {
 	public void writeScalar(Object value) throws IOException {
 		if (value == null) {
 			stream.writeShort(SimpleObjectInputStream.NULL);
+		} else if (ObjectUtils.NULL.equals(value)) {
+			stream.writeShort(SimpleObjectInputStream.OBJECT_NULL);
 		} else if (value instanceof Short) {
 			stream.writeShort(SimpleObjectInputStream.SHORT);
 			stream.writeShort(((Short)value).shortValue()); 
@@ -137,6 +142,9 @@ public class SimpleObjectOutputStream {
 		} else if (value instanceof Boolean) {
 			stream.writeShort(SimpleObjectInputStream.BOOL);
 			writeBoolean((Boolean) value);
+		} else if (value instanceof Date) {
+			stream.writeShort(SimpleObjectInputStream.DATE);
+			writeLong(((Date) value).getTime());
 		} else {
 			throw new UnsupportedOperationException("Found unsupported type " + value.getClass());
 		}		

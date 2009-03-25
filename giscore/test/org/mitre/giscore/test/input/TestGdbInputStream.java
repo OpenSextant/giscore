@@ -19,11 +19,14 @@
 package org.mitre.giscore.test.input;
 
 import java.io.File;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.IAcceptSchema;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
@@ -36,9 +39,29 @@ import org.mitre.giscore.input.IGISInputStream;
  *
  */
 public class TestGdbInputStream {
+	static class TestAccept implements IAcceptSchema {
+		private URI accept = null;
+		
+		public TestAccept(URI accept) {
+			this.accept = accept;
+		}
+		
+		/* (non-Javadoc)
+		 * @see org.mitre.giscore.IAcceptSchema#accept(org.mitre.giscore.events.Schema)
+		 */
+		@Override
+		public boolean accept(Schema schema) {
+			System.err.println(schema.getId());
+			return accept.equals(schema.getId());
+		}
+		
+	}
+	
+	
 	@Test public void testFileGdbInput() throws Exception {
 		IGISInputStream gis = GISFactory.getInputStream(DocumentType.FileGDB, 
-				new File("data/gdb/test20090312163935.gdb"));
+				new File("data/gdb/test20090312163935.gdb"),
+				new TestAccept(new URI("urn:TESTCASES_20090312163935")));
 		int schema_count = 0;
 		int total = 0;
 		IGISObject gisobject = null;
@@ -72,7 +95,8 @@ public class TestGdbInputStream {
 	 */
 	@Test public void testFileGdbInput2() throws Exception {
 		IGISInputStream gis = GISFactory.getInputStream(DocumentType.FileGDB, 
-				new File("data/gdb/eh_fgdb92_20090314153313.gdb"));
+				new File("data/gdb/eh_fgdb92_20090314153313.gdb"),
+				new TestAccept(new URI("urn:EHFC_20090314153313")));
 		int schema_count = 0;
 		int total = 0;
 		IGISObject gisobject = null;
@@ -82,9 +106,7 @@ public class TestGdbInputStream {
 			total++;
 			if (gisobject instanceof Schema) {
 				Schema s = (Schema) gisobject;
-				if (lpath == null) {
-					lpath = s.get("lpath");
-				}
+				lpath = s.get("lpath");
 				schema_count++;
 				assertTrue(s.getKeys() != null && s.getKeys().size() > 0);
 				assertNotNull(s.getOidField());

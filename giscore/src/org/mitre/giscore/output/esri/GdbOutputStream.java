@@ -417,8 +417,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			return;
 		}
 		InputStream is = new FileInputStream(ffile);
-		DataInputStream dis = new DataInputStream(is);
-		SimpleObjectInputStream ois = new SimpleObjectInputStream(dis);
+		SimpleObjectInputStream ois = new SimpleObjectInputStream(is);
 		IFeatureBuffer buffer = fc.createFeatureBuffer();
 		IFeatureCursor cursor = fc.IFeatureClass_insert(true);
 		try {
@@ -475,7 +474,6 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			cursor.flush();
 			Cleaner.release(cursor);
 			ois.close();
-			IOUtils.closeQuietly(dis);
 			IOUtils.closeQuietly(is);
 		}
 

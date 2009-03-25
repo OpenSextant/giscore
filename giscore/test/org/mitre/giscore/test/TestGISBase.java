@@ -18,11 +18,11 @@
  ***************************************************************************************/
 package org.mitre.giscore.test;
 
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,8 +33,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Assert;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Schema;
@@ -44,6 +42,7 @@ import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 
 /**
@@ -196,26 +195,28 @@ public class TestGISBase {
 	/**
 	 * @param f
 	 * @return
+	 * @throws IllegalAccessException 
+	 * @throws InstantiationException 
 	 */
-	protected int countFeatures(File f) {
+	protected int countFeatures(File f) throws InstantiationException, IllegalAccessException {
 		int count = 0;
 		InputStream is = null;
-		ObjectInputStream ois = null;
+		SimpleObjectInputStream ois = null;
 		try {
 			is = new FileInputStream(f);
-			ois = new ObjectInputStream(is);
+			ois = new SimpleObjectInputStream(is);
 			Object next = null;
 			while ((next = ois.readObject()) != null) {
 				Feature feature = (Feature) next;
 				Assert.assertNotNull(feature);
 				count++;
 			}
+			ois.close();
 		} catch (IOException e) {
 			return count;
 		} catch (ClassNotFoundException e) {
 			throw new RuntimeException(e);
 		} finally {
-			IOUtils.closeQuietly(ois);
 			IOUtils.closeQuietly(is);
 		}
 		return count;

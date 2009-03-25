@@ -39,8 +39,8 @@ import org.mitre.itf.geodesy.Longitude;
  * @author Paul Silvey
  */
 public class Point extends Geometry {
-    
-    private static final long serialVersionUID = 1L;
+
+	private static final long serialVersionUID = 1L;
 
 	private Geodetic2DPoint pt; // or extended Geodetic3DPoint
 
@@ -50,7 +50,7 @@ public class Point extends Geometry {
 	public Point() {
 		// 
 	}
-	
+
 	/**
 	 * Ctor, create a point given a lat and lon value in a WGS84 spatial
 	 * reference system.
@@ -61,8 +61,26 @@ public class Point extends Geometry {
 	 *            the longitude in degrees
 	 */
 	public Point(double lat, double lon) {
-        this(new Geodetic2DPoint(new Longitude(lon,
-				Angle.DEGREES), new Latitude(lat, Angle.DEGREES)));
+		this(lat, lon, false);
+	}
+
+	/**
+	 * Ctor, create a point given a lat and lon value in a WGS84 spatial
+	 * reference system.
+	 * 
+	 * @param lat
+	 *            the latitude in degrees
+	 * @param lon
+	 *            the longitude in degrees
+	 * @param is3d
+	 *            a three d point if <code>true</code>
+	 * 
+	 */
+	public Point(double lat, double lon, boolean is3d) {
+		this(is3d ? new Geodetic3DPoint(new Longitude(lon, Angle.DEGREES),
+				new Latitude(lat, Angle.DEGREES), 0.0) : new Geodetic2DPoint(
+				new Longitude(lon, Angle.DEGREES), new Latitude(lat,
+						Angle.DEGREES)));
 	}
 
 	/**
@@ -161,26 +179,47 @@ public class Point extends Geometry {
 	public void accept(StreamVisitorBase visitor) {
 		visitor.visit(this);
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.
+	 * SimpleObjectInputStream)
 	 */
 	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
 		super.readData(in);
+		boolean is3d = in.readBoolean();
+		double elevation = 0.0;
+		if (is3d) {
+			elevation = in.readDouble();
+		}
 		Angle lat = readAngle(in);
 		Angle lon = readAngle(in);
-		pt = new Geodetic2DPoint(new Longitude(lon), new Latitude(lat));
+		if (is3d)
+			pt = new Geodetic3DPoint(new Longitude(lon), new Latitude(lat), elevation);
+		else
+			pt = new Geodetic2DPoint(new Longitude(lon), new Latitude(lat));
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.geometry.Geometry#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.mitre.giscore.geometry.Geometry#writeData(org.mitre.giscore.utils
+	 * .SimpleObjectOutputStream)
 	 */
 	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
+		boolean is3d = pt instanceof Geodetic3DPoint;
+		out.writeBoolean(is3d);
+		if (is3d) {
+			out.writeDouble(((Geodetic3DPoint) pt).getElevation());
+		}
 		writeAngle(out, pt.getLatitude());
 		writeAngle(out, pt.getLongitude());
 	}

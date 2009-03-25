@@ -129,8 +129,7 @@ public class TestSimpleObjectIO {
 		soos.close();
 		
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-		DataInputStream dis = new DataInputStream(bis);
-		SimpleObjectInputStream sois = new SimpleObjectInputStream(dis);
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 		
 		assertFalse(sois.readBoolean());
 		assertTrue(sois.readBoolean());
@@ -149,8 +148,7 @@ public class TestSimpleObjectIO {
 	@Test
 	public void testScalarValueIO() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
-		DataOutputStream dos = new DataOutputStream(bos);
-		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(dos);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 		
 		soos.writeScalar(false);
 		soos.writeScalar(true);
@@ -166,8 +164,7 @@ public class TestSimpleObjectIO {
 		soos.close();
 		
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-		DataInputStream dis = new DataInputStream(bis);
-		SimpleObjectInputStream sois = new SimpleObjectInputStream(dis);
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 		
 		assertFalse((Boolean) sois.readScalar());
 		assertTrue((Boolean) sois.readScalar());
@@ -186,8 +183,7 @@ public class TestSimpleObjectIO {
 	@Test
 	public void testSingleSimpleObjectIO() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
-		DataOutputStream dos = new DataOutputStream(bos);
-		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(dos);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 		
 		TestSubObject s1 = new TestSubObject();
 		s1.i1 = 10;
@@ -202,8 +198,7 @@ public class TestSimpleObjectIO {
 		soos.close();
 		
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-		DataInputStream dis = new DataInputStream(bis);
-		SimpleObjectInputStream sois = new SimpleObjectInputStream(dis);
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 		
 		TestSubObject r1 = (TestSubObject) sois.readObject();
 		assertEquals(s1, r1);
@@ -216,8 +211,7 @@ public class TestSimpleObjectIO {
 	
 	@Test public void testCollectionIO() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
-		DataOutputStream dos = new DataOutputStream(bos);
-		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(dos);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 		
 		List<TestSubObject> vals = new ArrayList<TestSubObject>();
 		for(int i = 0; i < 100; i++) {
@@ -230,8 +224,7 @@ public class TestSimpleObjectIO {
 		soos.close();
 		
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-		DataInputStream dis = new DataInputStream(bis);
-		SimpleObjectInputStream sois = new SimpleObjectInputStream(dis);
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 		
 		vals = (List<TestSubObject>) sois.readObjectCollection();
 		assertEquals(100, vals.size());
@@ -241,8 +234,7 @@ public class TestSimpleObjectIO {
 	
 	@Test public void testNestedObjectIO() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
-		DataOutputStream dos = new DataOutputStream(bos);
-		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(dos);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 		
 		TestClass tc1 = new TestClass();
 		for(int i = 0; i < 10; i++) {
@@ -255,8 +247,7 @@ public class TestSimpleObjectIO {
 		soos.close();
 		
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-		DataInputStream dis = new DataInputStream(bis);
-		SimpleObjectInputStream sois = new SimpleObjectInputStream(dis);
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 		
 		TestClass rc1 = (TestClass) sois.readObject();
 		assertEquals(tc1, rc1);

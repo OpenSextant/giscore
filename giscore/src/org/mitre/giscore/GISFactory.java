@@ -49,14 +49,16 @@ public class GISFactory {
 	 *            the type of the document, never <code>null</code>.
 	 * @param stream
 	 *            an input stream to the document or document contents, never
-	 *            <code>null</code>. If stream is for a KMZ (ZIP) source
-	 *            then <code>KmlReader</code> should used instead.
+	 *            <code>null</code>. If stream is for a KMZ (ZIP) source then
+	 *            <code>KmlReader</code> should used instead.
 	 * @param arguments
 	 *            the additional arguments needed by the constructor, the type
 	 *            or types depend on the constructor
 	 * @return a gis input stream, never <code>null</code>
-	 * @throws IOException if an I/O error occurs
-	 * @throws IllegalArgumentException if type or stream are null
+	 * @throws IOException
+	 *             if an I/O error occurs
+	 * @throws IllegalArgumentException
+	 *             if type or stream are null
 	 * @see org.mitre.giscore.input.kml.KmlReader
 	 */
 	@SuppressWarnings("unchecked")
@@ -72,52 +74,72 @@ public class GISFactory {
 		if (DocumentType.KML.equals(type)) {
 			return new KmlInputStream(stream);
 		} else if (DocumentType.Shapefile.equals(type)) {
-			return new GdbInputStream(type, stream);
+			checkArguments(new Class[] { IAcceptSchema.class }, arguments,
+					new boolean[] { false });
+			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
+					&& arguments.length > 0 ? arguments[0] : null);
+			return new GdbInputStream(type, stream, accepter);
 		} else if (DocumentType.FileGDB.equals(type)) {
-			return new GdbInputStream(type, stream);
+			checkArguments(new Class[] { IAcceptSchema.class }, arguments,
+					new boolean[] { false });
+			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
+					&& arguments.length > 0 ? arguments[0] : null);
+			return new GdbInputStream(type, stream, accepter);
 		} else {
 			throw new UnsupportedOperationException(
 					"Cannot create an input stream for type " + type);
 		}
 	}
-	
+
 	/**
 	 * Input stream factory
 	 * 
 	 * @param type
 	 *            the type of the document, never <code>null</code>.
 	 * @param file
-	 *            a file containing the document, never <code>null</code>.
-	 *  		  If file is a KMZ (ZIP) file then <code>KmlReader</code> should used instead.
+	 *            a file containing the document, never <code>null</code>. If
+	 *            file is a KMZ (ZIP) file then <code>KmlReader</code> should
+	 *            used instead.
 	 * @param arguments
 	 *            the additional arguments needed by the constructor, the type
 	 *            or types depend on the constructor
 	 * @return a gis input stream, never <code>null</code>
-	 * @throws IOException if an I/O error occurs
-	 * @throws IllegalArgumentException if type or file are null
+	 * @throws IOException
+	 *             if an I/O error occurs
+	 * @throws IllegalArgumentException
+	 *             if type or file are null
 	 * @see org.mitre.giscore.input.kml.KmlReader
 	 */
 	@SuppressWarnings("unchecked")
-	public static IGISInputStream getInputStream(DocumentType type,
-			File file, Object... arguments) throws IOException {
+	public static IGISInputStream getInputStream(DocumentType type, File file,
+			Object... arguments) throws IOException {
 		if (type == null) {
 			throw new IllegalArgumentException("type should never be null");
 		}
 		if (file == null || !file.exists()) {
-			throw new IllegalArgumentException("file should never be null and must exist");
+			throw new IllegalArgumentException(
+					"file should never be null and must exist");
 		}
 
 		if (DocumentType.KML.equals(type)) {
 			return new KmlInputStream(new FileInputStream(file));
 		} else if (DocumentType.Shapefile.equals(type)) {
-			return new GdbInputStream(type, file);
+			checkArguments(new Class[] { IAcceptSchema.class }, arguments,
+					new boolean[] { false });
+			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
+					&& arguments.length > 0 ? arguments[0] : null);
+			return new GdbInputStream(type, file, accepter);
 		} else if (DocumentType.FileGDB.equals(type)) {
-			return new GdbInputStream(type, file);
+			checkArguments(new Class[] { IAcceptSchema.class }, arguments,
+					new boolean[] { false });
+			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
+					&& arguments.length > 0 ? arguments[0] : null);
+			return new GdbInputStream(type, file, accepter);
 		} else {
 			throw new UnsupportedOperationException(
 					"Cannot create an input stream for type " + type);
 		}
-	}	
+	}
 
 	/**
 	 * Output stream factory
@@ -127,13 +149,14 @@ public class GISFactory {
 	 *            <code>null</code>.
 	 * @param outputStream
 	 *            the output stream used to save the generated GIS file or
-	 *            files. If target output is KMZ then <code>KmlWriter</code> should be
-	 *            used instead.
+	 *            files. If target output is KMZ then <code>KmlWriter</code>
+	 *            should be used instead.
 	 * @param arguments
 	 *            the additional arguments needed by the constructor, the type
 	 *            or types depend on the constructor
 	 * @return a gis output stream, never <code>null</code>.
-	 * @throws IOException if an I/O error occurs
+	 * @throws IOException
+	 *             if an I/O error occurs
 	 * @see org.mitre.giscore.output.kml.KmlWriter
 	 */
 	@SuppressWarnings("unchecked")
@@ -149,8 +172,7 @@ public class GISFactory {
 
 		try {
 			if (DocumentType.KML.equals(type)) {
-				checkArguments(new Class[] {}, arguments,
-						new boolean[] {});
+				checkArguments(new Class[] {}, arguments, new boolean[] {});
 				return new KmlOutputStream(outputStream);
 			} else if (DocumentType.Shapefile.equals(type)) {
 				checkArguments(new Class[] { File.class,
@@ -169,8 +191,7 @@ public class GISFactory {
 				return new GdbOutputStream(type, outputStream,
 						(File) arguments[0], strategy);
 			} else if (DocumentType.XmlGDB.equals(type)) {
-				checkArguments(new Class[] {}, arguments,
-						new boolean[] { });
+				checkArguments(new Class[] {}, arguments, new boolean[] {});
 				return new XmlGdbOutputStream(outputStream);
 			} else if (DocumentType.PersonalGDB.equals(type)) {
 				checkArguments(new Class[] { File.class,

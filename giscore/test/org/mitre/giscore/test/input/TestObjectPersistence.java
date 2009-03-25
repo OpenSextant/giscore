@@ -18,6 +18,9 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.input;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -50,8 +53,6 @@ import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
-import static org.junit.Assert.*;
-
 /**
  * Test the geometry and the feature objects
  * 
@@ -62,8 +63,7 @@ public class TestObjectPersistence {
 	@Test
 	public void testSimpleGeometries() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
-		DataOutputStream dos = new DataOutputStream(bos);
-		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(dos);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 
 		Point p = new Point(.30, .42);
 		soos.writeObject(p);
@@ -86,8 +86,7 @@ public class TestObjectPersistence {
 		soos.close();
 
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-		DataInputStream dis = new DataInputStream(bis);
-		SimpleObjectInputStream sois = new SimpleObjectInputStream(dis);
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 
 		Geometry g = (Geometry) sois.readObject();
 		assertEquals(p, g);
@@ -106,8 +105,7 @@ public class TestObjectPersistence {
 	@Test
 	public void testMultiGeometries() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
-		DataOutputStream dos = new DataOutputStream(bos);
-		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(dos);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 
 		List<Line> lines = new ArrayList<Line>();
 		List<Point> pts = new ArrayList<Point>();
@@ -152,8 +150,7 @@ public class TestObjectPersistence {
 		soos.close();
 
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-		DataInputStream dis = new DataInputStream(bis);
-		SimpleObjectInputStream sois = new SimpleObjectInputStream(dis);
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 
 		MultiLine ml = (MultiLine) sois.readObject();
 		assertEquals(1, ml.getNumParts());
@@ -179,8 +176,7 @@ public class TestObjectPersistence {
 	 */
 	@Test public void testFeatures() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
-		DataOutputStream dos = new DataOutputStream(bos);
-		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(dos);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 		
 		GroundOverlay go = makeGO();
 		soos.writeObject(go);
@@ -200,8 +196,7 @@ public class TestObjectPersistence {
 		soos.close();
 
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-		DataInputStream dis = new DataInputStream(bis);
-		SimpleObjectInputStream sois = new SimpleObjectInputStream(dis);
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 		
 		GroundOverlay g2 = (GroundOverlay) sois.readObject();
 		assertEquals(go, g2);

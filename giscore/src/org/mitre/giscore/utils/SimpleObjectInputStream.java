@@ -21,10 +21,14 @@ package org.mitre.giscore.utils;
 import java.io.DataInputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.commons.lang.ObjectUtils;
 
 /**
  * Simplified stream that doesn't hold object references on input
@@ -41,6 +45,8 @@ public class SimpleObjectInputStream {
 	static final int FLOAT = 5;
 	static final int DOUBLE = 6;
 	static final int STRING = 7;
+	static final int OBJECT_NULL = 8;
+	static final int DATE = 9;
 	
 	private DataInputStream stream;
 	@SuppressWarnings("unchecked")
@@ -51,11 +57,11 @@ public class SimpleObjectInputStream {
 	 * 
 	 * @param s
 	 */
-	public SimpleObjectInputStream(DataInputStream s) {
+	public SimpleObjectInputStream(InputStream s) {
 		if (s == null) {
 			throw new IllegalArgumentException("s should never be null");
 		}
-		stream = s;
+		stream = new DataInputStream(s);
 	}
 
 	/**
@@ -135,6 +141,8 @@ public class SimpleObjectInputStream {
 		switch (type) {
 		case NULL:
 			return null;
+		case OBJECT_NULL:
+			return ObjectUtils.NULL;
 		case SHORT:
 			return stream.readShort();
 		case INT:
@@ -149,6 +157,8 @@ public class SimpleObjectInputStream {
 			return readString();
 		case BOOL:
 			return stream.readBoolean();
+		case DATE:
+			return new Date(stream.readLong());
 		default:
 			throw new UnsupportedOperationException(
 					"Found unsupported scalar enum " + type);

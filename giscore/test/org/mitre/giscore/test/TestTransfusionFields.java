@@ -110,7 +110,7 @@ public class TestTransfusionFields {
 		ms_field_lon = makeSimpleField("lon", "Long", SimpleField.Type.DOUBLE);
 		ms_field_mgrs = makeSimpleField("mgrs", "MGRS", SimpleField.Type.STRING);
 		ms_field_rpt = makeSimpleField("reportType", "Report_Type", SimpleField.Type.STRING);
-		ms_field_desc = makeSimpleField("desc", "Description", SimpleField.Type.STRING);
+		ms_field_desc = makeSimpleField("desc_", "Description", SimpleField.Type.STRING);
 		ms_field_ctx = makeSimpleField("context", "Context",
 				SimpleField.Type.STRING);
 	}

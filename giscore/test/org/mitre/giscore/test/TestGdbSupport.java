@@ -46,7 +46,7 @@ import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.test.input.TestKmlInputStream;
 
 /**
- * Test file gdb output
+ * Test file gdb output. Currently tests 5 and 6 are not working
  * 
  * @author DRAND
  * 

@@ -28,6 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.IAcceptSchema;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
@@ -127,14 +128,21 @@ public class GdbInputStream extends GISInputStreamBase {
 	private long fnumber = 0;
 
 	/**
+	 * The accepter, may be null, used to determine if a given schema is wanted
+	 */
+	private IAcceptSchema accepter;
+
+	/**
 	 * Ctor
 	 * 
 	 * @param type
 	 *            the type used
 	 * @param stream
 	 *            the stream containing a zip archive of the file gdb
+	 * @param accepter
+	 * 				a function that determines if a schema should be used, may be <code>null</code>
 	 */
-	public GdbInputStream(DocumentType type, InputStream stream) {
+	public GdbInputStream(DocumentType type, InputStream stream, IAcceptSchema accepter) {
 		throw new UnsupportedOperationException("Not implemented yet");
 	}
 
@@ -145,10 +153,13 @@ public class GdbInputStream extends GISInputStreamBase {
 	 *            the type used
 	 * @param file
 	 *            the location of the file GDB or of the shapefile
+	 * @param accepter
+	 * 				a function that determines if a schema should be used,
+	 * may be <code>null</code>
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 */
-	public GdbInputStream(DocumentType type, File file)
+	public GdbInputStream(DocumentType type, File file, IAcceptSchema accepter)
 			throws UnknownHostException, IOException {
 		if (type.equals(DocumentType.FileGDB)) {
 			factory = new FileGDBWorkspaceFactory();
@@ -159,6 +170,8 @@ public class GdbInputStream extends GISInputStreamBase {
 		} else {
 			throw new IllegalArgumentException("Unhandled format " + type);
 		}
+		
+		this.accepter = accepter;
 
 		workspace = factory.openFromFile(file.getAbsolutePath(), 0);
 
@@ -197,7 +210,13 @@ public class GdbInputStream extends GISInputStreamBase {
 					FeatureClass fclass = new FeatureClass(currentDataset);
 					QueryFilter filter = new QueryFilter();
 					cursor = fclass.search(filter, true);
-					return makeSchema(fclass);
+					Schema s = makeSchema(fclass);
+					if (accepter == null || accepter.accept(s)) {
+						return s;
+					} else {
+						currentDataset = null;
+						return read();
+					}
 				}
 			} else {
 				IFeature feature = cursor.nextFeature();
@@ -405,7 +424,7 @@ public class GdbInputStream extends GISInputStreamBase {
 	 * @throws URISyntaxException
 	 * @throws AutomationException
 	 */
-	private IGISObject makeSchema(IFeatureClass featureClass)
+	private Schema makeSchema(IFeatureClass featureClass)
 			throws AutomationException, URISyntaxException, IOException {
 		currentSchemaURI = new URI("urn:" + featureClass.getAliasName());
 		currentSchema = new Schema(currentSchemaURI);

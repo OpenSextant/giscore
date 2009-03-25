@@ -23,7 +23,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
@@ -58,6 +57,7 @@ import org.mitre.giscore.input.gdb.IXmlGdb;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.FeatureSorter;
 import org.mitre.giscore.output.XmlOutputStreamBase;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 
 /**
@@ -405,10 +405,10 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 					+ schema.getName());
 		}
 		InputStream is = null;
-		ObjectInputStream ois = null;
+		SimpleObjectInputStream ois = null;
 		try {
 			is = new FileInputStream(tf);
-			ois = new ObjectInputStream(is);
+			ois = new SimpleObjectInputStream(is);
 			Object next = null;
 			SimpleField geofielddef = new SimpleField(geometryField);
 			geofielddef.setType(SimpleField.Type.GEOMETRY);
@@ -417,14 +417,12 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 				Feature feature = (Feature) next;
 				writeRecord(featureKey, feature, geofielddef, index++);
 			}
+			ois.close();
 		} catch (EOFException e) {
 			// Done reading, just ignore
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		} catch (ClassNotFoundException e) {
+		} catch (Exception e) {
 			throw new RuntimeException(e);
 		} finally {
-			IOUtils.closeQuietly(ois);
 			IOUtils.closeQuietly(is);
 		}
 
