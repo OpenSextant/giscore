@@ -21,8 +21,10 @@ package org.mitre.giscore;
 import org.mitre.giscore.events.Schema;
 
 /**
+ * Simple predicate to allow a caller to request that the gdb input stream only
+ * return some schemata and their associated features.
+ * 
  * @author DRAND
- *
  */
 public interface IAcceptSchema {
 	/**
