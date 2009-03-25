@@ -80,7 +80,6 @@ public class ScreenLocation implements IDataSerializable {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
-	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
@@ -93,7 +92,6 @@ public class ScreenLocation implements IDataSerializable {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
 	 */
-	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		out.writeDouble(x);
 		out.writeString(xunit.name());

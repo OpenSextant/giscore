@@ -49,7 +49,6 @@ public class TestGdbInputStream {
 		/* (non-Javadoc)
 		 * @see org.mitre.giscore.IAcceptSchema#accept(org.mitre.giscore.events.Schema)
 		 */
-		@Override
 		public boolean accept(Schema schema) {
 			System.err.println(schema.getId());
 			return accept.equals(schema.getId());

@@ -183,7 +183,6 @@ public class GdbInputStream extends GISInputStreamBase {
 	 * 
 	 * @see org.mitre.giscore.input.IGISInputStream#close()
 	 */
-	@Override
 	public void close() {
 		((Workspace) workspace).release();
 	}
@@ -193,7 +192,6 @@ public class GdbInputStream extends GISInputStreamBase {
 	 * 
 	 * @see org.mitre.giscore.input.IGISInputStream#read()
 	 */
-	@Override
 	public IGISObject read() throws IOException {
 		if (hasSaved()) {
 			return super.readSaved();
@@ -229,7 +227,9 @@ public class GdbInputStream extends GISInputStreamBase {
 				}
 			}
 		} catch (Exception e) {
-			throw new IOException("Problem reading data from database", e);
+			final IOException e2 = new IOException("Problem reading data from database");
+			e2.initCause(e);
+			throw e2;
 		}
 	}
 

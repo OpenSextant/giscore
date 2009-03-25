@@ -228,7 +228,9 @@ public abstract class BaseStart implements IGISObject, IDataSerializable {
 				endTime = null;
 			}
 		} catch (URISyntaxException e) {
-			throw new IOException(e);
+			final IOException e2 = new IOException();
+			e2.initCause(e);
+			throw e2;
 		}
 		int cnt = in.readInt();
 		for(int i = 0; i < cnt; i++) {

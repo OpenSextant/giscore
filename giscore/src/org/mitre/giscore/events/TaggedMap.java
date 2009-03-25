@@ -72,7 +72,6 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
-	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
@@ -89,7 +88,6 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
 	 */
-	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		out.writeString(tag);
 		out.writeInt(size());

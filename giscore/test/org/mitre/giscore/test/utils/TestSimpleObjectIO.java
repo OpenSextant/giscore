@@ -46,7 +46,6 @@ public class TestSimpleObjectIO {
 		/* (non-Javadoc)
 		 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 		 */
-		@Override
 		public void readData(SimpleObjectInputStream in) throws IOException,
 				ClassNotFoundException, InstantiationException,
 				IllegalAccessException {
@@ -58,7 +57,6 @@ public class TestSimpleObjectIO {
 		/* (non-Javadoc)
 		 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
 		 */
-		@Override
 		public void writeData(SimpleObjectOutputStream out) throws IOException {
 			out.writeString(l1);
 			out.writeInt(i1);
@@ -83,7 +81,6 @@ public class TestSimpleObjectIO {
 		/* (non-Javadoc)
 		 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 		 */
-		@Override
 		public void readData(SimpleObjectInputStream in) throws IOException,
 				ClassNotFoundException, InstantiationException,
 				IllegalAccessException {
@@ -94,7 +91,6 @@ public class TestSimpleObjectIO {
 		/* (non-Javadoc)
 		 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
 		 */
-		@Override
 		public void writeData(SimpleObjectOutputStream out) throws IOException {
 			out.writeBoolean(b1);
 			out.writeObjectCollection(subs);
