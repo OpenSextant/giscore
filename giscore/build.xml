@@ -99,7 +99,8 @@
 
 	<target name="compile" depends="resolve">
 		<javac source="1.5" target="1.5" classpathref="project.classpath" srcdir="${src}"
-			destdir="${build.classes}" />
+			destdir="${build.classes}"
+			debug="true"/>
 	</target>
 
 	<target name="compileTests" depends="compile">
