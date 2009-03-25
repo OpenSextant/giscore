@@ -44,6 +44,13 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
 	private String tag;
 	
 	/**
+	 * Empty ctor for IO only
+	 */
+	public TaggedMap() {
+		// 
+	}
+	
+	/**
 	 * Ctor
 	 * @param tag the tag for the collection, never <code>null</code> or empty
 	 */

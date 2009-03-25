@@ -18,7 +18,11 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.io.IOException;
+
 import org.mitre.giscore.input.kml.IKml;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 /**
  * Represents a remote resource
@@ -26,6 +30,7 @@ import org.mitre.giscore.input.kml.IKml;
  * @author DRAND
  */
 public class NetworkLink extends Feature {
+
 	private static final long serialVersionUID = 1L;
 	private boolean refreshVisibility = false;
 	private boolean flyToView = false;
@@ -79,5 +84,29 @@ public class NetworkLink extends Feature {
 	 */
 	public void setLink(TaggedMap link) {
 		this.link = link;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.events.Feature#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+		flyToView = in.readBoolean();
+		refreshVisibility = in.readBoolean();
+		link = (TaggedMap) in.readObject();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.events.Feature#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+		out.writeBoolean(flyToView);
+		out.writeBoolean(refreshVisibility);
+		out.writeObject(link);
 	}
 }

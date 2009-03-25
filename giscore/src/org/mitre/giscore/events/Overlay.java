@@ -110,8 +110,13 @@ public abstract class Overlay extends Feature {
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
 		super.readData(in);
-		int rgb = in.readInt();
-		color = new Color(rgb);
+		boolean hascolor = in.readBoolean();
+		if (hascolor) {
+			int rgb = in.readInt();
+			color = new Color(rgb);
+		}
+		drawOrder = in.readInt();
+		icon = (TaggedMap) in.readObject();
 	}
 
 	/* (non-Javadoc)
@@ -121,9 +126,10 @@ public abstract class Overlay extends Feature {
 	public void writeData(SimpleObjectOutputStream out) throws IOException {	
 		super.writeData(out);
 		if (color != null) {
+			out.writeBoolean(true);
 			out.writeInt(color.getRGB());
 		} else {
-			out.writeInt(0);
+			out.writeBoolean(false);
 		}
 		out.writeInt(drawOrder);
 		out.writeObject(icon);

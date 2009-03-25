@@ -18,15 +18,27 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.input;
 
+import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
+import org.mitre.giscore.events.ContainerStart;
+import org.mitre.giscore.events.GroundOverlay;
+import org.mitre.giscore.events.NetworkLink;
+import org.mitre.giscore.events.PhotoOverlay;
+import org.mitre.giscore.events.ScreenLocation;
+import org.mitre.giscore.events.ScreenOverlay;
+import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.events.TaggedMap;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
@@ -158,5 +170,132 @@ public class TestObjectPersistence {
 		assertEquals(2, mp.getNumParts());
 		
 		sois.close();
+	}
+	
+	/**
+	 * Only need to test "leaf" classes since the superclasses must participate
+	 * 
+	 * @throws Exception
+	 */
+	@Test public void testFeatures() throws Exception {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
+		DataOutputStream dos = new DataOutputStream(bos);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(dos);
+		
+		GroundOverlay go = makeGO();
+		soos.writeObject(go);
+		
+		PhotoOverlay po = makePO();
+		soos.writeObject(po);
+		
+		ScreenOverlay so = makeSO();
+		soos.writeObject(so);
+		
+		NetworkLink nl = makeNL();
+		soos.writeObject(nl);
+		
+		ContainerStart cs = new ContainerStart("folder");
+		soos.writeObject(cs);
+		
+		soos.close();
+
+		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+		DataInputStream dis = new DataInputStream(bis);
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(dis);
+		
+		GroundOverlay g2 = (GroundOverlay) sois.readObject();
+		assertEquals(go, g2);
+		
+		PhotoOverlay p2 = (PhotoOverlay) sois.readObject();
+		assertEquals(po, p2);
+		
+		ScreenOverlay s2 = (ScreenOverlay) sois.readObject();
+		assertEquals(so, s2);
+		
+		NetworkLink n2 = (NetworkLink) sois.readObject();
+		assertEquals(nl, n2);
+		
+		ContainerStart c2 = (ContainerStart) sois.readObject();
+		assertEquals(cs, c2);
+		
+		sois.close();
+	}
+
+	/**
+	 * @return
+	 */
+	private NetworkLink makeNL() {
+		NetworkLink nl = new NetworkLink();
+		nl.setFlyToView(true);
+		nl.setLink(new TaggedMap());
+		nl.setRefreshVisibility(false);
+		return nl;
+	}
+
+	/**
+	 * @return
+	 */
+	private ScreenOverlay makeSO() {
+		ScreenOverlay so = new ScreenOverlay();
+		ScreenLocation s1 = new ScreenLocation();
+		ScreenLocation s2 = new ScreenLocation();
+		ScreenLocation s3 = new ScreenLocation();
+		ScreenLocation s4 = new ScreenLocation();
+		ScreenLocation s5 = new ScreenLocation();
+		
+		s1.x = 11;
+		s1.y = 12;
+		s2.x = .3;
+		s2.y = .4;
+		s2.xunit = ScreenLocation.UNIT.FRACTION;
+		s2.yunit = ScreenLocation.UNIT.FRACTION;
+		s3.x = 14;
+		s3.y = 15;
+		s4.x = 16;
+		s4.y = 17;
+		so.setOverlay(s1);
+		so.setRotation(s2);
+		so.setSize(s3);
+		so.setScreen(s4);
+		so.setRotationAngle(.78);
+		
+		return so;
+	}
+
+	/**
+	 * @return
+	 */
+	private PhotoOverlay makePO() {
+		PhotoOverlay po = new PhotoOverlay();
+		
+		return po;
+	}
+
+	private GroundOverlay makeGO() throws URISyntaxException {
+		GroundOverlay go = new GroundOverlay();
+		go.setAltitude(3.1);
+		go.setAltitudeMode("aaa");
+		go.setColor(Color.red);
+		go.setDescription("abc");
+		go.setDrawOrder(2);
+		go.setEast(22.0);
+		go.setWest(10.0);
+		go.setNorth(42.0);
+		go.setSouth(40.0);
+		go.setStartTime(new Date(100000));
+		go.setEndTime(new Date(110000));
+		go.setGeometry(new Point(1.0, 2.0));
+		TaggedMap tm = new TaggedMap("extra");
+		tm.put("a", "1");
+		tm.put("b", "2");
+		tm.put("c", "3");
+		go.setIcon(tm);
+		go.setName("def");
+		go.setRotation(-20.0);
+		go.setSchema(new URI("#123"));
+		go.setStyleUrl("#style1");
+		
+		go.putData(new SimpleField("f1"), 5.6);
+		return go;
 	}
 }

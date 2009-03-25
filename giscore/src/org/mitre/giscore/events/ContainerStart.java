@@ -18,7 +18,11 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.io.IOException;
+
 import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 
 /**
@@ -31,6 +35,13 @@ public class ContainerStart extends BaseStart {
 	private static final long serialVersionUID = 1L;
 	
 	private String type;
+	
+	/**
+	 * Empty ctor for data IO
+	 */
+	public ContainerStart() {
+		// 
+	}
 	
 	/**
 	 * Ctor
@@ -59,4 +70,26 @@ public class ContainerStart extends BaseStart {
     public void accept(StreamVisitorBase visitor) {
     	visitor.visit(this);
     }
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.events.BaseStart#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+		type = in.readString();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.events.BaseStart#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {	
+		super.writeData(out);
+		out.writeString(type);
+	}
+    
+    
 }

@@ -248,7 +248,7 @@ public abstract class BaseStart implements IGISObject, IDataSerializable {
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		out.writeString(name);
 		out.writeString(description);
-		out.writeString(schema.toString());
+		out.writeString(schema != null ? schema.toString() : null);
 		out.writeString(styleUrl);
 		if (startTime != null)
 			out.writeLong(startTime.getTime());

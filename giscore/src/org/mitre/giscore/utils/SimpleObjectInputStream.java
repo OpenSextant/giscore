@@ -19,6 +19,7 @@
 package org.mitre.giscore.utils;
 
 import java.io.DataInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,24 +79,28 @@ public class SimpleObjectInputStream {
 	@SuppressWarnings("unchecked")
 	public Object readObject() throws ClassNotFoundException, IOException,
 			InstantiationException, IllegalAccessException {
-		boolean classref = readBoolean();
-		Class clazz = null;
-		if (classref) {
-			int refid = readInt();
-			if (refid == 0) {
-				return null;
+		try {
+			boolean classref = readBoolean();
+			Class clazz = null;
+			if (classref) {
+				int refid = readInt();
+				if (refid == 0) {
+					return null;
+				} else {
+					clazz = classMap.get(refid);
+				}
 			} else {
-				clazz = classMap.get(refid);
+				String className = readString();
+				int refid = readInt();
+				clazz = (Class<IDataSerializable>) Class.forName(className);
+				classMap.put(refid, clazz);
 			}
-		} else {
-			String className = readString();
-			int refid = readInt();
-			clazz = (Class<IDataSerializable>) Class.forName(className);
-			classMap.put(refid, clazz);
+			IDataSerializable rval = (IDataSerializable) clazz.newInstance();
+			rval.readData(this);
+			return rval;
+		} catch(EOFException e) {
+			return null;
 		}
-		IDataSerializable rval = (IDataSerializable) clazz.newInstance();
-		rval.readData(this);
-		return rval;
 	}
 
 	/**

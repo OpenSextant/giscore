@@ -332,14 +332,13 @@ public class SimpleField implements IDataSerializable {
 			IllegalAccessException {
 		setAliasName(in.readString());
 		setDisplayName(in.readString());
-		setLength((Integer) in.readScalar());
 		setModelName(in.readString());
 		setName(in.readString());
-		setPrecision((Integer) in.readScalar());
-		setScale((Integer) in.readScalar());
 		String type = in.readString();
 		setType(Type.valueOf(type));
-		
+		setLength((Integer) in.readScalar());
+		setPrecision((Integer) in.readScalar());
+		setScale((Integer) in.readScalar());
 	}
 
 	/* (non-Javadoc)
@@ -347,13 +346,13 @@ public class SimpleField implements IDataSerializable {
 	 */
 	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
-		out.writeScalar(getAliasName());
-		out.writeScalar(getDisplayName());
+		out.writeString(getAliasName());
+		out.writeString(getDisplayName());
+		out.writeString(getModelName());
+		out.writeString(getName());
+		out.writeString(getType().name());
 		out.writeScalar(getLength());
-		out.writeScalar(getModelName());
-		out.writeScalar(getName());
 		out.writeScalar(getPrecision());
 		out.writeScalar(getScale());
-		out.writeString(getType().name());
 	}
 }
