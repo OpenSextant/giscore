@@ -88,7 +88,9 @@ public class GdbInputStream extends GISInputStreamBase {
 			.getLogger(GdbInputStream.class);
 
 	static {
-		ESRIInitializer.initialize();
+		if(!ESRIInitializer.initialize(false, true)) {
+			throw new UnsatisfiedLinkError("Could not initialize ESRI environment.");
+		}
 	}
 
 	/**

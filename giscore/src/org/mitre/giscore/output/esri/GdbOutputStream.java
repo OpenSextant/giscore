@@ -171,7 +171,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		shape.setLength(0);
 		shape.setRequired(true);
 
-		ESRIInitializer.initialize();
+		ESRIInitializer.initialize(false, true);
 
 		try {
 			spatialRefEnv = new SpatialReferenceEnvironment();

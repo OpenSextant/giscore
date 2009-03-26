@@ -35,17 +35,53 @@ public class ESRIInitializer {
 	private static Logger logger = LoggerFactory.getLogger(ESRIInitializer.class);
 	
 	private static ESRIInitializer esri = null;
-	
-	public static synchronized void initialize() {
-		if (esri == null) {
-			esri = new ESRIInitializer();
+
+	private static boolean attempted = false;
+
+	/**
+	 * Initialize the ESRI environment.
+	 *
+	 * @param force {@code true} skip our homemade checks and force the
+	 *  initialization to happen. If these checks fail then ESRI's code will
+	 *  invoke {@code System.exit()} (which can't be stopped).
+	 * @param error {@code true} to throw an error if initialization fails
+	 *  (instead of returning {@code false}).
+	 * @return {@code true} iff ESRI was initialized properly.
+	 * @throws LinkageError if there is an error initializing the ESRI codebase.
+	 */
+	public static synchronized boolean initialize(final boolean force, final boolean error) throws LinkageError {
+		if(attempted && (!force) && (!error)) {
+			return esri != null;
 		}
+		if (esri == null) {
+			try {
+				esri = new ESRIInitializer(force);
+			} catch(LinkageError e) {
+				attempted = true;
+				if(error) {
+					throw e;
+				}
+				return false;
+			}
+		}
+		return true;
 	}
 	
 	/**
 	 * Private ctor
 	 */
-	private ESRIInitializer() {
+	private ESRIInitializer(final boolean force) throws LinkageError {
+		if(!force) {
+			try {
+				// We can't use the ESRIInitializer because esri shuts down the
+				// JVM if the libraries can't be found.
+				System.loadLibrary("ntvinv");
+			} catch(UnsatisfiedLinkError e) {
+				logger.warn("Could not initialize ESRI libraries, ArcGIS output formats will not work.", e);
+				throw e;
+			}
+		}
+
 		try {
 			// Step 1: Initialize the Java Componet Object Model (COM) Interop.
 			EngineInitializer.initializeEngine();
@@ -55,8 +91,11 @@ public class ESRIInitializer {
 			// (esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB);
 			new AoInitialize()
 					.initialize(esriLicenseProductCode.esriLicenseProductCodeArcEditor);
-		} catch (Exception e) {
-			logger.error("Problem initializing the ESRI interop system", e);
+		} catch (Throwable t) {
+			logger.error("Problem initializing the ESRI interop system", t);
+			final LinkageError error = new LinkageError("Problem initializing the ESRI interop system");
+			error.initCause(t);
+			throw error;
 		}
 	}
 }
