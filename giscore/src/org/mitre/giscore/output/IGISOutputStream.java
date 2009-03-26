@@ -18,7 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.output;
 
-import java.io.IOException;
+import java.io.Closeable;
 
 import org.mitre.giscore.events.IGISObject;
 
@@ -28,17 +28,11 @@ import org.mitre.giscore.events.IGISObject;
  * 
  * @author DRAND
  */
-public interface IGISOutputStream {
+public interface IGISOutputStream extends Closeable {
 	/**
 	 * Write the given object.
 	 * 
 	 * @param object the object to be written, never <code>null</code>.
 	 */
 	void write(IGISObject object);
-	
-	/**
-	 * Close the stream and release any resources.
-	 * @throws IOException 
-	 */
-	void close() throws IOException;
 }

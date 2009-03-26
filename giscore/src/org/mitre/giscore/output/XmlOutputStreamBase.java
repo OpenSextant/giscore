@@ -3,8 +3,6 @@
  *
  *  Created: Feb 6, 2009
  *
- *  @author DRAND
- *
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including

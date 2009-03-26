@@ -99,8 +99,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	 */
 	public KmlOutputStream(OutputStream stream) throws XMLStreamException {
 		super(stream);
-
-        writer.writeStartDocument();
+		
+		writer.writeStartDocument();
         writer.writeCharacters("\n");
         writer.writeStartElement(KML);
 		writer.writeDefaultNamespace(KML_NS);
@@ -509,6 +509,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	 * Output a multigeometry, represented by a geometry bag
 	 * @param bag the geometry bag, never <code>null</code>
 	 */
+	@Override
 	public void visit(GeometryBag bag) {
 		if (bag == null) {
 			throw new IllegalArgumentException("bag should never be null");
@@ -548,6 +549,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	 * @param poly
 	 *            the polygon, never <code>null</code>
 	 */
+	@Override
 	public void visit(Polygon poly) {
 		if (poly == null) {
 			throw new IllegalArgumentException("poly should never be null");
@@ -584,6 +586,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	 * @param r
 	 *            the ring, never <code>null</code>
 	 */
+	@Override
 	public void visit(LinearRing r) {
 		if (r == null) {
 			throw new IllegalArgumentException("r should never be null");
@@ -603,6 +606,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	 * @param l
 	 *            the line, never <code>null</code>
 	 */
+	@Override
 	public void visit(Line l) {
 		if (l == null) {
 			throw new IllegalArgumentException("l should never be null");
@@ -622,6 +626,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	 * @param p
 	 *            the point, never <code>null</code>
 	 */
+	@Override
 	public void visit(Point p) {
 		if (p == null) {
 			throw new IllegalArgumentException("p should never be null");

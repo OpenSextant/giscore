@@ -3,8 +3,6 @@
  *
  *  Created: Jan 28, 2009
  *
- *  @author DRAND
- *
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
@@ -34,6 +32,7 @@ import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.esri.GdbOutputStream;
 import org.mitre.giscore.output.esri.XmlGdbOutputStream;
 import org.mitre.giscore.output.kml.KmlOutputStream;
+import org.mitre.giscore.output.kml.KmzOutputStream;
 
 /**
  * Factory class which creates concrete instantiations of input and output
@@ -171,39 +170,44 @@ public class GISFactory {
 		}
 
 		try {
-			if (DocumentType.KML.equals(type)) {
-				checkArguments(new Class[] {}, arguments, new boolean[] {});
-				return new KmlOutputStream(outputStream);
-			} else if (DocumentType.Shapefile.equals(type)) {
-				checkArguments(new Class[] { File.class,
-						IContainerNameStrategy.class }, arguments,
-						new boolean[] { true, false });
-				IContainerNameStrategy strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
-						: null);
-				return new GdbOutputStream(type, outputStream,
-						(File) arguments[0], strategy);
-			} else if (DocumentType.FileGDB.equals(type)) {
-				checkArguments(new Class[] { File.class,
-						IContainerNameStrategy.class }, arguments,
-						new boolean[] { true, false });
-				IContainerNameStrategy strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
-						: null);
-				return new GdbOutputStream(type, outputStream,
-						(File) arguments[0], strategy);
-			} else if (DocumentType.XmlGDB.equals(type)) {
-				checkArguments(new Class[] {}, arguments, new boolean[] {});
-				return new XmlGdbOutputStream(outputStream);
-			} else if (DocumentType.PersonalGDB.equals(type)) {
-				checkArguments(new Class[] { File.class,
-						IContainerNameStrategy.class }, arguments,
-						new boolean[] { true, false });
-				IContainerNameStrategy strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
-						: null);
-				return new GdbOutputStream(type, outputStream,
-						(File) arguments[0], strategy);
-			} else {
-				throw new UnsupportedOperationException(
-						"Cannot create an output stream for type " + type);
+			IContainerNameStrategy strategy;
+			switch(type) {
+				case KML:
+					checkArguments(new Class[] {}, arguments, new boolean[] {});
+					return new KmlOutputStream(outputStream);
+				case KMZ:
+					checkArguments(new Class[] {}, arguments, new boolean[] {});
+					return new KmzOutputStream(outputStream);
+				case Shapefile:
+					checkArguments(new Class[] { File.class,
+							IContainerNameStrategy.class }, arguments,
+							new boolean[] { true, false });
+					strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
+							: null);
+					return new GdbOutputStream(type, outputStream,
+							(File) arguments[0], strategy);
+				case FileGDB:
+					checkArguments(new Class[] { File.class,
+							IContainerNameStrategy.class }, arguments,
+							new boolean[] { true, false });
+					strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
+							: null);
+					return new GdbOutputStream(type, outputStream,
+							(File) arguments[0], strategy);
+				case XmlGDB:
+					checkArguments(new Class[] {}, arguments, new boolean[] {});
+					return new XmlGdbOutputStream(outputStream);
+				case PersonalGDB:
+					checkArguments(new Class[] { File.class,
+							IContainerNameStrategy.class }, arguments,
+							new boolean[] { true, false });
+					strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
+							: null);
+					return new GdbOutputStream(type, outputStream,
+							(File) arguments[0], strategy);
+				default:
+					throw new UnsupportedOperationException(
+							"Cannot create an output stream for type " + type);
 			}
 		} catch (XMLStreamException e) {
 			final IOException e2 = new IOException();

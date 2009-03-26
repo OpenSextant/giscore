@@ -25,9 +25,17 @@ package org.mitre.giscore;
  * @author DRAND
  */
 public enum DocumentType {
-	KML /* Includes KML and KMZ */,
-	Shapefile /* An ESRI format */,
-	PersonalGDB /* Access GDB output, an ESRI format */,
-	FileGDB /* File GDB output, an ESRI format */,
-	XmlGDB /* An xml interchange format for ESRI Geodatabase data */
+	/* Google's KML Format */
+	KML,
+	/* Google's KMZ Format */
+	KMZ,
+	/* An ESRI format */
+	Shapefile,
+	/* Access GDB output, an ESRI format */
+	PersonalGDB,
+	/* File GDB output, an ESRI format */
+	FileGDB,
+	/* An xml interchange format for ESRI Geodatabase data */
+	XmlGDB,
+	;
 }
