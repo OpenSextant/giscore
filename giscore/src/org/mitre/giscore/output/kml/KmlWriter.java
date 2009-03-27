@@ -34,19 +34,19 @@ import java.util.zip.ZipOutputStream;
 /**
  * Wrapper to KmlOutputStream for handling the common steps needed to create
  * basic KML or KMZ files.
- * 
- * Advanced KML support should use the KmlOutputStream class directly. 
- *
+ * <p/>
  * Handles the following tasks:
- *
- * - write to KMZ/KML files transparently. If file has a .kmz file extension then a KMZ (ZIP)
- *    file is created with that file name.
- * - discards empty containers if ContainerStart is followed by a ContainerEnd element
- *    in a successive write() call.
- * - write Files or contents from inputStream to entries in KMZ for networkLinked content,
- *    overlay images, etc.
  * 
- * Complements the KmlReader class.
+ * <ul>
+ * <li>write to KMZ/KML files transparently. If file has a .kmz file extension then a KMZ (ZIP)
+ *    file is created with that file name.
+ * <li>discards empty containers if ContainerStart is followed by a ContainerEnd element
+ *    in a successive write() call.
+ * <li>write Files or contents from inputStream to entries in KMZ for networkLinked content,
+ *    overlay images, etc.
+ * </ul>
+ * 
+ * Complements the KmlReader class. Advanced KML support should use the <code>KmlOutputStream</code> class directly.
  * 
  * @author Jason Mathews, MITRE Corp.
  * Created: Mar 13, 2009 10:06:17 AM
@@ -64,8 +64,8 @@ public class KmlWriter {
 	 * Construct a KmlWriter whiuch starts writing a KML document into
 	 * the specified KML or KMZ file.  If filename ends with .kmz extension
 	 * then a compressed KMZ (ZIP) file is produced with the main KML document
-	 * stored as "doc.kml" in the root directory.
-	 * 
+	 * stored as "doc.kml" in the root directory. <p/>
+	 *
 	 * For details on .KMZ files see "Creating a .kmz Archive" section
 	 * of http://code.google.com/apis/kml/documentation/kml_21tutorial.html
 	 * 

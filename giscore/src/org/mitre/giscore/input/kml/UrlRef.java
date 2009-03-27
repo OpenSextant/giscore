@@ -34,17 +34,20 @@ import org.apache.commons.io.IOUtils;
 /**
  * UrlRef manages the encoding/decoding of internally created
  * KML/KMZ URLs to preserve the association between the
- * parent KMZ file and its relative KML reference.
+ * parent KMZ file and its relative file reference.
  *  <p/>
- * A UrlRef is created for each networkLink or groundOverlay URL
- * and if the parent is KMZ and the association is preserved
- * otherwise the URL is treated normally.
- * Use getURI() to get the internal URI and getUrl() to return
- * the original URL.
+ * A UrlRef is created for each linked resource (e.g. NetworkLink or GroundOverlay) during
+ * reading. If the parent file/URL is a KMZ file and link is a relative URL then the
+ * association is preserved otherwise the URL is treated normally.
  *  <p/>
  * For example:
- *   Given URI = kmzhttp://server/test.kmz?file=kml/include.kml
- *   strips the "kmz" prefix and the "?file=" suffix from the URL.
+ *  Given the URI: <code>kmzhttp://server/test.kmz?file=kml/include.kml</code>
+ *  UrlRef strips the "kmz" prefix and the "?file=" suffix from the URL resolving
+ *  the resource as having a parent URL as <code>http://server/test.kmz</code> and
+ *  a relative link to the file as <code>kml/include.kml</code>.
+ *  <p/> 
+ * Use getURI() to get the internal URI and getUrl() to return
+ * the original URL.
  *
  * @author Jason Mathews
  */
@@ -64,8 +67,9 @@ public class UrlRef {
      * Convert URL to "kmz" URI with URL of parent KMZ and the kmz file path
      * which is the relative path to target file inside the KMZ.
      *
-     * @param url  URL for KMZ resource
-     * @param kmz_file_path relative path within the KMZ archive to where the KML is located
+     * @param url  URL for KML/KMZ resource
+     * @param kmz_file_path relative path within the parent KMZ archive to where the KML, overlay image,
+	 * 			model, etc. is located
      * @throws URISyntaxException if URL has a missing relative file path or fails to construct properly
      * @throws NullPointerException if URL is null
      */
@@ -127,11 +131,25 @@ public class UrlRef {
         kmzRelPath = urlStr.substring(ind + 5);
     }
 
-    public boolean isKmz() {
+	/**
+	 * Determines if a UrlRef references a linked reference (networked linked KML,
+	 * image overlay, icon, model, etc.) in a KMZ file.
+	 *
+	 * @return true if UrlRef reprensents a linked reference in a KMZ file
+	 */
+	public boolean isKmz() {
         return kmzRelPath != null;
     }
 
-    public InputStream getInputStream() throws IOException {
+	/**
+	 * Opens a connection to this <code>UrlRef</code> and returns an
+     * <code>InputStream</code> for reading from that connection.
+	 * 
+	 * @return     an input stream for reading from the resource represented by the <code>UrlRef</code>.
+	 * @throws FileNotFoundException if referenced link was not found in the parent KMZ file
+	 * @throws IOException if an I/O error occurs
+	 */
+	public InputStream getInputStream() throws IOException {
         // check if non-KMZ URI
         if (kmzRelPath == null)
             return getInputStream(url);
@@ -158,14 +176,15 @@ public class UrlRef {
     }
 
     /**
-     * This method gets the correct input stream for a URL. If the URL is a
-     * http/https connection, the Accept-Encoding: gzip, deflate is added. It
-     * the paramter is added, the response is checked to see if the response is
-     * encoded in gzip, deflate or plain bytes. The correct input stream wrapper
-     * is then selected and returned.
+     * This method gets the correct input stream for a URL.  Attempts to
+	 * determine if URL is a KMZ (compressed KML file) first by the returned
+	 * content type from the <code>URLConnection</code> and it that fails then
+	 * by checking if a .kmz extension appears at end of the file name.
+	 * If stream is for a KMZ file then the stream is advanced until the first
+	 * KML file is found in the stream.
      *
-     * @param url The url to the KML file
-     * @return The InputStream used to validate and parse the SLD xml.
+     * @param url The url to the KML or KMZ file
+     * @return The InputStream used to read the KML source.
      * @throws java.io.IOException when an I/O error prevents a document
      *         from being fully parsed.
      */
@@ -173,16 +192,17 @@ public class UrlRef {
         // Open the connection
         URLConnection conn = url.openConnection();
 
-        // Set other HTTP headers to simulate Google Earth client
+        // Set HTTP headers to simulate a typical Google Earth client
         //
         // Examples:
-        // Accept: application/vnd.google-earth.kml+xml, application/vnd.google-earth.kmz, image/*, */*
-        // Cache-Control: no-cache
-        // User-Agent: GoogleEarth/5.0.11337.1968(Windows;Microsoft Windows XP (Service Pack 3);en-US;kml:2.2;client:Free;type:default)
+		//
+		//  Accept: application/vnd.google-earth.kml+xml, application/vnd.google-earth.kmz, image/*, */*
+        //  Cache-Control: no-cache
+        //  User-Agent: GoogleEarth/5.0.11337.1968(Windows;Microsoft Windows XP (Service Pack 3);en-US;kml:2.2;client:Free;type:default)
         //
-        // Accept: application/vnd.google-earth.kml+xml, application/vnd.google-earth.kmz, image/*, */*
-        // Cache-Control: no-cache
-        // User-Agent: GoogleEarth/4.3.7284.3916(Windows;Microsoft Windows XP (Service Pack 3);en-US;kml:2.2;client:Free;type:default)
+        //  Accept: application/vnd.google-earth.kml+xml, application/vnd.google-earth.kmz, image/*, */*
+        //  Cache-Control: no-cache
+        //  User-Agent: GoogleEarth/4.3.7284.3916(Windows;Microsoft Windows XP (Service Pack 3);en-US;kml:2.2;client:Free;type:default)
         if (conn instanceof HttpURLConnection) {
             HttpURLConnection httpConn = (HttpURLConnection)conn;
             httpConn.setRequestProperty("Accept", ACCEPT_STRING);
@@ -202,7 +222,7 @@ public class UrlRef {
                 is = conn.getInputStream();
                 zis = new ZipInputStream(is);
                 ZipEntry entry;
-                //   Simply find first kml file in the archive
+                //   Simply find first kml file in the archive.
                 //
                 //   Note that KML documentation loosely defines that it takes first root-level KML file
                 //   in KMZ archive as the main KML document but Google Earth (version 4.3 as of Dec-2008)
@@ -238,13 +258,23 @@ public class UrlRef {
         return url;
     }
 
-    public String getKmzRelPath() {
+	/**
+	 * Gets the relative path to the KMZ resource if UrlRef represents
+	 * a linked reference (networked linked KML, image overlay, icon, model,
+	 * etc.) in a KMZ file. For example this would be how the Link href was
+	 * defined in a NetworkLink or Icon in a GroundOverlay.
+	 *
+	 * @return relative path to the KMZ resource otherwise null
+	 */
+	public String getKmzRelPath() {
         return kmzRelPath;
     }
 
     /**
-     * Convert internal "URI" form to portable URL form
-     * e.g. kmzhttp://server/test.kmz?file=kml/include.kml -> http://server/test.kmz/kml/include.kml
+     * Convert internal "URI" form to portable URL form. For example
+     * <code>kmzhttp://server/test.kmz?file=kml/include.kml</code>
+	 * is converted into <code>http://server/test.kmz/kml/include.kml</code>.
+	 * 
      * @return portable human-readable URL as formated String
      */
     public String toString() {

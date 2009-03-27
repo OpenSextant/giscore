@@ -51,15 +51,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Wrapper to KmlInputStream that handles various house cleaning of parsing KML sources:
- *  -read from KMZ/KML files transparently
- *  -re-writing of URLs inside KMZ files and resolving relative URLs
- *  -rewrites URLs of NetworkLinks and GroundOverlays with respect to parent URL.
- *   Use UrlRef to get InputStream of links and resolve URI to original.
- *  -removes duplicate networkLink URLs
- *  -removes GroundOverlays missing icon URL
- *  -removes placemark/features that don't provide a geometry (Point, Line, etc)
- *  -recursively loading all features from networkLinks 
+ * Wrapper to KmlInputStream that handles various house cleaning of parsing KML sources.
+ * * <p/>
+ * Handles the following tasks:
+ * <ul>
+ * <li>read from KMZ/KML files transparently
+ * <li>re-writing of URLs inside KMZ files and resolving relative URLs
+ * <li>rewrites URLs of NetworkLinks and GroundOverlays with respect to parent URL.
+ *   Use <code>UrlRef</code> to get InputStream of links and resolve URI to original.
+ * <li>removes duplicate networkLink URLs
+ * <li>removes GroundOverlays missing icon URL
+ * <li>recursively loading all features from networkLinks
+  </ul> 
  * 
  * @author Jason Mathews, MITRE Corp.
  * Created: Mar 5, 2009 9:12:19 AM
@@ -69,8 +72,6 @@ public class KmlReader implements IKml {
     private static final Logger log = LoggerFactory.getLogger(KmlReader.class);
 
     private final List<IGISObject> features = new ArrayList<IGISObject>();
-
-    // private final List<NetworkLink> networkLinks = new ArrayList<NetworkLink>();
 
     /**
      * if true indicates that the stream is for a KMZ compressed file
@@ -126,14 +127,27 @@ public class KmlReader implements IKml {
      */
     private static final Pattern absUrlPattern = Pattern.compile("^[a-zA-Z]+:");
 
-    public KmlReader(URL url) throws IOException {
+	/**
+	 * Creates a <code>KmlReader</code> and attempts to read
+	 * all GISObjects from a stream created from the <code>URL</code>.
+	 * @param url   the KML or KMZ URL to be opened for reading.
+	 * @throws IOException if an I/O error occurs
+	 */
+	public KmlReader(URL url) throws IOException {
         InputStream iStream = UrlRef.getInputStream(url);
         if (iStream instanceof ZipInputStream) compressed = true;
         baseUrl = url;
         readFromStream(iStream, features, null);
     }
 
-    public KmlReader(File file) throws IOException {
+	/**
+	 * Creates a <code>KmlReader</code> and attempts
+	 * to read all GISObjects from the <code>File</code>.
+	 * 
+	 * @param      file   the KML or KMZ file to be opened for reading.
+	 * @throws IOException if an I/O error occurs
+	 */
+	public KmlReader(File file) throws IOException {
         InputStream iStream = null;
         ZipFile zf = null;
         try {
