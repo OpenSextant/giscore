@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipFile;
 import org.junit.Assert;
@@ -81,7 +80,7 @@ public class TestKmzOutputStream {
 			kmzos.close();
 
 			KmlReader reader = new KmlReader(temp);
-			List<IGISObject> objs = reader.getFeatures();
+			List<IGISObject> objs = reader.readAll();
 			// System.out.println(objs);
 			/*
 			for(Object o : objs) {
@@ -93,8 +92,8 @@ public class TestKmzOutputStream {
 			Assert.assertEquals(2, objs.size());
 			TestKmlOutputStream.checkApproximatelyEquals(nl, objs.get(1));
 
-			List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
-			List<URI> links = reader.importFromNetworkLinks(linkedFeatures);
+			List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
+			List<URI> links = reader.getNetworkLinks();
 			//System.out.println("linkedFeature=" + linkedFeatures);
 			//System.out.println("links=" + links);
 			Assert.assertEquals(2, linkedFeatures.size());
