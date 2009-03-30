@@ -135,6 +135,17 @@ public class GdbInputStream extends GISInputStreamBase {
 	private IAcceptSchema accepter;
 
 	/**
+	 * The current feature class being used, <code>null</code> until the first
+	 * call to {@link #read()} and generally not <code>null</code> afterward.
+	 */
+	private FeatureClass currentFeatureClass;
+
+	/**
+	 * The current field information from the current feature class
+	 */
+	private IFields currentFields;
+
+	/**
 	 * Ctor
 	 * 
 	 * @param type
@@ -207,10 +218,11 @@ public class GdbInputStream extends GISInputStreamBase {
 					datasetenum = null;
 					return read();
 				} else {
-					FeatureClass fclass = new FeatureClass(currentDataset);
+					currentFeatureClass = new FeatureClass(currentDataset);
+					currentFields = currentFeatureClass.getFields();
 					QueryFilter filter = new QueryFilter();
-					cursor = fclass.search(filter, true);
-					Schema s = makeSchema(fclass);
+					cursor = currentFeatureClass.search(filter, true);
+					Schema s = makeSchema();
 					if (accepter == null || accepter.accept(s)) {
 						return s;
 					} else {
@@ -222,6 +234,8 @@ public class GdbInputStream extends GISInputStreamBase {
 				IFeature feature = cursor.nextFeature();
 				if (feature == null) {
 					currentDataset = null;
+					currentFeatureClass = null;
+					currentFields = null;
 					cursor = null;
 					return read();
 				} else {
@@ -248,9 +262,9 @@ public class GdbInputStream extends GISInputStreamBase {
 		IGeometry geo = ifeature.getShape();
 		int gtype = geo.getGeometryType();
 		feature.setGeometry(makeGeometry(gtype, geo));
-		IFields ifields = ifeature.getFields();
-		for (int i = 0; i < ifields.getFieldCount(); i++) {
-			IField field = ifields.getField(i);
+		int fieldCount = currentFields.getFieldCount();
+		for (int i = 0; i < fieldCount; i++) {
+			IField field = currentFields.getField(i);
 			// Geometry handled above
 			if (field.getType() == esriFieldType.esriFieldTypeGeometry) continue; 
 			SimpleField sfield = currentSchema.get(field.getName());
@@ -419,23 +433,19 @@ public class GdbInputStream extends GISInputStreamBase {
 	 * If a feature class field has an unknown type it will be omitted from the
 	 * schema
 	 * 
-	 * @param featureClass
-	 *            the feature class, assumed not <code>null</code>
 	 * @return a schema object, never <code>null</code>
 	 * @throws IOException
 	 * @throws URISyntaxException
 	 * @throws AutomationException
 	 */
-	private Schema makeSchema(IFeatureClass featureClass)
+	private Schema makeSchema()
 			throws AutomationException, URISyntaxException, IOException {
-		currentSchemaURI = new URI("urn:" + featureClass.getAliasName());
+		currentSchemaURI = new URI("urn:" + currentFeatureClass.getAliasName());
 		currentSchema = new Schema(currentSchemaURI);
-		currentSchema.setName(featureClass.getAliasName());
-		IFields fields = featureClass.getFields();
-		// String oid = featureClass.getOIDFieldName();
-		// String shape = featureClass.getShapeFieldName();
-		for (int i = 0; i < fields.getFieldCount(); i++) {
-			IField field = fields.getField(i);
+		currentSchema.setName(currentFeatureClass.getAliasName());
+		int fieldCount = currentFields.getFieldCount();
+		for (int i = 0; i < fieldCount; i++) {
+			IField field = currentFields.getField(i);
 			String name = field.getName();
 			Type type = decodeType(field.getType());
 			if (type != null) {
