@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Placemark>
+    <name>styled placemark</name>
+    <Snippet>U-2 Spy Plane in flight</Snippet>
+    <description><![CDATA[<img src="http://upload.wikimedia.org/wikipedia/commons/9/95/Usaf.u2.750pix.jpg">]]></description>
+    <Style>
+      <IconStyle>
+        <scale>1.1</scale>
+        <Icon>
+          <href>icon.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <color>ffff0000</color>
+      </LabelStyle>
+      <BalloonStyle>
+        <text>
+          <![CDATA[
+          <b>$[name]</b><br/><br/>
+          $[Snippet]<br/>
+          $[description]<br/>
+          ]]>
+        </text>
+      </BalloonStyle>
+    </Style>
+    <Point>
+	<coordinates>48.11078528860224,29.00797279966015,0</coordinates>
+    </Point>
+  </Placemark>
+</kml>
