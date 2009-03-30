@@ -7,12 +7,12 @@ import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
-import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Latitude;
 import org.mitre.itf.geodesy.Longitude;
+import org.junit.Test;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -32,6 +32,103 @@ import java.text.SimpleDateFormat;
  */
 public class TestKmlWriter extends TestCase {
 
+	@Test
+    public void test_read_write_Kml() {
+        checkDir(new File("data/kml"));
+    }
+
+    private void checkDir(File dir) {
+		for (File file : dir.listFiles()) {
+			if (file.isDirectory()) checkDir(file);
+			else {
+				String name = file.getName().toLowerCase();
+				if (name.endsWith(".kml") || name.endsWith(".kmz"))
+					try {
+						checkKmlFile(file);
+					} catch (IOException e) {
+						System.out.println("Failed to read/write: " + file + " " + e);
+					}
+			}
+		}
+    }
+
+    private void checkKmlFile(File file) throws IOException {
+        System.out.println("Testing " + file);
+        KmlReader reader = new KmlReader(file);
+		List<IGISObject> objs = reader.readAll();
+		List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
+        List<URI> links = reader.getNetworkLinks();
+        if (links.size() != 0)
+            assertTrue(linkedFeatures.size() != 0);
+		//File temp = File.createTempFile("test", reader.isCompressed() ? ".kmz" : ".kml");
+		/*
+		String suff = file.getName();
+		int ind = suff.lastIndexOf('.');
+		if (ind != -1) suff = suff.substring(0, ind);
+		if (suff.length() < 3) suff = "x" + suff;
+		File temp = File.createTempFile(suff + "-", reader.isCompressed() ? ".kmz" : ".kml", new File("testOutput/kml"));
+		*/
+		File temp = new File("testOutput/test." + (reader.isCompressed() ? "kmz" : "kml"));
+		try {
+			System.out.println(">create " + temp);
+			KmlWriter writer = new KmlWriter(temp);
+			for (IGISObject o : objs) {
+				writer.write(o);
+			}
+			writer.close();
+			// Filter original list such that it will match the re-imported list
+			List<IGISObject> objs2 = new ArrayList<IGISObject>();
+			for (int i = 0; i < objs.size(); i++) {
+				IGISObject o = objs.get(i);
+				// KmlReader may introduce Comment Objects for skipped elements
+				// so need to remove these since reading them back in will not preserve them
+				if (o instanceof Comment) continue;
+				// KmlWriter ignores any empty containers so any ContainerStart
+				// followed by a ContainerEnd will be discarded.
+				// need to remove any of these from the list from which
+				// to compare to original list.
+				if (o instanceof ContainerStart && i + 1 < objs.size()) {
+					IGISObject next = objs.get(i + 1);
+					if (next instanceof ContainerEnd) {
+						if (i > 0) {
+							IGISObject prev = objs.get(i - 1);
+							// ignore unless previous elements are Style and StyleMaps
+							// which are added to an empty container...
+							if (prev instanceof Style || prev instanceof StyleMap) {
+								objs2.add(o);
+								continue;
+							}
+						}
+						i++; // skip current and next items
+						continue;
+					}
+				}
+				objs2.add(o);
+			}
+			objs = objs2;
+			KmlReader reader2 = new KmlReader(temp);
+			List<IGISObject> elements = reader2.readAll();
+			/*
+			if (objs.size() != elements.size()) {
+					for(Object o : objs) {
+						System.out.println(" >" + o.getClass().getName());
+					}
+					System.out.println();
+					for(Object o : elements) {
+						System.out.println(" <" + o.getClass().getName());
+					}
+					//System.out.println("\nelts1=" + elements);
+					//System.out.println("\nelts2=" + elements2);
+					//System.out.println();
+			}
+			*/
+			assertEquals(objs.size(), elements.size());
+		} finally {
+			// delete temp file
+			if (temp != null && temp.exists()) temp.delete();
+		}
+	}
+
 	public void test_NetworkLink_Kmz() throws IOException, XMLStreamException {
 		File temp = File.createTempFile("test", ".kmz");
 		//File temp = new File("test.kmz");
@@ -46,7 +143,7 @@ public class TestKmlWriter extends TestCase {
 			nl.setLink(link);
 			writer.write(nl);
 
-			// added KML entry to KMZ file
+			// add linked KML entry to KMZ file as "kml/link.kml"
 			ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			KmlOutputStream kos = new KmlOutputStream(bos);
 			kos.write(new DocumentStart(DocumentType.KML));
@@ -71,7 +168,7 @@ public class TestKmlWriter extends TestCase {
 			writer.close();
 
 			KmlReader reader = new KmlReader(temp);
-			List<IGISObject> objs = reader.getFeatures();
+			List<IGISObject> objs = reader.readAll();
 			// System.out.println(objs);
 			/*
 			for(Object o : objs) {
@@ -83,8 +180,8 @@ public class TestKmlWriter extends TestCase {
 			assertTrue(objs.size() == 2);
 			TestKmlOutputStream.checkApproximatelyEquals(nl, objs.get(1));
 
-			List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
-			List<URI> links = reader.importFromNetworkLinks(linkedFeatures);
+			List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
+			List<URI> links =  reader.getNetworkLinks();
 			//System.out.println("linkedFeature=" + linkedFeatures);
 			//System.out.println("links=" + links);
 			assertEquals(2, linkedFeatures.size());
@@ -100,13 +197,19 @@ public class TestKmlWriter extends TestCase {
 		}
 	}
 
+	/**
+	 * Using TimeTest.kml example test 6 variations of timeStamps or timeSpans.  Verify 
+	 * read and write various time start and end time combinations.
+	 *
+	 * @throws Exception
+	 */
 	public void test_Timestamp_Feature() throws Exception {
 		File input = new File("data/kml/time/TimeTest.kml");
 		TimeZone gmt = TimeZone.getTimeZone("GMT");
 		File temp = File.createTempFile("test1", ".kml");
 		try {
 			KmlReader reader = new KmlReader(input);
-			List<IGISObject> objs = reader.getFeatures();
+			List<IGISObject> objs = reader.readAll();
 
 			//System.out.println(features);
 			//System.out.println("# features=" + features.size());
@@ -184,7 +287,7 @@ public class TestKmlWriter extends TestCase {
 			writer.close();
 
 			reader = new KmlReader(temp);
-			List<IGISObject> objs2 = reader.getFeatures();
+			List<IGISObject> objs2 = reader.readAll();
 			assertEquals(objs.size(), objs2.size());
 			for (int i = 0; i < objs.size(); i++) {
 				TestKmlOutputStream.checkApproximatelyEquals(objs.get(i), objs2.get(i));
@@ -214,7 +317,7 @@ public class TestKmlWriter extends TestCase {
 		File temp = File.createTempFile("test1", ".kml");
 		try {
 			KmlReader reader = new KmlReader(input);
-			List<IGISObject> objs = reader.getFeatures();
+			List<IGISObject> objs = reader.readAll();
 
 			//System.out.println(objs);
 			//System.out.println("# features=" + objs.size());
@@ -253,7 +356,7 @@ public class TestKmlWriter extends TestCase {
 			writer.close();
 
 			reader = new KmlReader(temp);
-			List<IGISObject> objs2 = reader.getFeatures();
+			List<IGISObject> objs2 = reader.readAll();
 			assertEquals(14, objs2.size());
 			for (int i = 0; i < objs.size(); i++) {
 				TestKmlOutputStream.checkApproximatelyEquals(objs.get(i), objs2.get(i));
