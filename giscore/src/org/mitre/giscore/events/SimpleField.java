@@ -116,6 +116,10 @@ public class SimpleField implements IDataSerializable {
 	Integer precision;
 	Integer scale;
 	boolean editable = true;
+	/**
+	 * The index into the feature class, just used for ESRI
+	 */
+	transient Integer index;
 	
 	/**
 	 * Ctor - for a simple default field type
@@ -290,6 +294,20 @@ public class SimpleField implements IDataSerializable {
 	 */
 	public void setModelName(String modelName) {
 		this.modelName = modelName;
+	}
+
+	/**
+	 * @return the index
+	 */
+	public Integer getIndex() {
+		return index;
+	}
+
+	/**
+	 * @param index the index to set
+	 */
+	public void setIndex(Integer index) {
+		this.index = index;
 	}
 
 	/*
