@@ -40,10 +40,14 @@ import org.mitre.giscore.output.IGISOutputStream;
  * <p>
  * TODO: Add special handling for the COLLADA models:
  * http://code.google.com/apis/kml/documentation/kml_21tutorial.html
+ * <p> 
+ * See also {@code KmlWriter} which wraps KmlOutputStream and handles KML or KMZ
+ * depending on file extension.
  *
  * @author jgibson
  */
 public class KmzOutputStream implements IGISOutputStream {
+	
 	private KmlOutputStream kmlStream;
 	private final ZipOutputStream zipStream;
 
@@ -120,9 +124,7 @@ public class KmzOutputStream implements IGISOutputStream {
 
 			@Override
 			public void close() throws IOException {
-				if(closed) {
-					return;
-				} else {
+				if(!closed) {
 					flush();
 					zipStream.closeEntry();
 					closed = true;
