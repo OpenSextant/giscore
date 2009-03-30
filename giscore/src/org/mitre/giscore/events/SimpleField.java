@@ -327,7 +327,7 @@ public class SimpleField implements IDataSerializable {
 	 */
 	@Override
 	public int hashCode() {
-		return HashCodeBuilder.reflectionHashCode(this);
+		return name != null ? name.hashCode() : 0;
 	}
 
 	/*

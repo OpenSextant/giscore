@@ -21,6 +21,7 @@ package org.mitre.giscore.output.esri;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.AoInitialize;
 import com.esri.arcgis.system.EngineInitializer;
 import com.esri.arcgis.system.esriLicenseProductCode;
@@ -86,11 +87,14 @@ public class ESRIInitializer {
 			// Step 1: Initialize the Java Componet Object Model (COM) Interop.
 			EngineInitializer.initializeEngine();
 	
-			// Step 2: Initialize a valid license.
-			// new AoInitialize().initialize
-			// (esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB);
-			new AoInitialize()
+			// Step 2: Initialize a valid license. 
+			try {
+				new AoInitialize()
 					.initialize(esriLicenseProductCode.esriLicenseProductCodeArcEditor);
+			} catch(AutomationException e) {
+				new AoInitialize()
+						.initialize(esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB);
+			}
 		} catch (Throwable t) {
 			logger.error("Problem initializing the ESRI interop system", t);
 			final LinkageError error = new LinkageError("Problem initializing the ESRI interop system");

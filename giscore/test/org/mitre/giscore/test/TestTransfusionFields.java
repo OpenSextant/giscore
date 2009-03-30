@@ -21,10 +21,8 @@ package org.mitre.giscore.test;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -66,53 +64,20 @@ public class TestTransfusionFields {
 	private static final String XFUSION_SCHEMA_RING = "#xfusion_schema_ring";
 	
 	private static List<SimpleField> ms_fields = new ArrayList<SimpleField>();
-	private static SimpleField ms_field_cacheUrl;
-	private static SimpleField ms_field_localUrl;	
-	private static SimpleField ms_field_origURL;
-	private static SimpleField ms_field_itfid;
-	private static SimpleField ms_field_classification;
 	private static SimpleField ms_field_earliestReportDate;
 	private static SimpleField ms_field_latestReportDate;
-	private static SimpleField ms_field_creationDate;	
-	private static SimpleField ms_field_postedDate;
-	private static SimpleField ms_field_validUntil;
-	private static SimpleField ms_field_infoCutoff;	
 	private static SimpleField ms_field_lat;
 	private static SimpleField ms_field_lon;
-	private static SimpleField ms_field_mgrs;
-	private static SimpleField ms_field_rpt;
 	private static SimpleField ms_field_desc;
-	private static SimpleField ms_field_ctx;
 
 	static {
-		ms_field_cacheUrl = makeSimpleField("cacheURL", "Cache_URL",
-				SimpleField.Type.STRING);
-		ms_field_localUrl = makeSimpleField("localURL", "Local_URL",
-				SimpleField.Type.STRING);				
-		ms_field_origURL = makeSimpleField("origURL", "Source_URL",
-				SimpleField.Type.STRING);
-		ms_field_itfid = makeSimpleField("itfid", "ITFID", SimpleField.Type.INT);
-		ms_field_classification = makeSimpleField("clsfctn", "Classification",
-				SimpleField.Type.STRING);
 		ms_field_earliestReportDate = makeSimpleField("startRepDt",
 				"Earliest_Report_Date", SimpleField.Type.DATE);
 		ms_field_latestReportDate = makeSimpleField("endRepDt",
-				"Latest_Report_Date", SimpleField.Type.DATE);
-		ms_field_creationDate = makeSimpleField("createDt", "Creation_Date",
-				SimpleField.Type.DATE);				
-		ms_field_postedDate = makeSimpleField("postedDt", "Posted_Date",
-				SimpleField.Type.DATE);
-		ms_field_validUntil = makeSimpleField("validTil", "Valid_Until",
-				SimpleField.Type.DATE);
-		ms_field_infoCutoff = makeSimpleField("infoCutoff", "Info_Cutoff",
-				SimpleField.Type.STRING);				
+				"Latest_Report_Date", SimpleField.Type.DATE);			
 		ms_field_lat = makeSimpleField("lat", "Lat", SimpleField.Type.DOUBLE);
 		ms_field_lon = makeSimpleField("lon", "Long", SimpleField.Type.DOUBLE);
-		ms_field_mgrs = makeSimpleField("mgrs", "MGRS", SimpleField.Type.STRING);
-		ms_field_rpt = makeSimpleField("reportType", "Report_Type", SimpleField.Type.STRING);
 		ms_field_desc = makeSimpleField("desc_", "Description", SimpleField.Type.STRING);
-		ms_field_ctx = makeSimpleField("context", "Context",
-				SimpleField.Type.STRING);
 	}
 	
 	/**
