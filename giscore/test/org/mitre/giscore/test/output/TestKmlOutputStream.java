@@ -96,7 +96,7 @@ public class TestKmlOutputStream extends TestGISBase {
             IOUtils.closeQuietly(zoS);
             zoS = null;
             KmlReader reader = new KmlReader(file);
-            List<IGISObject> objs = reader.getFeatures();
+            List<IGISObject> objs = reader.readAll();
             // imported features should be DocumentStart followed by Feature 
             assertEquals(2, objs.size());
             checkApproximatelyEquals(f, objs.get(1));
