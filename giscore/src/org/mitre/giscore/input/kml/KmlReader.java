@@ -31,15 +31,15 @@ import java.util.zip.ZipEntry;
 import java.io.*;
 
 /**
- * Wrapper to KmlInputStream that handles various house cleaning of parsing KML sources.
+ * Wrapper to <code>KmlInputStream</code> that handles various house cleaning of parsing KML sources.
  * <p/>
  * Handles the following tasks:
  * <ul>
  * <li>read from KMZ/KML files transparently
  * <li>re-writing of URLs inside KMZ files and resolving relative URLs
- * <li>rewrites URLs of NetworkLinks and Screen/GroundOverlays with respect to parent URL.
- *   Use <code>UrlRef</code> to get InputStream of links and resolve URI to original.
- * <li>recursively reading all features from NetworkLinks
+ * <li>rewrites URLs of NetworkLinks, IconStyle, and Screen/GroundOverlays with respect to parent URL.
+ *   Use <code>UrlRef</code> to get InputStream of links and resolve URI to original URL.
+ * <li>recursively read all features from referenced NetworkLinks
  * </ul>
  *
  * @author Jason Mathews, MITRE Corp.
@@ -65,9 +65,14 @@ public class KmlReader extends KmlBaseReader {
 	 */
 	public KmlReader(URL url) throws IOException {
         iStream = UrlRef.getInputStream(url);
-        if (iStream instanceof ZipInputStream) compressed = true;
-        baseUrl = url;
-		kis = new KmlInputStream(iStream);
+		try {
+			kis = new KmlInputStream(iStream);
+		} catch (IOException e) {
+			IOUtils.closeQuietly(iStream);
+			throw e;
+		}
+		if (iStream instanceof ZipInputStream) compressed = true;
+		baseUrl = url;
 	}
 
 	/**
@@ -99,17 +104,22 @@ public class KmlReader extends KmlBaseReader {
 			iStream = new BufferedInputStream(new FileInputStream(file));
 		}
 
+		try {
+			kis = new KmlInputStream(iStream);
+		} catch (IOException e) {
+			IOUtils.closeQuietly(iStream);
+			throw e;
+		}
+
 		URL url;
 		try {
 			url = file.toURI().toURL();
 		} catch (Exception e) {
 			// this should not happen
 			log.warn("Failed to convert file URI to URL: " + e);
-			url = file.toURL();
+			url = null;
 		}
-
 		baseUrl = url;
-		kis = new KmlInputStream(iStream);
 	}
 
 	/**
@@ -214,7 +224,7 @@ public class KmlReader extends KmlBaseReader {
                     int oldSize = networkLinks.size();
                     int oldFeatSize = linkedFeatures.size();
                     // need to add new networkLinks back to list to recursively import
-					getFeatures(linkedFeatures, new KmlInputStream(is), networkLinks);
+					readAll(linkedFeatures, new KmlInputStream(is), networkLinks);
 					if (log.isDebugEnabled()) {
                         if (oldFeatSize != linkedFeatures.size())
                             log.debug("*** got features from network links ***");
@@ -246,11 +256,11 @@ public class KmlReader extends KmlBaseReader {
 	 */
 	public List<IGISObject> readAll() throws IOException {
 		List<IGISObject> features = new ArrayList<IGISObject>();
-		getFeatures(features, kis, null);
+		readAll(features, kis, null);
 		return features;
 	}
 
-	private void getFeatures(List<IGISObject> features, IGISInputStream inputStream, List<URI> networkLinks)
+	private void readAll(List<IGISObject> features, IGISInputStream inputStream, List<URI> networkLinks)
 			throws IOException {
 		try {
 			IGISObject gisObj;
@@ -265,13 +275,15 @@ public class KmlReader extends KmlBaseReader {
 	/**
 	 * Closes this input stream and releases any system resources
      * associated with the stream.
-	 * Once the stream has been closed, further read() invocations may throw an IOException.
-     * Closing a previously closed stream has no effect.
+	 * Once the reader has been closed, further read() invocations may throw an IOException.
+     * Closing a previously closed reader has no effect.
 	 */
 	public void close() {
-		kis.close();
-		IOUtils.closeQuietly(iStream);
-		iStream = null;
+		if (iStream != null) {
+			kis.close();
+			IOUtils.closeQuietly(iStream);
+			iStream = null;
+		}
 		if (zf != null) {
 			try {
 				zf.close();
