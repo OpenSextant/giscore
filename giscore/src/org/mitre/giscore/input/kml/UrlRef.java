@@ -289,11 +289,11 @@ public class UrlRef {
     }
 
     /**
-     * Convert internal "URI" form to portable URL form. For example
-     * <code>kmzhttp://server/test.kmz?file=kml/include.kml</code>
+     * Normalize and convert internal "URI" form to portable URL form.
+	 * For example <code>kmzhttp://server/test.kmz?file=kml/include.kml</code>
 	 * is converted into <code>http://server/test.kmz/kml/include.kml</code>.
-	 * 
-     * @return portable human-readable URL as formated String
+	 *
+     * @return portable human-readable URL as formatted String
      */
     public String toString() {
         String s = uri.toString();        
@@ -301,8 +301,13 @@ public class UrlRef {
         // kmz prefix is for internal use only
         if (s.startsWith("kmz")) {
             s = s.substring(3);
-            int ind = s.indexOf("?file=");
-            if (ind != -1) s = s.substring(0, ind) + "/" + s.substring(ind + 6);
+			// at end with either have ?file= or &file=
+			int ind = s.lastIndexOf("file=");
+            if (ind > 0) {
+				char ch = s.charAt(--ind);
+				if (ch == '?' || ch == '&')
+					s = s.substring(0, ind) + "/" + s.substring(ind + 6);
+			}
         }
         return s;
     }
