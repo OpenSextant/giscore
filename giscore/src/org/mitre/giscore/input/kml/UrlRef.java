@@ -37,9 +37,11 @@ import org.apache.commons.io.IOUtils;
  * parent KMZ file and its relative file reference. Handles getting an inputStream
  * to KML linked resources whether its a fully qualified URL or a entry in a KMZ file.
  *  <p/>
- * A UrlRef is created for each linked resource (e.g. NetworkLink, GroundOverlay,
+ * If <code>KmlReader</code> is used to read a KMZ resource then href values for
+ * relative URLs will be rewritten such that the links can be fetched later using
+ * UrlRef.  A UrlRef is created for each linked resource (e.g. NetworkLink, GroundOverlay,
  * ScreenOverlay, IconStyle, etc.) during reading and an internal URI is used to reference
- * the resource. If the parent file/URL is a KMZ file and link is a relative URL
+ * the resource.  If the parent file/URL is a KMZ file and link is a relative URL
  * then the association is preserved otherwise the URL is treated normally.
  *  <p/>
  * For example:
