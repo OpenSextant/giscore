@@ -34,11 +34,13 @@ import org.apache.commons.io.IOUtils;
 /**
  * UrlRef manages the encoding/decoding of internally created
  * KML/KMZ URLs to preserve the association between the
- * parent KMZ file and its relative file reference.
+ * parent KMZ file and its relative file reference. Handles getting an inputStream
+ * to KML linked resources whether its a fully qualified URL or a entry in a KMZ file.
  *  <p/>
- * A UrlRef is created for each linked resource (e.g. NetworkLink or GroundOverlay) during
- * reading. If the parent file/URL is a KMZ file and link is a relative URL then the
- * association is preserved otherwise the URL is treated normally.
+ * A UrlRef is created for each linked resource (e.g. NetworkLink, GroundOverlay,
+ * ScreenOverlay, IconStyle, etc.) during reading and an internal URI is used to reference
+ * the resource. If the parent file/URL is a KMZ file and link is a relative URL
+ * then the association is preserved otherwise the URL is treated normally.
  *  <p/>
  * For example:
  *  Given the URI: <code>kmzhttp://server/test.kmz?file=kml/include.kml</code>
@@ -106,10 +108,14 @@ public class UrlRef {
 
     /**
      * Wrap URI with URLRef and decode URI if its an
-     * internal kmz reference denoted with a "kmz" prefix to the URI.
+     * internal kmz reference denoted with a "kmz" prefix to the URI
+	 * (e.g. kmzfile:/C:/projects/giscore/data/kml/kmz/dir/content.kmz?file=kml/hi.kml). 
+	 * Non-internal kmz URIs will be treated as normal URLs.
      *
      * @param uri
-     * @throws MalformedURLException
+     * @throws  MalformedURLException
+     *          If a protocol handler for the URL could not be found,
+     *          or if some other error occurred while constructing the URL
      */
     public UrlRef(URI uri) throws MalformedURLException {
         this.uri = uri;
@@ -250,19 +256,29 @@ public class UrlRef {
         return new BufferedInputStream(conn.getInputStream());
     }
 
-    public URI getURI() {
+	/**
+	 * @return the internal URI of the UrlRef
+	 */
+	public URI getURI() {
         return uri;
     }
 
-    public URL getURL() {
+	/**
+	 * Returns original external URL. If "normal" URL then
+	 * URL will be returned same as the URI. If internal "kmz"
+	 * URI (e.g. kmzhttp://server/test.kmz?file=kml/include.kml)
+	 * then URL returned is <code>http://server/test.kmz</code>.  
+	 * @return original external URL
+	 */
+	public URL getURL() {
         return url;
     }
 
 	/**
 	 * Gets the relative path to the KMZ resource if UrlRef represents
 	 * a linked reference (networked linked KML, image overlay, icon, model,
-	 * etc.) in a KMZ file. For example this would be how the Link href was
-	 * defined in a NetworkLink or Icon in a GroundOverlay.
+	 * etc.) in a KMZ file.  For example this would be how the Link href was
+	 * explicitly defined in a NetworkLink, IconStyle, or GroundOverlay.
 	 *
 	 * @return relative path to the KMZ resource otherwise null
 	 */
