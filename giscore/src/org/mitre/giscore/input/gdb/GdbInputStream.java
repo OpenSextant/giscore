@@ -252,8 +252,7 @@ public class GdbInputStream extends GISInputStreamBase {
 		for (String fieldname : currentSchema.getKeys()) {
 			SimpleField field = currentSchema.get(fieldname);
 			// Geometry handled above
-			if (field.getType().equals(Type.GEOMETRY)) continue; 
-			if (field != null) {
+			if (field != null && !field.getType().equals(Type.GEOMETRY)) {
 				Object javaobject = ifeature.getValue(field.getIndex());
 				if (javaobject != null) {
 					feature.putData(field, javaobject);
