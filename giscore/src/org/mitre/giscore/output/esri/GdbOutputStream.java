@@ -648,7 +648,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * @throws UnknownHostException
 	 */
 	private IFeatureClass addSchema(FeatureKey key)
-			throws UnknownHostException, IOException {
+			throws IOException {
 		if (key.getGeoclass() == null) {
 			return null; // Probably an overlay feature, skip
 		}
@@ -661,8 +661,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		IUID clsid = null;
 		IUID extclsid = null;
 		int featureType = esriFeatureType.esriFTSimple;
-		String shapeFieldName = shape != null ? shape.getName() : shape
-				.getName();
+		String shapeFieldName = shape != null ? shape.getName() : null;
 		String configKeyword = null;
 		Set<String> fieldnames = new HashSet<String>();
 
