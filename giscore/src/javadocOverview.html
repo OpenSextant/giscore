@@ -16,21 +16,24 @@ The <a
  href="http://developer.mitre.org/projects/giscore" target="_blank"><span
  style="font-weight: bold;">giscore</span></a> package provides the capability to perform streaming
  input and output of data from GIS representation file formats, such as ESRI Shapefiles or geo-databases (GDB),
- and Google Earth KML.  <em>giscore</em> is a standalone Java library that uses StAX (STreaming Api for Xml processing)
+ and Google Earth KML.  <em>giscore</em> is a standalone Java library that uses StAX (STreaming Api for XML processing)
  to process XML an element at a time rather than read entire document into memory in a DOM-like structure.
 The geometric classes include points, lines, rings, polygons and provide all the validation
 needed to enforce the integrity of a valid geometric representation.
 <P/>
-A KmlReader class transparently handles KML and compressed KMZ files by file or URL along with fetching all NetworkLinks.
+A <em>KmlReader</em> class transparently handles KML and compressed KMZ files by file or URL along with fetching all NetworkLinks.
 Likewise, a KmlWriter class handles creation of KML or KMZ files and optionally allowing adding other files
-as entries in the KMZ (ZIP) file. All versions of KML specifications are imported so don't need to restrict to the latest
-OGC KML 2.2 spec or the older 2.1 and 2.0 specifications which have some incompatibilities.
-Some deprecated and removed features from older KML specs are implemented to support importing of legacy KML data,
-but the export creates KML against the KML 2.2 so some deprecated/deleted features may not be preserved on output
-without some conversion. The API takes care of most dirty details.
+as entries in the KMZ (ZIP) file. All versions of KML specifications are imported so don't need to convert older
+2.0 and 2.1 KML documents into the latest OGC KML 2.2 spec. The API takes care of most dirty details.
 <P/>
-While some fine-grain customization may be lost in translation (e.g. KML regions, models,
-ballon styles, etc.), the basic geospatial and temporal data is preserved in a common representation.
+While some deprecated and removed features from older KML specs are implemented to support importing
+of legacy KML data, the export creates KML conforming to KML 2.2 so some deprecated/deleted features
+may not be preserved on output without some manual intervention. For example having the <em>parent</em> element
+or attribute in Schema element is correctly handled in import in that aliased elements are converted to
+Placemarks to be valid KML but the metadata is not auto-converted to <em>ExtendedData</em> fields.
+
+Some fine-grain customization may be lost in a few cases (e.g. KML regions, models,
+ballon styles, etc.), the core geospatial and temporal data is preserved in a common representation.
 The feature structure can be exported to these standard formats once the common representation 
 is created programmically or imported from an existing source.
 <P/>
