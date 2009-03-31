@@ -41,7 +41,8 @@ import org.mitre.giscore.output.StreamVisitorBase;
  * While this concept comes from KML, it definitely is present in Shapefiles
  * in the form of the header and type information from the dbf file.
  * <p>
- * A schema consists of 
+ * A Schema element contains one or more SimpleField elements. In the SimpleField,
+ * the Schema declares the type and name of the custom field. 
  * 
  * @author DRAND
  */

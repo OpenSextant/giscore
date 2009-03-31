@@ -29,9 +29,10 @@ import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 /**
- * A descriptor for a given schema field. A given field is described by its
- * type, name and display name. The display name dictates (for some formats) how
- * the field should be shown to the user.
+ * A descriptor for a given schema field.  A given field is described by its
+ * type, name and display name.  The display name dictates (for some formats) how
+ * the field should be shown to the user.  A SimpleField only exists in a Schema context.
+ * @see Schema 
  * 
  * @author DRAND
  */

@@ -29,13 +29,18 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.mitre.giscore.output.StreamVisitorBase;
 
 /**
- * Represents a style map. A style map goes from a 
- * 
+ * A <code>StyleMap></code> maps between two different Styles.
+ *
+ * Typically a <code>StyleMap</code> element is used to provide separate
+ * normal and highlighted styles for a placemark, so that the highlighted
+ * version appears when the user mouses over the icon in Google Earth client.
+ *
  * @author DRAND
  */
 public class StyleMap implements IGISObject {
+	
 	private String id;
-	private Map<String, String> mappings = new HashMap<String, String>();
+	private final Map<String, String> mappings = new HashMap<String, String>();
 	
 	/**
 	 * @return the id
