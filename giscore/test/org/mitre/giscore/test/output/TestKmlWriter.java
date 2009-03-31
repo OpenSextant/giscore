@@ -7,6 +7,7 @@ import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
+import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
@@ -22,6 +23,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.*;
 import java.util.zip.ZipFile;
 import java.text.SimpleDateFormat;
@@ -56,11 +59,11 @@ public class TestKmlWriter extends TestCase {
         System.out.println("Testing " + file);
         KmlReader reader = new KmlReader(file);
 		List<IGISObject> objs = reader.readAll();
+		normalizeUrls(objs);
 		List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
         List<URI> links = reader.getNetworkLinks();
         if (links.size() != 0)
             assertTrue(linkedFeatures.size() != 0);
-		//File temp = File.createTempFile("test", reader.isCompressed() ? ".kmz" : ".kml");
 		/*
 		String suff = file.getName();
 		int ind = suff.lastIndexOf('.');
@@ -126,6 +129,49 @@ public class TestKmlWriter extends TestCase {
 		} finally {
 			// delete temp file
 			if (temp != null && temp.exists()) temp.delete();
+		}
+	}
+
+	/**
+	 * @param href href URI to normalize 
+	 * @return Return normalized href, null if normal or failed to normalize
+	 */
+	private String fixHref(String href) {
+		if (href != null && href.startsWith("kmz")) {
+			try {
+				return new UrlRef(new URI(href)).toString();
+			} catch (MalformedURLException e) {
+				// ignore
+			} catch (URISyntaxException e) {
+				// ignore
+			}
+		}
+		return null;
+	}
+
+	private void normalizeUrls(List<IGISObject> objs) {
+		for (IGISObject o : objs) {
+			if (o instanceof NetworkLink) {
+				NetworkLink nl = (NetworkLink) o;
+				TaggedMap link = nl.getLink();
+				String href = fixHref(link != null ? link.get(IKml.HREF) : null);
+				// check for treated URLs and normalized them so they work outside
+				// this package (e.g. with Google Earth client).
+				if (href != null) link.put(IKml.HREF, href);
+			} else if (o instanceof Overlay) {
+				// handle GroundOverlay or ScreenOverlay href
+				Overlay ov = (Overlay) o;
+				TaggedMap icon = ov.getIcon();
+				String href = fixHref(icon != null ? icon.get(IKml.HREF) : null);
+				if (href != null) icon.put(IKml.HREF, href);
+			} else if (o instanceof Style) {
+				Style style = (Style) o;
+				if (style.hasIconStyle()) {
+					String href = fixHref(style.getIconUrl());
+					if (href != null)
+						style.setIconStyle(style.getIconColor(), style.getIconScale(), href);
+				}
+			}
 		}
 	}
 
@@ -366,3 +412,4 @@ public class TestKmlWriter extends TestCase {
 		}
 	}
 }
+
