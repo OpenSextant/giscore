@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Simplified stream that doesn't hold object references on input
@@ -50,12 +51,13 @@ public class SimpleObjectInputStream {
 	
 	private DataInputStream stream;
 	@SuppressWarnings("unchecked")
-	private Map<Integer, Class> classMap = new HashMap<Integer, Class>();
+	private final Map<Integer, Class> classMap = new HashMap<Integer, Class>();
 	
 	/**
 	 * Ctor
 	 * 
-	 * @param s
+	 * @param s InputStream, never null
+	 * @throws IllegalArgumentException if s is null  
 	 */
 	public SimpleObjectInputStream(InputStream s) {
 		if (s == null) {
@@ -66,11 +68,9 @@ public class SimpleObjectInputStream {
 
 	/**
 	 * Close the stream
-	 * 
-	 * @throws IOException
 	 */
-	public void close() throws IOException {
-		stream.close();
+	public void close() {
+		IOUtils.closeQuietly(stream);
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class SimpleObjectInputStream {
 	 * 
 	 * @return the next object, or <code>null</code> if the stream is empty
 	 * @throws ClassNotFoundException
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
@@ -112,7 +112,7 @@ public class SimpleObjectInputStream {
 	/**
 	 * Read a collection of objects from the stream
 	 * @return the collection of object, may be <code>null</code>
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 * @throws ClassNotFoundException
 	 * @throws InstantiationException
 	 * @throws IllegalAccessException
@@ -134,7 +134,7 @@ public class SimpleObjectInputStream {
 
 	/**
 	 * @return the next scalar object from the stream
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public Object readScalar() throws IOException {
 		int type = stream.readShort();
@@ -168,9 +168,8 @@ public class SimpleObjectInputStream {
 	/**
 	 * Read a string from the data stream
 	 * 
-	 * @param stream
 	 * @return
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public String readString() throws IOException {
 		int strlen = stream.readInt();
@@ -185,7 +184,7 @@ public class SimpleObjectInputStream {
 
 	/**
 	 * @return the next long value
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public long readLong() throws IOException {
 		return stream.readLong();
@@ -193,7 +192,7 @@ public class SimpleObjectInputStream {
 
 	/**
 	 * @return the next int value
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public int readInt() throws IOException {
 		return stream.readInt();
@@ -201,7 +200,7 @@ public class SimpleObjectInputStream {
 
 	/**
 	 * @return the next boolean value
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public boolean readBoolean() throws IOException {
 		return stream.readBoolean();
@@ -209,7 +208,7 @@ public class SimpleObjectInputStream {
 
 	/**
 	 * @return the next double value
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public double readDouble() throws IOException {
 		return stream.readDouble();
@@ -217,7 +216,7 @@ public class SimpleObjectInputStream {
 
 	/**
 	 * @return the next short value
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public short readShort() throws IOException {
 		return stream.readShort();
