@@ -59,13 +59,12 @@ public class TestGdbInputStream {
 	
 	@Test public void testFileGdbInput() throws Exception {
 		IGISInputStream gis = GISFactory.getInputStream(DocumentType.FileGDB, 
-				new File("data/gdb/test20090312163935.gdb"),
-				new TestAccept(new URI("urn:TESTCASES_20090312163935")));
+				new File("data/gdb/EH_20090331144528.gdb"),
+				new TestAccept(new URI("urn:EHFC_20090331144528")));
 		int schema_count = 0;
 		int total = 0;
 		IGISObject gisobject = null;
 		SimpleField lpath = null;
-		String lastpath = null;
 		while((gisobject = gis.read()) != null) {
 			total++;
 			if (gisobject instanceof Schema) {

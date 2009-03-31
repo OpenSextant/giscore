@@ -68,6 +68,12 @@ public class ESRIInitializer {
 		return true;
 	}
 	
+	private static int LicensesToTry[] = new int[] {
+		esriLicenseProductCode.esriLicenseProductCodeArcView,
+		esriLicenseProductCode.esriLicenseProductCodeArcEditor,
+		esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB
+	};
+	
 	/**
 	 * Private ctor
 	 */
@@ -86,14 +92,14 @@ public class ESRIInitializer {
 		try {
 			// Step 1: Initialize the Java Componet Object Model (COM) Interop.
 			EngineInitializer.initializeEngine();
-	
-			// Step 2: Initialize a valid license. 
-			try {
-				new AoInitialize()
-					.initialize(esriLicenseProductCode.esriLicenseProductCodeArcEditor);
-			} catch(AutomationException e) {
-				new AoInitialize()
-						.initialize(esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB);
+			for(int i = 0; i < LicensesToTry.length; i++) {
+				// Step 2: Initialize a valid license. 
+				try {
+					new AoInitialize().initialize(LicensesToTry[i]);
+					break; // Worked!
+				} catch(AutomationException e) {
+					// Ignore
+				}
 			}
 		} catch (Throwable t) {
 			logger.error("Problem initializing the ESRI interop system", t);
