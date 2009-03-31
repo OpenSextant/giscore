@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
  * @author Paul Silvey
  */
 public class MultiPoint extends Geometry implements Iterable<Point> {
+	
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiPoint.class);
 
@@ -158,8 +159,9 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
 		out.writeInt(pointList != null ? pointList.size() : 0);
-		for(Point p : pointList) {
-			out.writeObject(p);
-		}
+		if (pointList != null)
+			for(Point p : pointList) {
+				out.writeObject(p);
+			}
 	}
 }
