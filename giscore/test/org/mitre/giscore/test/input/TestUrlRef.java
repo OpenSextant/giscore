@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
+import java.net.URI;
 
 import org.apache.commons.io.IOUtils;
 import org.mitre.giscore.input.kml.UrlRef;
@@ -33,14 +34,29 @@ import org.mitre.giscore.input.kml.UrlRef;
  */
 public class TestUrlRef extends TestCase {
 
-    public void testSimpleURL() {
+	/**
+	 * Test UrlRef with normal non-KMZ URLs
+	 */
+	public void testSimpleURL() {
         try {
-            File file = new File("data/kml/Placemark/placemark.kml");
+			// uri=file:/C:/projects/giscore/data/kml/Placemark/placemark.kml
+			// url=file:/C:/projects/giscore/data/kml/Placemark/placemark.kml
+			File file = new File("data/kml/Placemark/placemark.kml");
             URL url = file.toURI().toURL();
             UrlRef ref = new UrlRef(url, null);
-            assertFalse(ref.isKmz());
+			URI uri = ref.getURI();
+
+			assertFalse(ref.isKmz());
             assertNull(ref.getKmzRelPath());
-            assertEquals(url, ref.getURL());
+			assertNotNull(uri);
+			assertEquals(url, ref.getURL());
+
+			// now construct UrlRef from URI to validate every field gets set correctly
+			UrlRef ref2 = new UrlRef(uri);
+			assertFalse(ref.isKmz());
+			assertEquals(url, ref2.getURL());
+			assertEquals(uri, ref2.getURI());
+			assertNull(ref2.getKmzRelPath());
 		} catch (MalformedURLException e) {
             fail("Failed to construct URL");
         } catch (URISyntaxException e) {
@@ -48,21 +64,35 @@ public class TestUrlRef extends TestCase {
         }
     }
 
+	/**
+	 * Test UrlRef with KMZ resources for links to entries inside the KMZ
+	 */
 	public void testKmzURL() {
 		InputStream is = null;
 		try {
 			File file = new File("data/kml/kmz/dir/content.kmz");
 			URL url = file.toURI().toURL();
 			UrlRef ref = new UrlRef(url, "kml/hi.kml");
+			URI uri = ref.getURI();
 			assertTrue(ref.isKmz());
 			assertEquals("kml/hi.kml", ref.getKmzRelPath());
+			// URL: file:/C:/projects/giscore/data/kml/kmz/dir/content.kmz
 			assertEquals(url, ref.getURL());
 
 			//System.out.println(ref);
 			// file:/C:/projects/transfusion/trunk/mediate/data/kml/kmz/dir/content.kmz/kml/hi.kml
 			assertTrue(ref.toString().endsWith("kml/kmz/dir/content.kmz/kml/hi.kml"));
-			// URI: kmzfile:/C:/projects/transfusion/trunk/mediate/data/kml/kmz/dir/content.kmz?file=kml/hi.kml
-			assertTrue(ref.getURI().toString().endsWith("kml/kmz/dir/content.kmz?file=kml/hi.kml"));
+			// URI: kmzfile:/C:/projects/giscore/data/kml/kmz/dir/content.kmz?file=kml/hi.kml
+			assertNotNull(uri);
+			assertTrue(uri.toString().startsWith("kmz"));
+			assertTrue(uri.toString().endsWith("kml/kmz/dir/content.kmz?file=kml/hi.kml"));
+
+			// now construct UrlRef from special URI to validate every field gets set correctly
+			UrlRef ref2 = new UrlRef(uri);
+			assertTrue(ref.isKmz());
+			assertEquals(url, ref2.getURL());
+			assertEquals(uri, ref2.getURI());
+			assertEquals(ref.getKmzRelPath(), ref2.getKmzRelPath());
 
 			is = ref.getInputStream();
 			StringWriter writer = new StringWriter();
