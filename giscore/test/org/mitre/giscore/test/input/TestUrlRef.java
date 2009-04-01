@@ -80,7 +80,7 @@ public class TestUrlRef extends TestCase {
 			assertEquals(url, ref.getURL());
 
 			//System.out.println(ref);
-			// file:/C:/projects/transfusion/trunk/mediate/data/kml/kmz/dir/content.kmz/kml/hi.kml
+			// file:/C:/projects/transfusion/trunk/mediate/data/kml/kmz/dir/content.kmz/kml/hi.kml			
 			assertTrue(ref.toString().endsWith("kml/kmz/dir/content.kmz/kml/hi.kml"));
 			// URI: kmzfile:/C:/projects/giscore/data/kml/kmz/dir/content.kmz?file=kml/hi.kml
 			assertNotNull(uri);
@@ -126,7 +126,8 @@ public class TestUrlRef extends TestCase {
             assertTrue(ref.isKmz());
             assertEquals("kml/other.kml", ref.getKmzRelPath());
             assertEquals("kmzhttp://localhost:8081/genxml.php?year=2008&file=kml/other.kml", ref.getURI().toString());
-            assertTrue(ref.toString().endsWith("file=kml/other.kml"));
+			System.out.println("ref=" + ref.toString());
+			assertTrue(ref.toString().endsWith("kml/other.kml"));
             assertEquals(url, ref.getURL());
         } catch (MalformedURLException e) {
             fail("Failed to construct URL");

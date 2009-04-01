@@ -290,8 +290,9 @@ public class UrlRef {
 
     /**
      * Normalize and convert internal "URI" form to portable URL form.
-	 * For example <code>kmzhttp://server/test.kmz?file=kml/include.kml</code>
-	 * is converted into <code>http://server/test.kmz/kml/include.kml</code>.
+	 * For example <code>kmzfile:/C:/giscore/data/kml/content.kmz?file=kml/hi.kml</code>
+	 * is converted into <code>file:/C:/giscore/data/kml/content.kmz/kml/hi.kml</code>.
+	 * Non-file URIs only strip the kmz prefix and keep file= parameter.
 	 *
      * @return portable human-readable URL as formatted String
      */
@@ -301,14 +302,17 @@ public class UrlRef {
         // kmz prefix is for internal use only
         if (s.startsWith("kmz")) {
             s = s.substring(3);
-			// at end with either have ?file= or &file=
-			int ind = s.lastIndexOf("file=");
-            if (ind > 0) {
-				char ch = s.charAt(--ind);
-				if (ch == '?' || ch == '&')
-					s = s.substring(0, ind) + "/" + s.substring(ind + 6);
+			// at end have either have ?file= or &file=
+			// rewrite if file: protocol
+			if ("kmzfile".equals(uri.getScheme())) {
+				int ind = s.lastIndexOf("file=");
+				if (ind > 0) {
+					char ch = s.charAt(--ind);
+					if (ch == '?' || ch == '&')
+						s = s.substring(0, ind) + "/" + s.substring(ind + 6);
+				}
 			}
-        }
+		}
         return s;
     }
 
