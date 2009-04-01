@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -163,7 +164,7 @@ public abstract class BaseStart implements IGISObject, IDataSerializable {
 			throw new IllegalArgumentException("key should never be null");
 		}
 		if (value == null) {
-			extendedData.remove(key);
+			extendedData.put(key, ObjectUtils.NULL);
 		} else {
 			extendedData.put(key, value);
 		}
