@@ -114,7 +114,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private static final Set<String> ms_containers = new HashSet<String>();
 	private static final Set<String> ms_attributes = new HashSet<String>();
 	private static final Set<String> ms_geometries = new HashSet<String>();
-	private HashMap<String, String> schemaAliases;
+	private Map<String, String> schemaAliases;
+	private Map<String, Schema> schemata = new HashMap<String, Schema>();
 
 	private static final List<DateFormat> ms_dateFormats = new ArrayList<DateFormat>();
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
@@ -388,8 +389,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					Attribute url = se
 							.getAttributeByName(new QName(SCHEMA_URL));
 					if (url != null) {
-						handleSchemaData(cs);
 						String uri = url.getValue();
+						handleSchemaData(uri, cs);
 						try {
 							cs.setSchema(new URI(uri));
 						} catch (URISyntaxException e) {
@@ -445,12 +446,17 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
+	 * @param uri a reference to a schema, if local then use that schema's
+	 * simple field objects instead of creating ones on the fly
 	 * @param cs Feature/Container for ExtendedData tag
 	 * @throws XMLStreamException
 	 */
-	private void handleSchemaData(BaseStart cs)
+	private void handleSchemaData(String uri, BaseStart cs)
 			throws XMLStreamException {
 		XMLEvent next;
+		if (uri.startsWith("#")) uri = uri.substring(1);
+		Schema schema = schemata.get(uri);
+		
 		while (true) {
 			next = stream.nextEvent();
 			if (next == null)
@@ -461,7 +467,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					Attribute name = se.getAttributeByName(new QName(NAME));
 					if (name != null) {
 						String value = stream.getElementText();
-						cs.putData(new SimpleField(name.getValue()), value);
+						SimpleField field = null;
+						if (schema != null) {
+							field = schema.get(name.getValue());
+						}
+						if (field == null) {
+							// Either we don't know the schema or it isn't local
+							field = new SimpleField(name.getValue());
+						}
+						cs.putData(field, value);
 					}
 				}
 			} else if (foundEndTag(next, SCHEMA_DATA)) {
@@ -1120,6 +1134,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		Attribute id = element.getAttributeByName(new QName(ID));
 		if (id != null) {
 			String uri = id.getValue();
+			// remember the schema for later references
+			schemata.put(uri, s);
 			try {
 				s.setId(new URI(uri));
 			} catch (URISyntaxException e) {

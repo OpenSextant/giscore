@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.io.FileInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Collection;
 
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
@@ -36,6 +37,8 @@ import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.DocumentStart;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.StyleMap;
 import org.mitre.giscore.input.IGISInputStream;
@@ -115,8 +118,21 @@ public class TestKmlInputStream {
 			IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
 
 			IGISObject firstN[] = new IGISObject[10];
+			Schema s = null;
+			Feature f = null;
 			for(int i = 0; i < firstN.length; i++) {
-				firstN[i] = kis.read();
+				IGISObject obj = kis.read();
+				if (s == null && obj instanceof Schema) {
+					s = (Schema) obj;
+				} else if (f == null && s != null && obj instanceof Feature) {
+					f = (Feature) obj;
+				}
+				firstN[i] = obj;
+			}
+			Collection<SimpleField> fields = f.getFields();
+			assertNotNull(fields);
+			for(SimpleField field : fields) {
+				assertEquals(field, s.get(field.getName()));
 			}
 			System.out.println(firstN);
 		} finally {
