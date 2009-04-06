@@ -16,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.ArrayList;
 import java.net.URI;
 import java.net.URL;
 import java.awt.image.BufferedImage;
@@ -146,7 +147,15 @@ public class TestKmlReader extends TestCase {
 	}
 
 	private void checkIconStyle(KmlReader reader) throws Exception {
-		List<IGISObject> features = reader.readAll();
+		List<IGISObject> features = new ArrayList<IGISObject>();
+		try {
+			IGISObject gisObj;
+			while ((gisObj = reader.read()) != null) {
+				features.add(gisObj);
+			}
+		} finally {
+			reader.close();
+		}
 		/*
 		for(Object o : features) {
 			System.out.println(" >" + o.getClass().getName());
