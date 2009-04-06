@@ -86,8 +86,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     private final List<IGISObject> waitingElements = new ArrayList<IGISObject>();
 	private static final DecimalFormat ms_float_fmt =
 		new DecimalFormat("##0.####");
-	private static final DecimalFormat ms_int_fmt =
-		new DecimalFormat("###,###");
 	private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss'Z'";	
 	private DateFormat dateFormatter;
     
@@ -308,10 +306,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				|| Type.UINT.equals(type) || Type.USHORT.equals(type)) {
 			if (data instanceof String) {
 				data = new Long((String) data);
-			} 
+			}
 			
 			if (data instanceof Number) {
-				return ms_int_fmt.format(((Number) data).longValue());
+				return String.valueOf(data); // ms_int_fmt.format(((Number) data).longValue());
 			} else {
 				throw new IllegalArgumentException("Data that cannot be coerced to int: " + data);
 			}
