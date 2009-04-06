@@ -351,8 +351,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 return true;
 			} else if (localname.equals("snippet")) {
 				handleSnippet(feature, ee); // snippet (deprecated in 2.2)
-				// Note: schema shows Snippet is deprecated but documentation and examples
-				// seem to indicate snippet is deprecated...
+				// Note: schema shows Snippet is deprecated but Google documentation and examples
+				// suggestion snippet (lower case 's') is deprecated instead...
 				return true;
 			}
 		} catch (XMLStreamException e) {
@@ -1129,6 +1129,13 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 		// get parent attribute for old-style KML 2.0/2.1 which aliases KML elements
 		// (e.g. Placemarks) with user-defined ones.
+/*
+        <Schema name="S_FOBS_USA_ISAF_NATO_DSSSSSSDDDD" parent="Placemark">
+            <SimpleField name="NAME" type="wstring"/>
+            <SimpleField name="DATE" type="wstring"/>
+            <SimpleField name="MGRS" type="wstring"/>
+        </Schema>
+*/
 		attr = element.getAttributeByName(new QName(PARENT));
 		String parent = getNonEmptyAttrValue(attr);
 		Attribute id = element.getAttributeByName(new QName(ID));
@@ -1174,6 +1181,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					}
 				} else if (foundStartTag(se, PARENT)) {
 					 // parent should only appear as Schema child element in KML 2.0 or 2.1
+/*
+        <Schema>
+            <name>S_FOBS_USA_ISAF_NATO_DSSSSSSDDDD</name>
+            <parent>Placemark</parent>
+            <SimpleField name="NAME" type="string"/>
+            <SimpleField name="DATE" type="string"/>
+            <SimpleField name="MGRS" type="string"/>
+        </Schema>
+*/
 					String parentVal = stream.getElementText();
 					if (StringUtils.isNotEmpty(parentVal))
 						parent = parentVal.trim();
