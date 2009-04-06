@@ -20,10 +20,7 @@ package org.mitre.giscore.events;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -53,7 +50,7 @@ public class Schema implements IGISObject {
 	private String name;
 	private URI id;
 	private transient int nid; 
-	private final Map<String, SimpleField> fields = new HashMap<String, SimpleField>();
+	private final Map<String, SimpleField> fields = new LinkedHashMap<String, SimpleField>();
     private String parent;
 
     /**
@@ -84,6 +81,7 @@ public class Schema implements IGISObject {
 	public String getName() {
 		return name;
 	}
+
 	/**
 	 * @param name the name to set
 	 */
@@ -94,12 +92,14 @@ public class Schema implements IGISObject {
 		}
 		this.name = name;
 	}
+
 	/**
 	 * @return the id
 	 */
 	public URI getId() {
 		return id;
 	}
+
 	/**
 	 * @param id the id to set
 	 */
