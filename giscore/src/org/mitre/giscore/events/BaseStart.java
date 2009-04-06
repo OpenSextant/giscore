@@ -27,10 +27,7 @@ import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -52,13 +49,14 @@ import com.sun.org.apache.xml.internal.utils.UnImplNode;
  * 
  */
 public abstract class BaseStart implements IGISObject, IDataSerializable {
+	
 	protected String name;
 	protected String description;
 	protected URI schema;
 	protected Date startTime;
 	protected Date endTime;
 	protected String styleUrl;
-	protected final Map<SimpleField, Object> extendedData = new HashMap<SimpleField, Object>();
+	protected final Map<SimpleField, Object> extendedData = new LinkedHashMap<SimpleField, Object>();
 
 	/**
 	 * @return the name
