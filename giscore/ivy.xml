@@ -23,8 +23,6 @@
 		<dependency org="org.slf4j" name="slf4j-log4j12" rev="1.5.6" conf="test->default">
 			<exclude org="log4j" module="log4j" />
 		</dependency>
-		<!--dependency org="javax.xml.stream" name="com.springsource.javax.xml.stream"
-			rev="1.0.1" /-->
 		<dependency org="stax" name="stax-api-osgi" rev="1.0.1" />
 		<dependency org="org.codehaus.woodstox" name="com.springsource.com.ctc.wstx" 
 			rev="3.2.7" conf="runtime->default">
