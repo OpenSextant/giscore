@@ -171,11 +171,12 @@ public class TestKmlSupport extends TestGISBase {
         File temp = null;
         FileInputStream fs = new FileInputStream(testcase);
         List<IGISObject> elements = new ArrayList<IGISObject>();
-        //List<IGISObject> elements2 = new ArrayList<IGISObject>();
         try {
             IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
-		    temp = createTemp("test", ".kml");
-            OutputStream fos = new FileOutputStream(temp);
+            temp = new File("testOutput/test.kml");
+		    //temp = createTemp(testcase.getName(), ".kml");
+			//temp = File.createTempFile(testcase.getName(), ".kml", new File("testOutput/kml"));
+			OutputStream fos = new FileOutputStream(temp);
             IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
             IGISObject current;
             while ((current = is.read()) != null) {
@@ -227,7 +228,7 @@ public class TestKmlSupport extends TestGISBase {
             throw e;
         } finally {
             IOUtils.closeQuietly(fs);
-            if (temp != null && temp.exists()) temp.delete();
+			if (temp != null && temp.exists()) temp.delete();
         }
 	}
 
@@ -247,7 +248,7 @@ public class TestKmlSupport extends TestGISBase {
             if (!sf.approximatelyEquals(tf)) {
                 System.out.format(" *Failed approximatelyEquals\n\tsrc=%s\n\ttest=%s%n",
                   sf.getClass().getName(), tf.getClass().getName());
-                /*
+				/*
                 System.out.println(" source=" + sf);
                 System.out.println("--");
                 System.out.println(" test=" + tf);
