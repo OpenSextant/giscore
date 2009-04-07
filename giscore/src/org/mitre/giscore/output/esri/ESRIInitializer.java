@@ -25,6 +25,7 @@ import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.AoInitialize;
 import com.esri.arcgis.system.EngineInitializer;
 import com.esri.arcgis.system.esriLicenseProductCode;
+import com.esri.arcgis.system.esriLicenseStatus;
 
 /**
  * Encapsulate initializing the ESRI environment
@@ -69,9 +70,9 @@ public class ESRIInitializer {
 	}
 	
 	private static int LicensesToTry[] = new int[] {
-		esriLicenseProductCode.esriLicenseProductCodeArcView,
 		esriLicenseProductCode.esriLicenseProductCodeArcEditor,
-		esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB
+		esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB,
+		esriLicenseProductCode.esriLicenseProductCodeArcView
 	};
 	
 	/**
@@ -95,8 +96,10 @@ public class ESRIInitializer {
 			for(int i = 0; i < LicensesToTry.length; i++) {
 				// Step 2: Initialize a valid license. 
 				try {
-					new AoInitialize().initialize(LicensesToTry[i]);
-					break; // Worked!
+					int code = new AoInitialize().initialize(LicensesToTry[i]);
+					if (code == esriLicenseStatus.esriLicenseAvailable ||
+							code == esriLicenseStatus.esriLicenseAlreadyInitialized)
+						break; // Worked!
 				} catch(AutomationException e) {
 					// Ignore
 				}

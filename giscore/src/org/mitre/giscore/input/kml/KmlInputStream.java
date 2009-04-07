@@ -660,7 +660,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if ("dateTime".equals(type)) {
 				// dateTime (YYYY-MM-DDThh:mm:ssZ)
 				// dateTime (YYYY-MM-DDThh:mm:sszzzzzz)
-				// Second form gives the local time and then the ± conversion to UTC.
+				// Second form gives the local time and then the +/- conversion to UTC.
 				// Set timezone to UTC if other than dateTime formats with explicit timezones
 				// e.g. 2009-03-14T18:10:46+03:00, 2009-03-14T18:10:46-05:00
 				int ind = datestr.lastIndexOf('T') + 1; // index should never be -1 if type is dateTime

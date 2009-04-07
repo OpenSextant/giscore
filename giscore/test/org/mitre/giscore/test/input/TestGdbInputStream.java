@@ -56,6 +56,24 @@ public class TestGdbInputStream {
 		
 	}
 	
+	class TestInThread implements Runnable {
+
+		/* (non-Javadoc)
+		 * @see java.lang.Runnable#run()
+		 */
+		@Override
+		public void run() {
+			try {
+				System.err.println("Begin thread " + Thread.currentThread());
+				testFileGdbInput();
+			} catch (Exception e) {
+				fail("Thread failed: " + e.getLocalizedMessage());
+			} finally {
+				System.err.println("End thread " + Thread.currentThread());
+			}
+		}
+	}
+	
 	
 	@Test public void testFileGdbInput() throws Exception {
 		IGISInputStream gis = GISFactory.getInputStream(DocumentType.FileGDB, 
@@ -83,6 +101,15 @@ public class TestGdbInputStream {
 			}
 		}
 		assertEquals(1, schema_count);
+	}
+	
+	@Test public void testMultiThread() throws Exception {
+		Thread t1 = new Thread(new TestInThread());
+		Thread t2 = new Thread(new TestInThread());
+		t1.start();
+		t2.start();
+		t1.join();
+		t2.join();
 	}
 	
 //	/** 
