@@ -173,9 +173,7 @@ public class TestKmlSupport extends TestGISBase {
         List<IGISObject> elements = new ArrayList<IGISObject>();
         try {
             IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
-            temp = new File("testOutput/test.kml");
-		    //temp = createTemp(testcase.getName(), ".kml");
-			//temp = File.createTempFile(testcase.getName(), ".kml", new File("testOutput/kml"));
+		    temp = createTemp(testcase.getName(), ".kml");
 			OutputStream fos = new FileOutputStream(temp);
             IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
             IGISObject current;
