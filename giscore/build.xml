@@ -4,7 +4,7 @@
 
 	<!-- Update before publishing. ivy:buildnumber should be usable here but
 		was failing for some reason. FIXME -->
-	<property name="version" value="0.3.22"/>
+	<property name="version" value="0.3.23"/>
 
 	<property name="proxy.host" value="gatekeeper.mitre.org" />
 	<property name="proxy.port" value="80" />
@@ -155,12 +155,14 @@
 			<formatter type="plain" />
 
 			<batchtest fork="yes" todir="${testoutput}">
-				<fileset dir="${test}"/>
+				<fileset dir="${test}">
+					<exclude name="**/TestGISBase.java"/>
+				</fileset>
 			</batchtest>
 		</junit>
 	</target>
 
-	<target name="publish" depends="jar, javadoc, sourcejar">		
+	<target name="pom" depends="jar">
 		<ivy:buildnumber organisation="org.mitre.itf" module="giscore" />
 		<echo>Publishing revision ${ivy.new.revision}</echo>
 		<ivy:resolve revision="${ivy.new.revision}" file="${basedir}/ivy.xml" 
@@ -172,7 +174,10 @@
 			<mapping conf="compile" scope="compile" />
 			<mapping conf="runtime" scope="runtime" />
 			<mapping conf="test" scope="test" />
-		</ivy:makepom>		
+		</ivy:makepom>
+	</target>
+
+	<target name="publish" depends="pom, javadoc, sourcejar">		
 		<ivy:publish resolver="ssh" revision="${ivy.new.revision}" update="true" >
 			<artifacts pattern="rel/[artifact].[ext]" />
 			<artifacts pattern="rel/jars/[artifact].[ext]" />
