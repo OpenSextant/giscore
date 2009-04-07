@@ -4,7 +4,7 @@
 
 	<!-- Update before publishing. ivy:buildnumber should be usable here but
 		was failing for some reason. FIXME -->
-	<property name="version" value="0.3.25"/>
+	<property name="version" value="0.3.26"/>
 
 	<property name="proxy.host" value="gatekeeper.mitre.org" />
 	<property name="proxy.port" value="80" />
