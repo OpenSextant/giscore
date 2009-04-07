@@ -504,7 +504,8 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 					} else if (datum instanceof Date) {
 						dtm = (Date) datum;
 					}
-					handleCharacters(ISO_DATE_FMT.format(dtm));
+                    if (dtm != null)
+					    handleCharacters(ISO_DATE_FMT.format(dtm));
 				} catch (ParseException e) {
 					throw new RuntimeException(e);
 				}
