@@ -84,8 +84,8 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
 public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     private final List<IGISObject> waitingElements = new ArrayList<IGISObject>();
-	private static final DecimalFormat ms_float_fmt =
-		new DecimalFormat("##0.####");
+	//private static final DecimalFormat ms_float_fmt =
+		//new DecimalFormat("##0.####");
 	private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss'Z'";	
 	private DateFormat dateFormatter;
     
@@ -273,6 +273,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	 * @param data the data, may be a number of types, but must be coercible to
 	 * the given type 
 	 * @return a formatted value
+	 * @throws IllegalArgumentException  if values cannot be formatted
+	 *  			using specified data type.
 	 */
 	private String formatValue(Type type, Object data) {
 		if (data == null || ObjectUtils.NULL.equals(data)) {
@@ -294,22 +296,25 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			}
 		} else if (Type.DOUBLE.equals(type) || Type.FLOAT.equals(type)) {
 			if (data instanceof String) {
-				data = new Double((String) data);
-			} 
+				//data = new Double((String) data);
+				return (String) data; 
+			}
 			
 			if (data instanceof Number) {
-				return ms_float_fmt.format(((Number) data).doubleValue());
+				return String.valueOf(data);
+				//return ms_float_fmt.format(((Number) data).doubleValue());
 			} else {
 				throw new IllegalArgumentException("Data that cannot be coerced to float: " + data);
 			}
 		} else if (Type.INT.equals(type) || Type.SHORT.equals(type) 
 				|| Type.UINT.equals(type) || Type.USHORT.equals(type)) {
 			if (data instanceof String) {
-				data = new Long((String) data);
+				//data = new Long((String) data);
+				return (String) data;
 			}
 			
 			if (data instanceof Number) {
-				return String.valueOf(data); // ms_int_fmt.format(((Number) data).longValue());
+				return String.valueOf(data);
 			} else {
 				throw new IllegalArgumentException("Data that cannot be coerced to int: " + data);
 			}
