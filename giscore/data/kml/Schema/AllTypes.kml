@@ -27,7 +27,7 @@
                     <SimpleData name="UShort">32767</SimpleData>
                     <SimpleData name="String">This is a string</SimpleData>
                     <SimpleData name="Float">3.402823E+38</SimpleData>
-                    <SimpleData name="Double">1.79769313486232E+308</SimpleData>
+                    <SimpleData name="Double">1.66931348623157E+308</SimpleData>
                     <SimpleData name="Bool">true</SimpleData>
                     <SimpleData name="Undefined">10</SimpleData>
                 </SchemaData>
