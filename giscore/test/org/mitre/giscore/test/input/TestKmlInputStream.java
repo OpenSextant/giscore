@@ -106,7 +106,7 @@ public class TestKmlInputStream {
 			for(int i = 0; i < firstN.length; i++) {
 				firstN[i] = kis.read();
 			}
-			System.out.println(firstN);
+			//System.out.println(firstN);
 		} finally {
 		    IOUtils.closeQuietly(stream);
 		}
@@ -134,7 +134,7 @@ public class TestKmlInputStream {
 			for(SimpleField field : fields) {
 				assertEquals(field, s.get(field.getName()));
 			}
-			System.out.println(firstN);
+			//System.out.println(firstN);
 		} finally {
 		    IOUtils.closeQuietly(stream);
 		}
