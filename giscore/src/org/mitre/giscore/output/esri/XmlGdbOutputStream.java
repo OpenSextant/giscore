@@ -484,36 +484,41 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 */
 	private void writeValue(SimpleField field, Object datum)
 			throws XMLStreamException {
-		if (datum == null || ObjectUtils.NULL.equals(datum)) {
-			writer.writeEmptyElement(VALUE);
-		} else {
-			writer.writeStartElement(VALUE);
-			if (field.getType().getXmlSchemaType() != null) {
-				writer.writeAttribute(XSI_NS, TYPE_ATTR, 
-						field.getType().getXmlSchemaType());
-			}
-			SimpleField.Type type = field.getType();
-			if (SimpleField.Type.GEOMETRY.equals(type)) {
-				Geometry geo = (Geometry) datum;
-				geo.accept(this);
-			} else if (SimpleField.Type.DATE.equals(type)) {
-				Date dtm = null;
-				try {
-					if (datum instanceof String) {
-						dtm = ISO_DATE_FMT.parse((String) datum);
-					} else if (datum instanceof Date) {
-						dtm = (Date) datum;
-					}
-                    if (dtm != null)
-					    handleCharacters(ISO_DATE_FMT.format(dtm));
-				} catch (ParseException e) {
-					throw new RuntimeException(e);
-				}
-			} else {
-				handleCharacters(datum.toString());
-			}
-			writer.writeEndElement();
+		writer.writeStartElement(VALUE);
+		if (field.getType().getXmlSchemaType() != null) {
+			writer.writeAttribute(XSI_NS, TYPE_ATTR, 
+					field.getType().getXmlSchemaType());
 		}
+		SimpleField.Type type = field.getType();
+		if (datum == null || ObjectUtils.NULL.equals(datum)) {
+			// Can't put out nothing for the value - ESRI really don't seem to
+			// have that as a concept
+			if (type.getGdbEmptyValue() != null) {
+				datum = type.getGdbEmptyValue();
+			} else {
+				throw new RuntimeException("Missing required value for type " + type.name());
+			}
+		}
+		if (SimpleField.Type.GEOMETRY.equals(type)) {
+			Geometry geo = (Geometry) datum;
+			geo.accept(this);
+		} else if (SimpleField.Type.DATE.equals(type)) {
+			Date dtm = null;
+			try {
+				if (datum instanceof String) {
+					dtm = ISO_DATE_FMT.parse((String) datum);
+				} else if (datum instanceof Date) {
+					dtm = (Date) datum;
+				}
+                if (dtm != null)
+				    handleCharacters(ISO_DATE_FMT.format(dtm));
+			} catch (ParseException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			handleCharacters(datum.toString());
+		}
+		writer.writeEndElement();
 	}
 	
 	/* (non-Javadoc)

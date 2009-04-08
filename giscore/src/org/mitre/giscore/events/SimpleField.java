@@ -19,6 +19,7 @@
 package org.mitre.giscore.events;
 
 import java.io.IOException;
+import java.util.Date;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -40,28 +41,30 @@ public class SimpleField implements IDataSerializable {
 	private static final long serialVersionUID = 1L;
 
 	public static enum Type {
-		STRING("esriFieldTypeString", "xs:string", 255, 0), 
-		INT("esriFieldTypeInteger", "xs:int", 4, 0), 
-		UINT("esriFieldTypeInteger", "xs:int", 4, 0), 
-		SHORT("esriFieldTypeSmallInteger", "xs:int", 2, 0), 
-		USHORT("esriFieldTypeSmallInteger", "xs:int", 2, 0), 
-		FLOAT("esriFieldTypeSingle", "xs:float", 4, 0), 
-		DOUBLE("esriFieldTypeDouble", "xs:double", 8, 0), 
-		GEOMETRY("esriFieldTypeGeometry", null, 0, 0),
-		DATE("esriFieldTypeDate", "xs:dateTime", 4, 0),
-		OID("esriFieldTypeOID", "xs:int", 4, 0),
-		BOOL(null, "xs:boolean", 1, 0);
+		STRING("esriFieldTypeString", "xs:string", 255, 0, ""), 
+		INT("esriFieldTypeInteger", "xs:int", 4, 0, 0), 
+		UINT("esriFieldTypeInteger", "xs:int", 4, 0, 0), 
+		SHORT("esriFieldTypeSmallInteger", "xs:int", 2, 0, 0), 
+		USHORT("esriFieldTypeSmallInteger", "xs:int", 2, 0, 0), 
+		FLOAT("esriFieldTypeSingle", "xs:float", 4, 0, 0.0), 
+		DOUBLE("esriFieldTypeDouble", "xs:double", 8, 0, 0.0), 
+		GEOMETRY("esriFieldTypeGeometry", null, 0, 0, null),
+		DATE("esriFieldTypeDate", "xs:dateTime", 4, 0, new Date(0)),
+		OID("esriFieldTypeOID", "xs:int", 4, 0, null),
+		BOOL(null, "xs:boolean", 1, 0, 0);
 
-		private Type(String gdbxml, String xmlschematype, int def_len, int def_pre) {
+		private Type(String gdbxml, String xmlschematype, int def_len, int def_pre, Object gdbEmptyValue) {
 			gdbXmlType = gdbxml;
 			xmlSchemaType = xmlschematype;
 			default_length = def_len;
 			default_precision = def_pre;
+			this.gdbEmptyValue = gdbEmptyValue;
 		}
 		
 		String gdbXmlType, xmlSchemaType;
 		int default_length;
 		int default_precision;
+		Object gdbEmptyValue;
 
 		/**
 		 * @return the default_length
@@ -104,6 +107,15 @@ public class SimpleField implements IDataSerializable {
 		public boolean isKmlCompatible() {
 			return !(isGeometry() || DATE.equals(this));
 		}
+
+		/**
+		 * @return the value to use in the Xml Workspace document when there's
+		 * no actual value, will be <code>null</code> if the type cannot support
+		 * a missing value.
+		 */
+		public Object getGdbEmptyValue() {
+			return gdbEmptyValue;
+		}
 	
 	}
 	
@@ -134,6 +146,19 @@ public class SimpleField implements IDataSerializable {
 		this.name = name;
 		displayName = name;
 		type = Type.STRING;
+	}
+	
+	/**
+	 * Ctor
+	 * @param name 
+	 * @param type
+	 */
+	public SimpleField(String name, Type type) {
+		this(name);
+		if (type == null) {
+			throw new IllegalArgumentException("type should never be null");
+		}
+		this.type = type;
 	}
 
 	/**

@@ -18,17 +18,14 @@
  ***************************************************************************************/
 package org.mitre.giscore.test;
 
-import java.awt.image.MultiPixelPackedSampleModel;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -109,10 +106,13 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		nameid.setType(SimpleField.Type.INT);
 		SimpleField dtm = new SimpleField("dtm");
 		dtm.setType(SimpleField.Type.DATE);
+		SimpleField extra = new SimpleField("extra");
+		extra.setType(SimpleField.Type.INT);
 		
 		Schema s = new Schema();
 		s.put(nameid);
 		s.put(dtm);
+		s.put(extra);
 		os.write(s);
 		
 		Feature f = new Feature();
@@ -127,6 +127,7 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		f.setGeometry(mp);
 		f.putData(nameid, 5);
 		f.putData(dtm, new Date());
+		f.putData(extra, 123);
 		os.write(f);
 		
 		f = new Feature();
@@ -141,6 +142,7 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		f.setGeometry(mp);
 		f.putData(nameid, 2);
 		f.putData(dtm, new Date());
+		f.putData(extra, null);
 		os.write(f);
 		
 		os.close();
