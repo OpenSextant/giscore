@@ -2,10 +2,6 @@
 
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="giscore" default="resolve">
 
-	<!-- Update before publishing. ivy:buildnumber should be usable here but
-		was failing for some reason. FIXME -->
-	<property name="version" value="0.3.28"/>
-
 	<property name="proxy.host" value="gatekeeper.mitre.org" />
 	<property name="proxy.port" value="80" />
 	<property name="proxy.user" value="" />
@@ -123,6 +119,9 @@
 
 	<target name="jar" depends="compile">
 		<ivy:cachepath pathid="kf.path" organisation="org.knopflerfish" module="knopflerfish-ant" revision="2.1.0-mitre-8" conf="default" inline="true"/>
+
+		<ivy:buildnumber organisation="org.mitre.itf" module="giscore" />
+
 		<taskdef resource="org/knopflerfish/ant/antlib.xml" classpathref="kf.path"/>
 		<delete file="${rel}/jars/giscore.jar"/>
 		<bundle file="${rel}/jars/giscore.jar"
@@ -130,7 +129,7 @@
 		        bundlename="ITF Giscore"
 		        bundledescription="GIS data interchange core library"
 		        bundlesymbolicname="org.mitre.giscore"
-		        bundleVersion="${version}"
+		        bundleVersion="${ivy.new.revision}"
 			activator="none"
 			standardJVMPackages="1.5"
 			bundleVendor="The MITRE Corp."
@@ -140,7 +139,7 @@
 			</importClasspath>
 
 			<fileset dir="${build.classes}" />
-			<autoexportpackage prefix="org.mitre.giscore" version="${version}"/>
+			<autoexportpackage prefix="org.mitre.giscore" version="${ivy.new.revision}"/>
 		</bundle>
 	</target>
 
@@ -163,8 +162,6 @@
 	</target>
 
 	<target name="pom" depends="jar">
-		<ivy:buildnumber organisation="org.mitre.itf" module="giscore" />
-		<echo>Publishing revision ${ivy.new.revision}</echo>
 		<ivy:resolve revision="${ivy.new.revision}" file="${basedir}/ivy.xml" 
 			resolveid="ivyres" />
 		<ivy:deliver revision="${ivy.new.revision}" resolveid="ivyres" 
@@ -177,7 +174,17 @@
 		</ivy:makepom>
 	</target>
 
+	<target name="publish-local" depends="pom, javadoc, sourcejar" description="Copy the Jar and Ivy file to the local cache.">
+		<!-- A better default? <ivy:deliver deliverpattern="${dist}/[type]s/[artifact]-[revision](-[classifier]).[ext]"/> -->
+		<echo>Publishing revision ${ivy.new.revision}</echo>
+		<ivy:publish resolver="libraries" update="true" revision="${ivy.new.revision}" overwrite="true">
+			<artifacts pattern="rel/[artifact].[ext]" />
+			<artifacts pattern="rel/jars/[artifact].[ext]" />
+		</ivy:publish>
+	</target>
+
 	<target name="publish" depends="pom, javadoc, sourcejar">		
+		<echo>Publishing revision ${ivy.new.revision}</echo>
 		<ivy:publish resolver="ssh" revision="${ivy.new.revision}" update="true" >
 			<artifacts pattern="rel/[artifact].[ext]" />
 			<artifacts pattern="rel/jars/[artifact].[ext]" />

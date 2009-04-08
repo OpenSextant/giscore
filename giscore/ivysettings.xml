@@ -26,10 +26,10 @@
     	</namespace> 
 	</namespaces>
 	<resolvers>
-		<chain name="chained" >
-			<filesystem name="libraries">
+		<chain name="chained" checkmodified="true" changingPattern=".*">
+			<filesystem name="libraries" checkmodified="true" changingPattern=".*">
 				<ivy
-					pattern="${repository.dir}/[organisation]/ivy-[revision].xml" />
+					pattern="${repository.dir}/[organisation](-[module])/ivy-[revision].xml" />
 				<artifact
 					pattern="${repository.dir}/[organisation](-[module])/[artifact](-[type])-[revision].[ext]" />
 			</filesystem>
