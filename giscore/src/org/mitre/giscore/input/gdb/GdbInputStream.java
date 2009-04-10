@@ -19,6 +19,7 @@
 package org.mitre.giscore.input.gdb;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -26,7 +27,11 @@ import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.IAcceptSchema;
 import org.mitre.giscore.events.Feature;
@@ -87,6 +92,10 @@ public class GdbInputStream extends GISInputStreamBase {
 	private static Logger logger = LoggerFactory
 			.getLogger(GdbInputStream.class);
 
+	private static final String ms_tempDir = System.getProperty("java.io.tmpdir");
+	
+	private static final AtomicInteger ms_tempDirCounter = new AtomicInteger();
+	
 	static {
 		if(!ESRIInitializer.initialize(false, true)) {
 			throw new UnsatisfiedLinkError("Could not initialize ESRI environment.");
@@ -133,6 +142,11 @@ public class GdbInputStream extends GISInputStreamBase {
 	 * The accepter, may be null, used to determine if a given schema is wanted
 	 */
 	private IAcceptSchema accepter;
+	
+	/**
+	 * Temporary directory to hold shapefile or gdb data until close is called.
+	 */
+	private File tempDir = null;
 
 	/**
 	 * Ctor
@@ -143,9 +157,41 @@ public class GdbInputStream extends GISInputStreamBase {
 	 *            the stream containing a zip archive of the file gdb
 	 * @param accepter
 	 * 				a function that determines if a schema should be used, may be <code>null</code>
+	 * @throws IOException 
 	 */
-	public GdbInputStream(DocumentType type, InputStream stream, IAcceptSchema accepter) {
-		throw new UnsupportedOperationException("Not implemented yet");
+	public GdbInputStream(DocumentType type, InputStream stream, IAcceptSchema accepter) throws IOException {
+		if (type == null) {
+			throw new IllegalArgumentException(
+					"type should never be null");
+		}
+		if (stream == null) {
+			throw new IllegalArgumentException(
+					"stream should never be null");
+		}
+		
+		// The stream better point to zip data
+		ZipInputStream zipstream = null;
+		if (! (stream instanceof ZipInputStream)) {
+			zipstream = new ZipInputStream(stream);
+		} else {
+			zipstream = (ZipInputStream) stream;
+		}
+		
+		tempDir = new File(ms_tempDir, 
+				"temp" + ms_tempDirCounter.incrementAndGet() + 
+				(DocumentType.FileGDB.equals(type) ? ".gdb" : ""));
+		tempDir.mkdirs();
+		ZipEntry entry = zipstream.getNextEntry();
+		while(entry != null) {
+			String name = entry.getName().replace('\\', '/');
+			String parts[] = name.split("/");
+			File file = new File(tempDir, parts[parts.length - 1]);
+			FileOutputStream fos = new FileOutputStream(file);
+			IOUtils.copy(zipstream, fos);
+			IOUtils.closeQuietly(fos);
+			entry = zipstream.getNextEntry();
+		}
+		initialize(type, tempDir, accepter);
 	}
 
 	/**
@@ -163,6 +209,28 @@ public class GdbInputStream extends GISInputStreamBase {
 	 */
 	public GdbInputStream(DocumentType type, File file, IAcceptSchema accepter)
 			throws UnknownHostException, IOException {
+		if (type == null) {
+			throw new IllegalArgumentException(
+					"type should never be null");
+		}
+		if (file == null) {
+			throw new IllegalArgumentException(
+					"file should never be null");
+		}
+		initialize(type, file, accepter);
+	}
+
+	/**
+	 * Initialize the input stream
+	 * @param type
+	 * @param file
+	 * @param accepter
+	 * @throws IOException
+	 * @throws UnknownHostException
+	 * @throws AutomationException
+	 */
+	private void initialize(DocumentType type, File file, IAcceptSchema accepter)
+			throws IOException, UnknownHostException, AutomationException {
 		if (type.equals(DocumentType.FileGDB)) {
 			factory = new FileGDBWorkspaceFactory();
 		} else if (type.equals(DocumentType.PersonalGDB)) {
@@ -187,6 +255,9 @@ public class GdbInputStream extends GISInputStreamBase {
 	 */
 	public void close() {
 		((Workspace) workspace).release();
+		if (tempDir != null && tempDir.exists()) {
+			tempDir.delete();
+		}
 	}
 
 	/*

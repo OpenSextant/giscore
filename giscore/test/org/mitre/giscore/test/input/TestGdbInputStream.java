@@ -19,9 +19,14 @@
 package org.mitre.giscore.test.input;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mitre.giscore.DocumentType;
@@ -101,6 +106,37 @@ public class TestGdbInputStream {
 			}
 		}
 		assertEquals(1, schema_count);
+	}
+	
+	@Test public void testFileGdbZipStream() throws Exception {
+		File temp = File.createTempFile("test", ".zip");
+		FileOutputStream fos = new FileOutputStream(temp);
+		File input = new File("data/gdb/EH_20090331144528.gdb");
+		ZipOutputStream zos = new ZipOutputStream(fos);
+		for(File file : input.listFiles()) {
+			try {
+				FileInputStream fis = new FileInputStream(file);
+				ZipEntry entry = new ZipEntry(file.getCanonicalPath());
+				zos.putNextEntry(entry);
+				IOUtils.copy(fis, zos);
+				IOUtils.closeQuietly(fis);
+			} catch(Exception e) {
+				// Ignore
+			}
+		}
+		IOUtils.closeQuietly(zos);
+		IOUtils.closeQuietly(fos);
+		
+		FileInputStream fis = new FileInputStream(temp);
+		IGISInputStream is = GISFactory.getInputStream(DocumentType.FileGDB, fis);
+		int count = 0;
+		while(is.read() != null) {
+			count++;
+		}
+		assertTrue(count > 0);
+		IOUtils.closeQuietly(fis);
+		is.close();
+		temp.delete();
 	}
 	
 	@Test public void testMultiThread() throws Exception {

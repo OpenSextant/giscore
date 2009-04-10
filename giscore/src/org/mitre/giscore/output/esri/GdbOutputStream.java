@@ -100,7 +100,10 @@ import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.interop.Cleaner;
 import com.esri.arcgis.interop.Variant;
 import com.esri.arcgis.system.IName;
+import com.esri.arcgis.system.IPropertySet;
 import com.esri.arcgis.system.IUID;
+import com.esri.arcgis.system.PropertySet;
+import com.esri.arcgis.system.esriArcGISVersion;
 
 /**
  * Output the GIS information using the ArcObjects Java API. This results in a
@@ -318,7 +321,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		}
 
 		factory = new WorkspaceFactory(factory);
-		workspaceName = factory.create(path.getParent(), path.getName(), null,
+		PropertySet pset = new PropertySet();
+		workspaceName = factory.create(path.getParent(), path.getName(), pset,
 				0);
 
 		IName name = (IName) workspaceName;
