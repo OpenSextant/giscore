@@ -18,29 +18,19 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.Externalizable;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
-
-import com.sun.org.apache.xml.internal.utils.UnImplNode;
 
 /**
  * Base class for start.
@@ -175,8 +165,17 @@ public abstract class BaseStart implements IGISObject, IDataSerializable {
 		return extendedData.keySet();
 	}
 
+    /**
+     * Returns a {@link Set} view of the extended data mappings contained in the GISObject. 
+     * @return a set view of the extended data mappings contained in this GISObject;
+     *   an empty set if no extended data is defined.
+     */
+    public Set<Map.Entry<SimpleField, Object>> getEntrySet() {
+        return extendedData.entrySet();
+    }
+
 	/**
-	 * @return
+	 * @return true if this GISObject has ExtendedData, false otherwise
 	 */
 	public boolean hasExtendedData() {
 		return extendedData.size() > 0;
