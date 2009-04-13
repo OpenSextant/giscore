@@ -26,8 +26,6 @@ import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
-import com.sun.corba.se.spi.legacy.connection.GetEndPointInfoAgainException;
-
 /**
  * There are a number of elements in KML that simply need their data 
  * carried through the pipe. This class holds a named set of AV pairs.
