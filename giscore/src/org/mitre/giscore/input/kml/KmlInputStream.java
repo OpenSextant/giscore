@@ -21,28 +21,57 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
 import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.TimeZone;
 
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
-import javax.xml.stream.events.EndElement;
-import javax.xml.datatype.XMLGregorianCalendar;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.DatatypeConfigurationException;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.events.*;
+import org.mitre.giscore.events.Comment;
+import org.mitre.giscore.events.Common;
+import org.mitre.giscore.events.ContainerEnd;
+import org.mitre.giscore.events.ContainerStart;
+import org.mitre.giscore.events.DocumentStart;
+import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.events.GroundOverlay;
+import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.NetworkLink;
+import org.mitre.giscore.events.NullObject;
+import org.mitre.giscore.events.Overlay;
+import org.mitre.giscore.events.PhotoOverlay;
+import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.ScreenLocation;
+import org.mitre.giscore.events.ScreenOverlay;
+import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.events.Style;
+import org.mitre.giscore.events.StyleMap;
+import org.mitre.giscore.events.TaggedMap;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
@@ -1008,6 +1037,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @throws IOException if encountered NetworkLinkControl or out of order Style
 	 * 			and failed to skip to end tag for that element.
 	 */
+	@SuppressWarnings("unchecked")
 	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException, IOException {
 		StartElement se = e.asStartElement();
 		String localname = se.getName().getLocalPart();
@@ -1082,18 +1112,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 		// return non-null NullObject to skip but not end parsing...
 		return NullObject.getInstance();
-	}
-
-	/**
-	 * @param element
-	 * @param localname
-	 * @return
-	 * @throws XMLStreamException
-	 */
-	private void handleNetworkLinkControl(XMLEventReader element, String localname) throws XMLStreamException {
-		// TODO: implement NetworkLinkControl object
-		log.debug("skip NetworkLinkControl");
-		skipNextElement(element, localname);
 	}
 
 	private void skipNextElement(XMLEventReader element, String localname) throws XMLStreamException {
@@ -1492,6 +1510,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param sl
 	 * @throws XMLStreamException
 	 */
+	@SuppressWarnings("unchecked")
 	private Geometry handleGeometry(StartElement sl) throws XMLStreamException {
 		QName name = sl.getName();
 		String localname = name.getLocalPart();

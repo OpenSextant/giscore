@@ -18,9 +18,13 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.utils;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -28,8 +32,6 @@ import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.junit.Test;
-import static org.junit.Assert.*;
-
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -81,6 +83,7 @@ public class TestSimpleObjectIO {
 		/* (non-Javadoc)
 		 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 		 */
+		@SuppressWarnings("unchecked")
 		public void readData(SimpleObjectInputStream in) throws IOException,
 				ClassNotFoundException, InstantiationException,
 				IllegalAccessException {
@@ -205,6 +208,7 @@ public class TestSimpleObjectIO {
 		sois.close();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test public void testCollectionIO() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
 		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);

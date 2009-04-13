@@ -240,6 +240,7 @@ public class Polygon extends Geometry implements Iterable<LinearRing> {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException, IllegalAccessException {

@@ -49,7 +49,7 @@ import org.mitre.giscore.output.IGISOutputStream;
 public class KmzOutputStream implements IGISOutputStream {
 	
 	private KmlOutputStream kmlStream;
-	private final ZipOutputStream zipStream;
+	final ZipOutputStream zipStream;
 
 	public KmzOutputStream(final OutputStream stream) throws XMLStreamException {
 		zipStream = new ZipOutputStream(stream);

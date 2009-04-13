@@ -1,19 +1,19 @@
 package org.mitre.giscore.input.kml;
 
-import org.mitre.giscore.events.TaggedMap;
-import org.mitre.giscore.events.NetworkLink;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.net.URL;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.MalformedURLException;
-import java.util.Map;
+import java.net.URL;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Arrays;
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import org.mitre.giscore.events.NetworkLink;
+import org.mitre.giscore.events.TaggedMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * URL rewriting logic extracted from KmlReader handles low-level rewriting
@@ -56,7 +56,7 @@ public abstract class KmlBaseReader implements IKml {
 	/**
 	 * names of supported viewFormat fields as of 2/19/09 in Google Earth 5.0.11337.1968 with KML 2.2
 	 */
-	private static final List viewFormatLabels = Arrays.asList(
+	private static final List<String> viewFormatLabels = Arrays.asList(
 			"bboxEast",
 			"bboxNorth",
 			"bboxSouth",

@@ -24,8 +24,6 @@ import static org.junit.Assert.assertNotNull;
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -157,7 +155,7 @@ public class TestObjectPersistence {
 		assertEquals(10, ml.getNumPoints());
 		
 		MultiLinearRings mlr = (MultiLinearRings) sois.readObject();
-		assertEquals(1, ml.getNumParts());
+		assertEquals(1, mlr.getNumParts());
 		
 		Polygon p2 = (Polygon) sois.readObject();
 		assertEquals(1, p2.getLinearRings().size());
@@ -236,7 +234,6 @@ public class TestObjectPersistence {
 		ScreenLocation s2 = new ScreenLocation();
 		ScreenLocation s3 = new ScreenLocation();
 		ScreenLocation s4 = new ScreenLocation();
-		ScreenLocation s5 = new ScreenLocation();
 		
 		s1.x = 11;
 		s1.y = 12;

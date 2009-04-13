@@ -18,28 +18,15 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.Externalizable;
 import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.io.Serializable;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Date;
 
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.mitre.giscore.events.SimpleField.Type;
-import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
-
-import com.sun.org.apache.xml.internal.utils.UnImplNode;
 
 /**
  * Common abstract superclass for features of various kinds.

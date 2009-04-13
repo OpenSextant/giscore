@@ -24,7 +24,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.DataInputStream;
 import java.io.OutputStream;
 import java.net.UnknownHostException;
 import java.util.Date;
@@ -100,10 +99,8 @@ import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.interop.Cleaner;
 import com.esri.arcgis.interop.Variant;
 import com.esri.arcgis.system.IName;
-import com.esri.arcgis.system.IPropertySet;
 import com.esri.arcgis.system.IUID;
 import com.esri.arcgis.system.PropertySet;
-import com.esri.arcgis.system.esriArcGISVersion;
 
 /**
  * Output the GIS information using the ArcObjects Java API. This results in a

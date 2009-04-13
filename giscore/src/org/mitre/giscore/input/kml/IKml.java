@@ -18,7 +18,6 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.kml;
 
-import javax.xml.stream.XMLEventReader;
 
 /**
  * Container for element and attribute names used in KML

@@ -21,9 +21,7 @@ package org.mitre.giscore.test.output;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.junit.Test;
@@ -32,11 +30,9 @@ import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.test.TestGISBase;
 

@@ -82,12 +82,13 @@ public class KmlReader extends KmlBaseReader {
 	 * @param      file   the KML or KMZ file to be opened for reading.
 	 * @throws IOException if an I/O error occurs
 	 */
+	@SuppressWarnings("unchecked")
 	public KmlReader(File file) throws IOException {
 		if (file.getName().toLowerCase().endsWith(".kmz")) {
 			zf = new ZipFile(file);
-			Enumeration e = zf.entries();
+			Enumeration<ZipEntry> e = (Enumeration<ZipEntry>) zf.entries();
 			while (e.hasMoreElements()) {
-				ZipEntry entry = (ZipEntry) e.nextElement();
+				ZipEntry entry = e.nextElement();
 				// simply find first kml file in the archive
 				// see note on KMZ in UrlRef.getInputStream() method for more detail
 				if (entry.getName().toLowerCase().endsWith(".kml")) {

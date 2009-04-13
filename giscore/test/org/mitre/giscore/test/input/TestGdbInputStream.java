@@ -18,17 +18,20 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.input;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-import static org.junit.Assert.*;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.IAcceptSchema;

@@ -19,7 +19,6 @@
 package org.mitre.giscore.events;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
