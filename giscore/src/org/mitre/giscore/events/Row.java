@@ -24,6 +24,7 @@ import java.net.URISyntaxException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
@@ -45,7 +46,6 @@ public class Row implements IGISObject, IDataSerializable {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.VisitableGeometry#accept(org.mitre.giscore.output.StreamVisitorBase)
 	 */
-	@Override
 	public void accept(StreamVisitorBase visitor) {
 		visitor.visit(this);
 	}
@@ -53,7 +53,6 @@ public class Row implements IGISObject, IDataSerializable {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
-	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
@@ -76,7 +75,6 @@ public class Row implements IGISObject, IDataSerializable {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
 	 */
-	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		out.writeString(schema != null ? schema.toString() : null);
 		int cnt = extendedData.size();
@@ -122,6 +120,15 @@ public class Row implements IGISObject, IDataSerializable {
 		}
 	}
 
+    /**
+     * Returns a {@link Set} view of the Extended data mappings associated with this row.
+     * 
+     * @return a set view of the Extended data mappings contained in this row
+     */
+    public Set<Map.Entry<SimpleField,Object>> getEntrySet() {
+        return extendedData.entrySet();
+    }
+
 	/**
 	 * @return the fields
 	 */
@@ -130,7 +137,7 @@ public class Row implements IGISObject, IDataSerializable {
 	}
 
 	/**
-	 * @return
+	 * @return true of Row has ExtendedData, false otherwise.
 	 */
 	public boolean hasExtendedData() {
 		return extendedData.size() > 0;
