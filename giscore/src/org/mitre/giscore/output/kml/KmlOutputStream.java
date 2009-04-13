@@ -22,17 +22,22 @@ import java.awt.Color;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
-import java.text.DecimalFormat;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Formatter;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.mitre.giscore.events.BaseStart;
 import org.mitre.giscore.events.Comment;
+import org.mitre.giscore.events.Common;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.DocumentStart;
@@ -60,6 +65,7 @@ import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.output.XmlOutputStreamBase;
+import org.mitre.giscore.utils.SafeDateFormat;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
 
@@ -87,7 +93,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	//private static final DecimalFormat ms_float_fmt =
 		//new DecimalFormat("##0.####");
 	private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss'Z'";	
-	private DateFormat dateFormatter;
+	private SafeDateFormat dateFormatter;
     
     /**
 	 * Ctor
@@ -184,9 +190,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 	}
 
-    private DateFormat getDateFormatter() {
+    private SafeDateFormat getDateFormatter() {
         if (dateFormatter == null) {
-			DateFormat thisDateFormatter = new SimpleDateFormat(ISO_DATE_FMT);
+			SafeDateFormat thisDateFormatter = new SafeDateFormat(ISO_DATE_FMT);
 			thisDateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
 			dateFormatter = thisDateFormatter;
 		}
@@ -199,7 +205,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	 * 
 	 * @param feature
 	 */
-	private void handleAttributes(BaseStart feature) {
+	private void handleAttributes(Common feature) {
 		try {
 			if (feature.getName() != null) {
 				handleSimpleElement(NAME, feature.getName());
@@ -214,20 +220,20 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				if (endTime == null) {
                     // start time with no end time
                     writer.writeStartElement(TIME_SPAN);
-                    handleSimpleElement(BEGIN, getDateFormatter().format(startTime.getTime()));
+                    handleSimpleElement(BEGIN, getDateFormatter().format(startTime));
                 } else if (endTime.equals(startTime)) {
                     writer.writeStartElement(TIME_STAMP);
-                    handleSimpleElement(WHEN, getDateFormatter().format(startTime.getTime()));
+                    handleSimpleElement(WHEN, getDateFormatter().format(startTime));
                 } else {
                     writer.writeStartElement(TIME_SPAN);
-                    handleSimpleElement(BEGIN, getDateFormatter().format(startTime.getTime()));
-                    handleSimpleElement(END, getDateFormatter().format(endTime.getTime()));
+                    handleSimpleElement(BEGIN, getDateFormatter().format(startTime));
+                    handleSimpleElement(END, getDateFormatter().format(endTime));
                 }
                 writer.writeEndElement();
             } else if (endTime != null) {
                     // end time with no start time
                     writer.writeStartElement(TIME_SPAN);
-					handleSimpleElement(END, getDateFormatter().format(endTime.getTime()));
+					handleSimpleElement(END, getDateFormatter().format(endTime));
 					writer.writeEndElement();
             }
 
@@ -290,7 +296,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				}
 			}
 			if (val instanceof Date) {
-                return getDateFormatter().format(((Date)val).getTime());
+                return getDateFormatter().format((Date)val);
 			} else {
 				return val.toString();
 			}

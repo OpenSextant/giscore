@@ -18,8 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.input;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
 
 import org.mitre.giscore.events.IGISObject;
 
@@ -27,63 +26,44 @@ import org.mitre.giscore.events.IGISObject;
  * Base class that handles the mark and reset behavior.
  * 
  * @author DRAND
- *
+ * 
  */
 public abstract class GISInputStreamBase implements IGISInputStream {
-	private int capacity = 0;
-	private int readpos = 0;
-	private List<IGISObject> savebuffer = null;
-	private boolean isreset = false;
-	
-	
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.input.IGISInputStream#mark(int)
+	/**
+	 * Buffered elements that should be returned. This allows a single call to
+	 * read to find several elements and return them in the right order.
 	 */
-	public void mark(int readlimit) {
-		capacity = readlimit;
-		readpos = 0;
-		savebuffer = new ArrayList<IGISObject>(readlimit);
-		isreset = false;
+	private final LinkedList<IGISObject> buffered = new LinkedList<IGISObject>();
+
+	/**
+	 * Add an element to be return later to the beginning of the list
+	 * 
+	 * @param obj
+	 */
+	protected void addFirst(IGISObject obj) {
+		buffered.addFirst(obj);
 	}
 
 	/**
-	 * Save an object if appropriate for later reset
-	 * @param obj the object to be saved
+	 * Add an element to be return later to the end of the list
+	 * 
+	 * @param obj
 	 */
-	public void save(IGISObject obj) {
-		if (savebuffer != null && savebuffer.size() < capacity) {
-			savebuffer.add(obj);
-		}
-	}
-	
-	/**
-	 * @return <code>true</code> if there is data saved to be played back.
-	 */
-	public boolean hasSaved() {
-		return isreset && savebuffer != null && readpos < savebuffer.size();
-	}
-	
-	/**
-	 * @return the saved data and manage the saved data
-	 */
-	public IGISObject readSaved() {
-		if (hasSaved()) {
-			IGISObject rval = savebuffer.get(readpos++);
-			if (readpos == savebuffer.size()) {
-				isreset = false;
-				savebuffer = null;
-			}
-			return rval;
-		} else {
-			return null;
-		}
+	protected void addLast(IGISObject obj) {
+		buffered.add(obj);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.input.IGISInputStream#reset()
+	/**
+	 * @return
 	 */
-	public void reset() {
-		isreset = true;
+	protected IGISObject readSaved() {
+		return buffered.pop();
 	}
 
+	/**
+	 * @return
+	 */
+	protected boolean hasSaved() {
+		return !buffered.isEmpty();
+	}
 }

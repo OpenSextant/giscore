@@ -31,7 +31,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * 
  * @author DRAND
  */
-public class ContainerStart extends BaseStart {
+public class ContainerStart extends Common {
 	private static final long serialVersionUID = 1L;
 	
 	private String type;

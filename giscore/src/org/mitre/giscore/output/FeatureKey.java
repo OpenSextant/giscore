@@ -4,7 +4,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.mitre.giscore.events.BaseStart;
+import org.mitre.giscore.events.Common;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.geometry.Geometry;
 
@@ -16,10 +16,10 @@ import org.mitre.giscore.geometry.Geometry;
 public class FeatureKey {
 	private Schema schema;
 	private Class<? extends Geometry> geoclass;
-	private Class<? extends BaseStart> featureClass;
+	private Class<? extends Common> featureClass;
 	
 	public FeatureKey(Schema schema, Class<? extends Geometry> geoclass, 
-			Class<? extends BaseStart> featureClass) {
+			Class<? extends Common> featureClass) {
 		if (schema == null) {
 			throw new IllegalArgumentException(
 					"schema should never be null");
@@ -50,7 +50,7 @@ public class FeatureKey {
 	/**
 	 * @return the featureClass
 	 */
-	public Class<? extends BaseStart> getFeatureClass() {
+	public Class<? extends Common> getFeatureClass() {
 		return featureClass;
 	}
 

@@ -363,8 +363,13 @@ public class SimpleField implements IDataSerializable {
 	 */
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this,
-				ToStringStyle.MULTI_LINE_STYLE);
+		StringBuilder b = new StringBuilder(80);
+		b.append("<SimpleField name='");
+		b.append(getName());
+		b.append("' type='");
+		b.append(getType());
+		b.append("'/>");
+		return b.toString();
 	}
 
 	/* (non-Javadoc)

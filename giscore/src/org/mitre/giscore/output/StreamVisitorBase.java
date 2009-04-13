@@ -24,6 +24,7 @@ import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.DocumentStart;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.GroundOverlay;
+import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.StyleMap;
@@ -182,6 +183,14 @@ public class StreamVisitorBase {
         }
     }
 
+    /**
+     * Visting a row causes an error for non-row oriented output streams
+     * @param row
+     */
+    public void visit(Row row) {
+    	throw new UnsupportedOperationException("Can't output a tabular row");
+    }
+    
     /**
      * @param overlay
      */

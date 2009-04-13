@@ -39,21 +39,6 @@ public interface IGISInputStream {
 	IGISObject read() throws IOException;
 	
 	/**
-	 * Mark the current position in the input stream so a later call to 
-	 * {@link #reset()} may move the stream back to the position. 
-	 * 
-	 * @param readlimit the number of objects that may be read before the
-	 * mark becomes invalidated.
-	 */
-	void mark(int readlimit);
-	
-	/**
-	 * Reposition the stream back to the position a the time that mark 
-	 * was last called.
-	 */
-	void reset();
-	
-	/**
 	 * Close the input stream, freeing any resources held.
 	 */
 	void close();

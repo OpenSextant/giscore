@@ -24,11 +24,14 @@ import java.io.OutputStream;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.input.IGISInputStream;
+import org.mitre.giscore.input.csv.CsvInputStream;
 import org.mitre.giscore.input.gdb.GdbInputStream;
 import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
+import org.mitre.giscore.output.csv.CsvOutputStream;
 import org.mitre.giscore.output.esri.GdbOutputStream;
 import org.mitre.giscore.output.esri.XmlGdbOutputStream;
 import org.mitre.giscore.output.kml.KmlOutputStream;
@@ -84,6 +87,11 @@ public class GISFactory {
 			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
 					&& arguments.length > 0 ? arguments[0] : null);
 			return new GdbInputStream(type, stream, accepter);
+		} else if (DocumentType.CSV.equals(type)) {
+			checkArguments(new Class[] { Schema.class, String.class, Character.class, Character.class },
+					arguments,
+					new boolean[] { false, false, false, false });
+			return new CsvInputStream(stream, arguments);
 		} else {
 			throw new UnsupportedOperationException(
 					"Cannot create an input stream for type " + type);
@@ -134,6 +142,11 @@ public class GISFactory {
 			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
 					&& arguments.length > 0 ? arguments[0] : null);
 			return new GdbInputStream(type, file, accepter);
+		} else if (DocumentType.CSV.equals(type)) {
+			checkArguments(new Class[] { Schema.class, String.class, Character.class, Character.class },
+					arguments,
+					new boolean[] { false, false, false, false });
+			return new CsvInputStream(file, arguments);
 		} else {
 			throw new UnsupportedOperationException(
 					"Cannot create an input stream for type " + type);
@@ -205,6 +218,11 @@ public class GISFactory {
 							: null);
 					return new GdbOutputStream(type, outputStream,
 							(File) arguments[0], strategy);
+				case CSV:
+					checkArguments(new Class[] { String.class, Character.class, Character.class },
+							arguments,
+							new boolean[] { false, false, false });
+					return new CsvOutputStream(outputStream, arguments);
 				default:
 					throw new UnsupportedOperationException(
 							"Cannot create an output stream for type " + type);

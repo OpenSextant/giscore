@@ -62,7 +62,6 @@ import com.esri.arcgis.geodatabase.IFeature;
 import com.esri.arcgis.geodatabase.IFeatureClass;
 import com.esri.arcgis.geodatabase.IFeatureCursor;
 import com.esri.arcgis.geodatabase.IField;
-import com.esri.arcgis.geodatabase.IFields;
 import com.esri.arcgis.geodatabase.IWorkspace;
 import com.esri.arcgis.geodatabase.IWorkspaceFactory;
 import com.esri.arcgis.geodatabase.QueryFilter;

@@ -84,7 +84,7 @@ import org.slf4j.LoggerFactory;
  * The actual handling of containers and other features has some uniform
  * methods. Every feature in KML can have a set of common attributes and
  * additional elements. The
- * {@link #handleProperties(BaseStart, XMLEvent, String)} method takes care of
+ * {@link #handleProperties(Common, XMLEvent, String)} method takes care of
  * these. This returns <code>false</code> if the current element isn't a common
  * element, which allows the caller to handle the code.
  * <p>
@@ -100,14 +100,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
     private static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
 
     private InputStream is;
-	private XMLEventReader stream;
-
-	/**
-	 * Buffered elements that should be returned. This allows a single
-	 * call to read to find several elements and return them in the right
-	 * order. 
-	 */
-	private final LinkedList<IGISObject> buffered = new LinkedList<IGISObject>();
+    private XMLEventReader stream;
 
 	private static final XMLInputFactory ms_fact;
 	private static final Set<String> ms_features = new HashSet<String>();
@@ -169,7 +162,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			throw new IllegalArgumentException("input should never be null");
 		}
 		is = input;
-		buffered.add(new DocumentStart(DocumentType.KML));
+		addLast(new DocumentStart(DocumentType.KML));
 		try {
 			stream = ms_fact.createXMLEventReader(is);
 		} catch (XMLStreamException e) {
@@ -204,7 +197,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param o object to push onto queue
 	 */
 	public void pushback(IGISObject o) {
-		buffered.addFirst(o);
+		addFirst(o);
 	}
 
 	/**
@@ -215,9 +208,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 */
 	public IGISObject read() throws IOException {
 		if (hasSaved()) {
-			return super.readSaved();
-		} else if (buffered.size() > 0) {
-			return buffered.removeFirst();
+			return readSaved();
 		} else {
 			try {
 				while (true) {
@@ -259,7 +250,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		StartElement se = e.asStartElement();
 		String containerTag = se.getName().getLocalPart();
 		ContainerStart cs = new ContainerStart(containerTag);
-		buffered.addFirst(cs);
+		addFirst(cs);
 
 		while (true) {
 			XMLEvent ne = stream.peek();
@@ -299,7 +290,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			}
 		}
 
-		return buffered.removeFirst();
+		return readSaved();
 	}
 
 	/**
@@ -310,7 +301,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param localname
 	 * @return <code>true</code> if the event has been handled
 	 */
-	private boolean handleProperties(BaseStart feature, XMLEvent ee,
+	private boolean handleProperties(Common feature, XMLEvent ee,
 			String localname) {
         try {
             if (localname.equals(NAME)) {
@@ -366,7 +357,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param ee
 	 * @throws XMLStreamException
 	 */
-	private void handleExtendedData(BaseStart cs, XMLEvent ee)
+	private void handleExtendedData(Common cs, XMLEvent ee)
 			throws XMLStreamException {
 		XMLEvent next;
 		while (true) {
@@ -451,7 +442,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param cs Feature/Container for ExtendedData tag
 	 * @throws XMLStreamException
 	 */
-	private void handleSchemaData(String uri, BaseStart cs)
+	private void handleSchemaData(String uri, Common cs)
 			throws XMLStreamException {
 		XMLEvent next;
 		if (uri.startsWith("#")) uri = uri.substring(1);
@@ -512,7 +503,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param ee
 	 * @throws XMLStreamException
 	 */
-	private void handleMetadata(BaseStart cs, XMLEvent ee)
+	private void handleMetadata(Common cs, XMLEvent ee)
 			throws XMLStreamException {
 		XMLEvent next;
 
@@ -529,7 +520,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param ee
 	 * @throws XMLStreamException
 	 */
-	private void handleAbstractView(BaseStart cs, XMLEvent ee)
+	private void handleAbstractView(Common cs, XMLEvent ee)
 			throws XMLStreamException {
 		StartElement se = ee.asStartElement();
 		XMLEvent next;
@@ -548,11 +539,11 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param ee
 	 * @throws XMLStreamException
 	 */
-	private void handleStyleMap(BaseStart cs, XMLEvent ee)
+	private void handleStyleMap(Common cs, XMLEvent ee)
 			throws XMLStreamException {
 		XMLEvent next;
 		StyleMap sm = new StyleMap();
-		buffered.addFirst(sm);
+		addFirst(sm);
 		StartElement sl = ee.asStartElement();
 		Attribute id = sl.getAttributeByName(new QName(ID));
 		if (id != null) {
@@ -606,7 +597,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
      * @param ee
 	 * @throws XMLStreamException
 	 */
-	private void handleTimePrimitive(BaseStart cs, XMLEvent ee)
+	private void handleTimePrimitive(Common cs, XMLEvent ee)
 			throws XMLStreamException {
 		XMLEvent next;
 		StartElement sl = ee.asStartElement();
@@ -710,7 +701,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param ee
 	 * @throws XMLStreamException
 	 */
-	private void handleRegion(BaseStart cs, XMLEvent ee)
+	private void handleRegion(Common cs, XMLEvent ee)
 			throws XMLStreamException {
 		XMLEvent next;
 
@@ -729,7 +720,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param ee
 	 * @throws XMLStreamException
 	 */
-	private void handleSnippet(BaseStart cs, XMLEvent ee)
+	private void handleSnippet(Common cs, XMLEvent ee)
 			throws XMLStreamException {
         StartElement se = ee.asStartElement();
 		XMLEvent next;
@@ -752,7 +743,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param ee
 	 * @throws XMLStreamException
 	 */
-	private void handleStyle(BaseStart cs, XMLEvent ee)
+	private void handleStyle(Common cs, XMLEvent ee)
 			throws XMLStreamException {
 		XMLEvent next;
 
@@ -762,7 +753,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		if (id != null) {
 			style.setId(id.getValue());
 		}
-		buffered.addFirst(style);
+		addFirst(style);
 		while (true) {
 			next = stream.nextEvent();
 			if (next == null)
@@ -1123,7 +1114,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private IGISObject handleSchema(StartElement element, String localname)
 			throws XMLStreamException {
 		Schema s = new Schema();
-		buffered.add(s);
+		addLast(s);
 		Attribute attr = element.getAttributeByName(new QName(NAME));
 		String name = getNonEmptyAttrValue(attr);
 
@@ -1217,7 +1208,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			}
 		}
 		
-		return buffered.removeFirst();
+		return readSaved();
 	}
 
 	/**
@@ -1297,7 +1288,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			return NullObject.getInstance();
 		}
 
-		buffered.addFirst(fs);
+		addFirst(fs);
 		while (true) {
 			XMLEvent ee = stream.nextEvent();
 			if (ee == null) {
@@ -1383,7 +1374,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				break; // End of feature
 			}
 		}
-		return buffered.removeFirst();
+		return readSaved();
 	}
 
 	/**

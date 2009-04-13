@@ -18,36 +18,41 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.Externalizable;
 import java.io.IOException;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
 
-import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
+import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
+import com.sun.org.apache.xml.internal.utils.UnImplNode;
+
 /**
- * Base class for start.
+ * Common abstract superclass for features of various kinds.
  * 
  * @author DRAND
  * 
  */
-public abstract class BaseStart implements IGISObject, IDataSerializable {
-	
+public abstract class Common extends Row {
 	protected String name;
 	protected String description;
-	protected URI schema;
 	protected Date startTime;
 	protected Date endTime;
 	protected String styleUrl;
-	protected final Map<SimpleField, Object> extendedData = new LinkedHashMap<SimpleField, Object>();
-
 	/**
 	 * @return the name
 	 */
@@ -124,80 +129,6 @@ public abstract class BaseStart implements IGISObject, IDataSerializable {
 	}
 
 	/**
-	 * @return the schema, may be <code>null</code> if there's no reference to a
-	 *         schema
-	 */
-	public URI getSchema() {
-		return schema;
-	}
-
-	/**
-	 * @param schema
-	 *            the schema to set
-	 */
-	public void setSchema(URI schema) {
-		this.schema = schema;
-	}
-
-	/**
-	 * Put an attribute value
-	 * 
-	 * @param key
-	 *            the key, never <code>null</code>
-	 * @param value
-	 *            the value, never <code>null</code>
-	 */
-	public void putData(SimpleField key, Object value) {
-		if (key == null) {
-			throw new IllegalArgumentException("key should never be null");
-		}
-		if (value == null) {
-			extendedData.put(key, ObjectUtils.NULL);
-		} else {
-			extendedData.put(key, value);
-		}
-	}
-
-	/**
-	 * @return the fields
-	 */
-	public Collection<SimpleField> getFields() {
-		return extendedData.keySet();
-	}
-
-    /**
-     * Returns a {@link Set} view of the extended data mappings contained in the GISObject. 
-     * @return a set view of the extended data mappings contained in this GISObject;
-     *   an empty set if no extended data is defined.
-     */
-    public Set<Map.Entry<SimpleField, Object>> getEntrySet() {
-        return extendedData.entrySet();
-    }
-
-	/**
-	 * @return true if this GISObject has ExtendedData, false otherwise
-	 */
-	public boolean hasExtendedData() {
-		return extendedData.size() > 0;
-	}
-
-	/**
-	 * Get the value of a field
-	 * 
-	 * @param field
-	 *            the fieldname, never <code>null</code> or empty.
-	 * 
-	 * @return the value of the field
-	 */
-	public Object getData(SimpleField field) {
-		if (field == null) {
-			throw new IllegalArgumentException(
-					"field should never be null or empty");
-		}
-		return extendedData.get(field);
-	}
-
-	/**
 	 * Read object from the data stream.
 	 * 
 	 * @param in
@@ -207,36 +138,22 @@ public abstract class BaseStart implements IGISObject, IDataSerializable {
 	 */
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException, IllegalAccessException {
-		try {
-			name = in.readString();
-			description = in.readString();
-			String schemaStr = in.readString(); 
-			schema = schemaStr != null ? new URI(schemaStr) : null;
-			styleUrl = in.readString();
-			long val = in.readLong();
-			if (val > -1) {
-				startTime = new Date(val);
-			} else {
-				startTime = null;
-			}
-			val = in.readLong();
-			if (val > -1) {
-				endTime = new Date(val);
-			} else {
-				endTime = null;
-			}
-		} catch (URISyntaxException e) {
-			final IOException e2 = new IOException();
-			e2.initCause(e);
-			throw e2;
+		super.readData(in);
+		name = in.readString();
+		description = in.readString();
+		styleUrl = in.readString();
+		long val = in.readLong();
+		if (val > -1) {
+			startTime = new Date(val);
+		} else {
+			startTime = null;
 		}
-		int cnt = in.readInt();
-		for(int i = 0; i < cnt; i++) {
-			SimpleField field = (SimpleField) in.readObject();
-			Object val = in.readScalar();
-			extendedData.put(field, val);
+		val = in.readLong();
+		if (val > -1) {
+			endTime = new Date(val);
+		} else {
+			endTime = null;
 		}
-
 	}
 
 	/**
@@ -246,9 +163,9 @@ public abstract class BaseStart implements IGISObject, IDataSerializable {
 	 * @throws IOException
 	 */
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
 		out.writeString(name);
 		out.writeString(description);
-		out.writeString(schema != null ? schema.toString() : null);
 		out.writeString(styleUrl);
 		if (startTime != null)
 			out.writeLong(startTime.getTime());
@@ -258,12 +175,6 @@ public abstract class BaseStart implements IGISObject, IDataSerializable {
 			out.writeLong(endTime.getTime());
 		else 
 			out.writeLong(-1);
-		int cnt = extendedData.size();
-		out.writeInt(cnt);
-		for(Map.Entry<SimpleField, Object> entry : extendedData.entrySet()) {
-			out.writeObject(entry.getKey());
-			out.writeScalar(entry.getValue());
-		}
 	}
 
 	/*

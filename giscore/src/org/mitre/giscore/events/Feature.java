@@ -39,7 +39,7 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  * 
  * @author DRAND
  */
-public class Feature extends BaseStart {
+public class Feature extends Common {
 	private static final long serialVersionUID = 1L;
 
 	/*

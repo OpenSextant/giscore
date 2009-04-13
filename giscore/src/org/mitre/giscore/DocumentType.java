@@ -39,6 +39,8 @@ public enum DocumentType {
 	FileGDB(true,false),
 	/* An xml interchange format for ESRI Geodatabase data */
 	XmlGDB(false,false),
+	/* Delimiter separated values, only contains the data from the fields, no geometry */
+	CSV(false,false),
 	;
 	
 	private boolean requiresZipStream;

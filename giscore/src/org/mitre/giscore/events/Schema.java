@@ -248,7 +248,20 @@ public class Schema implements IGISObject {
 	 */
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+		StringBuilder b = new StringBuilder(fields.size() * 80);
+		b.append("<Schema name='");
+		b.append(getName());
+		b.append("' id='");
+		b.append(getId());
+		b.append("'>\n");
+		for(SimpleField field : fields.values()) {
+			b.append("  ");
+			b.append(field);
+			b.append("\n");
+		}
+		b.append("</Schema>\n");
+		
+		return b.toString();
 	}
 
 }
