@@ -194,16 +194,30 @@ public class KmlReader extends KmlBaseReader {
 		return gisObj;
 	}
 
-	/**
-	 * importFromNetworkLinks recursively imports KML objects from all visited
-	 * NetworkLinks starting from the base KML document.  This must be called
-	 * after reader is closed otherwise an IllegalArgumentException will be thrown.
+    /**
+	 * Recursively imports KML objects from all visited NetworkLinks starting
+     * from the base KML document.  This must be called after reader is closed
+     * otherwise an IllegalArgumentException will be thrown.
 	 *
 	 * @return list of visited networkLink URIs, empty list if
 	 * 			no reachable networkLinks are found, never null
 	 * @throws IllegalArgumentException if reader is still opened
 	 */
 	public List<IGISObject> importFromNetworkLinks() {
+        return importFromNetworkLinks(null);
+    }
+
+	/**
+	 * Recursively imports KML objects from all visited
+	 * NetworkLinks starting from the base KML document.  This must be called
+	 * after reader is closed otherwise an IllegalArgumentException will be thrown.
+	 *
+	 * @param handler ImportEventHandler is called when a new GISObject is parsed 
+     * @return list of visited networkLink URIs if no callback handler is specified,
+     *      empty list if no reachable networkLinks are found or non-null call handler is provided
+	 * @throws IllegalArgumentException if reader is still opened
+	 */
+	public List<IGISObject> importFromNetworkLinks(ImportEventHandler handler) {
 		if (iStream != null) throw new IllegalArgumentException("reader must first be closed");
 		List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
 		if (gisNetworkLinks.size() == 0) return linkedFeatures;
@@ -223,8 +237,18 @@ public class KmlReader extends KmlBaseReader {
                     if (is == null) continue;
                     int oldSize = networkLinks.size();
                     int oldFeatSize = linkedFeatures.size();
-                    // need to add new networkLinks back to list to recursively import
-					readAll(linkedFeatures, new KmlInputStream(is), networkLinks);
+                    KmlInputStream kis = new KmlInputStream(is);
+                    try {
+                        IGISObject gisObj;
+                        while ((gisObj = read(kis, networkLinks)) != null) {
+                            if (handler != null)
+                                handler.handleEvent(ref, gisObj);
+                            else
+                                linkedFeatures.add(gisObj);
+                        }
+                    } finally {
+                        kis.close();
+                    }
 					if (log.isDebugEnabled()) {
                         if (oldFeatSize != linkedFeatures.size())
                             log.debug("*** got features from network links ***");
@@ -256,20 +280,15 @@ public class KmlReader extends KmlBaseReader {
 	 */
 	public List<IGISObject> readAll() throws IOException {
 		List<IGISObject> features = new ArrayList<IGISObject>();
-		readAll(features, kis, null);
-		return features;
-	}
-
-	private void readAll(List<IGISObject> features, IGISInputStream inputStream, List<URI> networkLinks)
-			throws IOException {
-		try {
+        try {
 			IGISObject gisObj;
-			while ((gisObj = read(inputStream, networkLinks)) != null) {
+			while ((gisObj = read(kis, null)) != null) {
 				features.add(gisObj);
 			}
 		} finally {
 			close();
 		}
+		return features;
 	}
 
 	/**
@@ -294,4 +313,20 @@ public class KmlReader extends KmlBaseReader {
 		}
 	}
 
+    /**
+     * ImportEventHandler interface used for callers to implement handling
+     * of GISObjects encountered as NetworkLinks are parsed.
+     *
+     * @see KmlReader#importFromNetworkLinks(ImportEventHandler)
+     */
+    public static interface ImportEventHandler {
+        /**
+         * The KmlReader will invoke this method for each GISObject encountered during parsing.
+         * All elements will be reported in order.
+         *
+         * @param ref UriRef for NetworkLink resource
+         * @param gisObj new IGISObject
+         */
+        void handleEvent(UrlRef ref, IGISObject gisObj);
+    }
 }

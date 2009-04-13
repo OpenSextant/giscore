@@ -86,6 +86,36 @@ public class TestKmlReader extends TestCase {
 		assertTrue(geom instanceof Point);
 	}
 
+    /**
+     * Test loading KMZ file with 2 levels of network links
+	 * recursively loading each NetworkLink using callback to handle
+     * objects found in network links.
+     *
+	 * @throws IOException if an I/O error occurs
+     */
+    @Test
+	public void testMultiLevelNetworkLinksWithCallback() throws IOException {
+		File file = new File("data/kml/NetworkLink/multiLevelNetworkLinks2.kmz");
+		KmlReader reader = new KmlReader(file);
+		List<IGISObject> objs = reader.readAll();
+		assertEquals(6, objs.size());
+		final List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
+            reader.importFromNetworkLinks(new KmlReader.ImportEventHandler() {
+            public void handleEvent(UrlRef ref, IGISObject gisObj) {
+                linkedFeatures.add(gisObj);
+            }
+        });
+		List<URI> networkLinks = reader.getNetworkLinks();
+
+		assertEquals(2, networkLinks.size());
+		assertEquals(9, linkedFeatures.size());
+		IGISObject o = linkedFeatures.get(8);
+		assertTrue(o instanceof Feature);
+		Feature ptFeat = (Feature)o;
+		Geometry geom = ptFeat.getGeometry();
+		assertTrue(geom instanceof Point);
+	}
+
 	/**
      * Test ground overlay from KMZ file target
      */
