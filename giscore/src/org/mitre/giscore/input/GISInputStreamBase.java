@@ -57,7 +57,7 @@ public abstract class GISInputStreamBase implements IGISInputStream {
 	 * @return
 	 */
 	protected IGISObject readSaved() {
-		return buffered.pop();
+		return buffered.removeFirst();
 	}
 
 	/**
