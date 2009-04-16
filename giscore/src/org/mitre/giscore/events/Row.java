@@ -190,11 +190,11 @@ public class Row implements IGISObject, IDataSerializable {
 		b.append("<Row schemaUri='");
 		b.append(schema);
 		b.append("'");
-		for(SimpleField key : extendedData.keySet()) {
+        for(Map.Entry<SimpleField, Object> entry : extendedData.entrySet()) {
 			b.append(" ");
-			b.append(key.getName());
+			b.append(entry.getKey());
 			b.append("='");
-			b.append(extendedData.get(key));
+			b.append(entry.getValue());
 			b.append("'");
 		}
 		b.append("/>");
