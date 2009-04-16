@@ -20,6 +20,7 @@ package org.mitre.giscore.events;
 
 import java.io.IOException;
 
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -85,6 +86,10 @@ public class NetworkLink extends Feature {
 	public void setLink(TaggedMap link) {
 		this.link = link;
 	}
+	
+    public void accept(IStreamVisitor visitor) {
+    	visitor.visit(this);
+    }
 	
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.events.Feature#readData(org.mitre.giscore.utils.SimpleObjectInputStream)

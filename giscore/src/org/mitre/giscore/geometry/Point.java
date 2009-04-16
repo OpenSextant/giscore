@@ -17,7 +17,7 @@ package org.mitre.giscore.geometry;
 
 import java.io.IOException;
 
-import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Angle;
@@ -176,7 +176,7 @@ public class Point extends Geometry {
 		return "Point at (" + pt.getLongitude() + ", " + pt.getLatitude() + ")";
 	}
 
-	public void accept(StreamVisitorBase visitor) {
+	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
 	}
 

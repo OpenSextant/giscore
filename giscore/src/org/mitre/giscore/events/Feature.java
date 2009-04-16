@@ -23,9 +23,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.input.kml.IKml;
-import org.mitre.giscore.output.StreamVisitorBase;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
@@ -96,7 +96,7 @@ public class Feature extends Common {
 		return IKml.PLACEMARK;
 	}
 
-	public void accept(StreamVisitorBase visitor) {
+	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
 	}
 

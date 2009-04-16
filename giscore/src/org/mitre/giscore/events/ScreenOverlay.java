@@ -21,6 +21,7 @@ package org.mitre.giscore.events;
 import java.io.IOException;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -124,6 +125,10 @@ public class ScreenOverlay extends Overlay {
         this.rotationAngle = rotationAngle;
 	}
 	
+    public void accept(IStreamVisitor visitor) {
+    	visitor.visit(this);
+    }
+    
 	/**
 	 * The approximately equals method checks all the fields for equality with
 	 * the exception of the geometry.

@@ -1,7 +1,7 @@
 /****************************************************************************************
- *  IGISContentHandler.java
+ *  ICategoryNameExtractor.java
  *
- *  Created: Jan 26, 2009
+ *  Created: Apr 16, 2009
  *
  *  @author DRAND
  *
@@ -16,16 +16,20 @@
  *  their occurrence.
  *
  ***************************************************************************************/
-package org.mitre.giscore.events;
+package org.mitre.giscore;
+
+import org.mitre.giscore.events.Row;
 
 /**
- * This interface describes a kind of input processor that participates in a 
- * constract very similar to that of the XML SAX parser. For each kind of object
- * that may be found, there's a corresponding handler method here. 
+ * Takes a Row and extracts a container name by processing the row.
  * 
  * @author DRAND
- *
  */
-public interface IGISContentHandler {
-
+public interface ICategoryNameExtractor {
+	/**
+	 * Extract a category name for a given row
+	 * @param row the row, or a subclass of the row, never <code>null</code>
+	 * @return the category name, never <code>null</code> but could be empty
+	 */
+	String extractCategoryName(Row row);
 }

@@ -889,17 +889,11 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		// Skip non-geometry features
 		if (feature.getGeometry() == null) return;
 		
-		FeatureKey key = sorter.add(feature);
+		String fullpath = path != null ? StringUtils.join(path, '_') : null;
+		FeatureKey key = sorter.add(feature, fullpath);
 		if (datasets.get(key) == null) {
 			StringBuilder setname = new StringBuilder();
-			for(String element : path) {
-				if (setname.length() > 0) {
-					setname.append("_");
-				}
-				if (StringUtils.isNotBlank(element)) {
-					setname.append(element);
-				}
-			}
+			setname.append(fullpath);
 			if (key.getGeoclass() != null) {
 				setname.append("_");
 				setname.append(key.getGeoclass().getSimpleName());

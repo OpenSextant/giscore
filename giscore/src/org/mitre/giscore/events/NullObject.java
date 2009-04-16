@@ -1,6 +1,6 @@
 package org.mitre.giscore.events;
 
-import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.IStreamVisitor;
 
 /**
  * Create a NullObject to indicate an XML element was skipped
@@ -32,6 +32,6 @@ public class NullObject implements IGISObject {
      *
      * @param visitor the visitor to dispatch to, never <code>null</code>
      */
-    public void accept(StreamVisitorBase visitor) {
+    public void accept(IStreamVisitor visitor) {
     }
 }

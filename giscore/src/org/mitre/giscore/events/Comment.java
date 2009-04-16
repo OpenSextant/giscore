@@ -2,7 +2,7 @@ package org.mitre.giscore.events;
 
 import java.io.Serializable;
 
-import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.IStreamVisitor;
 
 /**
  * Represents a Comment object. In XML would
@@ -54,7 +54,7 @@ public class Comment implements IGISObject, Serializable {
 	 *
 	 * @param visitor the visitor to dispatch to, never <code>null</code>
 	 */
-	public void accept(StreamVisitorBase visitor) {
+	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
 	}
 

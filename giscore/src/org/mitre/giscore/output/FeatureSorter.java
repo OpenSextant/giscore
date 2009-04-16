@@ -32,6 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.geometry.Geometry;
@@ -132,30 +133,37 @@ public class FeatureSorter {
 	}
 
 	/**
-	 * Add a feature to the appropriate file
+	 * Add a row to the appropriate file
 	 * 
-	 * @param feature
+	 * @param row
+	 * @param path
 	 */
-	public FeatureKey add(Feature feature) {
-		if (feature == null) {
+	public FeatureKey add(Row row, String path) {
+		if (row == null) {
 			throw new IllegalArgumentException(
-					"feature should never be null");
+					"row should never be null");
 		}
 		try {
-			Schema s = getSchema(feature);
+			Class<? extends Geometry> geoclass = null;
+			Geometry g = null;
+			Schema s = getSchema(row);
 			if (s.getOidField() == null) {
 				s.put(oid);
 			}
-			Class<? extends Geometry> geoclass = null;
-			if (feature.getGeometry() != null)
-				geoclass = feature.getGeometry().getClass();
-			FeatureKey key = new FeatureKey(s, geoclass, feature.getClass());
+			if (row instanceof Feature) {
+				Feature feature = (Feature) row;
+				if (feature.getGeometry() != null)
+					g = feature.getGeometry();
+					geoclass = feature.getGeometry().getClass();
+
+			}
+			FeatureKey key = new FeatureKey(s, path, geoclass, row.getClass());
 			SimpleObjectOutputStream stream = null;
 			if (!key.equals(currentKey)) {
 				currentKey = key;
 				File stemp = dataFileMap.get(key);
 				if (stemp == null) {
-					stemp = File.createTempFile("gdbrecordset", ".data");
+					stemp = File.createTempFile("sorter", ".data");
 					dataFileMap.put(key, stemp);
 					FileOutputStream os = new FileOutputStream(stemp, true);
 					DataOutputStream dos = new DataOutputStream(os);
@@ -164,8 +172,7 @@ public class FeatureSorter {
 				}
 			}
 			stream = dataStreamMap.get(key);
-			stream.writeObject(feature);
-			Geometry g = feature.getGeometry();
+			stream.writeObject(row);
 			if (g != null) {
 				Geodetic2DBounds bounds = boundingBoxes.get(key);
 				if (bounds == null) {
@@ -186,7 +193,7 @@ public class FeatureSorter {
 	}
 
 	/**
-	 * A feature may either have a reference to a known schema or data that is
+	 * A row may either have a reference to a known schema or data that is
 	 * not governed by a schema. The assumption here is that the extended data
 	 * will only belong to a single schema, either ad hoc or explicit.
 	 * <p>
@@ -197,14 +204,14 @@ public class FeatureSorter {
 	 * Names of the schema are urls, either fragments, which reference local
 	 * schemata, or full urls, which reference non-resident schemata.
 	 * 
-	 * @param feature
-	 *            the feature
+	 * @param row
+	 *            the row
 	 * @return the referenced schema, never <code>null</code> but keep in mind
 	 *         that internal schemata may be returned.
 	 * @throws MalformedURLException
 	 */
-	private Schema getSchema(Feature feature) throws MalformedURLException {
-		URI schema = feature.getSchema();
+	private Schema getSchema(Row row) throws MalformedURLException {
+		URI schema = row.getSchema();
 		if (schema != null) {
 			Schema rval = schemata.get(schema);
 			if (rval == null) {
@@ -214,7 +221,7 @@ public class FeatureSorter {
 			return rval;
 		}
 		// No schema case
-		Set<SimpleField> fields = getFields(feature);
+		Set<SimpleField> fields = getFields(row);
 		Schema rval = internalSchema.get(fields);
 		if (rval == null) {
 			rval = new Schema();
@@ -227,16 +234,16 @@ public class FeatureSorter {
 	}
 
 	/**
-	 * This feature has inline data in the extended data, so extract the field
+	 * This row has inline data in the extended data, so extract the field
 	 * names and create a set of such fields.
 	 * 
 	 * @param feature
 	 *            the feature
 	 * @return the fields, may be empty
 	 */
-	private Set<SimpleField> getFields(Feature feature) {
+	private Set<SimpleField> getFields(Row row) {
 		Set<SimpleField> rval = new HashSet<SimpleField>();
-		for (SimpleField field : feature.getFields()) {
+		for (SimpleField field : row.getFields()) {
 			rval.add(field);
 		}
 		return rval;

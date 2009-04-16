@@ -50,21 +50,21 @@ public class TestFeatureSorter extends TestGISBase {
 			values[0] = random.nextInt(18) + 1;
 			values[1] = random.nextInt(40) * 10;
 			Feature f = createFeature(Point.class, names, values);
-			sorter.add(f);
+			sorter.add(f, null);
 		}
 		for(int i = 0; i < 10; i++) {
 			values = new Object[2];
 			values[0] = random.nextInt(18) + 1;
 			values[1] = random.nextInt(40) * 10;
 			Feature f = createFeature(Line.class, names, values);
-			sorter.add(f);
+			sorter.add(f, null);
 		}
 		for(int i = 0; i < 5; i++) {
 			values = new Object[2];
 			values[0] = random.nextInt(18) + 1;
 			values[1] = random.nextInt(40) * 10;
 			Feature f = createFeature(LinearRing.class, names, values);
-			sorter.add(f);
+			sorter.add(f, null);
 		}
 		int totalcount = 0;
 		Assert.assertEquals(3, sorter.keys().size());
@@ -110,21 +110,21 @@ public class TestFeatureSorter extends TestGISBase {
 			values.put("category", "building");
 			values.put("subcategory", "house");
 			Feature f = createFeature(Point.class, s1, values);
-			sorter.add(f);
+			sorter.add(f, null);
 		}
 		for(int i = 0; i < 20; i++) {
 			values.put("phylum", "Mollusca");
 			values.put("species", "Oyster");
 			values.put("year", -1000);
 			Feature f = createFeature(Point.class, s2, values);
-			sorter.add(f);
+			sorter.add(f, null);
 		}
 		for(int i = 0; i < 20; i++) {
 			values.put("phylum", "Cordata");
 			values.put("species", "Cobra");
 			values.put("year", -4000);
 			Feature f = createFeature(Line.class, s2, values);
-			sorter.add(f);
+			sorter.add(f, null);
 		}		
 		int totalcount = 0;
 		Assert.assertEquals(3, sorter.keys().size());

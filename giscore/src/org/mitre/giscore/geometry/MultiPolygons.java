@@ -21,7 +21,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
@@ -150,7 +150,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 
     }
     
-    public void accept(StreamVisitorBase visitor) {
+    public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
     }
     

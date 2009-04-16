@@ -26,7 +26,7 @@ import java.util.List;
 
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Angle;
@@ -156,7 +156,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.VisitableGeometry#accept(org.mitre.giscore.output.StreamVisitorBase)
 	 */
-	public void accept(StreamVisitorBase visitor) {
+	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
 	}
 

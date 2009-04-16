@@ -18,14 +18,19 @@
  ***************************************************************************************/
 package org.mitre.giscore.output;
 
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.Comment;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.DocumentStart;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.GroundOverlay;
+import org.mitre.giscore.events.NetworkLink;
+import org.mitre.giscore.events.PhotoOverlay;
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.ScreenLocation;
+import org.mitre.giscore.events.ScreenOverlay;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.StyleMap;
 import org.mitre.giscore.geometry.Geometry;
@@ -48,7 +53,7 @@ import org.mitre.giscore.geometry.Polygon;
  * @author DRAND
  *
  */
-public class StreamVisitorBase {
+public class StreamVisitorBase implements IStreamVisitor {
 	
 	/**
 	 * Default behavior ignores containers
@@ -63,7 +68,6 @@ public class StreamVisitorBase {
 	 */
 	public void visit(StyleMap styleMap) {
 		// Ignored by default
-		
 	}
 
 	/**
@@ -80,6 +84,14 @@ public class StreamVisitorBase {
 		// Ignored by default	
 	}
 
+    /**
+     * Visting a row causes an error for non-row oriented output streams
+     * @param row
+     */
+    public void visit(Row row) {
+    	throw new UnsupportedOperationException("Can't output a tabular row");
+    }
+    
 	/**
 	 * @param feature
 	 */
@@ -89,6 +101,37 @@ public class StreamVisitorBase {
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.NetworkLink)
+	 */
+	@Override
+	public void visit(NetworkLink link) {
+		visit((Feature) link);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.PhotoOverlay)
+	 */
+	@Override
+	public void visit(PhotoOverlay overlay) {
+		visit((Feature) overlay);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.ScreenOverlay)
+	 */
+	@Override
+	public void visit(ScreenOverlay overlay) {
+		visit((Feature) overlay);
+	}
+
+	/**
+     * @param overlay
+     */
+    public void visit(GroundOverlay overlay) {
+    	visit((Feature) overlay);
+    } 
+    
 	/**
 	 * @param documentStart
 	 */
@@ -183,22 +226,7 @@ public class StreamVisitorBase {
         }
     }
 
-    /**
-     * Visting a row causes an error for non-row oriented output streams
-     * @param row
-     */
-    public void visit(Row row) {
-    	throw new UnsupportedOperationException("Can't output a tabular row");
-    }
-    
-    /**
-     * @param overlay
-     */
-    public void visit(GroundOverlay overlay) {
-        // do nothing
-    }
-
 	public void visit(Comment comment) {
-		// do nothing
+		// Ignored by default
 	}
 }

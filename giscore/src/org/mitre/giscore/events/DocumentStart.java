@@ -23,7 +23,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.IStreamVisitor;
 
 /**
  * This tags the document with the source information of what format it came
@@ -58,7 +58,7 @@ public class DocumentStart implements IGISObject {
 		this.type = type;
 	}
 	
-    public void accept(StreamVisitorBase visitor) {
+    public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
     }
     

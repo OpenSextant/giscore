@@ -18,7 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.geometry;
 
-import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.IStreamVisitor;
 
 /**
  * All visitable objects in giscore implement this interface.
@@ -30,5 +30,5 @@ public interface VisitableGeometry {
 	 * Visit the object
 	 * @param visitor the visitor to dispatch to, never <code>null</code>
 	 */
-	public void accept(StreamVisitorBase visitor);
+	public void accept(IStreamVisitor visitor);
 }

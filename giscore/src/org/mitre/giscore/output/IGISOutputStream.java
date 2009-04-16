@@ -20,6 +20,7 @@ package org.mitre.giscore.output;
 
 import java.io.Closeable;
 
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.IGISObject;
 
 /**

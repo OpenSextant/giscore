@@ -25,7 +25,7 @@ import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
-import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.IStreamVisitor;
 
 /**
  * Represents style information for points and lines. This information is used
@@ -378,7 +378,7 @@ public class Style implements IGISObject {
 		this.id = id;
 	}
 
-	public void accept(StreamVisitorBase visitor) {
+	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
 	}
 

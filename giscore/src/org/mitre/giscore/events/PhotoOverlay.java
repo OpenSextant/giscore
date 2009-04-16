@@ -18,6 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.input.kml.IKml;
 
 /**
@@ -41,4 +42,8 @@ public class PhotoOverlay extends Overlay {
 	public boolean approximatelyEquals(Feature tf) {
 		return super.approximatelyEquals(tf);
 	}
+	
+    public void accept(IStreamVisitor visitor) {
+    	visitor.visit(this);
+    }
 }

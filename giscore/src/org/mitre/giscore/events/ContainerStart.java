@@ -20,7 +20,7 @@ package org.mitre.giscore.events;
 
 import java.io.IOException;
 
-import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
@@ -67,7 +67,7 @@ public class ContainerStart extends Common {
 		this.type = type;
 	}
 	
-    public void accept(StreamVisitorBase visitor) {
+    public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
     }
 

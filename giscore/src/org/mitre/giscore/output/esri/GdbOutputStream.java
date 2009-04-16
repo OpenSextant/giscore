@@ -137,15 +137,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		 */
 		public String deriveContainerName(List<String> path, FeatureKey key) {
 			StringBuilder setname = new StringBuilder();
-
-			for (String element : path) {
-				if (setname.length() > 0) {
-					setname.append("_");
-				}
-				if (StringUtils.isNotBlank(element)) {
-					setname.append(element);
-				}
-			}
+			
+			setname.append(StringUtils.join(path, '_'));
 			if (key.getGeoclass() != null) {
 				if (setname.length() > 0)
 					setname.append("_");
@@ -887,7 +880,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 */
 	@Override
 	public void visit(ContainerEnd containerEnd) {
-		path.pop();
+		path.remove(path.size() - 1);
 	}
 
 	/*
@@ -899,7 +892,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 */
 	@Override
 	public void visit(ContainerStart containerStart) {
-		path.push(containerStart.getName());
+		path.add(containerStart.getName());
 	}
 
 	/*
@@ -915,7 +908,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		if (feature.getGeometry() == null)
 			return;
 
-		FeatureKey key = sorter.add(feature);
+		String fullpath = StringUtils.join(path, '_');
+		FeatureKey key = sorter.add(feature, fullpath);
 		if (datasets.get(key) == null) {
 			String datasetname = containerNameStrategy.deriveContainerName(
 					path, key);

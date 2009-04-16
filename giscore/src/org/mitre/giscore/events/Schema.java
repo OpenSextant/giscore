@@ -28,8 +28,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.SimpleField.Type;
-import org.mitre.giscore.output.StreamVisitorBase;
 
 /**
  * Defines a data schema. Data schemata are important because they allow us to 
@@ -175,7 +175,7 @@ public class Schema implements IGISObject {
 		return fields.get(name);
 	}
 	
-    public void accept(StreamVisitorBase visitor) {
+    public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
     }
 	

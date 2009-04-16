@@ -21,6 +21,7 @@ package org.mitre.giscore.events;
 import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -158,6 +159,10 @@ public class GroundOverlay extends Overlay {
 	public void setAltitudeMode(String altitudeMode) {
 		this.altitudeMode = altitudeMode;
 	}
+	
+    public void accept(IStreamVisitor visitor) {
+    	visitor.visit(this);
+    }
 
 	/**
 	 * The approximately equals method checks all the fields for equality with

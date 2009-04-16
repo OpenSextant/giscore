@@ -5,6 +5,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.mitre.giscore.events.Common;
+import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.geometry.Geometry;
 
@@ -15,11 +16,12 @@ import org.mitre.giscore.geometry.Geometry;
  */
 public class FeatureKey {
 	private Schema schema;
+	private String path;
 	private Class<? extends Geometry> geoclass;
-	private Class<? extends Common> featureClass;
+	private Class<? extends Row> featureClass;
 	
-	public FeatureKey(Schema schema, Class<? extends Geometry> geoclass, 
-			Class<? extends Common> featureClass) {
+	public FeatureKey(Schema schema, String path, Class<? extends Geometry> geoclass, 
+			Class<? extends Row> featureClass) {
 		if (schema == null) {
 			throw new IllegalArgumentException(
 					"schema should never be null");
@@ -30,6 +32,7 @@ public class FeatureKey {
 		}
 		this.featureClass = featureClass;
 		this.schema = schema;
+		this.path = path;
 		this.geoclass = geoclass;
 	}
 
@@ -50,8 +53,15 @@ public class FeatureKey {
 	/**
 	 * @return the featureClass
 	 */
-	public Class<? extends Common> getFeatureClass() {
+	public Class<? extends Row> getFeatureClass() {
 		return featureClass;
+	}
+
+	/**
+	 * @return the path
+	 */
+	public String getPath() {
+		return path;
 	}
 
 	/*
