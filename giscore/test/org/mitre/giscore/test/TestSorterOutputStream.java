@@ -1,5 +1,6 @@
 package org.mitre.giscore.test;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -16,6 +17,7 @@ import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.IGISInputStream;
@@ -96,6 +98,9 @@ public class TestSorterOutputStream extends TestGISBase {
 				strategy);
 		ContainerStart cs = new ContainerStart("results");
 		sos.write(cs);
+		Style teststyle = new Style();
+		teststyle.setLineStyle(Color.red, 1.4);
+		sos.write(teststyle);
 		for (int i = 0; i < 100; i++) {
 			sos.write(getRandomFeature(i));
 		}

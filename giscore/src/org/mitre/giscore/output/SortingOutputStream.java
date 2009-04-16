@@ -218,6 +218,7 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 */
 	@Override
 	public void visit(Schema schema) {
+		stream.write(schema);
 		sorter.add(schema);
 	}
 
