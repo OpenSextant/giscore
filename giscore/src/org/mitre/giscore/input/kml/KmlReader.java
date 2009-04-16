@@ -326,7 +326,7 @@ public class KmlReader extends KmlBaseReader {
          * All elements will be reported in order.
          *
          * @param ref UriRef for NetworkLink resource
-         * @param gisObj new IGISObject
+         * @param gisObj new IGISObject object. This will never be null.
          */
         void handleEvent(UrlRef ref, IGISObject gisObj);
     }
