@@ -114,10 +114,9 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	private static final Logger logger = LoggerFactory
 			.getLogger(GdbOutputStream.class);
 
-    private static final ISO8601DateFormat ISO_DATE_FMT = new ISO8601DateFormat();
+	private static final ISO8601DateFormat ISO_DATE_FMT = new ISO8601DateFormat();
 
-
-    /**
+	/**
 	 * Checker to use for dataset names
 	 */
 	private FieldChecker checker = null;
@@ -126,7 +125,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * Strategy that uses the current "container" along with the geometry to
 	 * derive a name.
 	 */
-	public static class GdbContainerNameStrategy implements IContainerNameStrategy {
+	public static class GdbContainerNameStrategy implements
+			IContainerNameStrategy {
 
 		/*
 		 * (non-Javadoc)
@@ -137,7 +137,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		 */
 		public String deriveContainerName(List<String> path, FeatureKey key) {
 			StringBuilder setname = new StringBuilder();
-			
+
 			setname.append(StringUtils.join(path, '_'));
 			if (key.getGeoclass() != null) {
 				if (setname.length() > 0)
@@ -583,13 +583,13 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 		switch (type) {
 		case esriFieldType.esriFieldTypeSmallInteger:
-			return makeIntegerVariant(name, Variant.VT_I2, value);
+			return makeIntegerVariant(name, 2, Variant.VT_I2, value);
 		case esriFieldType.esriFieldTypeInteger:
-			return makeIntegerVariant(name, Variant.VT_I4, value);
+			return makeIntegerVariant(name, 4, Variant.VT_I4, value);
 		case esriFieldType.esriFieldTypeSingle:
-			return makeFloatVariant(name, Variant.VT_R4, value);
+			return makeFloatVariant(name, true, Variant.VT_R4, value);
 		case esriFieldType.esriFieldTypeDouble:
-			return makeFloatVariant(name, Variant.VT_R8, value);
+			return makeFloatVariant(name, false, Variant.VT_R8, value);
 		case esriFieldType.esriFieldTypeDate:
 			if (value instanceof Date) {
 				return new Variant(name, Variant.VT_DATE, (Date) value);
@@ -600,7 +600,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 						+ value.getClass());
 			}
 		case esriFieldType.esriFieldTypeOID:
-			return makeIntegerVariant(name, Variant.VT_INT, value);
+			return makeIntegerVariant(name, 4, Variant.VT_INT, value);
 		case esriFieldType.esriFieldTypeString:
 			if (value instanceof Date) {
 				return new Variant(name, Variant.VT_BSTR, ISO_DATE_FMT
@@ -613,23 +613,42 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		}
 	}
 
-	private Variant makeFloatVariant(String name, int ft, Object value) {
+	private Variant makeFloatVariant(String name, boolean single, int ft,
+			Object value) {
 		if (value instanceof Number) {
-			return new Variant(name, ft, ((Number) value).doubleValue());
+			if (single)
+				return new Variant(name, ft, ((Number) value).floatValue());
+			else
+				return new Variant(name, ft, ((Number) value).doubleValue());
 		} else if (value instanceof String) {
-			return new Variant(name, ft, new Double((String) value)
-					.doubleValue());
+			if (single)
+				return new Variant(name, ft, new Float((String) value)
+						.floatValue());
+			else
+				return new Variant(name, ft, new Double((String) value)
+						.doubleValue());
 		} else {
 			throw new IllegalArgumentException("Uncoercible type found "
 					+ value.getClass());
 		}
 	}
 
-	private Variant makeIntegerVariant(String name, int ft, Object value) {
+	private Variant makeIntegerVariant(String name, int bytes, int ft,
+			Object value) {
 		if (value instanceof Number) {
-			return new Variant(name, ft, ((Number) value).intValue());
+			if (bytes == 2)
+				return new Variant(name, ft, ((Number) value).shortValue());
+			else
+				return new Variant(name, ft, ((Number) value).intValue());
+		} else if (value instanceof Boolean) {
+			return new Variant(name, ft, (short) (((Boolean) value) ? 1 : 0));
 		} else if (value instanceof String) {
-			return new Variant(name, ft, new Integer((String) value).intValue());
+			if (bytes == 2)
+				return new Variant(name, ft, new Short((String) value)
+						.shortValue());
+			else
+				return new Variant(name, ft, new Integer((String) value)
+						.intValue());
 		} else {
 			throw new IllegalArgumentException("Uncoercible type found "
 					+ value.getClass());
@@ -641,8 +660,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 */
-	private IFeatureClass addSchema(FeatureKey key)
-			throws IOException {
+	private IFeatureClass addSchema(FeatureKey key) throws IOException {
 		if (key.getGeoclass() == null) {
 			return null; // Probably an overlay feature, skip
 		}
@@ -672,14 +690,15 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		IEnumFieldError[] errors = new IEnumFieldError[1];
 		IFields[] fixedFields = new IFields[1];
 		checker.validate(fields, errors, fixedFields);
-		
+
 		if (errors[0] != null) {
-			throw new RuntimeException("There are one or more invalid field names for data set " + dsname);
+			throw new RuntimeException(
+					"There are one or more invalid field names for data set "
+							+ dsname);
 		}
-		
-		return featureWorkspace.createFeatureClass(dsname,
-				fields, clsid, extclsid, featureType, shapeFieldName,
-				configKeyword);
+
+		return featureWorkspace.createFeatureClass(dsname, fields, clsid,
+				extclsid, featureType, shapeFieldName, configKeyword);
 	}
 
 	/**
@@ -700,7 +719,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		}
 		return dsname;
 	}
-	
+
 	/**
 	 * @return the checker
 	 */
@@ -710,7 +729,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 				checker = new FieldChecker();
 				checker.setInputWorkspace(workspace);
 			} catch (Exception e) {
-				throw new RuntimeException("Failed to instantiate the field checker", e);
+				throw new RuntimeException(
+						"Failed to instantiate the field checker", e);
 			}
 		}
 	}

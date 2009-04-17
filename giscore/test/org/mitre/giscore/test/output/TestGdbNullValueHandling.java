@@ -23,6 +23,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.zip.ZipOutputStream;
 
 import org.junit.Test;
@@ -35,6 +38,8 @@ import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.test.TestGISBase;
+
+import com.esri.arcgis.system.Array;
 
 
 /**
@@ -50,7 +55,7 @@ public class TestGdbNullValueHandling extends TestGISBase {
 		IGISOutputStream os = null;
 		ZipOutputStream zos = null;
 		zos = new ZipOutputStream(fos);
-		os = GISFactory.getOutputStream(DocumentType.FileGDB, zos, createTemp("t",".gdb"));
+		os = GISFactory.getOutputStream(DocumentType.FileGDB, zos, createTemp("t",".gdb")); 
 		
 		Schema ts = new Schema(new URI("#test_schema"));
 		
@@ -80,6 +85,55 @@ public class TestGdbNullValueHandling extends TestGISBase {
 		feature.setGeometry(new Point(44.0, 32.0));
 		os.write(feature);
 		
+		for(int i = 0; i < (9*9*9); i++) {
+			feature = new Feature();
+			feature.setSchema(new URI("#test_schema"));
+			feature.putData(b, true);
+			feature.putData(dt, new Date());
+			feature.putData(db, Math.PI);
+			feature.putData(f, (float) Math.E);
+			feature.putData(i1, 1);
+			feature.putData(s1, 2);
+			feature.putData(str, "abc");
+			feature.putData(ui, 3);
+			feature.putData(us, 4);
+			feature.setGeometry(new Point(44.0, 32.0));
+			eliminateField(feature, i, ts);
+			os.write(feature);	
+		}
+		
 		os.close();
+	}
+
+	/**
+	 * @param feature 
+	 * @param i
+	 * @param ts
+	 */
+	private void eliminateField(Feature feature, int i, Schema ts) {
+		int count = ts.getKeys().size();
+		Object[] names = ts.getKeys().toArray();
+		int first = i % count;
+		String firstField = (String) names[first];
+		int rem = i / count;
+		String secondField = null;
+		if (rem > 0) {
+			int second = rem % count;
+			secondField = (String) names[second];
+			rem = rem / count;
+		}
+		String thirdField = null;
+		if (rem > 0) {
+			int third = rem % count;
+			thirdField = (String) names[third];
+			rem = rem / count;
+		}
+		feature.putData(ts.get(firstField), null);
+		if (secondField != null) {
+			feature.putData(ts.get(secondField), null);
+		}
+		if (thirdField != null) {
+			feature.putData(ts.get(thirdField), null);
+		}
 	}
 }

@@ -191,7 +191,22 @@ public abstract class Common extends Row {
 	 */
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this,
-				ToStringStyle.MULTI_LINE_STYLE);
+		StringBuilder b = new StringBuilder(super.toString());
+		b.append(" name = ");
+		b.append(name);
+		b.append('\n');
+		b.append(" description = ");
+		b.append(description);
+		b.append('\n');
+		b.append(" startTime = ");
+		b.append(startTime);
+		b.append('\n');
+		b.append(" endTime = ");
+		b.append(endTime);
+		b.append('\n');
+		b.append(" styleUrl = ");
+		b.append(styleUrl);
+		b.append('\n');
+		return b.toString();
 	}
 }

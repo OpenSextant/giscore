@@ -187,17 +187,27 @@ public class Row implements IGISObject, IDataSerializable {
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder(80);
-		b.append("<Row schemaUri='");
-		b.append(schema);
-		b.append("'");
+		b.append(getClass().getSimpleName());
+		b.append(" data=\n");
         for(Map.Entry<SimpleField, Object> entry : extendedData.entrySet()) {
-			b.append(" ");
-			b.append(entry.getKey());
-			b.append("='");
-			b.append(entry.getValue());
-			b.append("'");
+        	SimpleField field = entry.getKey();
+			b.append("    ");
+			b.append(field.getName());
+			b.append(" (");
+			b.append(field.getType().name());
+			b.append(')');
+			b.append(" = ");
+			if (ObjectUtils.NULL.equals(entry.getValue())) {
+				b.append("null");
+			} else {
+				b.append('\'');
+				b.append(entry.getValue());
+				b.append('\'');
+			}
+			b.append('\n');
 		}
-		b.append("/>");
+        b.append("\n schemaUri=");
+		b.append(schema);
 		return b.toString();
 	}
 }

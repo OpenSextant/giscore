@@ -5,7 +5,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
@@ -52,7 +55,7 @@ import org.mitre.giscore.output.SortingOutputStream;
  * 
  */
 public class TestSorterOutputStream extends TestGISBase {
-	static SimpleField ms_type = new SimpleField("type", Type.STRING);
+	static SimpleField ms_type = new SimpleField("reportType", Type.STRING);
 
 	/**
 	 * @author DRAND
@@ -91,17 +94,42 @@ public class TestSorterOutputStream extends TestGISBase {
 	}
 
 	@Test
-	public void doTest() throws Exception {
+	public void testKml() throws Exception {
 		File temp = createTemp("test", ".kml");
 		OutputStream fos = new FileOutputStream(temp);
 		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
 		TestCNS strategy = new TestCNS();
 		SortingOutputStream sos = new SortingOutputStream(os, strategy,
 				strategy);
+		outputTestData(sos);
+
+		sos.close();
+		fos.close();
+	}
+
+	@Test
+	public void testFileGDB() throws Exception {
+		File temp = createTemp("test", ".zip");
+		File gdbDir = new File(temp.getParentFile(), "test.gdb");
+		OutputStream fos = new FileOutputStream(temp);
+		ZipOutputStream zos = new ZipOutputStream(fos);
+		zos.putNextEntry(new ZipEntry("Results"));
+		TestCNS strategy = new TestCNS();
+		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.FileGDB, zos, gdbDir, strategy);
+		SortingOutputStream sos = new SortingOutputStream(os, strategy,
+				strategy);
+		outputTestData(sos);
+
+		sos.close();
+		zos.close();
+	}
+	
+	private void outputTestData(SortingOutputStream sos)
+			throws URISyntaxException {
 		Schema ts = new Schema(new URI("#testSchema"));
-		ts.put(new SimpleField("test1", SimpleField.Type.DOUBLE));
-		ts.put(new SimpleField("test2", SimpleField.Type.STRING));
-		ts.put(new SimpleField("test3", SimpleField.Type.INT));
+		ts.put(new SimpleField("height", SimpleField.Type.DOUBLE));
+		ts.put(new SimpleField("reportType", SimpleField.Type.STRING));
+		ts.put(new SimpleField("count", SimpleField.Type.INT));
 		ContainerStart cs = new ContainerStart("results");
 		Style teststyle = new Style();
 		teststyle.setLineStyle(Color.red, 1.4);
@@ -112,9 +140,6 @@ public class TestSorterOutputStream extends TestGISBase {
 		for (int i = 0; i < 100; i++) {
 			sos.write(getRandomFeature(i));
 		}
-
-		sos.close();
-		fos.close();
 	}
 
 	private static String types[] = { "orange", "cherry", "apple" };
