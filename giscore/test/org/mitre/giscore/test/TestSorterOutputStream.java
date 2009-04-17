@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.net.URI;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -16,6 +17,7 @@ import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Row;
+import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.SimpleField.Type;
@@ -96,11 +98,17 @@ public class TestSorterOutputStream extends TestGISBase {
 		TestCNS strategy = new TestCNS();
 		SortingOutputStream sos = new SortingOutputStream(os, strategy,
 				strategy);
+		Schema ts = new Schema(new URI("#testSchema"));
+		ts.put(new SimpleField("test1", SimpleField.Type.DOUBLE));
+		ts.put(new SimpleField("test2", SimpleField.Type.STRING));
+		ts.put(new SimpleField("test3", SimpleField.Type.INT));
 		ContainerStart cs = new ContainerStart("results");
-		sos.write(cs);
 		Style teststyle = new Style();
 		teststyle.setLineStyle(Color.red, 1.4);
 		sos.write(teststyle);
+		sos.write(cs);
+		sos.write(ts);
+		
 		for (int i = 0; i < 100; i++) {
 			sos.write(getRandomFeature(i));
 		}
@@ -124,3 +132,4 @@ public class TestSorterOutputStream extends TestGISBase {
 	}
 
 }
+

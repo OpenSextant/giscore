@@ -90,6 +90,11 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	private ICategoryNameExtractor extractor = null;
 	
 	/**
+	 * Elements put into this collection are output when the stream is closed
+	 */
+	private List<IGISObject> delayedElements = new ArrayList<IGISObject>();
+	
+	/**
 	 * Ctor
 	 * 
 	 * @param innerstream
@@ -133,7 +138,7 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 */
 	@Override
 	public void visit(Comment comment) {
-		stream.write(comment);
+		delayedElements.add(comment);
 	}
 
 	/*
@@ -218,7 +223,6 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 */
 	@Override
 	public void visit(Schema schema) {
-		stream.write(schema);
 		sorter.add(schema);
 	}
 
@@ -258,6 +262,12 @@ public class SortingOutputStream extends StreamVisitorBase implements
 		ContainerStart outercontainer = new ContainerStart("Document");
 		if (StringUtils.isNotBlank(outer)) outercontainer.setName(outer);
 		stream.write(outercontainer);
+		for(IGISObject element : delayedElements) {
+			stream.write(element);
+		}
+		for(Schema schema : sorter.schemata()) {
+			stream.write(schema);
+		}
 		for(FeatureKey key : keys) {
 			File file = sorter.getFeatureFile(key);
 			FileInputStream fis = null;
