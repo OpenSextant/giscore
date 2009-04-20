@@ -516,7 +516,13 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 				throw new RuntimeException(e);
 			}
 		} else {
-			handleCharacters(datum.toString());
+			String val = datum.toString();
+			int size = field.getLength() != null ? field.getLength() : 0;
+			if (SimpleField.Type.STRING.equals(field.getType()) && size > 0 &&
+					val.length() > size) {
+				val = val.substring(0, size - 1);
+			}
+			handleCharacters(val);
 		}
 		writer.writeEndElement();
 	}
@@ -560,7 +566,17 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	@Override
 	public void visit(LinearRing ring) {
 		try {
-			writeRing(null, ring);
+			writeEsriType("PolygonN");
+			handleSimpleElement(HAS_ID, "false");
+			handleSimpleElement(HAS_Z, "false");
+			handleSimpleElement(HAS_M, "false");
+			writeExtent(ring.getBoundingBox(), false);
+			writer.writeStartElement(RING_ARRAY);
+			writeEsriType("ArrayOfRing");
+			if (ring.getBoundingBox() != null) {
+				writeRing(RING, ring);
+			}
+			writer.writeEndElement();
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
 		}
@@ -843,11 +859,9 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		} else if (geoclass.isAssignableFrom(Line.class)) {
 			return "esriGeometryPolyline";
 		} else if (geoclass.isAssignableFrom(LinearRing.class)) {
-			return "esriGeometryRing";
+			return "esriGeometryPolygon";
 		} else if (geoclass.isAssignableFrom(Polygon.class)) {
 			return "esriGeometryPolygon";
-		} else if (geoclass.isAssignableFrom(GeometryBag.class)) {
-			return "esriGeometryBag";
 		} else if (geoclass.isAssignableFrom(MultiPoint.class)) {
 			return "esriGeometryMultipoint";
 		} else {

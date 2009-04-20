@@ -155,7 +155,7 @@ public class SimpleField implements IDataSerializable {
 		if (type == null) {
 			throw new IllegalArgumentException("type should never be null");
 		}
-		this.type = type;
+		setType(type);
 	}
 
 	/**
@@ -178,6 +178,8 @@ public class SimpleField implements IDataSerializable {
 	 */
 	public void setType(Type type) {
 		this.type = type;
+		setLength(type.getDefaultLength());
+		setPrecision(type.getDefaultPrecision());
 	}
 
 	/**

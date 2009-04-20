@@ -1,7 +1,7 @@
 /****************************************************************************************
- *  TestXmlGdbSupport.java
+ *  TestGdbStringTruncation.java
  *
- *  Created: Feb 11, 2009
+ *  Created: Apr 17, 2009
  *
  *  @author DRAND
  *
@@ -16,16 +16,15 @@
  *  their occurrence.
  *
  ***************************************************************************************/
-package org.mitre.giscore.test;
+package org.mitre.giscore.test.output;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -39,71 +38,23 @@ import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
-import org.mitre.giscore.test.input.TestKmlInputStream;
+import org.mitre.giscore.test.TestGISBase;
 
 
 /**
- * Test inputting data from some KML sources and outputting to Gdb. 
- * 
- * Add input tests for Gdb once support is done for that format.
- * 
  * @author DRAND
  *
  */
-public class TestXmlGdbSupport extends TestGISBase  {
+public class TestGdbStringTruncation extends TestGISBase {
 	public static final String TEST = "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
-
-	/**
-	 * Base path to test directories
-	 */
-	public static final String base_path = "data/kml/";
-
-	@Test public void test1() throws Exception {
-		InputStream s = TestKmlInputStream.class.getResourceAsStream("7084.kml");
-		doXmlTest(s);
-	}
-
-	 @Test
-	public void test2() throws Exception {
-		InputStream s = new FileInputStream(base_path
-				+ "Placemark/LineString/straight.kml");
-		doXmlTest(s);
-	}
-
-	@Test
-	public void test3() throws Exception {
-		InputStream s = new FileInputStream(base_path
-				+ "Placemark/LineString/extruded.kml");
-		doXmlTest(s);
-	}
-
-	@Test
-	public void test4() throws Exception {
-		InputStream s = new FileInputStream(base_path
-				+ "Placemark/LinearRing/polygon-lr-all-modes.kml");
-		doXmlTest(s);
-	}
-
-	@Test
-	public void test5() throws Exception {
-		InputStream s = new FileInputStream(base_path
-				+ "Polygon/treasureIsland.kml");
-		doXmlTest(s);
-	}
-
-	@Test
-	public void test6() throws Exception {
-		InputStream s = TestKmlInputStream.class
-				.getResourceAsStream("KML_sample1.kml");
-		doXmlTest(s);
-	}
 	
-	@Test
-	public void testMultiPointWithDate() throws Exception {
-		File test = createTemp("t", ".xml");
+	@Test public void doTest() throws IOException {
+		File test = createTemp("t", ".zip");
+		File testgdb = new File(test.getParentFile(), "test.gdb");
 		FileOutputStream fos = new FileOutputStream(test);
-		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.XmlGDB, fos);
-		
+		ZipOutputStream zos = new ZipOutputStream(fos);
+		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.FileGDB, zos, testgdb);
+
 		SimpleField nameid = new SimpleField("nameid");
 		nameid.setType(SimpleField.Type.INT);
 		SimpleField dtm = new SimpleField("dtm");
@@ -111,7 +62,7 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		SimpleField extra = new SimpleField("extra");
 		extra.setType(SimpleField.Type.INT);
 		SimpleField large = new SimpleField("large", SimpleField.Type.STRING);
-		large.setLength(100);
+		large.setLength(150);
 		
 		Schema s = new Schema();
 		s.put(nameid);
@@ -152,22 +103,20 @@ public class TestXmlGdbSupport extends TestGISBase  {
 		f.putData(extra, null);
 		os.write(f);
 		
-		os.close();
-		IOUtils.closeQuietly(fos);
-	}
-	
-	public void doXmlTest(InputStream is) throws IOException {
-		IGISInputStream gisis = GISFactory.getInputStream(DocumentType.KML, is);
-		doTest(gisis);
-	}
-	
-	public void doTest(IGISInputStream is) throws IOException {
-		File test = createTemp("t", ".xml");
-		FileOutputStream fos = new FileOutputStream(test);
-		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.XmlGDB, fos);
-		for(IGISObject object = is.read(); object != null; object = is.read()) {
-			os.write(object);
-		}
+		f = new Feature();
+		f.setSchema(s.getId());
+		pnts = new ArrayList<Point>();
+		pnts.add(new Point(45.3, 36.4));
+		pnts.add(new Point(42.1, 34.6));
+		pnts.add(new Point(42.1, 35.6));
+		mp = new MultiPoint(pnts);
+		f.setGeometry(mp);
+		f.putData(nameid, 3);
+		f.putData(dtm, new Date());
+		f.putData(large, TEST);
+		f.putData(extra, null);
+		os.write(f);		
+		
 		os.close();
 		IOUtils.closeQuietly(fos);
 	}

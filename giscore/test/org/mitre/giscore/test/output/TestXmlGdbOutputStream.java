@@ -29,6 +29,8 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.events.ContainerEnd;
+import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
@@ -47,7 +49,6 @@ import org.mitre.giscore.test.TestGISBase;
  */
 public class TestXmlGdbOutputStream extends TestGISBase {
 	@Test public void testSimple() throws Exception {
-		List<Feature> features = new ArrayList<Feature>();
 		Schema s1 = new Schema();
 		SimpleField field = new SimpleField("category");
 		field.setDisplayName("Category");
@@ -58,48 +59,60 @@ public class TestXmlGdbOutputStream extends TestGISBase {
 		field.setType(SimpleField.Type.STRING);
 		s1.put(field);
 		
+		File test = createTemp("testxmlgdb", ".xml");
+		FileOutputStream fos = new FileOutputStream(test);
+		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.XmlGDB, fos);
+		os.write(s1);
+		
 		String names[] = {"hole", "distance"};
 		Object values[];
+		ContainerStart cs = new ContainerStart("Folder");
+		cs.setName("One");
+		os.write(cs);
 		for(int i = 0; i < 3; i++) {
 			values = new Object[2];
 			values[0] = random.nextInt(18) + 1;
 			values[1] = random.nextInt(40) * 10;
 			Feature f = createFeature(Point.class, names, values);
-			features.add(f);
-		}
-		Map<String,Object> vmap = new HashMap<String, Object>();
-		for(int i = 0; i < 10; i++) {
-			vmap.put("category", "building");
-			vmap.put("subcategory", "house");
-			Feature f = createFeature(Point.class, s1, vmap);
-			features.add(f);
-		}
-		for(int i = 0; i < 10; i++) {
-			vmap.put("category", "building");
-			vmap.put("subcategory", "house");
-			Feature f = createFeature(Line.class, s1, vmap);
-			features.add(f);
-		}
-		for(int i = 0; i < 10; i++) {
-			vmap.put("category", "building");
-			vmap.put("subcategory", "house");
-			Feature f = createFeature(LinearRing.class, s1, vmap);
-			features.add(f);
-		}
-		for(int i = 0; i < 10; i++) {
-			vmap.put("category", "building");
-			vmap.put("subcategory", "house");
-			Feature f = createFeature(Polygon.class, s1, vmap);
-			features.add(f);
-		}
-		
-		File test = createTemp("testxmlgdb", ".xml");
-		FileOutputStream fos = new FileOutputStream(test);
-		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.XmlGDB, fos);
-		os.write(s1);
-		for(Feature f : features) {
 			os.write(f);
 		}
+		os.write(new ContainerEnd());
+		Map<String,Object> vmap = new HashMap<String, Object>();
+		vmap.put("category", "building");
+		vmap.put("subcategory", "house");
+
+		cs = new ContainerStart("Folder");
+		cs.setName("Two");
+		os.write(cs);
+		for(int i = 0; i < 10; i++) {
+			Feature f = createFeature(Point.class, s1, vmap);
+			os.write(f);
+		}
+		os.write(new ContainerEnd());
+		cs = new ContainerStart("Folder");
+		cs.setName("Three");
+		os.write(cs);
+		for(int i = 0; i < 10; i++) {
+			Feature f = createFeature(Line.class, s1, vmap);
+			os.write(f);
+		}
+		os.write(new ContainerEnd());
+		cs = new ContainerStart("Folder");
+		cs.setName("Four");
+		os.write(cs);
+		for(int i = 0; i < 10; i++) {
+			Feature f = createFeature(LinearRing.class, s1, vmap);
+			os.write(f);
+		}
+		os.write(new ContainerEnd());
+		cs = new ContainerStart("Folder");
+		cs.setName("Five");
+		os.write(cs);
+		for(int i = 0; i < 10; i++) {
+			Feature f = createFeature(Polygon.class, s1, vmap);
+			os.write(f);
+		}
+		os.write(new ContainerEnd());
 		os.close();
 		IOUtils.closeQuietly(fos);
 	}

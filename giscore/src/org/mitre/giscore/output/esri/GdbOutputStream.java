@@ -430,7 +430,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 							buffer.setShapeByRef(geo);
 						}
 					} else if (fc.getOIDFieldName().equals(field.getName())) {
-						Variant oval = createVariant(field.getType(), field
+						Variant oval = createVariant(field.getType(), field.getLength(), field
 								.getName(), oid++);
 						buffer.setValue(i, oval);
 					} else {
@@ -441,7 +441,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 						SimpleField gisfield = etosf.get(field.getName());
 						if (gisfield != null) {
 							Object value = current.getData(gisfield);
-							Variant vval = createVariant(field.getType(), field
+							Variant vval = createVariant(field.getType(), field.getLength(), field
 									.getName(), value);
 							buffer.setValue(i, vval);
 						} else {
@@ -565,14 +565,14 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * Create a variant of the given object datum
 	 * 
 	 * @param type
-	 * 
+	 * @param size
 	 * @param name
 	 *            the name, never <code>null</code> or empty
 	 * @param value
 	 *            the object datum
 	 * @return the appropriate variant
 	 */
-	private Variant createVariant(int type, String name, Object value) {
+	private Variant createVariant(int type, int size, String name, Object value) {
 		if (name == null || name.trim().length() == 0) {
 			throw new IllegalArgumentException(
 					"name should never be null or empty");
@@ -606,7 +606,11 @@ public class GdbOutputStream extends StreamVisitorBase implements
 				return new Variant(name, Variant.VT_BSTR, ISO_DATE_FMT
 						.format((Date) value));
 			} else {
-				return new Variant(name, Variant.VT_BSTR, value.toString());
+				String str = value.toString();
+				if (str.length() > size) {
+					str = str.substring(0, size - 1);
+				}
+				return new Variant(name, Variant.VT_BSTR, str);
 			}
 		default:
 			throw new IllegalStateException("Found unsupported type: " + type);
