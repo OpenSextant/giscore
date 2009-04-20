@@ -345,7 +345,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 				throw new IllegalStateException(
 						"Can't output multi-component output without a zip output stream");
 			}
-			outputZipComponents("", outputPath, (ZipOutputStream) outputStream);
+			outputZipComponents(outputPath.getName(), outputPath, (ZipOutputStream) outputStream);
 		} else {
 			InputStream is = null;
 			try {
