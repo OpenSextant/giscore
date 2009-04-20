@@ -104,7 +104,6 @@ public class StreamVisitorBase implements IStreamVisitor {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.NetworkLink)
 	 */
-	@Override
 	public void visit(NetworkLink link) {
 		visit((Feature) link);
 	}
@@ -112,7 +111,6 @@ public class StreamVisitorBase implements IStreamVisitor {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.PhotoOverlay)
 	 */
-	@Override
 	public void visit(PhotoOverlay overlay) {
 		visit((Feature) overlay);
 	}
@@ -120,7 +118,6 @@ public class StreamVisitorBase implements IStreamVisitor {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.ScreenOverlay)
 	 */
-	@Override
 	public void visit(ScreenOverlay overlay) {
 		visit((Feature) overlay);
 	}

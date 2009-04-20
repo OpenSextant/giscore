@@ -124,7 +124,6 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 * org.mitre.giscore.output.IGISOutputStream#write(org.mitre.giscore.events
 	 * .IGISObject)
 	 */
-	@Override
 	public void write(IGISObject object) {
 		object.accept(this);
 	}
@@ -136,7 +135,6 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
 	 * .Comment)
 	 */
-	@Override
 	public void visit(Comment comment) {
 		delayedElements.add(comment);
 	}
@@ -255,7 +253,6 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 * 
 	 * @see java.io.Closeable#close()
 	 */
-	@Override
 	public void close() throws IOException {
 		Collection<FeatureKey> keys = sorter.keys();
 		stream.write(new DocumentStart(DocumentType.KML));

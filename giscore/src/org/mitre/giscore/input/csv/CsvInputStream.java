@@ -153,7 +153,6 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.input.IGISInputStream#close()
 	 */
-	@Override
 	public void close() {
 		IOUtils.closeQuietly(reader);
 	}
@@ -161,7 +160,6 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.input.IGISInputStream#read()
 	 */
-	@Override
 	public IGISObject read() throws IOException {
 		if (hasSaved()) {
 			return super.readSaved();
@@ -187,7 +185,9 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 		try {
 			 suri = new URI("#csvschema");
 		} catch (URISyntaxException e) {
-			throw new IOException(e);
+			final IOException e2 = new IOException();
+			e2.initCause(e);
+			throw e2;
 		}
 		if (schema == null) {
 			schema = new Schema();

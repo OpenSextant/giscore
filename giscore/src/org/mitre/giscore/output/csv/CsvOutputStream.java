@@ -113,7 +113,6 @@ public class CsvOutputStream extends StreamVisitorBase implements
 	 * org.mitre.giscore.output.IGISOutputStream#write(org.mitre.giscore.events
 	 * .IGISObject)
 	 */
-	@Override
 	public void write(IGISObject object) {
 		if (object == null) {
 			throw new IllegalArgumentException(
@@ -127,7 +126,6 @@ public class CsvOutputStream extends StreamVisitorBase implements
 	 * 
 	 * @see java.io.Closeable#close()
 	 */
-	@Override
 	public void close() throws IOException {
 		writer.close();
 	}
