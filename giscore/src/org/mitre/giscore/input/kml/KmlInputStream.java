@@ -120,7 +120,12 @@ import org.slf4j.LoggerFactory;
  * Geometry is handled by common code as well. All coordinates in KML are
  * transmitted as tuples of two or three elements. The formatting of these is
  * consistent and is handled by {@link #parseCoordinates(String)}.
- * 
+ * <p>
+ * Note only a single Data/SchemaData/Schema ExtendedData mapping is assumed
+ * per Feature but Collections can reference among several Schemas. Features
+ * with mixed Data and/or Multiple SchemaData elements will be associated only
+ * with the last Schema referenced.
+ *
  * @author DRAND
  * 
  */
@@ -404,6 +409,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					if (name != null) {
 						String value = parseValue(DATA);
 						cs.putData(new SimpleField(name.getValue()), value);
+                        // NOTE: if feature has mixed Data and SchemaData then Data fields will be associated with last SchemaData schema processed
 					}
 				} else if (tag.equals(SCHEMA_DATA)) {
 					Attribute url = se
@@ -495,6 +501,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 							// Either we don't know the schema or it isn't local
 							field = new SimpleField(name.getValue());
 						}
+                        // NOTE: if feature has multiple SchemaData elements (multi-schemas) then fields will be associated with last SchemaData schema processed
 						cs.putData(field, value);
 					}
 				}
