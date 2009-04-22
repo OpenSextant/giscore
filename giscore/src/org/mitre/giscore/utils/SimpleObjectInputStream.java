@@ -168,7 +168,7 @@ public class SimpleObjectInputStream {
 	/**
 	 * Read a string from the data stream
 	 * 
-	 * @return
+	 * @return The string read, possibly {@code null}.
 	 * @throws IOException if an I/O error occurs
 	 */
 	public String readString() throws IOException {

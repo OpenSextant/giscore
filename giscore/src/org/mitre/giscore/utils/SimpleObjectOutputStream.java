@@ -153,10 +153,10 @@ public class SimpleObjectOutputStream {
 
 	/**
 	 * Helper method that aids in writing a string to the data stream
-	 * @param stream
-	 * @param str
+	 * @param str the string to write.
 	 * @throws IOException
 	 */
+    // REVIEW! : Doug should an empty string write null ?
 	public void writeString(String str) throws IOException {
 		if (StringUtils.isBlank(str)) {
 			stream.writeInt(0);

@@ -1,6 +1,6 @@
 <?xml-stylesheet type="text/xsl" href="http://www.jayasoft.fr/org/ivyrep/ivy-doc.xsl"?>
 <ivy-module version="2.0">
-	<info organisation="org.mitre.itf" module="giscore" status="alpha" />
+	<info organisation="org.mitre.itf" module="giscore" />
     <configurations>
     	<conf name="compile" description="This is this configuration that describes modules need to build our project"/>
     	<conf name="runtime" extends="compile" />
