@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -115,6 +116,16 @@ public class SortingOutputStream extends StreamVisitorBase implements
 		this.stream = innerstream;
 		this.strategy = strategy;
 		this.extractor = extractor;
+	}
+	
+	
+	/**
+	 * @return get the wrapped stream, useful for outputting non-sorted bits
+	 * and pieces. Note that anything output this way will appear <em>before</em>
+	 * the features that have been sorted.
+	 */
+	public IGISOutputStream getInnerStream() {
+		return stream;
 	}
 
 	/*
@@ -211,6 +222,8 @@ public class SortingOutputStream extends StreamVisitorBase implements
 		}
 		sorter.add(row, fullpath);
 	}
+	
+	
 
 	/*
 	 * (non-Javadoc)
@@ -267,12 +280,15 @@ public class SortingOutputStream extends StreamVisitorBase implements
 		}
 		for(FeatureKey key : keys) {
 			File file = sorter.getFeatureFile(key);
+			String pathstr = key.getPath();
+			String pieces[] = pathstr.split("_");
+			List<String> path = Arrays.asList(pieces);
 			FileInputStream fis = null;
 			try {
 				fis = new FileInputStream(file);
 				SimpleObjectInputStream sois = new SimpleObjectInputStream(fis);
 				ContainerStart cs = new ContainerStart("Folder");
-				cs.setName(key.getPath());
+				cs.setName(strategy.deriveContainerName(path, key));
 				stream.write(cs);
 				IGISObject obj = (IGISObject) sois.readObject();
 				do {
