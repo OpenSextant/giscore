@@ -48,7 +48,14 @@ import org.slf4j.LoggerFactory;
  * This is an output stream that takes information in the Rows or Row subclasses
  * handed to it in order to place them in different containers. It will reorder
  * the data by using a feature sorter to hold data for each collection. On close
- * it will call the actual output stream and create the resulting file.
+ * it will call the actual output stream and output the features in one
+ * container per category. 
+ * <p>
+ * To use this stream, open a gis output stream and create this as a wrapper. 
+ * Note that other kinds of features should be sent directly to the original 
+ * stream, which is available via the {@link #getInnerStream()} call as well
+ * as by saving a reference in the caller. It is the callers responsibility to
+ * call the close method on the original stream.
  * 
  * @author DRAND
  * 
@@ -78,22 +85,12 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 * Tracks the path - useful for naming collections
 	 */
 	private List<String> path = new ArrayList<String>();
-	
-	/**
-	 * Outer name, pick up from the first container
-	 */
-	private String outer = null;
 
 	/**
 	 * The extractor that will determine the name of a category based on the
 	 * actual data in the row or row subclass.
 	 */
 	private ICategoryNameExtractor extractor = null;
-	
-	/**
-	 * Elements put into this collection are output when the stream is closed
-	 */
-	private List<IGISObject> delayedElements = new ArrayList<IGISObject>();
 	
 	/**
 	 * Ctor
@@ -144,17 +141,6 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 * 
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
-	 * .Comment)
-	 */
-	public void visit(Comment comment) {
-		delayedElements.add(comment);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
 	 * .ContainerEnd)
 	 */
 	@Override
@@ -173,9 +159,7 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 */
 	@Override
 	public void visit(ContainerStart containerStart) {
-		if (outer == null) {
-			outer = containerStart.getName();
-		} else {
+		if (StringUtils.isNotBlank(containerStart.getName())) {
 			path.add(containerStart.getName());
 		}
 	}
@@ -268,13 +252,6 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 */
 	public void close() throws IOException {
 		Collection<FeatureKey> keys = sorter.keys();
-		stream.write(new DocumentStart(DocumentType.KML));
-		ContainerStart outercontainer = new ContainerStart("Document");
-		if (StringUtils.isNotBlank(outer)) outercontainer.setName(outer);
-		stream.write(outercontainer);
-		for(IGISObject element : delayedElements) {
-			stream.write(element);
-		}
 		for(Schema schema : sorter.schemata()) {
 			stream.write(schema);
 		}
@@ -304,7 +281,6 @@ public class SortingOutputStream extends StreamVisitorBase implements
 			}
 		}
 		sorter.cleanup();
-		stream.close();
 	}
 
 }

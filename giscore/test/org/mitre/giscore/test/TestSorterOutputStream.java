@@ -16,6 +16,7 @@ import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.ICategoryNameExtractor;
+import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
@@ -98,12 +99,16 @@ public class TestSorterOutputStream extends TestGISBase {
 		File temp = createTemp("test", ".kml");
 		OutputStream fos = new FileOutputStream(temp);
 		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
+		ContainerStart cs = new ContainerStart("Folder");
+		cs.setName("test");
+		os.write(cs);
 		TestCNS strategy = new TestCNS();
 		SortingOutputStream sos = new SortingOutputStream(os, strategy,
 				strategy);
 		outputTestData(sos);
-
 		sos.close();
+		os.write(new ContainerEnd());
+		os.close();
 		fos.close();
 	}
 
@@ -116,11 +121,15 @@ public class TestSorterOutputStream extends TestGISBase {
 		zos.putNextEntry(new ZipEntry("Results"));
 		TestCNS strategy = new TestCNS();
 		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.FileGDB, zos, gdbDir, strategy);
+		ContainerStart cs = new ContainerStart("Folder");
+		cs.setName("test");
+		os.write(cs);
 		SortingOutputStream sos = new SortingOutputStream(os, strategy,
 				strategy);
 		outputTestData(sos);
-
 		sos.close();
+		os.write(new ContainerEnd());
+		os.close();
 		zos.close();
 	}
 	
