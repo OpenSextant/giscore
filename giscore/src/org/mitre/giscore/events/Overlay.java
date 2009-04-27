@@ -39,15 +39,21 @@ public abstract class Overlay extends Feature {
 	private int drawOrder = 0;
 
 	/**
-	 * @return the icon
+     * Get Icon properties which may include href, refreshMode, refreshInterval,
+     * viewRefreshMode, viewFormat, etc. all of which are optional.
+     * 
+	 * @return the icon property map
 	 */
 	public TaggedMap getIcon() {
 		return icon;
 	}
 
 	/**
+     * Set Icon properties which may include href, refreshMode, refreshInterval,
+     * viewRefreshMode, viewFormat, etc. all of which are optional.
+     * 
 	 * @param icon
-	 *            the icon to set
+	 *            the icon property map to set
 	 */
 	public void setIcon(TaggedMap icon) {
 		this.icon = icon;
