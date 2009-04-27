@@ -64,7 +64,7 @@ public class TestKmlWriter extends TestCase {
         List<URI> links = reader.getNetworkLinks();
         if (links.size() != 0)
             assertTrue(linkedFeatures.size() != 0);
-		/*
+        /*
 		String suff = file.getName();
 		int ind = suff.lastIndexOf('.');
 		if (ind != -1) suff = suff.substring(0, ind);
@@ -181,6 +181,7 @@ public class TestKmlWriter extends TestCase {
 		ZipFile zf = null;
 		try {
 			KmlWriter writer = new KmlWriter(temp);
+            assertTrue(writer.isCompressed());
 
 			NetworkLink nl = new NetworkLink();
 			TaggedMap link = new TaggedMap(IKml.LINK);
@@ -327,6 +328,7 @@ public class TestKmlWriter extends TestCase {
 			}
 
 			KmlWriter writer = new KmlWriter(temp);
+            assertFalse(writer.isCompressed());
 			for (IGISObject o : objs) {
 				writer.write(o);
 			}
