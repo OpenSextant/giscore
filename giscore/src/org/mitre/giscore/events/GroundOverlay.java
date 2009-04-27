@@ -25,6 +25,7 @@ import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
+import org.mitre.itf.geodesy.*;
 
 /**
  * This element draws an image overlay draped onto the terrain. The <href> child
@@ -40,7 +41,13 @@ public class GroundOverlay extends Overlay {
 	private Double north, south, east, west, rotation, altitude;
 	private String altitudeMode;
 
-	/**
+    // possible values for altitudeMode
+    // see http://code.google.com/apis/kml/documentation/kmlreference.html#altitudemode
+    public static final String CLAMP_TO_GROUND = "clampToGround"; // default
+    public static final String ABSOLUTE = "absolute";
+    public static final String RELATIVE_TO_GROUND = "relativeToGround"; 
+
+    /**
 	 * @return the type
 	 */
 	public String getType() {
@@ -107,6 +114,32 @@ public class GroundOverlay extends Overlay {
 		this.west = west;
 	}
 
+    /**
+     * Determines appropriate bounding box for overlay if north, south, east, and west edges are defined. Bounds are 3d
+     * if altitude is defined and altitudeMode is absolute otherwise 2d is used.
+     *
+     * @return bounding box for image, null if missing either north, south, east, or west edge from LatLonBox.  
+     */
+    public Geodetic2DBounds getBoundingBox() {
+        Geodetic2DBounds bbox = null;
+        if (north != null && south != null && east != null && west != null) {
+            if (altitude != null && ABSOLUTE.equals(altitudeMode)) {
+                Geodetic3DPoint westCoordinate = new Geodetic3DPoint(new Longitude(west, Angle.DEGREES),
+                        new Latitude(south, Angle.DEGREES), altitude);
+                Geodetic3DPoint eastCoordinate =  new Geodetic3DPoint(new Longitude(east, Angle.DEGREES),
+                        new Latitude(north, Angle.DEGREES), altitude);
+                bbox = new Geodetic3DBounds(westCoordinate, eastCoordinate);
+            } else {
+                Geodetic2DPoint westCoordinate = new Geodetic2DPoint(new Longitude(west, Angle.DEGREES),
+                        new Latitude(south, Angle.DEGREES));
+                Geodetic2DPoint eastCoordinate = new Geodetic2DPoint(new Longitude(east, Angle.DEGREES),
+                        new Latitude(north, Angle.DEGREES));
+                bbox = new Geodetic2DBounds(westCoordinate, eastCoordinate);
+            }
+        }
+        return bbox;
+    }
+
 	/**
 	 * @return the rotation
 	 */
@@ -146,6 +179,8 @@ public class GroundOverlay extends Overlay {
 	}
 
 	/**
+     * Altitude Mode ([clampToGround], relativeToGround, absolute). If value is null
+     * then the default clampToGround is assumed and altitude can be ignored. 
 	 * @return the altitudeMode
 	 */
 	public String getAltitudeMode() {
@@ -154,7 +189,7 @@ public class GroundOverlay extends Overlay {
 
 	/**
 	 * @param altitudeMode
-	 *            the altitudeMode to set
+	 *            the altitudeMode to set ([clampToGround], relativeToGround, absolute) 
 	 */
 	public void setAltitudeMode(String altitudeMode) {
 		this.altitudeMode = altitudeMode;
@@ -239,6 +274,6 @@ public class GroundOverlay extends Overlay {
 		out.writeDouble(west != null ? west : 0.0);
 		out.writeString(altitudeMode);
 	}
-	
-	
+
+
 }
