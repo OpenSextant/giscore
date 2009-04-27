@@ -94,6 +94,18 @@ public class KmlWriter {
         kos.write(new DocumentStart(DocumentType.KML));
     }
 
+    /**
+     * Tests whether the output file is a compressed KMZ file.
+     *
+     * @return <code>true</code> if the output file is a compressed KMZ file;
+     *          <code>false</code> otherwise*
+     *
+     * @return
+     */
+    public boolean isCompressed() {
+        return compressed;
+    }
+
 	/**
 	 * Write file contents into entry of compressed KMZ file.  File can itself be
 	 * KML, image, model or other file.  Contents are not parsed or validated.
@@ -211,5 +223,5 @@ public class KmlWriter {
 
         waiting = null;
     }
-		
+
 }
