@@ -31,6 +31,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.Queue;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -207,12 +208,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	 */
 	private void handleAttributes(Common feature) {
 		try {
-			if (feature.getName() != null) {
-				handleSimpleElement(NAME, feature.getName());
-			}
-			if (feature.getDescription() != null) {
-				handleSimpleElement(DESCRIPTION, feature.getDescription());
-			}
+            handleNonNullSimpleElement(NAME, feature.getName());
+            handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
 
             Date startTime = feature.getStartTime();
             Date endTime = feature.getEndTime();
@@ -237,9 +234,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 					writer.writeEndElement();
             }
 
-            if (feature.getStyleUrl() != null) {
-				handleSimpleElement(STYLE_URL, feature.getStyleUrl());
-			}
+            handleNonNullSimpleElement(STYLE_URL, feature.getStyleUrl());
 			if (feature.hasExtendedData()) {
 				URI schema = feature.getSchema();
 				writer.writeStartElement(EXTENDED_DATA);
@@ -395,13 +390,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			GroundOverlay go = (GroundOverlay) overlay;
 			handleNonNullSimpleElement(ALTITUDE, go.getAltitude());
 			handleNonNullSimpleElement(ALTITUDE_MODE, go.getAltitudeMode());
-			writer.writeStartElement(LAT_LON_BOX);
-			handleNonNullSimpleElement(NORTH, go.getNorth());
-			handleNonNullSimpleElement(SOUTH, go.getSouth());
-			handleNonNullSimpleElement(EAST, go.getEast());
-			handleNonNullSimpleElement(WEST, go.getWest());
-			handleNonNullSimpleElement(ROTATION, go.getRotation());
-            writer.writeEndElement();
+            // postpone writing out LAT_LON_BOX element until there is a child element
+            Queue<String> waitingList = new java.util.LinkedList<String>();
+            waitingList.add(LAT_LON_BOX);
+			handleNonNullSimpleElement(NORTH, go.getNorth(), waitingList);
+			handleNonNullSimpleElement(SOUTH, go.getSouth(), waitingList);
+			handleNonNullSimpleElement(EAST, go.getEast(), waitingList);
+			handleNonNullSimpleElement(WEST, go.getWest(), waitingList);
+			handleNonNullSimpleElement(ROTATION, go.getRotation(), waitingList);
+            if (waitingList.isEmpty()) writer.writeEndElement();
 		} else if (overlay instanceof PhotoOverlay) {
 			// PhotoOverlay po = (PhotoOverlay) overlay;
 			// TODO: Fill in sometime
@@ -415,7 +412,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 	}
 
-	private void handleNonNullSimpleElement(String tag, Object content) throws XMLStreamException {
+    private void handleNonNullSimpleElement(String tag, Object content, Queue<String> waitingList) throws XMLStreamException {
+        if (content != null) {
+            if (waitingList != null && !waitingList.isEmpty())
+                writer.writeStartElement(waitingList.remove());
+            handleSimpleElement(tag, content);
+        }
+    }
+
+    private void handleNonNullSimpleElement(String tag, Object content) throws XMLStreamException {
 		if (content != null) handleSimpleElement(tag, content);
 	}
 
@@ -938,6 +943,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			String key = kiter.next();
 			String value = styleMap.get(key);
 			writer.writeStartElement(PAIR);
+            // key and url will never be null or empty
 			handleSimpleElement(KEY, key);
 			handleSimpleElement(STYLE_URL, value);
 			writer.writeEndElement();
