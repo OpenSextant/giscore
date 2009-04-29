@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- sample KML placemark with all mandatory and optional tags populated -->
+<Placemark id="ID_1" targetId="NCName" xmlns="http://www.opengis.net/kml/2.2"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:xal="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
+	<name>Test Placemark</name>
+	<visibility>1</visibility>
+	<open>0</open>
+	<atom:author>
+		<atom:name>the Author</atom:name>
+	</atom:author>
+	<atom:link rel="text" type=" / " length="text" title="text" href="text" hreflang="A"/>
+	<address>202 Burlington Road</address>
+	<xal:AddressDetails CurrentStatus="text" AddressDetailsKey="text" AddressType="text" Usage="text" ValidFromDate="text" ValidToDate="text" Code="text">
+		<xal:PostalServiceElements Type="text">
+			<xal:AddressIdentifier Type="text" IdentifierType="text" Code="text">text</xal:AddressIdentifier>
+			<xal:EndorsementLineCode Type="text" Code="text">text</xal:EndorsementLineCode>
+			<xal:KeyLineCode Type="text" Code="text">text</xal:KeyLineCode>
+			<xal:Barcode Type="text" Code="text">text</xal:Barcode>
+			<xal:SortingCode Type="text" Code="text"/>
+			<xal:AddressLatitude Type="text" Code="text">text</xal:AddressLatitude>
+			<xal:AddressLatitudeDirection Type="text" Code="text">text</xal:AddressLatitudeDirection>
+			<xal:AddressLongitude Type="text" Code="text">text</xal:AddressLongitude>
+			<xal:AddressLongitudeDirection Type="text" Code="text">text</xal:AddressLongitudeDirection>
+			<xal:SupplementaryPostalServiceData Type="text" Code="text">text</xal:SupplementaryPostalServiceData>
+		</xal:PostalServiceElements>
+		<xal:Address Type="text" Code="text">text</xal:Address>
+	</xal:AddressDetails>
+	<phoneNumber>781-271-2000</phoneNumber>
+	<Snippet maxLines="2">Test Snippet</Snippet>
+	<description>Test Placemark with all non-mandatory elements populated</description>
+	<LookAt id="ID_2" targetId="NCName">
+		<longitude>-71.23867199980178</longitude>
+		<latitude>42.5047450000156</latitude>
+		<altitude>0</altitude>
+		<heading>0</heading>
+		<tilt>0</tilt>
+		<range>1000.000226096549</range>
+		<altitudeMode>relativeToGround</altitudeMode>
+	</LookAt>
+	<TimeSpan id="ID_3" targetId="NCName">
+		<begin>2001-12-17T09:30:47Z</begin>
+		<end>2002-12-17T09:30:47Z</end>
+	</TimeSpan>
+	<Region id="ID_15" targetId="NCName">
+		<LatLonAltBox id="ID_16" targetId="NCName">
+			<north>43</north>
+			<south>42</south>
+			<east>-70</east>
+			<west>-73</west>
+			<minAltitude>0.0</minAltitude>
+			<maxAltitude>0.0</maxAltitude>
+			<altitudeMode>clampToGround</altitudeMode>
+		</LatLonAltBox>
+		<Lod id="ID_17" targetId="NCName">
+			<minLodPixels>128.0</minLodPixels>
+			<maxLodPixels>-1.0</maxLodPixels>
+			<minFadeExtent>64</minFadeExtent>
+			<maxFadeExtent>64</maxFadeExtent>
+		</Lod>
+	</Region>
+      <Metadata>
+        <Data name="yourCoolData">
+          <displayName>The answer to your question is</displayName>
+          <value>42</value>
+        </Data>
+      </Metadata>
+	<Point id="ID_18" targetId="NCName">
+		<extrude>0</extrude>
+		<altitudeMode>clampToGround</altitudeMode>
+		<coordinates>-71.238672,42.504745,13.0</coordinates>
+	</Point>
+</Placemark>
