@@ -227,7 +227,7 @@ public class KmlReader extends KmlBaseReader {
 		List<URI> visited = new ArrayList<URI>();
 		List<URI> networkLinks = new ArrayList<URI>();
 		networkLinks.addAll(gisNetworkLinks);
-		while (networkLinks.size() != 0) {
+        while (!networkLinks.isEmpty()) {
             URI uri = networkLinks.remove(0);
             if (!visited.contains(uri)) {
                 visited.add(uri);
@@ -239,12 +239,18 @@ public class KmlReader extends KmlBaseReader {
                     int oldSize = networkLinks.size();
                     int oldFeatSize = linkedFeatures.size();
                     KmlInputStream kis = new KmlInputStream(is);
+                    if (log.isDebugEnabled()) log.debug("Parse networkLink: " + ref);
                     try {
                         IGISObject gisObj;
                         while ((gisObj = read(kis, networkLinks)) != null) {
-                            if (handler != null)
-                                handler.handleEvent(ref, gisObj);
-                            else
+                            if (handler != null) {
+                                if (!handler.handleEvent(ref, gisObj)) {
+                                    // clear out temp list of links to abort following networkLinks
+                                    log.info("Abort following networkLinks");
+                                    networkLinks.clear();
+                                    break;
+                                }
+                            } else
                                 linkedFeatures.add(gisObj);
                         }
                     } finally {
@@ -252,9 +258,9 @@ public class KmlReader extends KmlBaseReader {
                     }
 					if (log.isDebugEnabled()) {
                         if (oldFeatSize != linkedFeatures.size())
-                            log.debug("*** got features from network links ***");
+                            log.debug("*** got features from network link ***");
                         if (oldSize != networkLinks.size())
-                            log.debug("*** got new URLs from network links ***");
+                            log.debug("*** got new URLs from network link ***");
                     }
                 } catch (java.net.ConnectException e) {
                     log.error("Failed to import from network link: " + uri + "\n" + e);
@@ -327,7 +333,9 @@ public class KmlReader extends KmlBaseReader {
          *
          * @param ref UriRef for NetworkLink resource
          * @param gisObj new IGISObject object. This will never be null.
+         * @return Return true to continue parsing and follow networkLinks, false
+         *         stops following networklinks. 
          */
-        void handleEvent(UrlRef ref, IGISObject gisObj);
+        boolean handleEvent(UrlRef ref, IGISObject gisObj);
     }
 }

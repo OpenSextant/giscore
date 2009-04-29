@@ -101,8 +101,9 @@ public class TestKmlReader extends TestCase {
 		assertEquals(6, objs.size());
 		final List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
             reader.importFromNetworkLinks(new KmlReader.ImportEventHandler() {
-            public void handleEvent(UrlRef ref, IGISObject gisObj) {
+            public boolean handleEvent(UrlRef ref, IGISObject gisObj) {
                 linkedFeatures.add(gisObj);
+                return true;
             }
         });
 		List<URI> networkLinks = reader.getNetworkLinks();
@@ -157,7 +158,7 @@ public class TestKmlReader extends TestCase {
 			IOUtils.closeQuietly(is);
 		}
 	}
-
+    
 	/**
      * Test IconStyle with KML from URL target with relative URL to icon
 	 * @throws Exception
