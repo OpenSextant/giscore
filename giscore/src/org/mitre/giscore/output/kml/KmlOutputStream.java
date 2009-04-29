@@ -75,6 +75,8 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
  * stream. It uses STaX methods for writing the XML elements to avoid building
  * an in-memory DOM, which reduces the memory overhead of creating the document.
  * <p>
+ * KmlOutputStream produces a valid KML Document wrt the KML 2.2 specification. 
+ * <p>
  * For KML, each incoming element generally adds another full element to the
  * output document. There are a couple of distinct exceptions. These are the
  * Style selectors. The style selectors instead appear before the matched
@@ -86,6 +88,7 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
  * accept method.
  * 
  * @author DRAND
+ * @author J.Mathews
  * 
  */
 public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
@@ -219,9 +222,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                     writer.writeStartElement(TIME_SPAN);
                     handleSimpleElement(BEGIN, getDateFormatter().format(startTime));
                 } else if (endTime.equals(startTime)) {
+                    // start == end represents a timestamp
+                    // note that having feature with a timeSpan with same begin and end time
+                    // is identical to one with a timestamp of same time in Google Earth client.
                     writer.writeStartElement(TIME_STAMP);
                     handleSimpleElement(WHEN, getDateFormatter().format(startTime));
                 } else {
+                    // start != end represents a timeSpan
                     writer.writeStartElement(TIME_SPAN);
                     handleSimpleElement(BEGIN, getDateFormatter().format(startTime));
                     handleSimpleElement(END, getDateFormatter().format(endTime));
