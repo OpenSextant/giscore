@@ -121,7 +121,7 @@ import org.slf4j.LoggerFactory;
  * transmitted as tuples of two or three elements. The formatting of these is
  * consistent and is handled by {@link #parseCoordinates(String)}.
  * <p>
- * Limations:
+ * Limitations:
  * <p> 
  * Note only a single Data/SchemaData/Schema ExtendedData mapping is assumed
  * per Feature but Collections can reference among several Schemas. Features
@@ -134,8 +134,13 @@ import org.slf4j.LoggerFactory;
  *  Snippet, snippet, visibility.
  * <p>
  * While these tags don't break anything if present they are ignored.
+ * <p> 
+ * Limited support for PhotoOverlay which creates an basic overlay object
+ * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
+ * ImagePyramid, Point, shape, etc). 
  *
  * @author DRAND
+ * @author J.Mathews
  * 
  */
 public class KmlInputStream extends GISInputStreamBase implements IKml {
