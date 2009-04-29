@@ -121,10 +121,19 @@ import org.slf4j.LoggerFactory;
  * transmitted as tuples of two or three elements. The formatting of these is
  * consistent and is handled by {@link #parseCoordinates(String)}.
  * <p>
+ * Limations:
+ * <p> 
  * Note only a single Data/SchemaData/Schema ExtendedData mapping is assumed
  * per Feature but Collections can reference among several Schemas. Features
  * with mixed Data and/or Multiple SchemaData elements will be associated only
  * with the last Schema referenced.
+ * <p> 
+ * Unsupported tags include the following:
+ *  atom:author, atom:link, address, xal:AddressDetails, Camera, LookAt,
+ *  Model, Metadata, NetworkLinkControl, open, phoneNumber, Region,
+ *  Snippet, snippet, visibility.
+ * <p>
+ * While these tags don't break anything if present they are ignored.
  *
  * @author DRAND
  * 
@@ -342,7 +351,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 feature.setName(stream.getElementText());
                 return true;
             } else if (localname.equals(DESCRIPTION)) {
-                feature.setDescription(stream.getElementText());
+                feature.setDescription(getElementText(localname));
                 return true;
             } else if (localname.equals(STYLE)) {
                 handleStyle(feature, ee);
@@ -379,14 +388,45 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				// Note: schema shows Snippet is deprecated but Google documentation and examples
 				// suggestion snippet (lower case 's') is deprecated instead...
 				return true;
-			}
+            } else if (localname.equals("AddressDetails")) {
+                // skip AddressDetails (namespace: urn:oasis:names:tc:ciq:xsdschema:xAL:2.0)
+                log.debug("skip " + localname);
+                skipNextElement(stream, localname);
+                return true;
+			} else {
+                StartElement sl = ee.asStartElement();
+				QName name = sl.getName();
+                // skip atom:link and atom:author elements
+                if ("http://www.w3.org/2005/Atom".equals(name.getNamespaceURI())) {
+                    log.debug("skip atom:" + localname);
+                    skipNextElement(stream, localname);
+                    return true;
+                }
+                //System.out.println("*** skip other: " + localname + " sl=" + sl + " name=" + name.getNamespaceURI());
+            }
 		} catch (XMLStreamException e) {
             log.error("Failed to handle: " + localname, e);
+            // TODO: do we have any situation where need to skip over failed localname element??
+            // skipNextElement(stream, localname);
         }
         return false;
 	}
 
-	/**
+    private String getElementText(String localname) throws XMLStreamException {
+        /*
+         * some elements such as description may have HTML elements as child elements rather than
+         * within required CDATA block.
+         */
+        try {
+            return stream.getElementText();
+        } catch (XMLStreamException e) {
+            log.warn("Unable to parse " + localname + " as text element: " + e);
+            skipNextElement(stream, localname);
+            return null;
+        }
+    }
+
+    /**
 	 * @param cs
 	 * @param ee
 	 * @throws XMLStreamException
@@ -1041,7 +1081,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @return IGISObject representing current element,
 	 * 			NullObject if failed to parse and unable to skip to end tag for that element
 	 * @throws XMLStreamException 
-	 * @throws IOException if encountered NetworkLinkControl or out of order Style
+	 * @throws IOException if encountered NetworkLinkControl or out of order Style element
 	 * 			and failed to skip to end tag for that element.
 	 */
 	@SuppressWarnings("unchecked")
