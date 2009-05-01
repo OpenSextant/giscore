@@ -221,6 +221,10 @@ public class UrlRef {
         // Connect to get the response headers
         conn.connect();
 
+        // Note: just looking at file extension may not be enough to indicate its KMZ vs KML (misnamed, etc.)
+        // proper way might be to use PushbackInputStream and check first characters of stream.
+        // KMZ/ZIP header should be PK\003\004
+        
         if (MIMETYPE_KMZ.equals(conn.getContentType()) || url.getFile().toLowerCase().endsWith(".kmz")) {
             // kmz file requires special handling
             boolean closeOnExit = true;
