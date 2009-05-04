@@ -453,7 +453,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					Attribute name = se.getAttributeByName(new QName(NAME));
 					if (name != null) {
 						String value = parseValue(DATA);
-						cs.putData(new SimpleField(name.getValue()), value);
+                        if (value != null)
+    						cs.putData(new SimpleField(name.getValue()), value);
                         // NOTE: if feature has mixed Data and SchemaData then Data fields will be associated with last SchemaData schema processed
 					}
 				} else if (tag.equals(SCHEMA_DATA)) {
@@ -469,7 +470,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						}
 					}
 				}
-				// Note external namespace contents not supported
+				// Note external namespace contents not in ExtendedData supported
 				// http://code.google.com/apis/kml/documentation/extendeddata.html
 				/*
 					<ExtendedData xmlns:camp="http://campsites.com">
