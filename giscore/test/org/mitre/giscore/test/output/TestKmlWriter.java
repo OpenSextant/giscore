@@ -59,6 +59,7 @@ public class TestKmlWriter extends TestCase {
         System.out.println("Testing " + file);
         KmlReader reader = new KmlReader(file);
 		List<IGISObject> objs = reader.readAll();
+        System.out.format("features = %d%n", objs.size());
 		normalizeUrls(objs);
 		List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
         List<URI> links = reader.getNetworkLinks();
@@ -70,7 +71,7 @@ public class TestKmlWriter extends TestCase {
 		if (ind != -1) suff = suff.substring(0, ind);
 		if (suff.length() < 3) suff = "x" + suff;
 		File temp = File.createTempFile(suff + "-", reader.isCompressed() ? ".kmz" : ".kml", new File("testOutput/kml"));
-		*/
+        */
 		File temp = new File("testOutput/test." + (reader.isCompressed() ? "kmz" : "kml"));
 		try {
 			System.out.println(">create " + temp);
@@ -136,7 +137,7 @@ public class TestKmlWriter extends TestCase {
 	 * @param href href URI to normalize 
 	 * @return Return normalized href, null if normal or failed to normalize
 	 */
-	private String fixHref(String href) {
+	private static String fixHref(String href) {
 		if (href != null && href.startsWith("kmz")) {
 			try {
 				return new UrlRef(new URI(href)).toString();
@@ -154,16 +155,20 @@ public class TestKmlWriter extends TestCase {
 			if (o instanceof NetworkLink) {
 				NetworkLink nl = (NetworkLink) o;
 				TaggedMap link = nl.getLink();
-				String href = fixHref(link != null ? link.get(IKml.HREF) : null);
-				// check for treated URLs and normalized them so they work outside
-				// this package (e.g. with Google Earth client).
-				if (href != null) link.put(IKml.HREF, href);
+                if (link != null) {
+                    String href = fixHref(link.get(IKml.HREF));
+                    // check for treated URLs and normalized them so they work outside
+                    // this package (e.g. with Google Earth client).
+                    if (href != null) link.put(IKml.HREF, href);
+                }
 			} else if (o instanceof Overlay) {
 				// handle GroundOverlay or ScreenOverlay href
 				Overlay ov = (Overlay) o;
 				TaggedMap icon = ov.getIcon();
-				String href = fixHref(icon != null ? icon.get(IKml.HREF) : null);
-				if (href != null) icon.put(IKml.HREF, href);
+                if (icon != null) {
+                    String href = fixHref(icon.get(IKml.HREF));
+                    if (href != null) icon.put(IKml.HREF, href);
+                }
 			} else if (o instanceof Style) {
 				Style style = (Style) o;
 				if (style.hasIconStyle()) {
