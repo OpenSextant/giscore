@@ -85,7 +85,9 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
  * before any content.
  * <p>
  * The geometry visitors are invoked by the feature vistor via the Geometry 
- * accept method.
+ * accept method. <p/>
+ * Notes/Limitations: <p/>
+ *   Geometries do not support altitudeMode, extrude or tessellate attributes.  
  * 
  * @author DRAND
  * @author J.Mathews
@@ -634,6 +636,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 		try {
 			writer.writeStartElement(LINE_STRING);
+            //<extrude>0</extrude>                   <!-- boolean -->
+            //<tessellate>0</tessellate>             <!-- boolean -->
+            // To enable tessellation, the value for <altitudeMode> must be clampToGround or clampToSeaFloor.
+            //<altitudeMode>clampToGround</altitudeMode> 
 			handleSimpleElement(COORDINATES, handleCoordinates(l.getPoints()));
 			writer.writeEndElement();
 		} catch (Exception e) {
@@ -654,6 +660,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 		try {
 			writer.writeStartElement(POINT);
+            //<extrude>0</extrude> <!-- boolean -->
+            //<altitudeMode>clampToGround</altitudeMode>
 			handleSimpleElement(COORDINATES, handleCoordinates(Collections
 					.singletonList(p)));
 			writer.writeEndElement();
