@@ -353,7 +353,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			String localname) {
         try {
             if (localname.equals(NAME)) {
-                feature.setName(stream.getElementText());
+                feature.setName(getNonEmptyElementText());
                 return true;
             } else if (localname.equals(DESCRIPTION)) {
                 feature.setDescription(getElementText(localname));
@@ -423,7 +423,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
          * within required CDATA block.
          */
         try {
-            return stream.getElementText();
+            return getNonEmptyElementText();
         } catch (XMLStreamException e) {
             log.warn("Unable to parse " + localname + " as text element: " + e);
             skipNextElement(stream, localname);
@@ -975,7 +975,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		String text = "";
 		Color color = Color.white;
 		Color textColor = Color.black;
-		String displayMode = "default";
+		String displayMode = "default"; // [default] | hide
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (e.getEventType() == XMLEvent.START_ELEMENT) {
@@ -986,7 +986,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				} else if (name.equals(BG_COLOR)) {
 					color = parseColor(stream.getElementText());
 				} else if (name.equals(DISPLAY_MODE)) {
-					displayMode = stream.getElementText();
+					displayMode = getNonEmptyElementText();
 				} else if (name.equals(TEXT_COLOR)) {
 					textColor = parseColor(stream.getElementText());
 				}
@@ -998,7 +998,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		}
 	}
 
-	/**
+    /**
 	 * Get the href subelement from the Icon element.
 	 * 
 	 * @return the href, <code>null</code> if not found.
@@ -1012,7 +1012,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(HREF)) {
-					href = stream.getElementText();
+					href = getNonEmptyElementText();
 				}
 			}
 			if (foundEndTag(e, ICON)) {
@@ -1025,14 +1025,13 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * Parse the color from a kml file, in AABBGGRR order.
 	 * 
 	 * @param cstr
-	 *            a hex encoded string, never <code>null</code> or empty and
-	 *            must be exactly 8 characters long.
-	 * @return the color value
+	 *            a hex encoded string, must be exactly 8 characters long.
+	 * @return the color value, null if value is null, empty or invalid
 	 */
 	private Color parseColor(String cstr) {
-		if (cstr == null || cstr.length() != 8) {
-			return null;
-		}
+		if (cstr == null) return null;
+        cstr = cstr.trim();
+        if (cstr.length() != 8) return null;
 		int alpha = Integer.parseInt(cstr.substring(0, 2), 16);
 		int blue = Integer.parseInt(cstr.substring(2, 4), 16);
 		int green = Integer.parseInt(cstr.substring(4, 6), 16);
@@ -1252,14 +1251,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
             <SimpleField name="MGRS" type="string"/>
         </Schema>
 */
-					String parentVal = stream.getElementText();
-					if (StringUtils.isNotEmpty(parentVal))
-						parent = parentVal.trim();
+					String parentVal = getNonEmptyElementText();
+					if (parentVal != null) parent = parentVal;
 				} else if (foundStartTag(se, NAME)) {
 					 // name should only appear as Schema child element in KML 2.0 or 2.1
-					String nameVal = stream.getElementText();
-					if (StringUtils.isNotEmpty(nameVal))
-						name = nameVal.trim();
+					String nameVal = getNonEmptyElementText();
+					if (nameVal != null) name = nameVal;
 				}
 			} else if (foundEndTag(next, SCHEMA)) {
 				break;
@@ -1316,7 +1313,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				QName name = sl.getName();
 				String localname = name.getLocalPart();
 				if (localname.equals(DISPLAY_NAME)) {
-					rval = stream.getElementText();
+					rval = getNonEmptyElementText();
 				}
 			} else if (foundEndTag(ee, tag)) {
 				break;
@@ -1393,13 +1390,13 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 							if (LAT_LON_BOX.equals(localname)) {
 								handleLatLonBox((GroundOverlay) fs, sl);
 							} else if (ALTITUDE.equals(localname)) {
-								String text = stream.getElementText();
-								if (StringUtils.isNotBlank(text)) {
+								String text = getNonEmptyElementText();
+								if (text != null) {
 									((GroundOverlay) fs).setAltitude(new Double(text));
 								}
 							} else if (ALTITUDE_MODE.equals(localname)) {
-								((GroundOverlay) fs).setAltitudeMode(stream
-										.getElementText());
+								((GroundOverlay) fs).setAltitudeMode(
+                                        getNonEmptyElementText());
 							}
 						} else if (screen) {
 							if (OVERLAY_XY.equals(localname)) {
@@ -1415,16 +1412,17 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 								ScreenLocation val = handleScreenLocation(sl);
 								((ScreenOverlay) fs).setSize(val);
 							} else if (ROTATION.equals(localname)) {
-								String val = stream.getElementText();
-								try {
-									double rot = Double.parseDouble(val);
-									if (Math.abs(rot) <= 180)
-										((ScreenOverlay) fs).setRotationAngle(rot);
-									else
-										log.warn("Invalid ScreenOverlay rotation value " + val);
-								} catch (NumberFormatException nfe) {
-									log.warn("Invalid ScreenOverlay rotation " + val + ": " + nfe);
-								}
+								String val = getNonEmptyElementText();
+                                if (val != null)
+                                    try {
+                                        double rot = Double.parseDouble(val);
+                                        if (Math.abs(rot) <= 180)
+                                            ((ScreenOverlay) fs).setRotationAngle(rot);
+                                        else
+                                            log.warn("Invalid ScreenOverlay rotation value " + val);
+                                    } catch (NumberFormatException nfe) {
+                                        log.warn("Invalid ScreenOverlay rotation " + val + ": " + nfe);
+                                    }
 							}
 						}
 					} else if (network) {
@@ -1504,9 +1502,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 				StartElement se = event.asStartElement();
 				String sename = se.getName().getLocalPart();
-				String value = stream.getElementText();
+				String value = getNonEmptyElementText();
                 // ignore empty elements; e.g. <Icon><href /></Icon>
-                if (value != null && value.length() != 0)
+                if (value != null)
                     rval.put(sename, value);
 			}
 		}
@@ -1532,10 +1530,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 				StartElement se = event.asStartElement();
 				String sename = se.getName().getLocalPart();
-				String value = stream.getElementText();
-				if (StringUtils.isNotBlank(value)) {
+				String value = getNonEmptyElementText();
+				if (value != null) {
                     try {
-                        Double angle = Double.valueOf(value.trim());
+                        Double angle = Double.valueOf(value);
                         if (NORTH.equals(sename)) {
                             overlay.setNorth(angle);
                         } else if (SOUTH.equals(sename)) {
@@ -1664,22 +1662,24 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 				if (event.asStartElement().getName().getLocalPart().equals(
 						COORDINATES)) {
-					String text = stream.getElementText().trim();
-					String tuples[] = text.split("\\s");
-                    for (String tuple : tuples) {
-                        if (!StringUtils.isEmpty(tuple)) {
-                            String parts[] = tuple.trim().split(",");
-                            double dlon = Double.parseDouble(parts[0]);
-                            double dlat = Double.parseDouble(parts[1]);
-                            Longitude lon = new Longitude(dlon, Angle.DEGREES);
-                            Latitude lat = new Latitude(dlat, Angle.DEGREES);
-                            if (parts.length < 3) {
-                                rval.add(new Point(
-                                        new Geodetic2DPoint(lon, lat)));
-                            } else {
-                                double elev = Double.parseDouble(parts[2]);
-                                rval.add(new Point(new Geodetic3DPoint(lon,
-                                        lat, elev)));
+					String text = getNonEmptyElementText();
+                    if (text != null) {
+                        String tuples[] = text.split("\\s");
+                        for (String tuple : tuples) {
+                            if (!StringUtils.isEmpty(tuple)) {
+                                String parts[] = tuple.trim().split(",");
+                                double dlon = Double.parseDouble(parts[0]);
+                                double dlat = Double.parseDouble(parts[1]);
+                                Longitude lon = new Longitude(dlon, Angle.DEGREES);
+                                Latitude lat = new Latitude(dlat, Angle.DEGREES);
+                                if (parts.length < 3) {
+                                    rval.add(new Point(
+                                            new Geodetic2DPoint(lon, lat)));
+                                } else {
+                                    double elev = Double.parseDouble(parts[2]);
+                                    rval.add(new Point(new Geodetic3DPoint(lon,
+                                            lat, elev)));
+                                }
                             }
                         }
                     }
@@ -1710,11 +1710,11 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 				if (event.asStartElement().getName().getLocalPart().equals(
 						COORDINATES)) {
-					String text = stream.getElementText();
+					String text = getNonEmptyElementText();
 					// allow sloppy KML with whitespace appearing before/after
 					// lat and lon values; e.g. <coordinates>-121.9921875, 37.265625</coordinates>
 					// http://kml-samples.googlecode.com/svn/trunk/kml/ListStyle/radio-folder-vis.kml
-					if (StringUtils.isNotEmpty(text)) {
+					if (text != null) {
 						String parts[] = text.split(",");
 						if (parts.length > 1) {
 							try {
@@ -1754,5 +1754,16 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 		return null;
 	}
+
+    /**
+     * Returns non-empty trimmed elementText from stream otherwise null
+     * @return non-empty trimmed string, otherwise null
+     */
+    private String getNonEmptyElementText() throws XMLStreamException {
+        String elementText = stream.getElementText();
+        if (elementText == null || elementText.length() == 0) return null;
+        elementText = elementText.trim();
+        return elementText.length() == 0 ? null : elementText;
+    }
 
 }
