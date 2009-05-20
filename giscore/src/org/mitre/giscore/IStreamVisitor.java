@@ -18,20 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore;
 
-import org.mitre.giscore.events.Comment;
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.GroundOverlay;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.PhotoOverlay;
-import org.mitre.giscore.events.Row;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.ScreenLocation;
-import org.mitre.giscore.events.ScreenOverlay;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.events.StyleMap;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
@@ -85,6 +72,11 @@ public interface IStreamVisitor {
 	 * @param link
 	 */
 	public void visit(NetworkLink link);
+
+	/**
+	 * @param networkLinkControl
+	 */
+	public void visit(NetworkLinkControl networkLinkControl);	
 	
 	/**
 	 * @param overlay
@@ -160,4 +152,5 @@ public interface IStreamVisitor {
 	 * @param comment
 	 */
 	public void visit(Comment comment);
+
 }
