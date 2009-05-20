@@ -53,25 +53,7 @@ import javax.xml.stream.events.XMLEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.events.Comment;
-import org.mitre.giscore.events.Common;
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.GroundOverlay;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.NullObject;
-import org.mitre.giscore.events.Overlay;
-import org.mitre.giscore.events.PhotoOverlay;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.ScreenLocation;
-import org.mitre.giscore.events.ScreenOverlay;
-import org.mitre.giscore.events.SimpleField;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.events.StyleMap;
-import org.mitre.giscore.events.TaggedMap;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
@@ -121,7 +103,7 @@ import org.slf4j.LoggerFactory;
  * transmitted as tuples of two or three elements. The formatting of these is
  * consistent and is handled by {@link #parseCoordinates(String)}.
  * <p>
- * Limitations:
+ * Notes/Limitations:
  * <p> 
  * Note only a single Data/SchemaData/Schema ExtendedData mapping is assumed
  * per Feature but Collections can reference among several Schemas. Features
@@ -1116,15 +1098,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} else if (SCHEMA.equals(localname)) {
 				return handleSchema(se, localname);
 			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
-				try {
-                    skipNextElement(stream, localname);
-                    return new Comment("placeholder for " + localname);
-                    //handleNetworkLinkControl(stream, localname);
-				} catch (XMLStreamException xe) {
-					final IOException e2 = new IOException();
-					e2.initCause(xe);
-					throw e2;
-				}
+				return handleNetworkLinkControl(stream, localname);
 			} else if (STYLE.equals(localname)) {
                 StringBuilder sb = new StringBuilder();
                 sb.append("placeholder for style");
@@ -1173,6 +1147,55 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				break;
 			}
 		}
+	}
+
+	private IGISObject handleNetworkLinkControl(XMLEventReader stream, String localname) throws XMLStreamException {
+		NetworkLinkControl c = new NetworkLinkControl();
+		while (true) {
+			XMLEvent next = stream.nextEvent();
+			if (next == null)
+				break;
+			if (next.getEventType() == XMLEvent.START_ELEMENT) {
+				StartElement se = next.asStartElement();
+				if (foundStartTag(se, "minRefreshPeriod")) {
+					Double val = getDoubleElementValue("minRefreshPeriod");
+					if (val != null) c.setMinRefreshPeriod(val);
+				} else if (foundStartTag(se, "maxSessionLength")) {
+					Double val = getDoubleElementValue("maxSessionLength");
+					if (val != null) c.setMaxSessionLength(val);
+				} else if (foundStartTag(se, "cookie")) {
+					String val = getNonEmptyElementText();
+					if (val != null) c.setCookie(val);
+				} else if (foundStartTag(se, "message")) {
+					String val = getNonEmptyElementText();
+					if (val != null) c.setMessage(val);
+				} else if (foundStartTag(se, "linkName")) {
+					String val = getNonEmptyElementText();
+					if (val != null) c.setLinkName(val);
+				} else if (foundStartTag(se, "linkDescription")) {
+					String val = getNonEmptyElementText();
+					if (val != null) c.setLinkDescription(val);
+				} else if (foundStartTag(se, "linkSnippet")) {
+					String val = getNonEmptyElementText();
+					if (val != null) c.setLinkSnippet(val);
+				} else if (foundStartTag(se, "expires")) {
+					String expires = getNonEmptyElementText();
+					if (expires != null)
+						try {
+							c.setExpires(parseDate(expires));
+						} catch (ParseException e) {
+							log.warn("Ignoring bad expires value: " + expires + ": " + e);
+						}
+				} else if (foundStartTag(se, "targetHref")) {
+					String val = getNonEmptyElementText();
+					if (val != null) c.setTargetHref(val);
+				}
+				// ... TODO: add Update details
+			} else if (foundEndTag(next, NETWORK_LINK_CONTROL)) {
+				break;
+			}
+		}
+		return c;
 	}
 
 	/**
@@ -1752,6 +1775,17 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			return new ContainerEnd();
 		}
 
+		return null;
+	}
+
+	private Double getDoubleElementValue(String localName) throws XMLStreamException {
+		String elementText = stream.getElementText();
+		if (elementText != null && StringUtils.isNotBlank(elementText))
+			try {
+				return Double.parseDouble(elementText);
+			} catch (NumberFormatException nfe) {
+				log.warn("Ignoring bad value for " + localName + ": " + nfe);
+			}
 		return null;
 	}
 

@@ -37,24 +37,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
-import org.mitre.giscore.events.Comment;
-import org.mitre.giscore.events.Common;
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.GroundOverlay;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.Overlay;
-import org.mitre.giscore.events.PhotoOverlay;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.ScreenLocation;
-import org.mitre.giscore.events.ScreenOverlay;
-import org.mitre.giscore.events.SimpleField;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.events.StyleMap;
-import org.mitre.giscore.events.TaggedMap;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
@@ -805,6 +788,75 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	public void visit(Style style) {
 		waitingElements.add(style);
 	}
+
+	public void visit(NetworkLinkControl networkLinkControl) {
+		/*
+	  <element name="NetworkLinkControl" type="kml:NetworkLinkControlType"/>
+	  <complexType name="NetworkLinkControlType" final="#all">
+		<sequence>
+		  <element ref="kml:minRefreshPeriod" minOccurs="0"/>
+		  <element ref="kml:maxSessionLength" minOccurs="0"/>
+		  <element ref="kml:cookie" minOccurs="0"/>
+		  <element ref="kml:message" minOccurs="0"/>
+		  <element ref="kml:linkName" minOccurs="0"/>
+		  <element ref="kml:linkDescription" minOccurs="0"/>
+		  <element ref="kml:linkSnippet" minOccurs="0"/>
+		  <element ref="kml:expires" minOccurs="0"/>
+		  <element ref="kml:Update" minOccurs="0"/>
+		  <element ref="kml:AbstractViewGroup" minOccurs="0"/>
+		  <element ref="kml:NetworkLinkControlSimpleExtensionGroup" minOccurs="0"
+			maxOccurs="unbounded"/>
+		  <element ref="kml:NetworkLinkControlObjectExtensionGroup" minOccurs="0"
+			maxOccurs="unbounded"/>
+		</sequence>
+	  </complexType>
+	 */
+		try {
+			writer.writeStartElement(NETWORK_LINK_CONTROL);
+			handleNonNullSimpleElement("minRefreshPeriod", networkLinkControl.getMinRefreshPeriod());
+			handleNonNullSimpleElement("maxSessionLength", networkLinkControl.getMaxSessionLength());
+			handleNonEmptySimpleElement("cookie", networkLinkControl.getCookie());
+			handleNonEmptySimpleElement("message", networkLinkControl.getMessage()); 
+			handleNonEmptySimpleElement("linkName", networkLinkControl.getLinkName());
+			handleNonEmptySimpleElement("linkDescription", networkLinkControl.getLinkDescription());
+			handleNonEmptySimpleElement("linkSnippet", networkLinkControl.getLinkSnippet());
+			Date expires = networkLinkControl.getExpires();
+			if (expires != null) handleSimpleElement("expires", getDateFormatter().format(expires));
+			/*
+			String targetHref = networkLinkControl.getTargetHref();
+			if (targetHref != null) {
+				writer.writeStartElement("Update");
+				handleSimpleElement("targetHref", targetHref);
+				// Create | Delete | Change
+				writer.writeEndElement();
+			}
+			*/
+			writer.writeEndElement();
+		} catch (XMLStreamException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private void handleNonEmptySimpleElement(String tag, String content) throws XMLStreamException {
+		if (content != null) {
+			content = content.trim();
+			if (content.length() != 0) handleSimpleElement(tag, content);
+		}
+	}
+
+	/*
+	private void writeNonEmptyAttribute(String localName, String value) throws XMLStreamException {
+		if (value != null) {
+			value = value.trim();
+			if (value.length() != 0) writer.writeAttribute(localName, value);
+		}
+	}
+
+	private void writeNonNullAttribute(String localName, Object value) throws XMLStreamException {
+		if (value != null)
+			writer.writeAttribute(localName, value.toString());
+	}
+	*/
 
 	/**
 	 * Actually output the style
