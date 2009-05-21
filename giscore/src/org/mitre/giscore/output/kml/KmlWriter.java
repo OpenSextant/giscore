@@ -19,10 +19,9 @@ package org.mitre.giscore.output.kml;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.input.kml.IKml;
+import org.mitre.giscore.input.kml.UrlRef;
+import org.mitre.giscore.events.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,6 +29,9 @@ import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+import java.net.URI;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 
 /**
  * Wrapper to KmlOutputStream for handling the common steps needed to create
@@ -92,6 +94,7 @@ public class KmlWriter {
 			throw e2;
         }
         kos.write(new DocumentStart(DocumentType.KML));
+		// TODO: consider adding KmlWriter(InoutStream is, boolean compress) constructor
     }
 
     /**
@@ -224,4 +227,55 @@ public class KmlWriter {
         waiting = null;
     }
 
+	/**
+	 * @param href href URI to normalize
+	 * @return Return normalized href, null if normal or failed to normalize
+	 */
+	private static String fixHref(String href) {
+		if (href != null && href.startsWith("kmz")) {
+			try {
+				return new UrlRef(new URI(href)).getKmzRelPath();
+			} catch (MalformedURLException e) {
+				// ignore
+			} catch (URISyntaxException e) {
+				// ignore
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Normalize URLs from internal URIs. Only IGISObjects that haves URLs
+	 * may be affected (i.e., NetworkLink, Overlay, and Style) and only if original
+	 * href had a relative URL which gets rewritten to include the parent KML/KMZ document.
+	 * 
+	 * @param o IGISObject to normalize 
+	 */
+	public static void normalizeUrls(IGISObject o) {
+		if (o instanceof NetworkLink) {
+			NetworkLink nl = (NetworkLink) o;
+			TaggedMap link = nl.getLink();
+			if (link != null) {
+				String href = fixHref(link.get(IKml.HREF));
+				// check for treated URLs and normalized them so they work outside
+				// this package (e.g. with Google Earth client).
+				if (href != null) link.put(IKml.HREF, href);
+			}
+		} else if (o instanceof Overlay) {
+			// handle GroundOverlay or ScreenOverlay href
+			Overlay ov = (Overlay) o;
+			TaggedMap icon = ov.getIcon();
+			if (icon != null) {
+				String href = fixHref(icon.get(IKml.HREF));
+				if (href != null) icon.put(IKml.HREF, href);
+			}
+		} else if (o instanceof Style) {
+			Style style = (Style) o;
+			if (style.hasIconStyle()) {
+				String href = fixHref(style.getIconUrl());
+				if (href != null)
+					style.setIconStyle(style.getIconColor(), style.getIconScale(), href);
+			}
+		}
+	}
 }

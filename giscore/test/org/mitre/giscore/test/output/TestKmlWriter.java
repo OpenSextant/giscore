@@ -133,50 +133,9 @@ public class TestKmlWriter extends TestCase {
 		}
 	}
 
-	/**
-	 * @param href href URI to normalize 
-	 * @return Return normalized href, null if normal or failed to normalize
-	 */
-	private static String fixHref(String href) {
-		if (href != null && href.startsWith("kmz")) {
-			try {
-				return new UrlRef(new URI(href)).toString();
-			} catch (MalformedURLException e) {
-				// ignore
-			} catch (URISyntaxException e) {
-				// ignore
-			}
-		}
-		return null;
-	}
-
 	private void normalizeUrls(List<IGISObject> objs) {
 		for (IGISObject o : objs) {
-			if (o instanceof NetworkLink) {
-				NetworkLink nl = (NetworkLink) o;
-				TaggedMap link = nl.getLink();
-                if (link != null) {
-                    String href = fixHref(link.get(IKml.HREF));
-                    // check for treated URLs and normalized them so they work outside
-                    // this package (e.g. with Google Earth client).
-                    if (href != null) link.put(IKml.HREF, href);
-                }
-			} else if (o instanceof Overlay) {
-				// handle GroundOverlay or ScreenOverlay href
-				Overlay ov = (Overlay) o;
-				TaggedMap icon = ov.getIcon();
-                if (icon != null) {
-                    String href = fixHref(icon.get(IKml.HREF));
-                    if (href != null) icon.put(IKml.HREF, href);
-                }
-			} else if (o instanceof Style) {
-				Style style = (Style) o;
-				if (style.hasIconStyle()) {
-					String href = fixHref(style.getIconUrl());
-					if (href != null)
-						style.setIconStyle(style.getIconColor(), style.getIconScale(), href);
-				}
-			}
+			KmlWriter.normalizeUrls(o);			
 		}
 	}
 
