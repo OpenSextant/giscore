@@ -1,6 +1,10 @@
 package org.mitre.giscore.events;
 
 import org.mitre.giscore.IStreamVisitor;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 import java.util.Date;
 
@@ -25,8 +29,9 @@ public class NetworkLinkControl implements IGISObject {
 	private String linkSnippet;
 	private Date expires;
 	private String targetHref; // from Update element
-	
-	// TODO: add  Update details
+	private String updateType;
+
+	// TODO: add Update details: need list of Update objects. replace single updateType value with list. 
 
 	/*
 	  <element name="NetworkLinkControl" type="kml:NetworkLinkControlType"/>
@@ -125,7 +130,47 @@ public class NetworkLinkControl implements IGISObject {
 		this.targetHref = targetHref;
 	}
 
+	public String getUpdateType() {
+		return updateType;
+	}
+
+	public void setUpdateType(String updateType) {
+		this.updateType = updateType;
+	}
+
 	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
 	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		return EqualsBuilder.reflectionEquals(this, obj);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return HashCodeBuilder.reflectionHashCode(this);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this,
+				ToStringStyle.MULTI_LINE_STYLE);
+	}
+
 }
