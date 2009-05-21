@@ -1151,46 +1151,67 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	private IGISObject handleNetworkLinkControl(XMLEventReader stream, String localname) throws XMLStreamException {
 		NetworkLinkControl c = new NetworkLinkControl();
+		boolean updateFound = false;
+		String updateType = null;
 		while (true) {
 			XMLEvent next = stream.nextEvent();
 			if (next == null)
 				break;
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
-				if (foundStartTag(se, "minRefreshPeriod")) {
-					Double val = getDoubleElementValue("minRefreshPeriod");
-					if (val != null) c.setMinRefreshPeriod(val);
-				} else if (foundStartTag(se, "maxSessionLength")) {
-					Double val = getDoubleElementValue("maxSessionLength");
-					if (val != null) c.setMaxSessionLength(val);
-				} else if (foundStartTag(se, "cookie")) {
-					String val = getNonEmptyElementText();
-					if (val != null) c.setCookie(val);
-				} else if (foundStartTag(se, "message")) {
-					String val = getNonEmptyElementText();
-					if (val != null) c.setMessage(val);
-				} else if (foundStartTag(se, "linkName")) {
-					String val = getNonEmptyElementText();
-					if (val != null) c.setLinkName(val);
-				} else if (foundStartTag(se, "linkDescription")) {
-					String val = getNonEmptyElementText();
-					if (val != null) c.setLinkDescription(val);
-				} else if (foundStartTag(se, "linkSnippet")) {
-					String val = getNonEmptyElementText();
-					if (val != null) c.setLinkSnippet(val);
-				} else if (foundStartTag(se, "expires")) {
-					String expires = getNonEmptyElementText();
-					if (expires != null)
-						try {
-							c.setExpires(parseDate(expires));
-						} catch (ParseException e) {
-							log.warn("Ignoring bad expires value: " + expires + ": " + e);
-						}
-				} else if (foundStartTag(se, "targetHref")) {
-					String val = getNonEmptyElementText();
-					if (val != null) c.setTargetHref(val);
+				if (updateFound) {
+					if (foundStartTag(se, "targetHref")) {
+						String val = getNonEmptyElementText();
+						if (val != null) c.setTargetHref(val);
+						// TODO: NetworkLinkControl can have 1 or more Update controls
+						// ... TODO: handle Update details
+					} else if (foundStartTag(se, "Create")) {
+						updateType = "Create";
+					} else if (foundStartTag(se, "Delete")) {
+						updateType = "Delete";
+					} else if (foundStartTag(se, "Change")) {
+						updateType = "Change";
+					}
+					if (updateType != null) {
+						// log.info("XXX: updatetupe=" + updateType);
+						c.setUpdateType(updateType);
+						skipNextElement(stream, NETWORK_LINK_CONTROL);
+						break;
+					}
+				} else {
+					if (foundStartTag(se, "minRefreshPeriod")) {
+						Double val = getDoubleElementValue("minRefreshPeriod");
+						if (val != null) c.setMinRefreshPeriod(val);
+					} else if (foundStartTag(se, "maxSessionLength")) {
+						Double val = getDoubleElementValue("maxSessionLength");
+						if (val != null) c.setMaxSessionLength(val);
+					} else if (foundStartTag(se, "cookie")) {
+						String val = getNonEmptyElementText();
+						if (val != null) c.setCookie(val);
+					} else if (foundStartTag(se, "message")) {
+						String val = getNonEmptyElementText();
+						if (val != null) c.setMessage(val);
+					} else if (foundStartTag(se, "linkName")) {
+						String val = getNonEmptyElementText();
+						if (val != null) c.setLinkName(val);
+					} else if (foundStartTag(se, "linkDescription")) {
+						String val = getNonEmptyElementText();
+						if (val != null) c.setLinkDescription(val);
+					} else if (foundStartTag(se, "linkSnippet")) {
+						String val = getNonEmptyElementText();
+						if (val != null) c.setLinkSnippet(val);
+					} else if (foundStartTag(se, "expires")) {
+						String expires = getNonEmptyElementText();
+						if (expires != null)
+							try {
+								c.setExpires(parseDate(expires));
+							} catch (ParseException e) {
+								log.warn("Ignoring bad expires value: " + expires + ": " + e);
+							}
+					} else if (foundStartTag(se, "Update")) {
+						updateFound = true; // start phase 2 and parse inside Update element
+					}
 				}
-				// ... TODO: add Update details
 			} else if (foundEndTag(next, NETWORK_LINK_CONTROL)) {
 				break;
 			}

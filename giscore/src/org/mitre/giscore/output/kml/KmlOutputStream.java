@@ -822,15 +822,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			handleNonEmptySimpleElement("linkSnippet", networkLinkControl.getLinkSnippet());
 			Date expires = networkLinkControl.getExpires();
 			if (expires != null) handleSimpleElement("expires", getDateFormatter().format(expires));
-			/*
 			String targetHref = networkLinkControl.getTargetHref();
-			if (targetHref != null) {
+			String type = networkLinkControl.getUpdateType();
+			if (targetHref != null && type != null) {
 				writer.writeStartElement("Update");
 				handleSimpleElement("targetHref", targetHref);
-				// Create | Delete | Change
-				writer.writeEndElement();
+				// create elements -> Create | Delete | Change
+				writer.writeEmptyElement(type);//TODO: handle multiple update objects
+				writer.writeEndElement(); // end Update
 			}
-			*/
 			writer.writeEndElement();
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
