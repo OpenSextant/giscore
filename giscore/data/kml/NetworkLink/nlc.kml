@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <NetworkLinkControl>
+        <minRefreshPeriod>5</minRefreshPeriod>
+        <maxSessionLength>60</maxSessionLength>
+	<cookie>cookie=sometext</cookie>
+	<message>This is a pop-up message. You will only see this once</message>
+	<linkName>New KML features</linkName>
+	<linkDescription><![CDATA[KML now has <B>new</B> features available!]]></linkDescription>
+	<linkSnippet>link snippet</linkSnippet>
+	<expires>2010-03-21T00:00:00Z</expires>
+        <Update>
+            <targetHref>http://localhost:8080/kml</targetHref>
+            <Change>
+                <Point targetId="uav0">
+                    <coordinates>-122.45797942285905,37.829078158856184,1034.277606254067</coordinates>
+                </Point>
+            </Change>
+        </Update>
+    </NetworkLinkControl>
+</kml>
+
