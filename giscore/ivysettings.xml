@@ -31,7 +31,7 @@
 				<ivy
 					pattern="${repository.dir}/[organisation](-[module])/ivy-[revision].xml" />
 				<artifact
-					pattern="${repository.dir}/[organisation](-[module])/[artifact](-[type])-[revision].[ext]" />
+					pattern="${repository.dir}/[organisation](-[module])/[artifact]-[revision](-[type]).[ext]" />
 			</filesystem>
 			<ibiblio name="mapsrv" namespace="m2" checkconsistency="false"
 				root="http://mapsrv.mitre.org/maven-proxy" m2compatible="true" />				
