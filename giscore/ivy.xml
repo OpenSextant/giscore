@@ -13,16 +13,11 @@
 		<artifact name="giscore-javadoc" type="javadoc" ext="jar" />
 	</publications>
 	<dependencies defaultconf="compile->default" >
-		<dependency org="org.mitre.itf" name="geodesy" rev="1.9.2" />
+		<dependency org="org.mitre.itf" name="geodesy" rev="1.9.3" />
 		<dependency org="commons-lang" name="commons-lang" rev="2.4" />
 		<dependency org="commons-io" name="commons-io" rev="1.4" />
-		<!-- We currently need this for the ISO 8601 date format. -->
-		<dependency org="log4j" name="log4j-osgi" rev="1.2.15" />
-		<dependency org="org.slf4j" name="slf4j-api" rev="1.5.6" />
-		<dependency org="org.slf4j" name="jcl-over-slf4j" rev="1.5.6" />
-		<dependency org="org.slf4j" name="slf4j-log4j12" rev="1.5.6" conf="test->default">
-			<exclude org="log4j" module="log4j" />
-		</dependency>
+        <dependency org="org.slf4j" name="slf4j-api" rev="1.5.6"/>
+
 		<dependency org="stax" name="stax-api-osgi" rev="1.0.1" />
 		<dependency org="org.codehaus.woodstox" name="com.springsource.com.ctc.wstx" 
 			rev="3.2.7" conf="runtime->default">
