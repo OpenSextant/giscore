@@ -53,6 +53,7 @@ import javax.xml.stream.events.XMLEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.utils.NumberStreamTokenizer;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
@@ -143,6 +144,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private static final List<DateFormat> ms_dateFormats = new ArrayList<DateFormat>();
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 	private static DatatypeFactory fact;
+	private static final Longitude COORD_ERROR = new Longitude();
 
 	static {
 		ms_fact = XMLInputFactory.newInstance();
@@ -1616,7 +1618,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			Line line = new Line(coords);
 			return line;
 		} else if (localname.equals(LINEAR_RING)) {
-			ArrayList<Point> coords = parseCoordinates(localname);
+			List<Point> coords = parseCoordinates(localname);
 			LinearRing ring = new LinearRing(coords);
 			return ring;
 		} else if (localname.equals(POLYGON)) {
@@ -1695,42 +1697,23 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @return the coordinates
 	 * @throws XMLStreamException
 	 */
-	private ArrayList<Point> parseCoordinates(String localname)
+	private List<Point> parseCoordinates(String localname)
 			throws XMLStreamException {
-		ArrayList<Point> rval = new ArrayList<Point>();
+		List<Point> rval = null;
 		while (true) {
 			XMLEvent event = stream.nextEvent();
 			if (foundEndTag(event, localname)) {
 				break;
 			}
-			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
-				if (event.asStartElement().getName().getLocalPart().equals(
-						COORDINATES)) {
-					String text = getNonEmptyElementText();
-                    if (text != null) {
-                        String tuples[] = text.split("\\s");
-                        for (String tuple : tuples) {
-                            if (!StringUtils.isEmpty(tuple)) {
-                                String parts[] = tuple.trim().split(",");
-                                double dlon = Double.parseDouble(parts[0]);
-                                double dlat = Double.parseDouble(parts[1]);
-                                Longitude lon = new Longitude(dlon, Angle.DEGREES);
-                                Latitude lat = new Latitude(dlat, Angle.DEGREES);
-                                if (parts.length < 3) {
-                                    rval.add(new Point(
-                                            new Geodetic2DPoint(lon, lat)));
-                                } else {
-                                    double elev = Double.parseDouble(parts[2]);
-                                    rval.add(new Point(new Geodetic3DPoint(lon,
-                                            lat, elev)));
-                                }
-                            }
-                        }
-                    }
-				}
+			if (event.getEventType() == XMLStreamReader.START_ELEMENT &&
+					COORDINATES.equals(event.asStartElement().getName().getLocalPart())) {
+				String text = getNonEmptyElementText();
+				if (text != null) rval = parseCoord(text);
+				skipNextElement(stream, localname);
+				break;
 			}
 		}
-		return rval;
+		return rval == null ? new ArrayList<Point>() : rval;
 	}
 
 	/**
@@ -1738,7 +1721,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * lat/lons/alts. The element name is used to spot if we leave the "end" of
 	 * the block. The stream will be positioned after the element when this
 	 * returns.
-	 * 
+	 *
 	 * @param localname
 	 *            the tag name of the containing element
 	 * @return the coordinate
@@ -1751,37 +1734,181 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (foundEndTag(event, localname)) {
 				break;
 			}
-			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
-				if (event.asStartElement().getName().getLocalPart().equals(
-						COORDINATES)) {
-					String text = getNonEmptyElementText();
-					// allow sloppy KML with whitespace appearing before/after
-					// lat and lon values; e.g. <coordinates>-121.9921875, 37.265625</coordinates>
-					// http://kml-samples.googlecode.com/svn/trunk/kml/ListStyle/radio-folder-vis.kml
-					if (text != null) {
-						String parts[] = text.split(",");
-						if (parts.length > 1) {
-							try {
-								double dlon = Double.parseDouble(parts[0]);
-								double dlat = Double.parseDouble(parts[1]);
-								Longitude lon = new Longitude(dlon, Angle.DEGREES);
-								Latitude lat = new Latitude(dlat, Angle.DEGREES);
-								if (parts.length < 3) {
-									rval = new Point(new Geodetic2DPoint(lon, lat));
-								} else {
-									double elev = Double.parseDouble(parts[2]);
-									rval = new Point(new Geodetic3DPoint(lon, lat,
-											elev));
-								}
-							} catch (NumberFormatException nfe) {
-								log.warn("Invalid coordinate: " + text + ": " + nfe);
-							}
-						}
-					}
-				}
+			if (event.getEventType() == XMLStreamReader.START_ELEMENT &&
+					COORDINATES.equals(event.asStartElement().getName().getLocalPart())) {
+				String text = getNonEmptyElementText();
+				// allow sloppy KML with whitespace appearing before/after
+				// lat and lon values; e.g. <coordinates>-121.9921875, 37.265625</coordinates>
+				// http://kml-samples.googlecode.com/svn/trunk/kml/ListStyle/radio-folder-vis.kml
+				if (text != null) rval = parsePointCoord(text);
+				skipNextElement(stream, localname);
+				break;
 			}
 		}
 		return rval;
+	}
+
+	private static Point parsePointCoord(String coord) {
+		List<Point> list = parseCoord(coord);
+		return list.size() == 0 ? null : list.get(0);
+	}
+
+	/**
+	 * Coordinate parser that matches the loose parsing of coordinates in Google Earth.
+	 * KML reference states "Do not include spaces within a [coordinate] tuple" yet
+	 * it still allows whitespace to appear anywhere in the input. 
+	 * State machine-like parsing keeps track of what part of the coordinate
+	 * had been found so far.
+	 * Extra whitespace is allowed anywhere in the string.
+	 * Invalid text in input is ignored.
+	 *
+	 * @param coord
+	 * @return list of coordinates
+	 */
+	public static List<Point> parseCoord(String coord) {
+		List<Point> list = new ArrayList<Point>();
+		NumberStreamTokenizer st = new NumberStreamTokenizer(coord);
+		st.ordinaryChar(',');
+		boolean seenComma = false;
+		int numparts = 0;
+		double elev = 0;
+		Longitude lon = null;
+		Latitude lat = null;
+		try {
+			while (st.nextToken() != NumberStreamTokenizer.TT_EOF) {
+				switch (st.ttype) {
+					case NumberStreamTokenizer.TT_WORD:
+						//s = "STRING:" + st.sval; // Already a String
+						log.warn("ignore invalid string in coordinate: \"" + st.sval + "\"");
+						//if (seenComma) System.out.println("\tXXX: WORD: seenComma");
+						//if (numparts != 0) System.out.println("\tXXX: WORD: numparts=" + numparts);
+						break;
+
+					case NumberStreamTokenizer.TT_NUMBER:
+						if (numparts == 3) {
+							if (seenComma) {
+								// skip over extra values
+								//System.out.format("\tWarn: ignore extra values in coordinate: \"%f\"%n", st.nval);
+								seenComma = false;
+								continue;
+							}
+							// add last coord to list and reset counter
+							if (lon != COORD_ERROR)
+								list.add(new Point(new Geodetic3DPoint(lon, lat, elev)));
+							//else System.out.println("\tERROR: drop bad coord");
+							numparts = 0;
+						}
+						try {
+							switch (++numparts) {
+								case 1:
+									if (seenComma) {
+										lat = new Latitude(st.nval, Angle.DEGREES);
+										lon = new Longitude(); // skipped longitude (use 0 degrees)
+										numparts = 2;
+									} else {
+										// starting new coordinate
+										lon = new Longitude(st.nval, Angle.DEGREES);
+									}
+									break;
+
+								case 2:
+									if (seenComma) {
+										//System.out.println("lat=" + st.nval);
+										lat = new Latitude(st.nval, Angle.DEGREES);
+									} else {
+										if (lon != COORD_ERROR)
+											list.add(new Point(new Geodetic2DPoint(
+													lon, new Latitude())));
+										//else System.out.println("\tERROR: drop bad coord");
+										// start new tuple
+										lon = new Longitude(st.nval, Angle.DEGREES);
+										numparts = 1;
+									}
+									break;
+
+								case 3:
+									if (seenComma) {
+										elev = st.nval;
+									} else {
+										if (lon != COORD_ERROR)
+											list.add(new Point(new Geodetic2DPoint(lon, lat)));
+										//else System.out.println("\tERROR: drop bad coord");
+										// start new tuple
+										numparts = 1;
+										lon = new Longitude(st.nval, Angle.DEGREES);
+									}
+									break;
+							}
+
+							//s = "NUM:" + Double.toString(st.nval);
+							/*
+							 double nval = st.nval;
+							 if (st.nextToken() == StreamTokenizer.TT_WORD && expPattern.matcher(st.sval).matches()) {
+								 s = "ENUM:" + Double.valueOf(Double.toString(nval) + st.sval).toString();
+							 } else {
+								 s = "NUM:" + Double.toString(nval);
+								 st.pushBack();
+							 }
+							 */
+						} catch (IllegalArgumentException e) {
+							// bad lat/longitude; e.g. out of valid range
+							log.error("Invalid coordinate", e);
+							if (numparts != 0) lon = COORD_ERROR;
+						}
+						seenComma = false; // reset flag
+						break;
+
+					default: // single character in ttype
+						if (st.ttype == ',') {
+							if (!seenComma) {
+								// start of next coordinate component
+								seenComma = true;
+								if (numparts == 0) {
+									//System.out.println("\tXXX: WARN: COMMA0: seenComma w/numparts=" + numparts);
+									lon = new Longitude(); // skipped longitude (use 0 degrees)
+									numparts = 1;
+								}
+							} else {
+								switch (numparts) {
+									case 0:
+										//System.out.println("\tXXX: WARN: COMMA1: seenComma w/numparts=" + numparts);
+										lon = new Longitude(); // skipped longitude (use 0 degrees)
+										numparts = 1;
+										break;
+									case 1:
+										//System.out.println("\tXXX: WARN: COMMA2: seenComma w/numparts=" + numparts);
+										lat = new Latitude();  // skipped Latitude (use 0 degrees)
+										numparts = 2;
+										break;
+									//default:
+										//System.out.println("\tXXX: ** ERROR: COMMA3: seenComma w/numparts=" + numparts);
+								}
+							}
+						} else
+							log.warn("ignore invalid character in coordinate string: (" + (char) st.ttype + ")");
+						//s = "CHAR:" + String.valueOf((char) st.ttype);
+				}
+				//System.out.println("\t" + s);
+			} // while
+		} catch (IOException e) {
+			// we're using StringReader. this should never happen
+			log.error("Failed to parse coord string", e);
+		}
+
+		// add last coord if valid
+		if (numparts != 0 && lon != COORD_ERROR)
+			switch (numparts) {
+				case 1:
+					list.add(new Point(new Geodetic2DPoint(lon, new Latitude())));
+					break;
+				case 2:
+					list.add(new Point(new Geodetic2DPoint(lon, lat)));
+					break;
+				case 3:
+					list.add(new Point(new Geodetic3DPoint(lon, lat, elev)));
+			}
+
+		return list;
 	}
 
 	/**
