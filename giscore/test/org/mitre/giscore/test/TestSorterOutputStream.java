@@ -26,7 +26,6 @@ import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
