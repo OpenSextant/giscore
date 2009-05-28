@@ -113,14 +113,17 @@ import org.slf4j.LoggerFactory;
  * <p> 
  * Unsupported tags include the following:
  *  atom:author, atom:link, address, xal:AddressDetails, Camera, LookAt,
- *  Model, Metadata, NetworkLinkControl, open, phoneNumber, Region,
+ *  Model, Metadata, open, phoneNumber, Region,
  *  Snippet, snippet, visibility.
  * <p>
  * While these tags don't break anything if present they are ignored.
  * <p> 
  * Limited support for PhotoOverlay which creates an basic overlay object
  * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
- * ImagePyramid, Point, shape, etc). 
+ * ImagePyramid, Point, shape, etc).
+ * <p> 
+ * Limited support for NetworkLinkControl which creates a wrapper for the link
+ * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
  *
  * @author DRAND
  * @author J.Mathews
