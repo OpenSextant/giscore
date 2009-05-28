@@ -113,8 +113,7 @@ import org.slf4j.LoggerFactory;
  * <p> 
  * Unsupported tags include the following:
  *  atom:author, atom:link, address, xal:AddressDetails, Camera, LookAt,
- *  Model, Metadata, open, phoneNumber, Region,
- *  Snippet, snippet, visibility.
+ *  Model, Metadata, open, phoneNumber, Region, Snippet, snippet, visibility.
  * <p>
  * While these tags don't break anything if present they are ignored.
  * <p> 
@@ -261,6 +260,11 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						IGISObject rval = handleEndElement(e);
 						if (rval != null)
 							return rval;
+                        break;
+                    case XMLStreamReader.COMMENT:
+                        IGISObject comment = handleComment(e);
+						if (comment != null)
+							return comment;
 					}
 				}
 			} catch (NoSuchElementException e) {
@@ -273,7 +277,16 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		}
 	}
 
-	/**
+    private IGISObject handleComment(XMLEvent e) throws XMLStreamException {
+        if (e instanceof javax.xml.stream.events.Comment) {
+            String text = ((javax.xml.stream.events.Comment)e).getText();
+            if (StringUtils.isNotBlank(text))
+                return new Comment(text);
+        }
+        return null;
+    }
+
+    /**
 	 * Read elements until we find a feature or a schema element. Use the name
 	 * and description data to set the equivalent data on the container start.
 	 * 
@@ -1279,7 +1292,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						if (type != null) {
 							String typeValue = type.getValue();
 							// old-style "wstring" is just a string type
-							if (StringUtils.isNotEmpty(typeValue) && !"wstring".equalsIgnoreCase(typeValue))
+							if (StringUtils.isNotBlank(typeValue) && !"wstring".equalsIgnoreCase(typeValue))
 								ttype = SimpleField.Type.valueOf(typeValue.toUpperCase());
 						}
 						field.setType(ttype);
@@ -1943,6 +1956,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
     /**
      * Returns non-empty trimmed elementText from stream otherwise null
      * @return non-empty trimmed string, otherwise null
+     * @throws XMLStreamException if the current event is not a START_ELEMENT
+     * or if a non text element is encountered
      */
     private String getNonEmptyElementText() throws XMLStreamException {
         String elementText = stream.getElementText();
