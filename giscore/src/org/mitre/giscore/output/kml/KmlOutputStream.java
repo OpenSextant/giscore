@@ -175,6 +175,25 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
+    private void handleLookAt(Common common) {
+        LookAt lookAt = common.getLookAt();
+        if (lookAt != null) {
+            try {
+                writer.writeStartElement(LOOK_AT);
+                handleNonNullSimpleElement(LONGITUDE, lookAt.longitude);
+                handleNonNullSimpleElement(LATITUDE, lookAt.latitude);
+                handleNonNullSimpleElement(ALTITUDE, lookAt.altitude);
+                handleNonNullSimpleElement(HEADING, lookAt.heading);
+                handleNonNullSimpleElement(TILT, lookAt.tilt);
+                handleNonNullSimpleElement(RANGE, lookAt.range);
+                handleNonNullSimpleElement(ALTITUDE_MODE, lookAt.altitudeMode);
+                writer.writeEndElement();
+            } catch (XMLStreamException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
     // Thread-safe date formatter helper method
     private SafeDateFormat getDateFormatter() {
         if (dateFormatter == null) {
@@ -195,7 +214,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         try {
             handleNonNullSimpleElement(NAME, feature.getName());
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
-
+            handleLookAt(feature);
             Date startTime = feature.getStartTime();
             Date endTime = feature.getEndTime();
             if (startTime != null) {
