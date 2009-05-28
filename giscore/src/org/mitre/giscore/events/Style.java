@@ -141,7 +141,7 @@ public class Style implements IGISObject {
 		hasIconStyle = true;
 		iconColor = color;
 		iconScale = scale <= 0.0 ? 0 : scale;
-		iconUrl = StringUtils.isEmpty(url) ? null : url;
+		iconUrl = StringUtils.isBlank(url) ? null : url;
 	}
 
 	/**
