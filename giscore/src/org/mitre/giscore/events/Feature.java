@@ -155,6 +155,6 @@ public class Feature extends Common {
 		} else {
 			return false;
 		}
-
 	}
+
 }

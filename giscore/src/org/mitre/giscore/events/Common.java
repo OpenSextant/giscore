@@ -40,6 +40,8 @@ public abstract class Common extends Row {
 	protected Date startTime;
 	protected Date endTime;
 	protected String styleUrl;
+    private LookAt lookAt;
+    
 	/**
 	 * @return the name
 	 */
@@ -114,6 +116,14 @@ public abstract class Common extends Row {
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
 	}
+
+    public LookAt getLookAt() {
+        return lookAt;
+    }
+
+    public void setLookAt(LookAt lookAt) {
+        this.lookAt = lookAt;
+    }
 
 	/**
 	 * Read object from the data stream.

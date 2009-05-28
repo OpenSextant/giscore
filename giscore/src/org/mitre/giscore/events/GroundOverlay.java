@@ -26,6 +26,8 @@ import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This element draws an image overlay draped onto the terrain. The <href> child
@@ -38,14 +40,13 @@ import org.mitre.itf.geodesy.*;
  * 
  */
 public class GroundOverlay extends Overlay {
-	private Double north, south, east, west, rotation, altitude;
-	private String altitudeMode;
 
-    // possible values for altitudeMode
+    private static final Logger log = LoggerFactory.getLogger(GroundOverlay.class);
+
+	private Double north, south, east, west, rotation, altitude;
+
     // see http://code.google.com/apis/kml/documentation/kmlreference.html#altitudemode
-    public static final String CLAMP_TO_GROUND = "clampToGround"; // default
-    public static final String ABSOLUTE = "absolute";
-    public static final String RELATIVE_TO_GROUND = "relativeToGround"; 
+	private AltitudeModeEnumType altitudeMode; // default (clampToGround)
 
     /**
 	 * @return the type
@@ -123,7 +124,7 @@ public class GroundOverlay extends Overlay {
     public Geodetic2DBounds getBoundingBox() {
         Geodetic2DBounds bbox = null;
         if (north != null && south != null && east != null && west != null) {
-            if (altitude != null && ABSOLUTE.equals(altitudeMode)) {
+            if (altitude != null && altitudeMode == AltitudeModeEnumType.absolute) {
                 Geodetic3DPoint westCoordinate = new Geodetic3DPoint(new Longitude(west, Angle.DEGREES),
                         new Latitude(south, Angle.DEGREES), altitude);
                 Geodetic3DPoint eastCoordinate =  new Geodetic3DPoint(new Longitude(east, Angle.DEGREES),
@@ -183,7 +184,7 @@ public class GroundOverlay extends Overlay {
      * then the default clampToGround is assumed and altitude can be ignored. 
 	 * @return the altitudeMode
 	 */
-	public String getAltitudeMode() {
+	public AltitudeModeEnumType getAltitudeMode() {
 		return altitudeMode;
 	}
 
@@ -191,8 +192,19 @@ public class GroundOverlay extends Overlay {
 	 * @param altitudeMode
 	 *            the altitudeMode to set ([clampToGround], relativeToGround, absolute) 
 	 */
-	public void setAltitudeMode(String altitudeMode) {
+	public void setAltitudeMode(AltitudeModeEnumType altitudeMode) {
 		this.altitudeMode = altitudeMode;
+	}
+
+    public void setAltitudeMode(String altitudeMode) {
+        if (StringUtils.isNotBlank(altitudeMode))
+            try {
+                this.altitudeMode = AltitudeModeEnumType.valueOf(altitudeMode);
+                return;
+            } catch (IllegalArgumentException e) {
+                log.info("Ignoring invalid altitudeMode value: " + altitudeMode); // use default value
+            }
+        this.altitudeMode = null;
 	}
 	
     public void accept(IStreamVisitor visitor) {
@@ -222,13 +234,18 @@ public class GroundOverlay extends Overlay {
 		if (!equals)
 			return false;
 
-		if (StringUtils.isBlank(altitudeMode) && 
-				StringUtils.isBlank(gother.altitudeMode))
+        // note: if value is null then it's treated in KML the same as the default clampToGround value
+        // but our test below treats null different than clampToGround. 
+        return altitudeMode == gother.altitudeMode;
+        /*
+		if (altitudeMode == null && 
+				gother.altitudeMode == null)
 			return true;
 		else if (altitudeMode != null)
 			return altitudeMode.equals(gother.altitudeMode);
 		else
 			return false;
+        */
 	}
 
 	private boolean closeFloat(Double a, Double b) {
@@ -256,8 +273,8 @@ public class GroundOverlay extends Overlay {
 		rotation = in.readDouble();
 		south = in.readDouble();
 		west = in.readDouble();
-		altitudeMode = in.readString();
-		
+        String val = in.readString();
+		altitudeMode = val != null && val.length() != 0 ? AltitudeModeEnumType.valueOf(val) : null;
 	}
 
 	/* (non-Javadoc)
@@ -272,8 +289,7 @@ public class GroundOverlay extends Overlay {
 		out.writeDouble(rotation != null ? rotation : 0.0);
 		out.writeDouble(south != null ? south : 0.0);
 		out.writeDouble(west != null ? west : 0.0);
-		out.writeString(altitudeMode);
+		out.writeString(altitudeMode == null ? "" : altitudeMode.toString());
 	}
-
 
 }
