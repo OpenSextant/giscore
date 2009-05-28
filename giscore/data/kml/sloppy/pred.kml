@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ sample KML with extra whitespace and newlines in various fields
+ representation of UDOP USCENTCOM predator KML feed.
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+<ExtendedData>
+<Data name="refreshTime">
+<value>
+15
+</value>
+</Data>
+</ExtendedData>
+
+<Placemark id="Predator1">
+<Style id="sn_airports">
+<IconStyle>
+<scale>1.2</scale>
+<Icon>
+<href>
+http://maps.google.com/mapfiles/kml/shapes/airports.png
+</href>
+</Icon>
+</IconStyle>
+</Style>
+<description>
+<![CDATA[This is the location.]]>
+</description>
+<name>
+RQ-1
+</name>
+<Point>
+<extrude>1</extrude>
+<altitudeMode>
+relativeToGround
+</altitudeMode>
+<coordinates>
+-81.9980316162109, 29.9407501220703, 567.794982910156  
+</coordinates>
+</Point>
+</Placemark>
+
+<Placemark id="SPI">
+<name>
+15010
+</name>
+<LineString>
+<extrude>0</extrude>
+<tessellate>0</tessellate>
+<altitudeMode>
+relativeToGround
+</altitudeMode>
+<coordinates>
+-81.9916466079043, 29.9420387052815, 0.0  -81.9980316162109, 29.9407501220703, 567.794982910156
+</coordinates>
+</LineString>
+</Placemark>
+</Document>
+</kml>

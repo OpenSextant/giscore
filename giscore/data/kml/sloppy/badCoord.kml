@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+	Collection of lax coordinate strings that
+	either do not conform to the strict KML 2.2 spec
+	or are edge cases (exponents in values, etc.)
+
+	This is a valid KML document wrt to the KML XSD but some
+	of the coordinate values are questionable wrt KML Reference.
+	This displays all Placemarks in Google Earth which uses default
+	values for all questionable locations with lax parsing.
+
+	* whitespace before/after lat,lon,elev values (google earth ignores extra whitespace)
+	* missing latitude value (google earth fills in missing values with 0's)
+	* extra values in lon,lat,elev tuple (google earth ignores ,'s after elevation value)
+	* invalid strings or characters before/after the values
+	* invalid strings instead of numeric lat/lon values (google earth uses 0)
+
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <Document>
+        <Placemark>
+            <name>point1</name>
+            <description>[1 2 3] as [1,0,0]</description>
+            <Point>
+                <coordinates>1 2 3</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point2</name>
+            <description>[10 20 30] as [10,0,0]</description>
+            <Point>
+                <coordinates>10 20 30</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point3a</name>
+            <description>exponents in values allowed</description>
+            <Point>
+                <coordinates>1,2,7.76166643845E-1</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point3b</name>
+            <description>exponents in values allowed</description>
+            <Point>
+                <coordinates>1,2,0.776166643845E+3</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point3c</name>
+            <description>interpreted as "1,2,7.76166643845" single E as E+0</description>
+            <Point>
+                <coordinates>1,2,7.76166643845E</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point4</name>
+            <description>[1,2,3,4] as [1,2,3]</description>
+            <Point>
+                <coordinates>1,2,3,4</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point5</name>
+            <description>interpreted as [3,4,5]</description>
+            <Point>
+                <coordinates>3,4,5ddd</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point5b</name>
+            <description>[+3,+4,+5] interpreted as [3,4,5]</description>
+            <Point>
+                <coordinates>+3,+4,+5</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point6</name>
+            <description>[xxx,20,200] as [0,20,200]</description>
+            <Point>
+                <coordinates>xxx,20,200</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point7</name>
+            <description>[20,xxx,500] as [20,0,500]</description>
+            <Point>
+                <coordinates>20,xxx,500</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point7b</name>
+            <description>[xxx,yyy,500] as [0,0,500]</description>
+            <Point>
+                <coordinates>xxx,yyy,500</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point8</name>
+	    <!-- not sure what 180 latitude really means -->
+            <description>[10,200,300] as [10,*180*,300]</description>
+            <Point>
+                <coordinates>10,200,300</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point8b</name>
+            <description>[10,90,300]</description>
+            <Point>
+                <coordinates>10,90,300</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point9</name>
+            <description>[200,45,300] as [*180*,45,300]</description>
+            <Point>
+                <coordinates>200,45,300</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point9b</name>
+            <description>[3000,45,300] as [*180*,45,300]</description>
+            <Point>
+                <coordinates>3000,45,300</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point10</name>
+            <description>[xx10,20,200] as [0,20,200]</description>
+            <Point>
+                <coordinates>xx10,20,200</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>point11</name>
+            <description>[10xx,20,200] as [10,20,200]</description>
+            <Point>
+                <coordinates>10xx,20,200</coordinates>
+            </Point>
+        </Placemark>
+
+        <Placemark>
+            <name>Line1</name>
+            <LineString>
+		<extrude>0</extrude>
+		<tessellate>1</tessellate>
+                <altitudeMode>clampToGround</altitudeMode>
+                <coordinates>1 2 3</coordinates>
+            </LineString>
+        </Placemark>
+
+        <Placemark>
+            <name>Line2</name>
+            <LineString>
+		<extrude>0</extrude>
+		<tessellate>1</tessellate>
+                <altitudeMode>clampToGround</altitudeMode>
+                <coordinates>10 20 30</coordinates>
+            </LineString>
+        </Placemark>
+
+    </Document>
+</kml>

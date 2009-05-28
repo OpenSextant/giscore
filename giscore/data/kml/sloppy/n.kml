@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ Sloppy KML: descriptions have HTML markup not in CDATA block.
+ Text is expected as content for description element not child elements.
+ Source: http://westvm-iwerks.mitre.org/nn/kml/n.kml
+ -->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <Region>
+    <Lod>
+      <minLodPixels>256</minLodPixels><maxLodPixels>-1</maxLodPixels>
+    </Lod>
+    <LatLonAltBox>
+      <north>85.0</north>
+      <south>-85.0</south>
+      <east>180.0</east>
+      <west>-180.0</west>
+    </LatLonAltBox>
+  </Region>
+  <Folder>
+    <name>Points</name>
+    <Placemark>
+      <name>Point 0</name>
+      <description>lat: -10.951309472618263<br/>lng: 25.199338039512753</description>
+      <Point><coordinates>25.199338039512753,-10.951309472618263,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>Point 1</name>
+      <description>lat: -28.1672025195518<br/>lng: 156.01363502742208</description>
+      <Point><coordinates>156.01363502742208,-28.1672025195518,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>Point 2</name>
+      <description>lat: 7.385914794524467<br/>lng: 163.23552131739052</description>
+      <Point><coordinates>163.23552131739052,7.385914794524467,0</coordinates></Point>
+    </Placemark>
+    <Placemark>
+      <name>Point 3</name>
+      <description>lat: 45.37040480386324<br/>lng: -111.47490224757476</description>
+      <Point><coordinates>-111.47490224757476,45.37040480386324,0</coordinates></Point>
+    </Placemark>
+  </Folder>
+</Document>
+</kml>
