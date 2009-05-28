@@ -32,14 +32,7 @@ import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.GroundOverlay;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.PhotoOverlay;
-import org.mitre.giscore.events.ScreenLocation;
-import org.mitre.giscore.events.ScreenOverlay;
-import org.mitre.giscore.events.SimpleField;
-import org.mitre.giscore.events.TaggedMap;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
@@ -266,7 +259,7 @@ public class TestObjectPersistence {
 	private GroundOverlay makeGO() throws URISyntaxException {
 		GroundOverlay go = new GroundOverlay();
 		go.setAltitude(3.1);
-		go.setAltitudeMode("aaa");
+		go.setAltitudeMode(AltitudeModeEnumType.clampToGround);
 		go.setColor(Color.red);
 		go.setDescription("abc");
 		go.setDrawOrder(2);
