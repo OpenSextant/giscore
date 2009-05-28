@@ -27,7 +27,7 @@ package org.mitre.giscore.input.kml;
 public interface IKml {
 	static final String KML_NS = "http://www.opengis.net/kml/2.2";
 
-	// default SimpleDateFormat format pattern to parse/format dates 
+	// default SimpleDateFormat format pattern to parse/format dates
 	static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
 	static final String ADDRESS = "address";
@@ -52,6 +52,7 @@ public interface IKml {
 	static final String FLY_TO_VIEW = "flyToView";
 	static final String FOLDER = "Folder";
 	static final String GROUND_OVERLAY = "GroundOverlay";
+	static final String HEADING = "heading";
 	static final String HOT_SPOT = "hotSpot";
 	static final String HREF = "href";
 	static final String HTTP_QUERY = "httpQuery";
@@ -62,11 +63,13 @@ public interface IKml {
 	static final String KEY = "key";
 	static final String KML = "kml";
 	static final String LABEL_STYLE = "LabelStyle";
+	static final String LATITUDE = "latitude";
 	static final String LAT_LON_BOX = "LatLonBox";
 	static final String LINEAR_RING = "LinearRing";
 	static final String LINE_STRING = "LineString";
 	static final String LINE_STYLE = "LineStyle";
 	static final String LINK = "Link";
+	static final String LONGITUDE = "longitude";
 	static final String LOOK_AT = "LookAt";
 	static final String METADATA = "Metadata";
 	static final String MODEL = "Model";
@@ -87,6 +90,7 @@ public interface IKml {
 	static final String POINT = "Point";
 	static final String POLYGON = "Polygon";
 	static final String POLY_STYLE = "PolyStyle";
+	static final String RANGE = "range";
 	static final String REFRESH_VISIBILITY = "refreshVisibility";
 	static final String REGION = "Region";
 	static final String ROTATION = "rotation";
@@ -107,6 +111,7 @@ public interface IKml {
 	static final String STYLE_URL = "styleUrl";
 	static final String TEXT = "text";
 	static final String TEXT_COLOR = "textColor";
+	static final String TILT = "tilt";
 	static final String TIME_SPAN = "TimeSpan";
 	static final String TIME_STAMP = "TimeStamp";
 	static final String TYPE = "type";
