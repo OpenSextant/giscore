@@ -205,20 +205,36 @@ public class KmlReader extends KmlBaseReader {
 	 * @throws IllegalArgumentException if reader is still opened
 	 */
 	public List<IGISObject> importFromNetworkLinks() {
-        return importFromNetworkLinks(null);
+        return _importFromNetworkLinks(null);
     }
 
 	/**
-	 * Recursively imports KML objects from all visited
-	 * NetworkLinks starting from the base KML document.  This must be called
-	 * after reader is closed otherwise an IllegalArgumentException will be thrown.
+	 * Recursively imports KML objects from all visited NetworkLinks starting
+	 * from the base KML document.  Callback is provided to process each feature
+	 * as the networkLinks are parsed.  This must be called after reader is closed
+	 * otherwise an IllegalArgumentException will be thrown.
+	 *
+	 * @param handler ImportEventHandler is called when each new GISObject is encountered
+	 * 			during parsing. This cannot be null.
+	 * @throws IllegalArgumentException if ImportEventHandler is null or
+	 * 			reader is still open when invoked
+	 */
+	public void importFromNetworkLinks(ImportEventHandler handler) {
+		if (handler == null) throw new IllegalArgumentException("handler cannot be null");
+		_importFromNetworkLinks(handler);
+	}
+
+	/**
+	 * Recursively imports KML objects from all visited NetworkLinks starting
+	 * from the base KML document.  This must be called after reader is closed
+	 * otherwise an IllegalArgumentException will be thrown.
 	 *
 	 * @param handler ImportEventHandler is called when a new GISObject is parsed 
      * @return list of visited networkLink URIs if no callback handler is specified,
      *      empty list if no reachable networkLinks are found or non-null call handler is provided
 	 * @throws IllegalArgumentException if reader is still opened
 	 */
-	public List<IGISObject> importFromNetworkLinks(ImportEventHandler handler) {
+	private List<IGISObject> _importFromNetworkLinks(ImportEventHandler handler) {
 		if (iStream != null) throw new IllegalArgumentException("reader must first be closed");
 		List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
 		if (gisNetworkLinks.size() == 0) return linkedFeatures;
@@ -329,7 +345,8 @@ public class KmlReader extends KmlBaseReader {
     public static interface ImportEventHandler {
         /**
          * The KmlReader will invoke this method for each GISObject encountered during parsing.
-         * All elements will be reported in order.
+         * All elements will be reported in document order. Return false to abort importing
+		 * features from network links.
          *
          * @param ref UriRef for NetworkLink resource
          * @param gisObj new IGISObject object. This will never be null.
