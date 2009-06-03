@@ -1437,10 +1437,14 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
 						// Point, LineString, Polygon, Model, etc.
-						Geometry geo = handleGeometry(sl);
-						if (geo != null) {
-							fs.setGeometry(geo);
-						}
+                        try {
+                            Geometry geo = handleGeometry(sl);
+                            if (geo != null) {
+                                fs.setGeometry(geo);
+                            }
+                        } catch (IllegalArgumentException iae) {
+                            log.warn("Failed geometry", iae);
+                        }
 					} else if (isOverlay) {
 						if (COLOR.equals(localname)) {
 							((Overlay) fs).setColor(parseColor(stream
