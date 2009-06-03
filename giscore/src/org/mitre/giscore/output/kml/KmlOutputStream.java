@@ -175,8 +175,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
-    private void handleLookAt(Common common) {
-        LookAt lookAt = common.getLookAt();
+    private void handleLookAt(Common feature) {
+        LookAt lookAt = feature.getLookAt();
         if (lookAt != null) {
             try {
                 writer.writeStartElement(LOOK_AT);
