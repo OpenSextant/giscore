@@ -125,7 +125,13 @@ public class LinearRing extends Geometry implements Iterable<Point> {
         }
     }
 
-    // Private init method shared by Constructors
+    /**
+     * Private init method shared by Constructors
+     * @param pts
+     * @param validateTopology
+     * @throws IllegalArgumentException error if point list is empty
+     *          or number of points is less than 4
+     */
     private void init(List<Point> pts, boolean validateTopology) throws IllegalArgumentException {
         if (pts == null || pts.size() < 4)
             throw new IllegalArgumentException("LinearRing must contain at least 4 Points");
@@ -173,6 +179,7 @@ public class LinearRing extends Geometry implements Iterable<Point> {
      *
      * @param pts List of Geodetic2DPoint point objects to use for the vertices of this Ring
      * @throws IllegalArgumentException error if point list is empty
+     *          or number of points is less than 4
      */
     public LinearRing(List<Point> pts) throws IllegalArgumentException {
         init(pts, false);
@@ -185,6 +192,7 @@ public class LinearRing extends Geometry implements Iterable<Point> {
      * @param pts              List of Geodetic2DPoint objects to use as Ring vertices
      * @param validateTopology boolean flag indicating that Ring topology should be validated
      * @throws IllegalArgumentException error if point list is empty
+     *          or number of points is less than 4
      */
     public LinearRing(List<Point> pts, boolean validateTopology) throws IllegalArgumentException {
         init(pts, validateTopology);
@@ -357,7 +365,7 @@ public class LinearRing extends Geometry implements Iterable<Point> {
 	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
-			IllegalAccessException {
+			IllegalAccessException, IllegalArgumentException {
 		super.readData(in);
 		idlWrap = in.readBoolean();
 		List<Point> plist = (List<Point>) in.readObjectCollection();
