@@ -1443,7 +1443,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                                 fs.setGeometry(geo);
                             }
                         } catch (IllegalArgumentException iae) {
-                            log.warn("Failed geometry", iae);
+                            log.warn("Failed geometry: " + fs, iae);
                         }
 					} else if (isOverlay) {
 						if (COLOR.equals(localname)) {
@@ -1627,8 +1627,11 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	/**
 	 * Parse and process the geometry for the feature and store in the feature
 	 * 
-	 * @param sl
-	 * @throws XMLStreamException
+	 * @param sl StartElement
+     * @return Geometry associated with this element
+     *          otherwise null if no valid Geometry can be constructed
+     * @throws XMLStreamException if there is an error with the underlying XML
+     * @throws IllegalArgumentException if geometry is invalid
 	 */
 	@SuppressWarnings("unchecked")
 	private Geometry handleGeometry(StartElement sl) throws XMLStreamException {
@@ -1638,12 +1641,23 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			return parseCoordinate(localname);
 		} else if (localname.equals(LINE_STRING)) {
 			List<Point> coords = parseCoordinates(localname);
-			Line line = new Line(coords);
-			return line;
+            if (coords.size() == 1) {
+                Point pt = coords.get(0); 
+                log.warn("line with single coordinate converted to point: " + pt);
+                return pt;
+            }
+			else return new Line(coords);
 		} else if (localname.equals(LINEAR_RING)) {
 			List<Point> coords = parseCoordinates(localname);
-			LinearRing ring = new LinearRing(coords);
-			return ring;
+            if (coords.size() == 1) {
+                Point pt = coords.get(0);
+                log.warn("ring with single coordinate converted to point: " + pt);
+                return pt;
+            } else if (coords.size() != 0 && coords.size() < 4) {
+                log.warn("ring with " + coords.size()+ " coordinates converted to line: " + coords);
+                return new Line(coords);
+            }
+			else return new LinearRing(coords);
 		} else if (localname.equals(POLYGON)) {
 			// Contains two linear rings
 			LinearRing outer = null;
@@ -1658,6 +1672,14 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					String sename = se.getName().getLocalPart();
 					if (sename.equals(OUTER_BOUNDARY_IS)) {
 						List<Point> coords = parseCoordinates(sename);
+                        if (coords.size() == 1) {
+                            Point pt = coords.get(0);
+                            log.warn("polygon with single coordinate converted to point: " + pt);
+                            return pt;
+                        } else if (coords.size() != 0 && coords.size() < 4) {
+                            log.warn("polygon with " + coords.size()+ " coordinates converted to line: " + coords);
+                            return new Line(coords);
+                        }
 						outer = new LinearRing(coords);
 					} else if (sename.equals(INNER_BOUNDARY_IS)) {
 						List<Point> coords = parseCoordinates(sename);
@@ -1666,8 +1688,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				}
 			}
 			if (outer == null) {
-				throw new IllegalStateException("Bad poly found, no outer ring");
+				throw new IllegalArgumentException("Bad poly found, no outer ring");
 			}
+
 			return new Polygon(outer, inners);
 		} else if (localname.equals(MULTI_GEOMETRY)) {
 			List<Geometry> geometries = new ArrayList<Geometry>();
@@ -1677,7 +1700,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					StartElement el = (StartElement) event;
 					String tag = el.getName().getLocalPart();
 					if (ms_geometries.contains(tag)) {
-						geometries.add(handleGeometry(el));
+                        Geometry geom = handleGeometry(el);
+                        if (geom != null) geometries.add(geom);
 					}
 				}
 				if (foundEndTag(event, localname)) {
@@ -1718,7 +1742,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param localname
 	 *            the tag name of the containing element
 	 * @return the coordinates
-	 * @throws XMLStreamException
+     * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private List<Point> parseCoordinates(String localname)
 			throws XMLStreamException {
@@ -1875,7 +1899,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 							 */
 						} catch (IllegalArgumentException e) {
 							// bad lat/longitude; e.g. out of valid range
-							log.error("Invalid coordinate", e);
+							log.error("Invalid coordinate: " + st.nval, e);
 							if (numparts != 0) lon = COORD_ERROR;
 						}
 						seenComma = false; // reset flag
@@ -1915,7 +1939,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} // while
 		} catch (IOException e) {
 			// we're using StringReader. this should never happen
-			log.error("Failed to parse coord string", e);
+			log.error("Failed to parse coord string: " + coord == null || coord.length() <= 20
+                    ? coord : coord.substring(0,20) + "...", e);
 		}
 
 		// add last coord if valid
