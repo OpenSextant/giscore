@@ -206,8 +206,11 @@ public class Row implements IGISObject, IDataSerializable {
 			}
 			b.append('\n');
 		}
-        b.append("\n schemaUri=");
-		b.append(schema);
+        if (schema != null) {
+            b.append(" schemaUri=");
+		    b.append(schema);
+            b.append('\n');
+        }
 		return b.toString();
 	}
 }

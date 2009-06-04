@@ -202,21 +202,31 @@ public abstract class Common extends Row {
 	@Override
 	public String toString() {
 		StringBuilder b = new StringBuilder(super.toString());
-		b.append(" name = ");
-		b.append(name);
-		b.append('\n');
-		b.append(" description = ");
-		b.append(description);
-		b.append('\n');
-		b.append(" startTime = ");
-		b.append(startTime);
-		b.append('\n');
-		b.append(" endTime = ");
-		b.append(endTime);
-		b.append('\n');
-		b.append(" styleUrl = ");
-		b.append(styleUrl);
-		b.append('\n');
-		return b.toString();
+        if (name != null) {
+		    b.append(" name = ");
+		    b.append(name);
+            b.append('\n');
+        }
+        if (description != null) {
+		    b.append(" description = ");
+		    b.append(description);
+		    b.append('\n');
+        }
+        if (startTime != null) {
+		    b.append(" startTime = ");
+		    b.append(startTime);
+		    b.append('\n');
+        }
+        if (endTime != null) {
+    		b.append(" endTime = ");
+    		b.append(endTime);
+    		b.append('\n');
+        }
+        if (styleUrl != null) {
+		    b.append(" styleUrl = ");
+		    b.append(styleUrl);
+		    b.append('\n');
+        }
+        return b.length() == 0 ? " [empty]" : b.toString();
 	}
 }
