@@ -20,14 +20,11 @@ package org.mitre.giscore.events;
 
 import java.io.IOException;
 
-import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * This element draws an image overlay draped onto the terrain. The <href> child
@@ -41,11 +38,10 @@ import org.slf4j.LoggerFactory;
  */
 public class GroundOverlay extends Overlay {
 
-    private static final Logger log = LoggerFactory.getLogger(GroundOverlay.class);
+    //private static final Logger log = LoggerFactory.getLogger(GroundOverlay.class);
 
 	private Double north, south, east, west, rotation, altitude;
 
-    // see http://code.google.com/apis/kml/documentation/kmlreference.html#altitudemode
 	private AltitudeModeEnumType altitudeMode; // default (clampToGround)
 
     /**
@@ -196,15 +192,12 @@ public class GroundOverlay extends Overlay {
 		this.altitudeMode = altitudeMode;
 	}
 
+    /**
+	 * @param altitudeMode
+	 *            the altitudeMode to set ([clampToGround], relativeToGround, absolute)
+	 */    
     public void setAltitudeMode(String altitudeMode) {
-        if (StringUtils.isNotBlank(altitudeMode))
-            try {
-                this.altitudeMode = AltitudeModeEnumType.valueOf(altitudeMode);
-                return;
-            } catch (IllegalArgumentException e) {
-                log.info("Ignoring invalid altitudeMode value: " + altitudeMode); // use default value
-            }
-        this.altitudeMode = null;
+        this.altitudeMode = AltitudeModeEnumType.getNormalizedMode(altitudeMode);
 	}
 	
     public void accept(IStreamVisitor visitor) {
