@@ -3,20 +3,14 @@ package org.mitre.giscore.utils;
 import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.UrlRef;
-import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
-import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.output.kml.KmlWriter;
-import org.mitre.itf.geodesy.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -41,9 +35,9 @@ public class KmlMetaDump implements IKml {
 	private File outPath;
 	private boolean outPathCheck;
 	private int features;
+    private boolean verbose;
 
-
-	public void checkSource(URL url) throws IOException {
+    public void checkSource(URL url) throws IOException {
 		System.out.println(url);
 		checkReader(new KmlReader(url), url.getFile());
 	}
@@ -73,6 +67,10 @@ public class KmlMetaDump implements IKml {
 		this.outPath = outPath;
 	}
 
+    public void setVerbose(boolean verbose) {
+        this.verbose = verbose;
+    }
+
 	private void addTag(String tag) {
 		if (tag != null) {
 			Integer val = tagSet.get(tag);
@@ -86,6 +84,7 @@ public class KmlMetaDump implements IKml {
 
 	private void dumpTags() {
 		System.out.flush();
+        System.out.println();
 		Integer docCnt = tagSet.get(DOCUMENT); Integer fldCnt = tagSet.get(FOLDER);
 		if ((docCnt == null || docCnt == 1) && (fldCnt == null || fldCnt == 1)) {
 			// if have only one document and/or folder then omit these
@@ -103,6 +102,7 @@ public class KmlMetaDump implements IKml {
 		try {
 			IGISObject gisObj;
 			while ((gisObj = reader.read()) != null) {
+                if (verbose) System.out.println(gisObj);
 				checkObject(gisObj);
 				if (writer != null) {
 					KmlWriter.normalizeUrls(gisObj);
@@ -110,7 +110,7 @@ public class KmlMetaDump implements IKml {
 				}
 			}
 		} catch (IOException e) {
-			dump(e);
+			dumpException(e);
 		} finally {
 			reader.close();
 			if (writer != null)
@@ -127,7 +127,7 @@ public class KmlMetaDump implements IKml {
 					}
 				});
 		}
-		
+
 		dumpTags();
 		System.out.println("\t# features=" + features);
 		System.out.println();
@@ -139,7 +139,7 @@ public class KmlMetaDump implements IKml {
 			if (!outPathCheck) {
 				if (!outPath.exists() && !outPath.mkdirs()) {
 					System.err.println("*** ERROR: Failed to create outputPath: " + outPath);
-					outPath = null; // don't bother with the output
+					outPath = null; // don't bother with the output again
 					return null;
 				}
 				outPathCheck = true; // don't need to check again				
@@ -220,13 +220,13 @@ public class KmlMetaDump implements IKml {
 		}
 	}
 
-	private static void dump(IOException e) {
+	private static void dumpException(IOException e) {
 		String msg = e.getMessage();
 		if (msg != null)
 			System.out.println("\t*** " + e.getClass().getName() + ": " + msg);
 		else {
 			System.out.println("\t*** " + e.getClass().getName());
-			e.printStackTrace();
+			e.printStackTrace(System.out);
 		}
 	}
 
@@ -248,6 +248,8 @@ public class KmlMetaDump implements IKml {
 					app.setOutPath(new File(arg.substring(2)));
 				else if (arg.equals("-f"))
 					app.setFollowLinks(true);
+                else if (arg.equals("-v"))
+					app.setVerbose(true);
 				else usage();
 			} else
 				sources.add(arg);
@@ -272,7 +274,7 @@ public class KmlMetaDump implements IKml {
 				System.out.println("\t*** " + e.getMessage());
 				System.out.println();
 			} catch (IOException e) {
-				dump(e);
+				dumpException(e);
 				System.out.println();
 			}
 		}
