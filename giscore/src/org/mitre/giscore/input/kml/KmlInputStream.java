@@ -1868,7 +1868,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	/**
 	 * Coordinate parser that matches the loose parsing of coordinates in Google Earth.
 	 * KML reference states "Do not include spaces within a [coordinate] tuple" yet
-	 * it still allows whitespace to appear anywhere in the input. 
+	 * it Google Earth allows whitespace to appear anywhere in the input or commas
+     * to appear between tuples (e.g 1,2,3,4,5,6 -> 1,2,3  4,5,6). 
 	 * State machine-like parsing keeps track of what part of the coordinate
 	 * had been found so far.
 	 * Extra whitespace is allowed anywhere in the string.
@@ -1886,6 +1887,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		double elev = 0;
 		Longitude lon = null;
 		Latitude lat = null;
+        // note the NumberStreamTokenizer introduces some floating-error: e.g. 5.5 -> 5.499999999999999         
 		try {
 			while (st.nextToken() != NumberStreamTokenizer.TT_EOF) {
 				switch (st.ttype) {
@@ -1897,20 +1899,19 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						break;
 
 					case NumberStreamTokenizer.TT_NUMBER:
-						if (numparts == 3) {
-							if (seenComma) {
-								// skip over extra values
-								//System.out.format("\tWarn: ignore extra values in coordinate: \"%f\"%n", st.nval);
-								seenComma = false;
-								continue;
-							}
-							// add last coord to list and reset counter
-							if (lon != COORD_ERROR)
-								list.add(new Point(new Geodetic3DPoint(lon, lat, elev)));
-							//else System.out.println("\tERROR: drop bad coord");
-							numparts = 0;
-						}
 						try {
+                            if (numparts == 3) {
+                                if (seenComma) {
+                                    log.warn("comma found instead of whitespace between tupes before " + st.nval);
+                                    // handle commas appearing between tuples 
+                                    seenComma = false;
+                                }
+                                // add last coord to list and reset counter
+                                if (lon != COORD_ERROR)
+                                    list.add(new Point(new Geodetic3DPoint(lon, lat, elev)));
+                                numparts = 0;
+                            }
+
 							switch (++numparts) {
 								case 1:
 									if (seenComma) {
