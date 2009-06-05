@@ -14,10 +14,23 @@
 	* extra values in lon,lat,elev tuple (google earth ignores ,'s after elevation value)
 	* invalid strings or characters before/after the values
 	* invalid strings instead of numeric lat/lon values (google earth uses 0)
-
+        * LineString or LinearRing or Polygon with single point.
+          Google Earth treats these features as a point w/o an icon.
+	* LinearRing or Polygon with only 2 or 3 points.
+          Google Earth treats these features as a LineString.
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
     <Document>
+	<Style id="sn_ylw-pushpin">
+		<LineStyle>
+			<color>ff0000ff</color>
+			<width>4</width>
+		</LineStyle>
+		<PolyStyle>
+			<color>bf0000ff</color>
+		</PolyStyle>
+	</Style>
+
         <Placemark>
             <name>point1</name>
             <description>[1 2 3] as [1,0,0]</description>
@@ -174,6 +187,191 @@
                 <coordinates>10 20 30</coordinates>
             </LineString>
         </Placemark>
+
+        <Placemark>
+            <name>Line3</name>
+            <description>LineString with single point</description>
+            <!-- google earth treats this as a point w/o an icon -->
+            <LineString>
+		<extrude>0</extrude>
+		<tessellate>1</tessellate>
+                <coordinates>4,2,0</coordinates>
+            </LineString>
+        </Placemark>
+
+        <Placemark>
+            <name>Line4</name>
+            <description>[1,2,3,4] as [1,2,3 4,0,0]</description>
+            <!-- LineString with 4 coordinate values -->
+            <LineString>
+		<extrude>0</extrude>
+		<tessellate>1</tessellate>
+                <coordinates>1,2,3,4</coordinates>
+            </LineString>
+        </Placemark>
+
+        <Placemark>
+            <name>Line5</name>
+            <description>[1, 2, 3, 4, 5, 6] as [1,2,3 4,5,6]</description>
+            <!-- LineString with , separating coordinate -->
+            <LineString>
+		<extrude>0</extrude>
+		<tessellate>1</tessellate>
+                <coordinates>1, 2, 3, 4, 5, 6</coordinates>
+            </LineString>
+        </Placemark>
+
+	<Placemark>
+		<name>line6</name>
+		<styleUrl>#sn_ylw-pushpin</styleUrl>
+		<description>Shown to compare polygon3 and ring3</description>
+		<LineString>
+			<extrude>1</extrude>
+			<tessellate>1</tessellate>
+			<altitudeMode>relativeToGround</altitudeMode>
+			<coordinates>
+				-77.05664315070867,38.87171704418493,25
+				-77.05456372903248,38.87080755308389,37
+				-77.05563713749183,38.86990548883545,25
+			</coordinates>
+		</LineString>
+	</Placemark>
+
+    <Placemark>
+      <name>ring1</name>
+      <description>ring with single point</description>
+      <!-- Google Earth treats this as a point SAME AS LINE STRING WITH SINGLE POINT -->
+      <LinearRing>
+        <extrude>1</extrude>
+        <coordinates>5,2.5</coordinates>
+      </LinearRing>
+    </Placemark>
+
+    <Placemark>
+      <name>ring2</name>
+      <description>ring with only 2 points</description>
+      <!-- google earth treats this as a line -->
+      <LinearRing>
+        <extrude>1</extrude>
+        <coordinates>5,2.5,0 5.5,2.5,0</coordinates>
+      </LinearRing>
+    </Placemark>
+
+  <Placemark>
+    <name>ring3</name>
+    <description>ring with only 3 points</description>
+    <!-- google earth treats this as a 2 line segments -->
+    <Style>
+	<LineStyle>
+		<width>4</width>
+	</LineStyle>
+	<PolyStyle>
+		<color>bfffffff</color>
+	</PolyStyle>
+    </Style>
+    <LinearRing>
+        <extrude>1</extrude>
+        <altitudeMode>relativeToGround</altitudeMode>
+        <coordinates>
+            -77.05668055019126,38.87164239798456,50
+            -77.054698,38.870798,75
+            -77.05577677433152,38.869936,50
+	</coordinates>
+    </LinearRing>
+  </Placemark>
+
+    <Placemark>
+      <name>polygon1</name>
+      <description>polygon with only single point</description>
+      <!-- google earth treats this as a point w/o icon -->
+      <Polygon>
+        <altitudeMode>relativeToGround</altitudeMode>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>5.2,2.01,0</coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+
+    <Placemark>
+      <name>polygon2</name>
+      <description>polygon with only 2 points</description>
+      <!-- google earth treats this as a line -->
+      <Polygon>
+        <extrude>1</extrude>
+        <altitudeMode>relativeToGround</altitudeMode>
+        <outerBoundaryIs>
+          <LinearRing>
+            <coordinates>5,2,0 5.5,2,0</coordinates>
+          </LinearRing>
+        </outerBoundaryIs>
+      </Polygon>
+    </Placemark>
+
+  <Placemark>
+    <name>polygon3</name>
+    <description>polygon with only 3 points</description>
+    <!-- google earth treats this as a 2 line segments -->
+    <Style>
+	<LineStyle>
+		<width>4</width>
+		<color>ffff0000</color>
+	</LineStyle>
+	<PolyStyle>
+		<color>bfff0000</color>
+	</PolyStyle>
+    </Style>
+    <Polygon>
+      <extrude>1</extrude>
+      <altitudeMode>relativeToGround</altitudeMode>
+      <outerBoundaryIs>
+        <LinearRing>
+          <coordinates>
+            -77.05668055019126,38.87154239798456,75
+            -77.05485125901024,38.87076535397792,100
+            -77.05577677433152,38.87008686581446,75
+	</coordinates>
+        </LinearRing>
+      </outerBoundaryIs>
+    </Polygon>
+  </Placemark>
+
+  <Placemark>
+    <name>polygon4</name>
+    <description>polygon with no outer boundary</description>
+    <!-- google earth will not display any feature on map for this
+         which is same as not having any inner rings at all.
+      -->
+    <Polygon>
+      <innerBoundaryIs>
+        <LinearRing>
+          <coordinates>
+            -77.05668055019126,38.87154239798456,100 
+            -77.05485125901024,38.87076535397792,100 
+            -77.05577677433152,38.87008686581446,100 
+            -77.05668055019126,38.87154239798456,100 
+	</coordinates>
+        </LinearRing>
+      </innerBoundaryIs>
+    </Polygon>
+  </Placemark>
+
+    <Placemark>
+      <name>PointNoLabel</name>
+      <description>Shows same behavior on map as line/ring/polygon w/1 pt. See Line3 or polygon1.</description>
+      <Style>
+        <IconStyle>
+          <Icon />
+        </IconStyle>
+        <LabelStyle>
+          <scale>0</scale>
+        </LabelStyle>
+      </Style>
+      <Point>
+        <coordinates>5.2,2.02,0</coordinates>
+      </Point>
+    </Placemark>
 
     </Document>
 </kml>
