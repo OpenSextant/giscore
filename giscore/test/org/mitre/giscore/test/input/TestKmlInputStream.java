@@ -218,18 +218,27 @@ public class TestKmlInputStream {
 				}
 		);
 
-		// interpreted as [1,2,3] -- extra values (,4) ignored
+        // interpreted as  [1,2,3 4,5,6]
+		checkCoordString("1,2,3, 4,5,6",
+				new Geodetic2DPoint[] {
+					makePoint(1, 2, 3),
+                    makePoint(4, 5, 6),
+				}
+		);
+
+		// interpreted as [1,2,3 4,0,0]
 		checkCoordString("1,2,3,4",
 				new Geodetic2DPoint[] {
 					makePoint(1, 2, 3),
+                    makePoint(4, 0),
 				}
 		);
 
 		// point -> [1,2,3] line as [1,2,3] [5,6,7] -- extra values after 3rd value ignored
-		checkCoordString("1,2,3,4  5,6,7,8",
+		checkCoordString("1,2,3  4,5,6",
 				new Geodetic2DPoint[] {
 					makePoint(1, 2, 3),
-					makePoint(5, 6, 7),
+					makePoint(4, 5, 6),
 				}
 		);
 
