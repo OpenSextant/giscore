@@ -19,16 +19,7 @@
 package org.mitre.giscore;
 
 import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.GeometryBag;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.MultiLine;
-import org.mitre.giscore.geometry.MultiLinearRings;
-import org.mitre.giscore.geometry.MultiPoint;
-import org.mitre.giscore.geometry.MultiPolygons;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.geometry.*;
 
 /**
  * @author DRAND
@@ -152,5 +143,10 @@ public interface IStreamVisitor {
 	 * @param comment
 	 */
 	public void visit(Comment comment);
+
+    /**
+     * @param model
+     */
+    public void visit(Model model);
 
 }

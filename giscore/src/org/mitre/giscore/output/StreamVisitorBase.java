@@ -20,16 +20,7 @@ package org.mitre.giscore.output;
 
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.GeometryBag;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.MultiLine;
-import org.mitre.giscore.geometry.MultiLinearRings;
-import org.mitre.giscore.geometry.MultiPoint;
-import org.mitre.giscore.geometry.MultiPolygons;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.geometry.*;
 
 /**
  * The stream visitor base extends the original visitor base and changes the
@@ -41,8 +32,8 @@ import org.mitre.giscore.geometry.Polygon;
  *
  */
 public class StreamVisitorBase implements IStreamVisitor {
-	
-	/**
+
+    /**
 	 * Default behavior ignores containers
 	 * @param containerStart 
 	 */
@@ -222,4 +213,9 @@ public class StreamVisitorBase implements IStreamVisitor {
 	public void visit(Comment comment) {
 		// Ignored by default
 	}
+
+    public void visit(Model model) {
+        // Ignored by default
+    }
+
 }

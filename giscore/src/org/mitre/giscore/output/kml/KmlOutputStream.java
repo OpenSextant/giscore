@@ -39,12 +39,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.events.SimpleField.Type;
-import org.mitre.giscore.geometry.GeometryBag;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.MultiPoint;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.input.kml.UrlRef;
@@ -696,6 +691,18 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     }
 
     /**
+     * Simple Double formatter strips ".0" suffix (e.g. 1.0 -> 1).
+     * First performs Double.toString() then strips redundant ".0" suffix if value has no fractional part.
+     * @param d double value
+     * @return formatted decimal value
+     */
+    private static String formatDouble(double d) {
+        String dval = Double.toString(d);
+        int len = dval.length();
+        return len > 2 && dval.endsWith(".0") ? dval.substring(0,len-2) : dval;
+    }
+
+    /**
      * Output a single coordinate
      *
      * @param b     StringBuilder to write coordinate to
@@ -706,13 +713,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             b.append(' ');
         }
         Geodetic2DPoint p2d = point.getCenter();
-        b.append(p2d.getLongitude().inDegrees());
+        b.append(formatDouble(p2d.getLongitude().inDegrees()));
         b.append(',');
-        b.append(p2d.getLatitude().inDegrees());
+        b.append(formatDouble(p2d.getLatitude().inDegrees()));
         if (point.getCenter() instanceof Geodetic3DPoint) {
             Geodetic3DPoint p3d = (Geodetic3DPoint) point.getCenter();
             b.append(',');
-            b.append(p3d.getElevation());
+            b.append(formatDouble(p3d.getElevation()));
         }
     }
 
@@ -1014,6 +1021,32 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             writer.writeEndElement();
         }
         writer.writeEndElement();
+    }
+
+    /*
+     * (non-Javadoc)
+     *
+     * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.ContainerStart
+     */
+    @Override
+    public void visit(Model model) {
+        try {
+            writer.writeStartElement(MODEL);
+            handleNonNullSimpleElement(ALTITUDE_MODE, model.getAltitudeMode());
+            Geodetic2DPoint point = model.getLocation();
+            if (point != null) {
+                writer.writeStartElement(LOCATION);
+                handleSimpleElement(LONGITUDE, point.getLongitude().inDegrees());
+                handleSimpleElement(LATITUDE, point.getLatitude().inDegrees());
+                if (model.is3D())
+                    handleSimpleElement(ALTITUDE, ((Geodetic3DPoint)point).getElevation());
+                writer.writeEndElement();
+            }
+            
+            writer.writeEndElement();
+        } catch (XMLStreamException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**

@@ -55,13 +55,7 @@ import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.utils.NumberStreamTokenizer;
 import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.GeometryBag;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.MultiPoint;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.input.GISInputStreamBase;
 import org.mitre.itf.geodesy.Angle;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
@@ -113,13 +107,15 @@ import org.slf4j.LoggerFactory;
  * <p> 
  * Unsupported tags include the following:
  *  atom:author, atom:link, address, xal:AddressDetails, Camera, LookAt,
- *  Model, Metadata, open, phoneNumber, Region, Snippet, snippet, visibility.
+ *  Metadata, open, phoneNumber, Region, Snippet, snippet, visibility.
  * <p>
  * While these tags don't break anything if present they are ignored.
  * <p> 
  * Limited support for PhotoOverlay which creates an basic overlay object
  * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
  * ImagePyramid, Point, shape, etc).
+ * <p>
+ * Limited support for Model geometry.
  * <p> 
  * Limited support for NetworkLinkControl which creates a wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
@@ -918,17 +914,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(SCALE)) {
-					String value = stream.getElementText(); 
-					try {
-						scale = Double.parseDouble(value);
-					} catch (NumberFormatException nfe) {
-						log.warn("Invalid scale value: " + value);
-					}
+                    String value = getNonEmptyElementText();
+                    if (value != null)
+                        try {
+                            scale = Double.parseDouble(value);
+                        } catch (NumberFormatException nfe) {
+                            log.warn("Invalid scale value: " + value);
+                        }
 				} else if (name.equals(COLOR)) {
 					color = parseColor(stream.getElementText());
 				}
 			}
-			if (foundEndTag(e, LABEL_STYLE)) {
+			else if (foundEndTag(e, LABEL_STYLE)) {
 				style.setLabelStyle(color, scale);
 				return;
 			}
@@ -948,22 +945,23 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(WIDTH)) {
-					String value = stream.getElementText();
-					try {
-						width = Double.parseDouble(value);
-					} catch (NumberFormatException nfe) {
-						log.warn("Invalid width value: " + value);
-					}
+					String value = getNonEmptyElementText();
+                    if (value != null)
+                        try {
+                            width = Double.parseDouble(value);
+                        } catch (NumberFormatException nfe) {
+                            log.warn("Invalid width value: " + value);
+                        }
 				} else if (name.equals(COLOR)) {
 					String value = stream.getElementText();
 					color = parseColor(value);
 					if (color == null) {
-						log.warn("Invalid LineStyle color: " + value);
+						//log.warn("Invalid LineStyle color: " + value);
 						color = Color.white; // use default
 					}
 				}
 			}
-			if (foundEndTag(e, LINE_STYLE)) {
+			else if (foundEndTag(e, LINE_STYLE)) {
 				style.setLineStyle(color, width);
 				return;
 			}
@@ -1034,15 +1032,22 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private Color parseColor(String cstr) {
 		if (cstr == null) return null;
         cstr = cstr.trim();
-        if (cstr.length() != 8) return null;
-		int alpha = Integer.parseInt(cstr.substring(0, 2), 16);
-		int blue = Integer.parseInt(cstr.substring(2, 4), 16);
-		int green = Integer.parseInt(cstr.substring(4, 6), 16);
-		int red = Integer.parseInt(cstr.substring(6, 8), 16);
-		return new Color(red, green, blue, alpha);
+        if (cstr.length() == 8)
+            try {
+                int alpha = Integer.parseInt(cstr.substring(0, 2), 16);
+                int blue = Integer.parseInt(cstr.substring(2, 4), 16);
+                int green = Integer.parseInt(cstr.substring(4, 6), 16);
+                int red = Integer.parseInt(cstr.substring(6, 8), 16);
+                return new Color(red, green, blue, alpha);
+            } catch (IllegalArgumentException ex) {
+                // fall through and log bad value
+            }
+        
+        log.warn("Invalid color value: " + cstr);
+        return null;
 	}
 
-	/**
+    /**
 	 * @param style
 	 * @throws XMLStreamException
 	 */
@@ -1056,17 +1061,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(SCALE)) {
-					String value = stream.getElementText();
-					try {
-						scale = Double.parseDouble(value);
-					} catch (NumberFormatException nfe) {
-						log.warn("Invalid scale value: " + value);
-					}
+                    String value = getNonEmptyElementText();
+                    if (value != null)
+                        try {
+                            scale = Double.parseDouble(value);
+                        } catch (NumberFormatException nfe) {
+                            log.warn("Invalid scale value: " + value);
+                        }
 				} else if (name.equals(COLOR)) {
 					String value = stream.getElementText();
 					color = parseColor(value);
 					if (color == null) {
-						log.warn("Invalid IconStyle color: " + value);
+						//log.warn("Invalid IconStyle color: " + value);
 						color = Color.white; // use default="ffffffff"
 					}
 				} else if (name.equals(ICON)) {
@@ -1442,7 +1448,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                             if (geo != null) {
                                 fs.setGeometry(geo);
                             }
-                        } catch (IllegalArgumentException iae) {
+                        } catch (RuntimeException iae) {
                             log.warn("Failed geometry: " + fs, iae);
                         }
 					} else if (isOverlay) {
@@ -1631,6 +1637,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
      * @return Geometry associated with this element
      *          otherwise null if no valid Geometry can be constructed
      * @throws XMLStreamException if there is an error with the underlying XML
+     * @throws IllegalStateException if geometry is invalid
      * @throws IllegalArgumentException if geometry is invalid
 	 */
 	@SuppressWarnings("unchecked")
@@ -1688,7 +1695,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				}
 			}
 			if (outer == null) {
-				throw new IllegalArgumentException("Bad poly found, no outer ring");
+				throw new IllegalStateException("Bad poly found, no outer ring");
 			}
 
 			return new Polygon(outer, inners);
@@ -1714,7 +1721,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					allpoints = false;
 					break;
 				}
-			}
+			}                             
 			if (allpoints) {
 				return new MultiPoint((List) geometries);
 			} else {
@@ -1723,17 +1730,75 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		} else if (localname.equals(MODEL)) {
 			// we don't really have a way to represent this yet, look for end
 			// element and continue
-			while (true) {
+            Model model = new Model();
+            while (true) {
 				XMLEvent event = stream.nextEvent();
-				if (foundEndTag(event, localname)) {
+				if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
+					StartElement se = event.asStartElement();
+					String sename = se.getName().getLocalPart();
+					if (sename.equals(LOCATION)) {
+                        Geodetic2DPoint point = parseLocation(sename);
+                        if (point != null)
+                            model.setLocation(point);
+                    } else if (sename.equals(ALTITUDE_MODE)) {
+                        model.setAltitudeMode(getNonEmptyElementText());
+                    }
+                } else if (foundEndTag(event, localname)) {
 					break;
-				}
-			}
+				}                        
+            }
+            return model;
 		}
 		return null; // Default
 	}
 
-	/**
+    private Geodetic2DPoint parseLocation(String localname) throws XMLStreamException {
+        Latitude latitude = null;
+        Longitude longitude = null;
+        Double altitude = null;
+        while (true) {
+            XMLEvent event = stream.nextEvent();
+            if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
+                StartElement se = event.asStartElement();
+                String name = se.getName().getLocalPart();
+                if (name.equals(LATITUDE)) {
+                    String value = getNonEmptyElementText();
+                    if (value != null)
+                        try {
+                            latitude = new Latitude(Double.parseDouble(value), Angle.DEGREES);
+                        } catch (IllegalArgumentException nfe) {
+                            log.warn("Invalid latitude value: " + value);
+                        }
+                } else if (name.equals(LONGITUDE)) {
+                    String value = getNonEmptyElementText();
+                    if (value != null)
+                        try {
+                            longitude = new Longitude(Double.parseDouble(value), Angle.DEGREES);
+                        } catch (IllegalArgumentException nfe) {
+                            log.warn("Invalid longitude value: " + value);
+                        }
+                } else if (name.equals(ALTITUDE)) {
+                    String value = getNonEmptyElementText();
+                    if (value != null)
+                        try {
+                            altitude = Double.valueOf(value);
+                        } catch (NumberFormatException nfe) {
+                            log.warn("Invalid altitude value: " + value);
+                        }
+                }
+            } else if (foundEndTag(event, localname)) {
+                break;
+            }
+        }
+        
+        if (longitude == null && latitude == null) return null;
+        if (longitude == null) longitude = new Longitude();
+        else if (latitude == null) latitude = new Latitude();
+        return altitude == null ? new Geodetic2DPoint(longitude, latitude)
+                : new Geodetic3DPoint(longitude, latitude, altitude);
+    }
+
+    /**
 	 * Find the coordinates element and extract the fractional lat/lons/alts
 	 * into an array. The element name is used to spot if we leave the "end" of
 	 * the block. The stream will be positioned after the element when this
