@@ -227,6 +227,6 @@ public abstract class Common extends Row {
 		    b.append(styleUrl);
 		    b.append('\n');
         }
-        return b.length() == 0 ? " [empty]" : b.toString();
+        return b.toString();
 	}
 }

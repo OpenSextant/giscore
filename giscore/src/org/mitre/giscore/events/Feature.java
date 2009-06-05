@@ -157,4 +157,21 @@ public class Feature extends Common {
 		}
 	}
 
+    /*
+	 * (non-Javadoc)
+	 *
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+		StringBuilder b = new StringBuilder(super.toString());
+        if (geometry != null) {
+		    b.append(" geometry class=[");
+		    b.append(geometry.getClass().getName());
+            b.append("]\n\t  center=").append(geometry.getCenter());
+            b.append('\n');
+        }
+        return b.toString();
+    }
+
 }
