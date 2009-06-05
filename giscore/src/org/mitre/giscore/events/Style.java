@@ -30,7 +30,7 @@ import org.mitre.giscore.IStreamVisitor;
 /**
  * Represents style information for points and lines. This information is used
  * by the rendering code to emit the correct information for the output format.
- * <p>
+ * <p>                                                 Km
  * Generic information from a kml reference.
  * <p>
  * Color and opacity (alpha) values are expressed in hexadecimal notation. The
@@ -44,7 +44,10 @@ import org.mitre.giscore.IStreamVisitor;
  * <p>
  * Values for <colorMode> are normal (no effect) and random. A value of random
  * applies a random linear scale to the base <color> as follows.
- * 
+ * <p>
+ * Notes/Limitations:
+ * <p>
+ * TODO: ListStyle not supported
  * 
  * @author DRAND
  */
