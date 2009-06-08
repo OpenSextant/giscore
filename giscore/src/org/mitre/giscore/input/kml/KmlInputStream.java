@@ -66,7 +66,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Read a kml file in as an input stream. Each time the read method is called,
+ * Read a KML file in as an input stream. Each time the read method is called,
  * the code tries to read a single event's worth of data. Generally that is one
  * of the following events:
  * <ul>
@@ -854,6 +854,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				} else if (name.equals(POLY_STYLE)) {
 					handlePolyStyle(style);
 				}
+                // TODO: ListStyle
 			}
 
 			if (foundEndTag(next, STYLE)) {
@@ -1448,8 +1449,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                             if (geo != null) {
                                 fs.setGeometry(geo);
                             }
-                        } catch (RuntimeException iae) {
-                            log.warn("Failed geometry: " + fs, iae);
+                        } catch (RuntimeException rte) {
+                            log.warn("Failed geometry: " + fs, rte);
                         }
 					} else if (isOverlay) {
 						if (COLOR.equals(localname)) {
@@ -1707,8 +1708,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					StartElement el = (StartElement) event;
 					String tag = el.getName().getLocalPart();
 					if (ms_geometries.contains(tag)) {
-                        Geometry geom = handleGeometry(el);
-                        if (geom != null) geometries.add(geom);
+						try {
+							Geometry geom = handleGeometry(el);
+							if (geom != null) geometries.add(geom);
+						} catch (RuntimeException rte) {
+							log.warn("Failed geometry: " + tag, rte);
+						}
 					}
 				}
 				if (foundEndTag(event, localname)) {
