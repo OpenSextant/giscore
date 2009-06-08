@@ -218,4 +218,8 @@ public class StreamVisitorBase implements IStreamVisitor {
         // Ignored by default
     }
 
+    public void visit(Circle circle) {
+        // Ignored by default
+    }
+
 }

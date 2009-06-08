@@ -149,4 +149,8 @@ public interface IStreamVisitor {
      */
     public void visit(Model model);
 
+    /**
+     * @param circle
+     */
+    public void visit(Circle circle);
 }
