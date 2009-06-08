@@ -24,11 +24,7 @@ import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
-import org.mitre.itf.geodesy.Angle;
-import org.mitre.itf.geodesy.Geodetic2DBounds;
-import org.mitre.itf.geodesy.Geodetic2DPoint;
-import org.mitre.itf.geodesy.Latitude;
-import org.mitre.itf.geodesy.Longitude;
+import org.mitre.itf.geodesy.*;
 
 /**
  * The Geometry abstract class is the basis for all geometric objects in the
@@ -95,11 +91,11 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	}
 
 	/**
-	 * This method returns a Geodetic2DPoint that is at the center of this
-	 * Geometry object's Bounding Box, or null if the bounding box is not
-	 * defined.
+	 * This method returns a <code>Geodetic2DPoint</code> or <code>Geodetic3DPoint</code>
+     * that is at the center of this Geometry object's Bounding Box or null if the
+     * bounding box is not defined.
 	 * 
-	 * @return Geodetic2DPoint at the center of this Geometry object
+	 * @return <code>Geodetic2DPoint</code> or <code>Geodetic3DPoint</code> at the center of this Geometry object
 	 */
 	public Geodetic2DPoint getCenter() {
 		if (bbox == null)
@@ -112,6 +108,13 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 		double sLatRad = bbox.southLat.inRadians();
 		double nLatRad = bbox.northLat.inRadians();
 		double cLatRad = sLatRad + ((nLatRad - sLatRad) / 2.0);
+        if (bbox instanceof Geodetic3DBounds) {
+            Geodetic3DBounds bbox3d = (Geodetic3DBounds)bbox;
+            double cElev = (bbox3d.maxElev + bbox3d.minElev) / 2.0;
+            return new Geodetic3DPoint(new Longitude(cLonRad),
+				    new Latitude(cLatRad), cElev);
+        }
+
 		return new Geodetic2DPoint(new Longitude(cLonRad),
 				new Latitude(cLatRad));
 	}
