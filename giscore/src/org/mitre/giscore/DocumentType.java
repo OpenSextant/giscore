@@ -41,6 +41,8 @@ public enum DocumentType {
 	XmlGDB(false,false),
 	/* Delimiter separated values, only contains the data from the fields, no geometry */
 	CSV(false,false),
+    /* GeoRSS-Simple Format */
+	GeoRSS(false,false),
 	;
 	
 	private boolean requiresZipStream;
