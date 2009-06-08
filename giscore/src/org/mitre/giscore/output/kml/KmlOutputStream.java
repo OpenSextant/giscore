@@ -118,8 +118,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Flush and close XMLStreamWriter but not the outputStream
      *
-     * @throws IOException if an error occurs
-     * @see org.mitre.giscore.output.IGISOutputStream#close()
+     * @throws IOException if an error occurs     
      */
     public void closeWriter() throws IOException {
         try {
@@ -695,31 +694,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             b.append(',');
             b.append(formatDouble(p3d.getElevation()));
         }
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.Comment
-     */
-    @Override
-    public void visit(Comment comment) {
-        String text = comment.getText();
-        if (StringUtils.isNotEmpty(text))
-            try {
-                // string "--" (double-hyphen) MUST NOT occur within comments.
-                text = text.replace("--", "&#x2D;&#x2D;");
-                StringBuilder buf = new StringBuilder();
-                if (!Character.isWhitespace(text.charAt(0)))
-                    buf.append(' ');
-                buf.append(text);
-                if (text.length() == 1 || !Character.isWhitespace(text.charAt(text.length() - 1)))
-                    buf.append(' ');
-                writer.writeComment(buf.toString());
-                writer.writeCharacters("\n");
-            } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
-            }
     }
 
     /*

@@ -24,7 +24,9 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.Comment;
 import org.mitre.giscore.Namespace;
 
 /**
@@ -42,10 +44,11 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 	protected XMLOutputFactory factory; 
 	
 	/**
-	 * Ctor
+     * Creates a new XML output stream to write data to the specified 
+     * underlying output stream.
 	 * 
 	 * @param stream the underlying input stream.
-     * @throws javax.xml.stream.XMLStreamException
+     * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	public XmlOutputStreamBase(OutputStream stream) throws XMLStreamException {
 		if (stream == null) {
@@ -64,11 +67,12 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 		return factory;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.mitre.giscore.output.IGISOutputStream#close()
-	 */
+    /**
+     * Close this writer and free any resources associated with the
+     * writer.  This also closes the underlying output stream.
+     * 
+     * @throws IOException if an error occurs
+     */
 	public void close() throws IOException {
 		try {
 			writer.flush();
@@ -86,8 +90,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 	 * (non-Javadoc)
 	 * 
 	 * @see
-	 * org.mitre.giscore.output.IGISOutputStream#write(org.mitre.giscore.events
-	 * .IGISObject)
+	 * org.mitre.giscore.output.IGISOutputStream#write(org.mitre.giscore.events.IGISObject)
 	 */
 	public void write(IGISObject object) {
 		object.accept(this);
@@ -97,6 +100,37 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 	 * Don't bother quoting for these characters
 	 */
 	private static final String ALLOWED_SPECIAL_CHARACTERS = "{}[]\"=.-,#_!@$*()[]/:";
+
+    /**
+     * Writes XML comment to the output stream if text comment value is not null or empty.
+     * The comment can contain any unescaped character (e.g. "declarations for <head> & <body>")
+     * and any occurences of "--" (double-hyphen) will be hex-escaped to &#x2D;&#x2D;
+     *  
+     * @param comment Comment, never <code>null</code>
+     */
+    @Override
+    public void visit(Comment comment) {
+        String text = comment.getText();
+        // ignore empty or null comments
+        if (StringUtils.isNotEmpty(text))
+            try {
+                // string "--" (double-hyphen) MUST NOT occur within comments. Any other character may appear inside
+                // e.g. <!-- declarations for <head> & <body> -->
+                text = text.replace("--", "&#x2D;&#x2D;");
+                StringBuilder buf = new StringBuilder();
+                // prepend comment with space if not already whitespace
+                if (!Character.isWhitespace(text.charAt(0)))
+                    buf.append(' ');
+                buf.append(text);
+                // append comment text with space if not already whitespace
+                if (text.length() == 1 || !Character.isWhitespace(text.charAt(text.length() - 1)))
+                    buf.append(' ');
+                writer.writeComment(buf.toString());
+                writer.writeCharacters("\n");
+            } catch (XMLStreamException e) {
+                throw new RuntimeException(e);
+            }
+    }
 
 	/**
 	 * See if the characters include special characters, and if it does use a
@@ -152,16 +186,32 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
         }
     }
 
-    protected void handleSimpleElement(Namespace ns, String name, String value) throws XMLStreamException {
+    /**
+     * Handles simple element with a namespace.
+     * 
+     * @param ns Namespace. If null then delagates to handleSimpleElement with name and value. 
+     * @param tag local name of the element, may not be null
+	 * @param content Content to write as parsed character data, if null then an empty XML element is written
+     * @throws XMLStreamException if there is an error with the underlying XML
+     */
+    protected void handleSimpleElement(Namespace ns, String tag, String content) throws XMLStreamException {
         if (ns == null) {
-            handleSimpleElement(name, value);
+            handleSimpleElement(tag, content);
         } else {
-            writer.writeStartElement(ns.getPrefix(), name, ns.getURI());
-            handleCharacters(value);
+            writer.writeStartElement(ns.getPrefix(), tag, ns.getURI());
+            handleCharacters(content);
             writer.writeEndElement();
         }
     }
 
+    /**
+     * Writes a namespace to the output stream.
+     * If the prefix argument to this method is the empty string,
+     * "xmlns", or null this method will delegate to writeDefaultNamespace
+     * @param ns Namespace
+     * @throws XMLStreamException if there is an error with the underlying XML
+     * @throws IllegalStateException if the current state does not allow Namespace writing
+     */
     protected void writeNamespace(Namespace ns) throws XMLStreamException {
         if (ns != null) writer.writeNamespace(ns.getPrefix(), ns.getURI());
     }
