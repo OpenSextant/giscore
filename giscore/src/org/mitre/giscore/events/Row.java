@@ -159,6 +159,21 @@ public class Row implements IGISObject, IDataSerializable {
 		return extendedData.get(field);
 	}
 
+    /**
+     * Removes the extended data associated with this SimpleField if it is present.
+     *  
+     * @param field field whose mapping is to be removed from the extended data collection
+     * @return the previous value associated with <tt>field</tt>, or
+     *         <tt>null</tt> if there was no mapping for <tt>field</tt>.
+     */
+    public Object removeData(SimpleField field) {
+		if (field == null) {
+			throw new IllegalArgumentException(
+					"field should never be null or empty");
+		}
+		return extendedData.remove(field);
+    }
+
 	/*
 	 * (non-Javadoc)
 	 * 
