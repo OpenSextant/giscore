@@ -45,19 +45,35 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 	
 	/**
      * Creates a new XML output stream to write data to the specified 
-     * underlying output stream.
+     * underlying output stream with specified encoding.
+     * The encoding on <code>writeStartDocument()</code> call to the writer must
+     * match encoding of the <code>XmlOutputStreamBase</code>.
 	 * 
-	 * @param stream the underlying input stream.
+	 * @param stream the underlying input stream
+     * @param encoding the encoding to use
      * @throws XMLStreamException if there is an error with the underlying XML
 	 */
-	public XmlOutputStreamBase(OutputStream stream) throws XMLStreamException {
+	public XmlOutputStreamBase(OutputStream stream, String encoding) throws XMLStreamException {
 		if (stream == null) {
 			throw new IllegalArgumentException("stream should never be null");
 		}
 		this.stream = stream;
 		factory = createFactory();
-        writer = factory.createXMLStreamWriter(stream);
+        writer = StringUtils.isBlank(encoding)
+                ? factory.createXMLStreamWriter(stream) // use default encoding 'Cp1252'
+                : factory.createXMLStreamWriter(stream, encoding);
 	}
+
+    /**
+     * Creates a new XML output stream to write data to the specified
+     * underlying output stream with default encoding 'Cp1252'.
+	 *
+	 * @param stream the underlying input stream.
+     * @throws XMLStreamException if there is an error with the underlying XML
+	 */
+	public XmlOutputStreamBase(OutputStream stream) throws XMLStreamException {
+        this(stream, null);
+    }
 
 	/**
 	 * @return
@@ -184,6 +200,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
             handleCharacters(content.toString());
             writer.writeEndElement();
         }
+        writer.writeCharacters("\n");
     }
 
     /**
@@ -201,6 +218,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
             writer.writeStartElement(ns.getPrefix(), tag, ns.getURI());
             handleCharacters(content);
             writer.writeEndElement();
+            writer.writeCharacters("\n");
         }
     }
 

@@ -88,7 +88,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      */
     public KmlOutputStream(OutputStream stream, String encoding) throws XMLStreamException {
         super(stream, encoding);
-        if (StringUtils.isEmpty(encoding))
+        if (StringUtils.isBlank(encoding))
             writer.writeStartDocument();
         else
             writer.writeStartDocument(encoding, "1.0");
