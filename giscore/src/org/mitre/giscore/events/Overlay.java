@@ -26,7 +26,8 @@ import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 /**
- * Abstract overlay class is a parent to the specific classes for each
+ * Abstract overlay class is a parent to the specific classes for each.
+ * Note Overlays extend Feature class but in KML context they do not have a Geometry.  
  * 
  * @author DRAND
  * 
