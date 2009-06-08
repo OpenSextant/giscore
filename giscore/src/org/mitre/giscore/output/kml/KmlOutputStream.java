@@ -49,7 +49,7 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
 
 /**
- * The kml output stream creates a result KML file using the given output
+ * The KML output stream creates a result KML file using the given output
  * stream. It uses STaX methods for writing the XML elements to avoid building
  * an in-memory DOM, which reduces the memory overhead of creating the document.
  * <p/>
@@ -327,16 +327,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /*
      * (non-Javadoc)
      *
-     * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.DocumentStart
-     */
-    @Override
-    public void visit(DocumentStart documentStart) {
-        // Ignore
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.Feature
      */
     @Override
@@ -415,10 +405,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 writer.writeStartElement(waitingList.remove());
             handleSimpleElement(tag, content);
         }
-    }
-
-    private void handleNonNullSimpleElement(String tag, Object content) throws XMLStreamException {
-        if (content != null) handleSimpleElement(tag, content);
     }
 
     // elements associated with Kml22 LinkType in sequence order for Icon, Link, and Url elements
@@ -688,18 +674,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             handleSingleCoordinate(b, point);
         }
         return b.toString();
-    }
-
-    /**
-     * Simple Double formatter strips ".0" suffix (e.g. 1.0 -> 1).
-     * First performs Double.toString() then strips redundant ".0" suffix if value has no fractional part.
-     * @param d double value
-     * @return formatted decimal value
-     */
-    private static String formatDouble(double d) {
-        String dval = Double.toString(d);
-        int len = dval.length();
-        return len > 2 && dval.endsWith(".0") ? dval.substring(0,len-2) : dval;
     }
 
     /**
@@ -1031,19 +1005,22 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     @Override
     public void visit(Model model) {
         try {
-            writer.writeStartElement(MODEL);
-            handleNonNullSimpleElement(ALTITUDE_MODE, model.getAltitudeMode());
             Geodetic2DPoint point = model.getLocation();
-            if (point != null) {
-                writer.writeStartElement(LOCATION);
-                handleSimpleElement(LONGITUDE, point.getLongitude().inDegrees());
-                handleSimpleElement(LATITUDE, point.getLatitude().inDegrees());
-                if (model.is3D())
-                    handleSimpleElement(ALTITUDE, ((Geodetic3DPoint)point).getElevation());
+            if (point == null && model.getAltitudeMode() == null)
+                writer.writeEmptyElement(MODEL);
+            else {
+                writer.writeStartElement(MODEL);
+                handleNonNullSimpleElement(ALTITUDE_MODE, model.getAltitudeMode());
+                if (point != null) {
+                    writer.writeStartElement(LOCATION);
+                    handleSimpleElement(LONGITUDE, point.getLongitude().inDegrees());
+                    handleSimpleElement(LATITUDE, point.getLatitude().inDegrees());
+                    if (model.is3D())
+                        handleSimpleElement(ALTITUDE, ((Geodetic3DPoint)point).getElevation());
+                    writer.writeEndElement();
+                }
                 writer.writeEndElement();
             }
-            
-            writer.writeEndElement();
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
