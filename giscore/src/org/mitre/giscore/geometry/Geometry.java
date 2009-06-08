@@ -162,10 +162,18 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 			out.writeBoolean(false);
 		} else {
 			out.writeBoolean(true);
+            if (bbox instanceof Geodetic3DBounds) {
+                out.writeBoolean(true);
+                Geodetic3DBounds bbox3d = (Geodetic3DBounds)bbox;
+                out.writeDouble(bbox3d.minElev);
+                out.writeDouble(bbox3d.maxElev);
+            }
+            else out.writeBoolean(false);
 			writeAngle(out, bbox.getNorthLat());
 			writeAngle(out, bbox.getSouthLat());
 			writeAngle(out, bbox.getEastLon());
 			writeAngle(out, bbox.getWestLon());
+            // fails to write out min/max elevation
 		}
 		out.writeBoolean(is3D);
 		out.writeInt(numParts);
@@ -181,9 +189,17 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
-		boolean hasbbox = in.readBoolean();
-		if (hasbbox) {
-			bbox = new Geodetic2DBounds();
+		boolean hasBbox = in.readBoolean();
+		if (hasBbox) {
+            boolean isBbox3d = in.readBoolean();
+            if (isBbox3d) {
+                Geodetic3DBounds bbox3d = new Geodetic3DBounds();
+                bbox3d.minElev = in.readDouble();
+                bbox3d.maxElev = in.readDouble();
+                bbox = bbox3d;
+            } else{
+			    bbox = new Geodetic2DBounds();
+            }
 			bbox.setNorthLat(new Latitude(readAngle(in)));
 			bbox.setSouthLat(new Latitude(readAngle(in)));
 			bbox.setEastLon(new Longitude(readAngle(in)));
