@@ -40,6 +40,15 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
 public class Feature extends Common {
 	private static final long serialVersionUID = 1L;
 
+    private Geometry geometry;
+
+    /**
+     * Constructs a basic Feature that may contain a geometry.
+     * In KML this represents a Placemark.
+     */
+    public Feature() {
+    }
+
 	/*
 	 * (non-Javadoc)
 	 * 
@@ -64,14 +73,6 @@ public class Feature extends Common {
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
 		out.writeObject(geometry);
-	}
-
-	private Geometry geometry;
-
-	/**
-	 * Ctor
-	 */
-	public Feature() {
 	}
 
 	/**
