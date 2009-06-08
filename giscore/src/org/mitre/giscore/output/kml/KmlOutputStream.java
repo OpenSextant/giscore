@@ -83,16 +83,29 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Ctor
      *
      * @param stream OutputStream to decorate as a KmlOutputStream
+     * @param encoding the encoding to use
      * @throws XMLStreamException if error occurs creating output stream
      */
-    public KmlOutputStream(OutputStream stream) throws XMLStreamException {
-        super(stream);
-
-        writer.writeStartDocument();
+    public KmlOutputStream(OutputStream stream, String encoding) throws XMLStreamException {
+        super(stream, encoding);
+        if (StringUtils.isEmpty(encoding))
+            writer.writeStartDocument();
+        else
+            writer.writeStartDocument(encoding, "1.0");
         writer.writeCharacters("\n");
         writer.writeStartElement(KML);
         writer.writeDefaultNamespace(KML_NS);
         writer.writeCharacters("\n");
+    }
+
+    /**
+     * Ctor
+     *
+     * @param stream OutputStream to decorate as a KmlOutputStream
+     * @throws XMLStreamException if error occurs creating output stream
+     */
+    public KmlOutputStream(OutputStream stream) throws XMLStreamException {
+        this(stream, null);
     }
 
     /*
@@ -646,10 +659,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      *
      * @param coordinates an iterator over the points, never <code>null</code>
      * @return the coordinates as a string
-     * @throws XMLStreamException if an error occurs
      */
-    private String handleCoordinates(Iterator<Point> coordinates)
-            throws XMLStreamException {
+    private String handleCoordinates(Iterator<Point> coordinates) {
         StringBuilder b = new StringBuilder();
         while (coordinates.hasNext()) {
             Point point = coordinates.next();
