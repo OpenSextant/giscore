@@ -108,6 +108,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 		double sLatRad = bbox.southLat.inRadians();
 		double nLatRad = bbox.northLat.inRadians();
 		double cLatRad = sLatRad + ((nLatRad - sLatRad) / 2.0);
+        // can't assume if is3D == true that bbox == Geodetic3DBounds 
         if (bbox instanceof Geodetic3DBounds) {
             Geodetic3DBounds bbox3d = (Geodetic3DBounds)bbox;
             double cElev = (bbox3d.maxElev + bbox3d.minElev) / 2.0;
