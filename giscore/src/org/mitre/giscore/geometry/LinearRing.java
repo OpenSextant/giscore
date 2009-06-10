@@ -80,7 +80,7 @@ public class LinearRing extends Geometry implements Iterable<Point> {
 	 *
 	 * @return Collection of the point objects.
 	 */
-	public Collection<Point> getPoints() {
+	public List<Point> getPoints() {
 		return publicPointList;
 	}
 
