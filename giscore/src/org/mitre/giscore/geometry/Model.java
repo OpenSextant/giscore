@@ -31,7 +31,7 @@ public class Model extends Geometry {
 	private Geodetic2DPoint location;
 
 	/**
-	 * Default ctor
+	 * Construct a Model Geometry object.
 	 */
 	public Model() {
 	}
@@ -79,6 +79,18 @@ public class Model extends Geometry {
     public void setAltitudeMode(String altitudeMode) {
         this.altitudeMode = AltitudeModeEnumType.getNormalizedMode(altitudeMode);
     }
+
+    /**
+	 * This method returns a Geodetic2DPoint that is at the center of this
+	 * Model's Bounding Box, or null if the bounding box (location) is not
+	 * defined.
+	 *
+	 * @return Geodetic2DPoint or Geodetic3DPoint at the center of this Model
+	 */
+	public Geodetic2DPoint getCenter() {
+		// for point feature just return the point
+		return location;
+	}
 
     public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
