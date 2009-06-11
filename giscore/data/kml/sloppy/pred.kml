@@ -46,7 +46,7 @@ absolute
 </Point>
 </Placemark>
 
-<Placemark id="SCARLET">
+<Placemark id="SCARLET Model">
 <Model>
 <altitudeMode>relativeToGround</altitudeMode>
 <Location>
@@ -70,7 +70,7 @@ SCARLET
 </BalloonStyle>
 <LineStyle>
 <color>
-ffffff
+ffffffff
 </color>
 <width>
 2
@@ -91,8 +91,7 @@ ffffff
 absolute
 </altitudeMode>
 <coordinates>
-1,2, 3,4
-<!--81.9916466079043, 29.9420387052815, 0.0, -81.9980316162109, 29.9407501220703, 567.794982910156-->
+-81.9916466079043, 29.9420387052815, 0.0, -81.9980316162109, 29.9407501220703, 567.794982910156
 </coordinates>
 </LineString>
 </Placemark>
