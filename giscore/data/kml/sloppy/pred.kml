@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
- sample KML with extra whitespace and newlines in various fields
- representation of UDOP USCENTCOM predator KML feed.
+<!--
+ Well-formed XML but fails KML schema and spec in several places:
+  Sample KML with extra whitespace and newlines in various fields.
+  Invalid color values with 3-hex values not 4.
+
+ Representation of UDOP USCENTCOM predator KML feed.
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
 <Document>
@@ -13,8 +16,8 @@
 </Data>
 </ExtendedData>
 
-<Placemark id="Predator1">
-<Style id="sn_airports">
+<Placemark id="PRED1">
+<Style>
 <IconStyle>
 <scale>1.2</scale>
 <Icon>
@@ -31,30 +34,68 @@ http://maps.google.com/mapfiles/kml/shapes/airports.png
 RQ-1
 </name>
 <Point>
-<extrude>1</extrude>
+<extrude>
+1
+</extrude>
 <altitudeMode>
-relativeToGround
+absolute
 </altitudeMode>
 <coordinates>
--81.9980316162109, 29.9407501220703, 567.794982910156  
+-81.9980316162109, 29.9407501220703, 567.794982910156
 </coordinates>
 </Point>
 </Placemark>
 
-<Placemark id="SPI">
+<Placemark id="SCARLET">
+<Model>
+<altitudeMode>relativeToGround</altitudeMode>
+<Location>
+    <longitude>16.876555823801</longitude>
+    <latitude>50.444124355603</latitude>
+    <altitude>0.0</altitude>
+</Location>
+<Link>
+<href>models/House.dae</href>       
+</Link>
+</Model>
+<name>
+SCARLET
+</name>
+</Placemark>
+
+<Placemark id="SCARLET-sensor">
+<Style>
+<BalloonStyle>
+<text><![CDATA[<b>$[id]br/>$[description]]]></text><bgcolor>ffe6e7e6</bgcolor>
+</BalloonStyle>
+<LineStyle>
+<color>
+ffffff
+</color>
+<width>
+2
+</width>
+</LineStyle>
+</Style>
 <name>
 15010
 </name>
 <LineString>
-<extrude>0</extrude>
-<tessellate>0</tessellate>
+<extrude>
+0
+</extrude>
+<tessellate>
+0
+</tessellate>
 <altitudeMode>
-relativeToGround
+absolute
 </altitudeMode>
 <coordinates>
--81.9916466079043, 29.9420387052815, 0.0  -81.9980316162109, 29.9407501220703, 567.794982910156
+1,2, 3,4
+<!--81.9916466079043, 29.9420387052815, 0.0, -81.9980316162109, 29.9407501220703, 567.794982910156-->
 </coordinates>
 </LineString>
 </Placemark>
+
 </Document>
 </kml>
