@@ -27,6 +27,7 @@ import java.util.Map;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.Feature;
@@ -48,7 +49,7 @@ public class TestKmlSchemaNull extends TestGISBase {
 		OutputStream fos = new FileOutputStream(temp);
 		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
 		
-		os.write(new ContainerStart("Folder"));
+		os.write(new ContainerStart(IKml.DOCUMENT));
 		String[] names = {"height", "width", "depth"};
 		Type[] types = new Type[]{Type.DOUBLE, Type.DOUBLE, Type.DOUBLE};
 		Schema schema = createSchema(names, types);
