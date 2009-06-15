@@ -110,10 +110,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         this(stream, null);
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Close this writer and free any resources associated with the
+     * writer.  This also closes the underlying output stream.
      *
-     * @see org.mitre.giscore.output.XmlOutputStreamBase#close()
+     * @throws IOException if an error occurs
      */
     @Override
     public void close() throws IOException {
