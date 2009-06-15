@@ -9,6 +9,8 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.FrameOfReference;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.OutputStream;
@@ -50,6 +52,8 @@ import java.text.SimpleDateFormat;
  * Date: Jun 6, 2009 5:50:46 PM
  */
 public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
+
+    private static final Logger log = LoggerFactory.getLogger(GeoRSSOutputStream.class);
 
     // All date-times in RSS conform to the Date and Time Specification of RFC 822
     // e.g. Sat, 07 Sep 2002 21:00:01 GMT
@@ -157,6 +161,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             if (feature instanceof Overlay) {
                 handleOverlay((Overlay) feature);
             } else if (feature.getGeometry() != null) {
+                //log.debug("Visit " + feature.getName());
                 feature.getGeometry().accept(this);
             }
             writer.writeEndElement();
@@ -175,8 +180,8 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
     public void visit(Point point) {
         try {
             Geodetic2DPoint pt = point.getCenter();
-            handleSimpleElement(GEORSS_NS, POINT, handleSingleCoordinate(
-                    new StringBuilder(), pt).toString());
+            handleSimpleElement(GEORSS_NS, POINT,
+                    handleSingleCoordinate(pt).toString());
             if (pt instanceof Geodetic3DPoint) {
                 Geodetic3DPoint p3d = (Geodetic3DPoint) pt;
                 handleSimpleElement(GEORSS_NS, ELEV, formatDouble(p3d.getElevation()));
@@ -425,19 +430,24 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
                     Geometry g = geoms.get(i);
                     if (g.getClass() != firstGeom.getClass()) {
                         homogeneous = false;
-                        System.out.println("XXX: multi geometries not homogeneous: drop initial point");
+                        log.debug("multi geometries not homogeneous: drop initial point");
                         // if geometries not homogeneous and first geometry is point
                         // it is OK to just ignore the initial Point if present, by convention
+                        geoms.remove(0);
                         break;
                     }
                     Geodetic2DPoint center = g.getCenter();
                     if (bbox == null) bbox = new Geodetic2DBounds(center);
                     else bbox.include(center);
                 }
-                if (!homogeneous || bbox != null &&
-                        new FrameOfReference().proximallyEquals(firstGeom.getCenter(), bbox.getCenter())) {
-                    // OK to just ignore the initial Point if present, by convention
-                    geoms.remove(0);
+                if (homogeneous && bbox != null) {
+                    if (new FrameOfReference().proximallyEquals(firstGeom.getCenter(), bbox.getCenter())) {
+                        log.debug("multi geometries homogeneous: drop initial point");
+                        // OK to just ignore the initial Point if present, by convention
+                        geoms.remove(0);
+                    } else {
+                        log.debug("Multi-geometries are homogeneous");
+                    }
                 }
             }
         }
