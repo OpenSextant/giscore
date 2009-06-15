@@ -1,7 +1,7 @@
 package org.mitre.giscore.test.output;
 
-import junit.framework.TestCase;
 import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.test.TestGISBase;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Point;
@@ -13,6 +13,8 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Latitude;
 import org.mitre.itf.geodesy.Longitude;
 import org.junit.Test;
+
+import static junit.framework.Assert.*;
 
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -30,9 +32,8 @@ import java.text.SimpleDateFormat;
  * @author Jason Mathews, MITRE Corp.
  * Date: Mar 20, 2009 11:54:04 AM
  */
-public class TestKmlWriter extends TestCase {
+public class TestKmlWriter extends TestGISBase {
 
-    private static boolean autoDelete = !Boolean.getBoolean("keepTempFiles");
     private static final File tempKmlDir = new File("testOutput/kml");
 
     static {
@@ -78,7 +79,7 @@ public class TestKmlWriter extends TestCase {
             int ind = suff.lastIndexOf('.');
             if (ind != -1) suff = suff.substring(0, ind);
             if (suff.length() < 3) suff = "x" + suff;
-            temp = File.createTempFile(suff + "-", reader.isCompressed() ? ".kmz" : ".kml", tempKmlDir);
+            temp = createTemp(suff + "-", reader.isCompressed() ? ".kmz" : ".kml", tempKmlDir);
         }
 		try {
 			System.out.println(">create " + temp);
@@ -146,8 +147,9 @@ public class TestKmlWriter extends TestCase {
 		}
 	}
 
+    @Test
 	public void test_NetworkLink_Kmz() throws IOException, XMLStreamException {
-		File temp = File.createTempFile("testNetworkLinks", ".kmz", tempKmlDir);
+		File temp = createTemp("testNetworkLinks", ".kmz", tempKmlDir);
 		ZipFile zf = null;
 		try {
 			KmlWriter writer = new KmlWriter(temp);
@@ -220,10 +222,11 @@ public class TestKmlWriter extends TestCase {
 	 *
 	 * @throws Exception
 	 */
+    @Test
 	public void test_Timestamp_Feature() throws Exception {
 		File input = new File("data/kml/time/TimeTest.kml");
 		TimeZone gmt = TimeZone.getTimeZone("GMT");
-		File temp = File.createTempFile("TestTimeTest", ".kml", tempKmlDir);
+		File temp = createTemp("TestTimeTest", ".kml", tempKmlDir);
 		try {
 			KmlReader reader = new KmlReader(input);
 			List<IGISObject> objs = reader.readAll();
@@ -329,10 +332,11 @@ public class TestKmlWriter extends TestCase {
 			"2009-03-14T21:10:50.000Z	2009-03-14T21:10:50.000Z"  // when 2009-03-14T16:10:50 (no timezone assumes UTC)
 	};
 
+    @Test
 	public void test_Time_Feature() throws Exception {
 		File input = new File("data/kml/time/timestamps.kml");
 		TimeZone tz = TimeZone.getTimeZone("UTC");
-		File temp = File.createTempFile("testTimestamps", ".kml", tempKmlDir);
+		File temp = createTemp("testTimestamps", ".kml", tempKmlDir);
 		try {
 			KmlReader reader = new KmlReader(input);
 			List<IGISObject> objs = reader.readAll();
