@@ -1128,6 +1128,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
 				return handleNetworkLinkControl(stream, localname);
 			} else if (STYLE.equals(localname)) {
+                log.debug("Out of order Style");
                 StringBuilder sb = new StringBuilder();
                 sb.append("placeholder for style");
                 int count = 0;
@@ -1150,7 +1151,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					e2.initCause(xe);
 					throw e2;
 				}
-                if (count != 0) sb.append(" \n");
+                if (count != 0) sb.append('\n');
                 return new Comment(sb.toString());
 			} else {
 				// Look for next start element and recurse
@@ -1450,6 +1451,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                                 fs.setGeometry(geo);
                             }
                         } catch (RuntimeException rte) {
+                            // IllegalStateException or IllegalArgumentException
                             log.warn("Failed geometry: " + fs, rte);
                         }
 					} else if (isOverlay) {
@@ -1720,6 +1722,16 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					break;
 				}
 			}
+            // if no valid geometries then return null 
+            if (geometries.size() == 0) {
+                log.debug("No valid geometries in MultiGeometry");
+                return null;
+            }
+            // if only one geometry valid then drop collection and use single geometry
+            if (geometries.size() == 1) {
+                log.debug("Convert MultiGeometry to single geometry");
+                return geometries.get(0);
+            }
 			boolean allpoints = true;
 			for(Geometry geo : geometries) {
 				if (!(geo instanceof Point)) {
@@ -1873,7 +1885,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	/**
 	 * Coordinate parser that matches the loose parsing of coordinates in Google Earth.
 	 * KML reference states "Do not include spaces within a [coordinate] tuple" yet
-	 * it Google Earth allows whitespace to appear anywhere in the input or commas
+	 * Google Earth allows whitespace to appear anywhere in the input or commas
      * to appear between tuples (e.g 1,2,3,4,5,6 -> 1,2,3  4,5,6). 
 	 * State machine-like parsing keeps track of what part of the coordinate
 	 * had been found so far.
@@ -1907,14 +1919,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						try {
                             if (numparts == 3) {
                                 if (seenComma) {
-                                    log.warn("comma found instead of whitespace between tupes before " + st.nval);
-                                    // handle commas appearing between tuples 
+                                    log.warn("comma found instead of whitespace between tuples before " + st.nval);
+                                    // handle commas appearing between tuples
+                                    // Google Earth interprets input with: "1,2,3,4,5,6" as two tuples: {1,2,3}  {4,5,6}.
                                     seenComma = false;
                                 }
                                 // add last coord to list and reset counter
                                 if (lon != COORD_ERROR)
                                     list.add(new Point(new Geodetic3DPoint(lon, lat, elev)));
-                                numparts = 0;
+                                numparts = 0; // reset state for start of new tuple
                             }
 
 							switch (++numparts) {
