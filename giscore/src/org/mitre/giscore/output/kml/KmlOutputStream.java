@@ -22,6 +22,8 @@ import java.awt.Color;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Queue;
+import java.text.ParseException;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -65,9 +68,8 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
  * The geometry visitors are invoked by the feature vistor via the Geometry
  * accept method.
  * <p/>
- * Notes/Limitations:
- * <p/>
- * Geometries do not support altitudeMode, extrude or tessellate attributes.
+ * Notes/Limitations:<br/>
+ *  -Output does NOT support tessellate attributes for all geometries (only Line)
  *
  * @author DRAND
  * @author J.Mathews
@@ -77,7 +79,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     private final List<IGISObject> waitingElements = new ArrayList<IGISObject>();
 
     private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
-    private SafeDateFormat dateFormatter;
+    private SafeDateFormat dateFormatter;    
 
     /**
      * Ctor
@@ -301,7 +303,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 try {
                     // Try converting to ISO?
                     val = KmlInputStream.parseDate((String) data);
-                } catch (Exception e) {
+                } catch (ParseException e) {
+                    // Fall through
+                } catch (RuntimeException e) {
                     // Fall through
                 }
             }
@@ -444,7 +448,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                     try {
                         UrlRef urlRef = new UrlRef(new URI(val));
                         val = urlRef.getKmzRelPath();
-                    } catch (Exception e) {
+                    } catch (RuntimeException e) {
+                        // ignore
+                    } catch (MalformedURLException e) {
+                        // ignore
+                    } catch (URISyntaxException e) {
                         // ignore
                     }
                 }
@@ -497,6 +505,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * found and output on the next feature or container.
      *
      * @throws XMLStreamException if an error occurs
+     * @throws IllegalStateException if invalid element is found in waitingElements list
      */
     private void handleWaitingElements() throws XMLStreamException {
         for (int i = waitingElements.size() - 1; i >= 0; i--) {
@@ -506,51 +515,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             } else if (element instanceof StyleMap) {
                 handle((StyleMap) element);
             } else {
-                throw new RuntimeException("Unknown kind of deferred element: "
+                throw new IllegalStateException("Unknown kind of deferred element: "
                         + element.getClass());
             }
         }
         waitingElements.clear();
-    }
-
-    /**
-     * Output a multigeometry, represented by a geometry bag
-     *
-     * @param bag the geometry bag, never <code>null</code>
-     */
-    @Override
-    public void visit(GeometryBag bag) {
-        if (bag == null) {
-            throw new IllegalArgumentException("bag should never be null");
-        }
-        try {
-            writer.writeStartElement(MULTI_GEOMETRY);
-            super.visit(bag);
-            writer.writeEndElement();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /* (non-Javadoc)
-     *
-     * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.MultiPoint
-     */
-    @Override
-    public void visit(MultiPoint multiPoint) {
-        if (multiPoint == null) {
-            throw new IllegalArgumentException("bag should never be null");
-        }
-        try {
-            writer.writeStartElement(MULTI_GEOMETRY);
-            for (Point point : multiPoint.getPoints()) {
-                point.accept(this);
-            }
-            writer.writeEndElement();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
     }
 
     /**
@@ -560,33 +529,32 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      */
     @Override
     public void visit(Polygon poly) {
-        if (poly == null) {
-            throw new IllegalArgumentException("poly should never be null");
-        }
-        try {
-            writer.writeStartElement(POLYGON);
-            if (poly.getOuterRing() != null) {
-                writer.writeStartElement(OUTER_BOUNDARY_IS);
-                writer.writeStartElement(LINEAR_RING);
-                handleSimpleElement(COORDINATES, handleCoordinates(poly
-                        .getOuterRing().iterator()));
-                writer.writeEndElement();
-                writer.writeEndElement();
-            }
-            if (poly.getLinearRings() != null) {
-                for (LinearRing lr : poly.getLinearRings()) {
-                    writer.writeStartElement(INNER_BOUNDARY_IS);
+        if (poly != null)
+            try {
+                writer.writeStartElement(POLYGON);
+                handleGeometryAttributes(poly, null); // todo: add tesselate
+                if (poly.getOuterRing() != null) {
+                    writer.writeStartElement(OUTER_BOUNDARY_IS);
                     writer.writeStartElement(LINEAR_RING);
-                    handleSimpleElement(COORDINATES, handleCoordinates(lr
-                            .getPoints()));
+                    handleSimpleElement(COORDINATES, handleCoordinates(poly
+                            .getOuterRing().iterator()));
                     writer.writeEndElement();
                     writer.writeEndElement();
                 }
+                if (poly.getLinearRings() != null) {
+                    for (LinearRing lr : poly.getLinearRings()) {
+                        writer.writeStartElement(INNER_BOUNDARY_IS);
+                        writer.writeStartElement(LINEAR_RING);
+                        handleSimpleElement(COORDINATES, handleCoordinates(lr
+                                .getPoints()));
+                        writer.writeEndElement();
+                        writer.writeEndElement();
+                    }
+                }
+                writer.writeEndElement();
+            } catch (XMLStreamException e) {
+                throw new RuntimeException(e);
             }
-            writer.writeEndElement();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     /**
@@ -596,16 +564,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      */
     @Override
     public void visit(LinearRing r) {
-        if (r == null) {
-            throw new IllegalArgumentException("r should never be null");
-        }
-        try {
-            writer.writeStartElement(LINEAR_RING);
-            handleSimpleElement(COORDINATES, handleCoordinates(r.iterator()));
-            writer.writeEndElement();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        if (r != null)
+            try {
+                writer.writeStartElement(LINEAR_RING);
+                handleGeometryAttributes(r, null); // todo: add tesselate
+                handleSimpleElement(COORDINATES, handleCoordinates(r.iterator()));
+                writer.writeEndElement();
+            } catch (XMLStreamException e) {
+                throw new RuntimeException(e);
+            }
     }
 
     /**
@@ -615,20 +582,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      */
     @Override
     public void visit(Line l) {
-        if (l == null) {
-            throw new IllegalArgumentException("l should never be null");
-        }
-        try {
-            writer.writeStartElement(LINE_STRING);
-            //<extrude>0</extrude>                   <!-- boolean -->
-            //<tessellate>0</tessellate>             <!-- boolean -->
-            // To enable tessellation, the value for <altitudeMode> must be clampToGround or clampToSeaFloor.
-            //<altitudeMode>clampToGround</altitudeMode> 
-            handleSimpleElement(COORDINATES, handleCoordinates(l.getPoints()));
-            writer.writeEndElement();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        if (l != null)
+            try {
+                writer.writeStartElement(LINE_STRING);
+                handleGeometryAttributes(l, l.getTessellate());
+                handleSimpleElement(COORDINATES, handleCoordinates(l.getPoints()));
+                writer.writeEndElement();
+            } catch (XMLStreamException e) {
+                throw new RuntimeException(e);
+            }
     }
 
     /**
@@ -638,19 +600,145 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      */
     @Override
     public void visit(Point p) {
-        if (p == null) {
-            throw new IllegalArgumentException("p should never be null");
-        }
-        try {
-            writer.writeStartElement(POINT);
-            //<extrude>0</extrude> <!-- boolean -->
-            //<altitudeMode>clampToGround</altitudeMode>
-            handleSimpleElement(COORDINATES, handleCoordinates(Collections
-                    .singletonList(p)));
+        if (p != null)
+            try {
+                writer.writeStartElement(POINT);
+                handleGeometryAttributes(p, null);
+                //<extrude>0</extrude> <!-- boolean -->
+                //<altitudeMode>clampToGround</altitudeMode>
+                handleSimpleElement(COORDINATES, handleCoordinates(Collections
+                        .singletonList(p)));
+                writer.writeEndElement();
+            } catch (XMLStreamException e) {
+                throw new RuntimeException(e);
+            }
+    }
+
+    /**
+     * Handle the output of a circle
+     *
+     * @param circle the circle, never <code>null</code>
+     */
+    @Override
+    public void visit(Circle circle) {
+        // todo output as linearRing...
+        // todo: for now just visit the circle point
+        visit(new Point(circle.getCenter()));
+    }
+
+        /**
+     * Output a multigeometry, represented by a geometry bag
+     *
+     * @param bag the geometry bag, never <code>null</code>
+     */
+    @Override
+    public void visit(GeometryBag bag) {
+        if (bag != null && bag.getNumParts() != 0)
+            try {
+                writer.writeStartElement(MULTI_GEOMETRY);
+                super.visit(bag);
+                writer.writeEndElement();
+            } catch (XMLStreamException e) {
+                throw new RuntimeException(e);
+            }
+    }
+
+    /**
+     * Handle the output of a MultiPoint geometry.
+     *
+     * @param multiPoint the MultiPoint, never <code>null</code>
+     */
+    @Override
+    public void visit(MultiPoint multiPoint) {
+        if (multiPoint != null && multiPoint.getPoints().size() != 0)
+            try {
+                writer.writeStartElement(MULTI_GEOMETRY);
+                for (Point point : multiPoint.getPoints()) {
+                    point.accept(this);
+                }
+                writer.writeEndElement();
+            } catch (XMLStreamException e) {
+                throw new RuntimeException(e);
+            }
+    }
+
+    /**
+     * Handle the output of a MultiLine geometry.
+     *
+     * @param multiLine the MultiLine, never <code>null</code>
+     */
+    @Override
+    public void visit(MultiLine multiLine) {
+        if (multiLine != null && multiLine.getLines().size() != 0)
+         try {
+            writer.writeStartElement(MULTI_GEOMETRY);
+            super.visit(multiLine);
             writer.writeEndElement();
-        } catch (Exception e) {
+        } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Handle the output of a MultiLinearRings geometry.
+     *
+     * @param rings the MultiLinearRings, never <code>null</code>
+     */
+    @Override
+    public void visit(MultiLinearRings rings) {
+        if (rings != null && rings.getLinearRings().size() != 0)
+         try {
+            writer.writeStartElement(MULTI_GEOMETRY);
+            super.visit(rings);
+            writer.writeEndElement();
+        } catch (XMLStreamException e) {
+            throw new RuntimeException(e);
+        }        
+    }
+
+    /**
+     * Handle the output of a MultiPolygons geometry.
+     *
+     * @param polygons the MultiPolygons, never <code>null</code>
+     */
+    @Override
+    public void visit(MultiPolygons polygons) {
+        if (polygons != null && polygons.getPolygons().size() != 0)
+            try {
+                writer.writeStartElement(MULTI_GEOMETRY);
+                super.visit(polygons);
+                writer.writeEndElement();
+            } catch (XMLStreamException e) {
+                throw new RuntimeException(e);
+            }
+    }
+
+    /**
+     * Handle Geometry attributes common to Point, Line, LinearRing, and Polygon namely
+     * extrude, tessellate, and altitudeMode.  Note tessellate is not applicable to Point
+     * geometry.
+     *
+     * @param geom
+     * @param tessellate
+     * @throws XMLStreamException
+     */
+    private void handleGeometryAttributes(GeometryBase geom, Boolean tessellate) throws XMLStreamException {
+        /*
+            <element ref="kml:extrude" minOccurs="0"/>
+            <element ref="kml:tessellate" minOccurs="0"/>
+            <element ref="kml:altitudeModeGroup" minOccurs="0"/>
+         */
+        //<extrude>0</extrude>                   <!-- boolean -->
+        // <tessellate>0</tessellate>             <!-- boolean -->
+        // To enable tessellation, the value for <altitudeMode> must be clampToGround or clampToSeaFloor.
+        //<altitudeMode>clampToGround</altitudeMode>
+        // tessellate not applicable to Point
+        Boolean extrude = geom.getExtrude();
+        if (extrude != null)
+            handleSimpleElement(EXTRUDE, extrude ? "1" : "0");
+        if (tessellate != null && !(geom instanceof Point))
+            handleSimpleElement(TESSELLATE, tessellate ? "1" : "0");
+        handleNonNullSimpleElement(ALTITUDE_MODE, geom.getAltitudeMode());
     }
 
     /**
@@ -755,6 +843,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         waitingElements.add(style);
     }
 
+    /**
+     * Handle the output of a NetworkLinkControl feature
+     *
+     * @param networkLinkControl
+     */
     public void visit(NetworkLinkControl networkLinkControl) {
         /*
         <element name="NetworkLinkControl" type="kml:NetworkLinkControlType"/>

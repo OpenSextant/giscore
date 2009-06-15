@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
  *
  * Notes/Limitations: <br/>
  * - If have points of mixed dimensions then line is downgraded to 2d. <br/>
- * - Line does not support tessellate attribute.
  *
  * @author Paul Silvey
  */
@@ -54,7 +53,7 @@ public class Line extends GeometryBase implements Iterable<Point> {
     private List<Point> pointList, publicPointList;
     private boolean idlWrap;  // International Date Line Wrap
 
-    // private Boolean tessellate; // default (false)
+    private Boolean tessellate; // default (false)
 
     /**
      * This method returns an iterator for cycling through the Points in this Line.
@@ -138,6 +137,14 @@ public class Line extends GeometryBase implements Iterable<Point> {
         numPoints = pts.size();
 	}
 
+    public Boolean getTessellate() {
+        return tessellate;
+    }
+
+    public void setTessellate(Boolean tessellate) {
+        this.tessellate = tessellate;
+    }
+
     /**
      * This predicate method is used to tell if this Ring has positive Longitude points
      * that are part of segments which are clipped at the International Date Line (IDL)
@@ -172,6 +179,8 @@ public class Line extends GeometryBase implements Iterable<Point> {
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
 		super.readData(in);
+        int ch = in.readByte();
+        tessellate = (ch  == 0 || ch == 1) ? Boolean.valueOf(ch == 1) : null;
 		idlWrap = in.readBoolean();
 		List<Point> plist = (List<Point>) in.readObjectCollection();
 		init(plist);
@@ -183,8 +192,9 @@ public class Line extends GeometryBase implements Iterable<Point> {
 	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
+        out.writeByte(tessellate == null ? 0xff : tessellate ? 1 : 0);
 		out.writeBoolean(idlWrap);
 		out.writeObjectCollection(pointList);
 	}
-  
+
 }
