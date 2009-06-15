@@ -45,12 +45,13 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
 public class TestGISBase {
     
     private static int id;
-	public static File tempdir;
-	public static SimpleDateFormat FMT = new SimpleDateFormat("D-HH-mm-ss");
+	public static final File tempdir;
+	public static SimpleDateFormat FMT = new SimpleDateFormat("dd-HH-mm-ss");
 	static {
 		// String dir = System.getProperty("java.io.tmpdir");
 		tempdir = new File("testOutput", "t" + FMT.format(new Date()));
-		tempdir.mkdirs();
+		if (!tempdir.mkdirs())
+            System.out.println("ERROR: Failed to create output directory: " + tempdir);
 	}
 	public static final AtomicInteger count = new AtomicInteger();
 	protected static Random random = new Random(1000);
@@ -63,6 +64,20 @@ public class TestGISBase {
 	 * above
 	 */
 	protected File createTemp(String prefix, String suffix) {
+		return createTemp(prefix, suffix, tempdir);
+	}
+
+    /**
+	 * Create a temp file or directory for a test
+	 * @param prefix string prefix, never <code>null</code> or empty
+	 * @param suffix string suffix, never <code>null</code> or empty
+     * @param  directory  The directory in which the file is to be created, or
+     *                    <code>null</code> if the default temporary-file
+     *                    directory is to be used
+     * @return a non-<code>null</code> file path in the temp directory setup
+	 * above
+	 */
+    protected File createTemp(String prefix, String suffix, File directory) {
 		if (prefix == null || prefix.trim().length() == 0) {
 			throw new IllegalArgumentException(
 					"prefix should never be null or empty");
@@ -70,7 +85,8 @@ public class TestGISBase {
 		if (suffix == null || suffix.trim().length() == 0) {
 			suffix = "";
 		}
-		return new File(tempdir, prefix + count.incrementAndGet() + suffix);
+        if (directory == null) directory = tempdir;
+		return new File(directory, prefix + count.incrementAndGet() + suffix);
 	}
 	
 	/**
