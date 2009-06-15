@@ -139,6 +139,12 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         if (pts == null || pts.size() < 4)
             throw new IllegalArgumentException("LinearRing must contain at least 4 Points");
         if (validateTopology) validateTopology(pts);
+        else {
+            int n = pts.size();
+            // ring expected to be closed, i.e. that beginning and ending point are equal
+            if (!pts.get(0).equals(pts.get(n - 1)))
+                log.warn("LinearRing should start and end with the same point");
+        }
         // Make sure all the points have the same number of dimensions (2D or 3D)
         is3D = pts.get(0).is3D();
         for (Point p : pts) {
