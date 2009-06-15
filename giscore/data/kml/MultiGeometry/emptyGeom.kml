@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <Document>
+        <Placemark>
+            <name>emptyGeom</name>
+            <MultiGeometry/>
+        </Placemark>
+
+        <Placemark>
+            <name>single Point MultiGeom</name>
+            <description><![CDATA[<b type="C">geotype: </b>Point]]></description>
+            <MultiGeometry>
+                <Point>
+                    <coordinates>-71.0,42.07</coordinates>
+                </Point>
+            </MultiGeometry>
+        </Placemark>
+    </Document>
+</kml>
+
