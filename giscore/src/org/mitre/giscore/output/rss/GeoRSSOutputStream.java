@@ -421,14 +421,16 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
              * If first geometry is a Point and is in center of bounding box for other geometries then
              * remove by convention.
              */
-            Geometry firstGeom = geoms.get(0);
-            if (firstGeom instanceof Point) {
+            Geometry firstGeom = geoms.get(0); // items cannot be null
+            Class firstClass = firstGeom.getClass(); // class cannot be null
+            if (firstClass == Point.class) {
                 Geodetic2DBounds bbox = null;
                 int n = geoms.size();
                 boolean homogeneous = true;
                 for (int i = 1; i < n; i++) {
                     Geometry g = geoms.get(i);
-                    if (g.getClass() != firstGeom.getClass()) {
+                    // geoms cannot have null entries since we're adding them in addGeometry() above
+                    if (g.getClass() != firstClass) {
                         homogeneous = false;
                         log.debug("multi geometries not homogeneous: drop initial point");
                         // if geometries not homogeneous and first geometry is point
@@ -508,12 +510,12 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
      */
     private void visit(Geometry g) {
         if (g == null) return;
-        if (g instanceof Point)
-            visit((Point)g);
-        else if (g instanceof Line)
+        if (g instanceof Line)
             visit((Line)g);
         else if (g instanceof Circle)
             visit((Circle)g);
+        else if (g instanceof Point)
+            visit((Point)g);
         else if (g instanceof LinearRing)
             visit((LinearRing)g);
         else if (g instanceof Polygon)
@@ -538,6 +540,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
     private void addGeometry(List<Geometry> geoms, Geometry geom) {
         if (geom instanceof GeometryBag) {
             for(Geometry geo : (GeometryBag)geom) {
+                // recurse all GeometryBag containers for all non-null simple Geometry objects
                 addGeometry(geoms, geo);
             }
         } else if (geom != null) {
@@ -547,6 +550,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
                     geoms.add(geom);
             }
             else {
+                // Point, Circle, Polygon, etc.
                 geoms.add(geom);
             }
         }
