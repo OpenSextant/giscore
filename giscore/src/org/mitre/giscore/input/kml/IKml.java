@@ -48,6 +48,7 @@ public interface IKml {
 	static final String EAST = "east";
 	static final String END = "end";
 	static final String EXTENDED_DATA = "ExtendedData";
+    static final String EXTRUDE = "extrude";
 	static final String FILL = "fill";
 	static final String FLY_TO_VIEW = "flyToView";
 	static final String FOLDER = "Folder";
@@ -110,6 +111,7 @@ public interface IKml {
 	static final String STYLE = "Style";
 	static final String STYLE_MAP = "StyleMap";
 	static final String STYLE_URL = "styleUrl";
+    static final String TESSELLATE = "tessellate";
 	static final String TEXT = "text";
 	static final String TEXT_COLOR = "textColor";
 	static final String TILT = "tilt";
