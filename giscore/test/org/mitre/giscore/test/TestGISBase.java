@@ -56,8 +56,8 @@ public class TestGISBase {
 	static {
 		// String dir = System.getProperty("java.io.tmpdir");
 		tempdir = new File("testOutput", "t" + FMT.format(new Date()));
-		if (!tempdir.mkdirs())
-            System.out.println("ERROR: Failed to create output directory: " + tempdir);
+		if (tempdir.mkdirs())
+            System.out.println("Created temp output directory: " + tempdir);
 	}
 	public static final AtomicInteger count = new AtomicInteger();
 	protected static Random random = new Random(1000);
@@ -279,6 +279,7 @@ public class TestGISBase {
 		pts.add(new Point(.10, .10));
 		pts.add(new Point(.20, .10));
 		pts.add(new Point(.20, .20));
+        pts.add(pts.get(0)); // add first as last
         LinearRing ring = new LinearRing(pts);
         rings.add(ring);
         List<Point> pts2 = new ArrayList<Point>();
@@ -286,6 +287,7 @@ public class TestGISBase {
 		pts2.add(new Point(.05, .05));
 		pts2.add(new Point(.25, .05));
 		pts2.add(new Point(.25, .25));
+        pts2.add(pts2.get(0)); // add first as last
         rings.add(new LinearRing(pts2));
 		g = new MultiLinearRings(rings);
         feats.add(addFeature(g)); // MultiLinearRings w/2 rings
@@ -295,11 +297,14 @@ public class TestGISBase {
 		pts.add(new Point(.10, -.10));
 		pts.add(new Point(-.10, -.10));
 		pts.add(new Point(-.10, .10));
+        pts.add(pts.get(0)); // add first as last
 		LinearRing outer = new LinearRing(pts);
+        pts = new ArrayList<Point>();
 		pts.add(new Point(.05, .05));
 		pts.add(new Point(.05, -.05));
 		pts.add(new Point(-.05, -.05));
 		pts.add(new Point(-.05, .05));
+        pts.add(pts.get(0)); // add first as last
 		List<LinearRing> innerRings = new ArrayList<LinearRing>();
 		innerRings.add(new LinearRing(pts));
 		Polygon p = new Polygon(outer, innerRings);

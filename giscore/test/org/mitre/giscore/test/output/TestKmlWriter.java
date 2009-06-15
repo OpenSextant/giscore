@@ -37,8 +37,8 @@ public class TestKmlWriter extends TestGISBase {
     private static final File tempKmlDir = new File("testOutput/kml");
 
     static {
-        if (!tempKmlDir.mkdirs())
-            System.out.println("ERROR: Failed to create output directory: " + tempKmlDir);
+        if (tempKmlDir.mkdirs())
+            System.out.println("Created temp output directory: " + tempKmlDir);
     }
 
     @Test
