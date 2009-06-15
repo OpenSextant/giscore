@@ -60,7 +60,7 @@ public class SimpleObjectOutputStream {
 	
 	/**
 	 * Close the stream
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void close() throws IOException {
 		stream.close();
@@ -69,7 +69,7 @@ public class SimpleObjectOutputStream {
 	/**
 	 * Write an object to the stream
 	 * @param object
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	@SuppressWarnings("unchecked")
 	public void writeObject(IDataSerializable object) throws IOException {
@@ -97,7 +97,7 @@ public class SimpleObjectOutputStream {
 	/**
 	 * Write a collection of object
 	 * @param objects the object collection
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeObjectCollection(Collection<? extends IDataSerializable> objects) throws IOException {
 		if (objects == null) {
@@ -114,7 +114,7 @@ public class SimpleObjectOutputStream {
 	 * Write primitive non-array value, i.e. a string, integer, float, etc. The
 	 * value is written with a prior marker to allow reading later
 	 * @param value the value, must be a supported type
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeScalar(Object value) throws IOException {
 		if (value == null) {
@@ -170,7 +170,7 @@ public class SimpleObjectOutputStream {
 	/**
 	 * Write a long value
 	 * @param lval
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeLong(long lval) throws IOException {
 		stream.writeLong(lval);
@@ -179,7 +179,7 @@ public class SimpleObjectOutputStream {
 	/**
 	 * Write an int value
 	 * @param ival
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeInt(int ival) throws IOException {
 		stream.writeInt(ival);
@@ -188,16 +188,26 @@ public class SimpleObjectOutputStream {
 	/**
 	 * Write a boolean value
 	 * @param bval
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeBoolean(boolean bval) throws IOException {
 		stream.writeBoolean(bval);
 	}
 
+    /**
+     * Writes out a <code>byte</code> to the underlying output stream as
+     * a 1-byte value. 
+     * @param      v   a <code>byte</code> value to be written.
+     * @throws IOException if an I/O error occurs
+     */
+    public void writeByte(int v) throws IOException {
+        stream.writeByte(v);
+    }
+
 	/**
 	 * Write a double value
 	 * @param dval
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeDouble(double dval) throws IOException {
 		stream.writeDouble(dval);
@@ -206,7 +216,7 @@ public class SimpleObjectOutputStream {
 	/**
 	 * Write a short value
 	 * @param sval
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeShort(short sval) throws IOException {
 		stream.writeShort(sval);
@@ -214,9 +224,11 @@ public class SimpleObjectOutputStream {
 
 	/**
 	 * Flush
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void flush() throws IOException {
 		stream.flush();
 	}
+
+
 }
