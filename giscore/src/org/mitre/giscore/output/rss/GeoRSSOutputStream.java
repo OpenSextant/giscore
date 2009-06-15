@@ -181,7 +181,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
                 Geodetic3DPoint p3d = (Geodetic3DPoint) pt;
                 handleSimpleElement(GEORSS_NS, ELEV, formatDouble(p3d.getElevation()));
             }
-        } catch (Exception e) {
+        } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
     }
@@ -205,7 +205,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
                 Geodetic3DPoint p3d = (Geodetic3DPoint) center;
                 handleSimpleElement(GEORSS_NS, ELEV, formatDouble(p3d.getElevation()));                    
             }
-        } catch (Exception e) {
+        } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
     }
@@ -225,7 +225,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
                 Geodetic3DPoint p3d = (Geodetic3DPoint) center;
                 handleSimpleElement(GEORSS_NS, ELEV, formatDouble(p3d.getElevation()));
             }
-        } catch (Exception e) {
+        } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
     }
@@ -257,7 +257,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
                 Geodetic3DPoint p3d = (Geodetic3DPoint) center;
                 handleSimpleElement(GEORSS_NS, ELEV, formatDouble(p3d.getElevation()));
             }
-        } catch (Exception e) {
+        } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
     }
@@ -285,7 +285,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
                 Geodetic3DPoint p3d = (Geodetic3DPoint) center;
                 handleSimpleElement(GEORSS_NS, ELEV, formatDouble(p3d.getElevation()));
             }
-        } catch (Exception e) {
+        } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
     }
@@ -338,7 +338,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             super.visit(multiLine);
             writer.writeEndElement();
             writer.writeCharacters("\n");
-            } catch (Exception e) {
+            } catch (XMLStreamException e) {
                 throw new RuntimeException(e);
             } finally {
                 gmlMode = oldGmlMode;
@@ -366,7 +366,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             super.visit(rings);
             writer.writeEndElement();
             writer.writeCharacters("\n");
-        } catch (Exception e) {
+        } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
         */
@@ -393,7 +393,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             super.visit(polygons);
             writer.writeEndElement();
             writer.writeCharacters("\n");
-        } catch (Exception e) {
+        } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         } finaly {
 		gmlMode = oldGmlMode;
@@ -483,7 +483,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
                 gmsmode = true
             writer.writeEndElement();
             writer.writeCharacters("\n");
-            } catch (Exception e) {
+            } catch (XMLStreamException e) {
                 throw new RuntimeException(e);
             } finally {
             gmsmode = false
