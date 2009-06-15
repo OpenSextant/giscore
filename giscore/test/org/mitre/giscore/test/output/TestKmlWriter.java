@@ -7,7 +7,6 @@ import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
-import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
@@ -23,8 +22,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
 import java.util.*;
 import java.util.zip.ZipFile;
 import java.text.SimpleDateFormat;
@@ -35,7 +32,15 @@ import java.text.SimpleDateFormat;
  */
 public class TestKmlWriter extends TestCase {
 
-	@Test
+    private static boolean autoDelete = !Boolean.getBoolean("keepTempFiles");
+    private static final File tempKmlDir = new File("testOutput/kml");
+
+    static {
+        if (!tempKmlDir.mkdirs())
+            System.out.println("ERROR: Failed to create output directory: " + tempKmlDir);
+    }
+
+    @Test
     public void test_read_write_Kml() {
         checkDir(new File("data/kml"));
     }
@@ -65,14 +70,16 @@ public class TestKmlWriter extends TestCase {
         List<URI> links = reader.getNetworkLinks();
         if (links.size() != 0)
             assertTrue(linkedFeatures.size() != 0);
-        /*
-		String suff = file.getName();
-		int ind = suff.lastIndexOf('.');
-		if (ind != -1) suff = suff.substring(0, ind);
-		if (suff.length() < 3) suff = "x" + suff;
-		File temp = File.createTempFile(suff + "-", reader.isCompressed() ? ".kmz" : ".kml", new File("testOutput/kml"));
-        */
-		File temp = new File("testOutput/test." + (reader.isCompressed() ? "kmz" : "kml"));
+        File temp;
+        if (autoDelete)
+            temp = new File("testOutput/test." + (reader.isCompressed() ? "kmz" : "kml"));
+        else {
+            String suff = file.getName();
+            int ind = suff.lastIndexOf('.');
+            if (ind != -1) suff = suff.substring(0, ind);
+            if (suff.length() < 3) suff = "x" + suff;
+            temp = File.createTempFile(suff + "-", reader.isCompressed() ? ".kmz" : ".kml", tempKmlDir);
+        }
 		try {
 			System.out.println(">create " + temp);
 			KmlWriter writer = new KmlWriter(temp);
@@ -129,7 +136,7 @@ public class TestKmlWriter extends TestCase {
 			assertEquals(objs.size(), elements.size());
 		} finally {
 			// delete temp file
-			if (temp != null && temp.exists()) temp.delete();
+			if (autoDelete && temp.exists()) temp.delete();
 		}
 	}
 
@@ -140,8 +147,7 @@ public class TestKmlWriter extends TestCase {
 	}
 
 	public void test_NetworkLink_Kmz() throws IOException, XMLStreamException {
-		File temp = File.createTempFile("test", ".kmz");
-		//File temp = new File("test.kmz");
+		File temp = File.createTempFile("testNetworkLinks", ".kmz", tempKmlDir);
 		ZipFile zf = null;
 		try {
 			KmlWriter writer = new KmlWriter(temp);
@@ -204,7 +210,7 @@ public class TestKmlWriter extends TestCase {
 		} finally {
 			if (zf != null) zf.close();
 			// delete temp file
-			if (temp != null && temp.exists()) temp.delete();
+			if (autoDelete && temp.exists()) temp.delete();
 		}
 	}
 
@@ -217,7 +223,7 @@ public class TestKmlWriter extends TestCase {
 	public void test_Timestamp_Feature() throws Exception {
 		File input = new File("data/kml/time/TimeTest.kml");
 		TimeZone gmt = TimeZone.getTimeZone("GMT");
-		File temp = File.createTempFile("test1", ".kml");
+		File temp = File.createTempFile("TestTimeTest", ".kml", tempKmlDir);
 		try {
 			KmlReader reader = new KmlReader(input);
 			List<IGISObject> objs = reader.readAll();
@@ -305,7 +311,7 @@ public class TestKmlWriter extends TestCase {
 				TestKmlOutputStream.checkApproximatelyEquals(objs.get(i), objs2.get(i));
 			}
 		} finally {
-			if (temp.exists()) temp.delete();
+			if (autoDelete && temp.exists()) temp.delete();
 		}
 	}
 
@@ -326,7 +332,7 @@ public class TestKmlWriter extends TestCase {
 	public void test_Time_Feature() throws Exception {
 		File input = new File("data/kml/time/timestamps.kml");
 		TimeZone tz = TimeZone.getTimeZone("UTC");
-		File temp = File.createTempFile("test1", ".kml");
+		File temp = File.createTempFile("testTimestamps", ".kml", tempKmlDir);
 		try {
 			KmlReader reader = new KmlReader(input);
 			List<IGISObject> objs = reader.readAll();
@@ -374,8 +380,7 @@ public class TestKmlWriter extends TestCase {
 				TestKmlOutputStream.checkApproximatelyEquals(objs.get(i), objs2.get(i));
 			}
 		} finally {
-			if (temp.exists()) temp.delete();
+			if (autoDelete && temp.exists()) temp.delete();
 		}
 	}
 }
-

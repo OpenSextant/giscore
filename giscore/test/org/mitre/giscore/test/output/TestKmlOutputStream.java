@@ -53,6 +53,8 @@ import javax.xml.stream.XMLStreamException;
  */
 public class TestKmlOutputStream extends TestGISBase {
 
+    private boolean autoDelete = !Boolean.getBoolean("keepTempFiles");
+
     @Test
 	public void testSimpleCase() throws Exception {
 		doTest(getStream("7084.kml"));
@@ -105,7 +107,7 @@ public class TestKmlOutputStream extends TestGISBase {
             checkApproximatelyEquals(f, objs.get(1));
         } finally {
             IOUtils.closeQuietly(zoS);
-            if (file != null && file.exists()) file.delete();
+            if (autoDelete && file.exists()) file.delete();
         }
     }
 
@@ -139,7 +141,7 @@ public class TestKmlOutputStream extends TestGISBase {
             is.close();
         } finally {
             IOUtils.closeQuietly(fs);
-            if (temp != null && temp.exists()) temp.delete();
+            if (temp != null && autoDelete && temp.exists()) temp.delete();
         }
     }
 	
@@ -175,17 +177,20 @@ public class TestKmlOutputStream extends TestGISBase {
     }
 
     @Test
-	public void testMultiGeometries() throws Exception {
+	public void testMultiGeometries() throws IOException, XMLStreamException {
         File out = new File("testOutput/testMultiGeometries.kml");
         KmlOutputStream os = new KmlOutputStream(new FileOutputStream(out),
                 XmlOutputStreamBase.ISO_8859_1);
-        List<Feature> feats = getMultiGeometries();
-        os.write(new DocumentStart(DocumentType.KML));
-        os.write(new ContainerStart(IKml.DOCUMENT));
-        for (Feature f : feats) {
-            os.write(f);
+        try {
+            List<Feature> feats = getMultiGeometries();
+            os.write(new DocumentStart(DocumentType.KML));
+            os.write(new ContainerStart(IKml.DOCUMENT));
+            for (Feature f : feats) {
+                os.write(f);
+            }
+        } finally {
+            os.close();
         }
-        os.close();
     }
 
 }
