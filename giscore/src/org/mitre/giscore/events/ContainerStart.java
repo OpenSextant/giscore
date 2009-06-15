@@ -66,6 +66,21 @@ public class ContainerStart extends Common {
 	public void setType(String type) {
 		this.type = type;
 	}
+
+    /*
+	 * (non-Javadoc)
+	 *
+	 * @see java.lang.Object#toString()
+	 */
+	@Override
+	public String toString() {
+        StringBuilder b = new StringBuilder(super.toString());
+        if (b.length() != 0 && b.charAt(b.length() - 1) != '\n') {
+            b.append('\n');
+        }
+        b.append("  type=").append(type);
+        return b.toString(); 
+    }
 	
     public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
@@ -90,6 +105,5 @@ public class ContainerStart extends Common {
 		super.writeData(out);
 		out.writeString(type);
 	}
-    
     
 }
