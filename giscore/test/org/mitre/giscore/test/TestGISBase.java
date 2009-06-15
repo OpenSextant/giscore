@@ -43,7 +43,13 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
  * @author DRAND
  */
 public class TestGISBase {
-    
+
+    /**
+     * Autodelete flag (default=true). To keep temp files set System flag
+     * keepTempFiles=true before running tests. 
+     */
+    protected static final boolean autoDelete = !Boolean.getBoolean("keepTempFiles");
+
     private static int id;
 	public static final File tempdir;
 	public static SimpleDateFormat FMT = new SimpleDateFormat("dd-HH-mm-ss");
