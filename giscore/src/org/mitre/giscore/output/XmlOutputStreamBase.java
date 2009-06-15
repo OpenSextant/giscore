@@ -41,9 +41,13 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 
     protected OutputStream stream;
 	protected XMLStreamWriter writer;
-	protected XMLOutputFactory factory; 
-	
-	/**
+	protected XMLOutputFactory factory;
+
+    // common encoding to use which allows special characters such as degrees character
+    // that is included in Geometry.toString() output but is not part of the UTF-8 character set.
+    public static final String ISO_8859_1 = "ISO-8859-1";
+
+    /**
      * Creates a new XML output stream to write data to the specified 
      * underlying output stream with specified encoding.
      * The encoding on <code>writeStartDocument()</code> call to the writer must
