@@ -52,16 +52,19 @@ import org.slf4j.LoggerFactory;
  *   -LinearRings can have mixed dimensionality but such rings are downgraded to 2d. <br/>
  *   -LinearRing must contain at least 4 Points. <br/>
  *   -If validateTopology is selected then constructor enforces that the ring must start and end
- *    with the same point and the ring does not self-intersect.
+ *    with the same point and the ring does not self-intersect. <br/>
+ *   -Geometry does not support tessellate attribute.
  *
  * @author Paul Silvey
  */
-public class LinearRing extends Geometry implements Iterable<Point> {
+public class LinearRing extends GeometryBase implements Iterable<Point> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(LinearRing.class);
 
     private List<Point> pointList, publicPointList;
     private boolean idlWrap;  // International Date Line Wrap
+
+    // private Boolean tessellate; // default (false)
 
     /**
      * This method returns an iterator for cycling through the Points in this Ring.

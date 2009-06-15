@@ -44,19 +44,23 @@ import org.slf4j.LoggerFactory;
  * type Polygon.
  * <p/>
  * Notes/restrictions: <br/>
- *   Polygon rings may have mixed dimensionality but such polygons will be downgraded to 2d. <br/>
- *   If validateTopology is selected then constructor enforces that the outer ring lists its points
+ *  - Polygon rings may have mixed dimensionality but such polygons will be downgraded to 2d. <br/>
+ *  - If validateTopology is selected then constructor enforces that the outer ring lists its points
  *   in the clockwise direction, and one or more fully and properly contained inner rings that
- *   list their points counter-clockwise.
+ *   list their points counter-clockwise. <br/>
+ *  - Geometry does not support tessellate attribute.
  *
  * @author Jason Mathews
  */
-public class Polygon extends Geometry implements Iterable<LinearRing> {
+public class Polygon extends GeometryBase implements Iterable<LinearRing> {
+    
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(Polygon.class);
 
     private LinearRing outerRing;
     private List<LinearRing> ringList, publicRingList;
+
+    // private Boolean tessellate; // default (false)
 
     /**
      * Empty ctor for object io
