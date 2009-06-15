@@ -48,7 +48,7 @@ public interface IKml {
 	static final String EAST = "east";
 	static final String END = "end";
 	static final String EXTENDED_DATA = "ExtendedData";
-    static final String EXTRUDE = "extrude";
+	static final String EXTRUDE = "extrude";
 	static final String FILL = "fill";
 	static final String FLY_TO_VIEW = "flyToView";
 	static final String FOLDER = "Folder";
@@ -70,7 +70,7 @@ public interface IKml {
 	static final String LINE_STRING = "LineString";
 	static final String LINE_STYLE = "LineStyle";
 	static final String LINK = "Link";
-    static final String LOCATION = "Location";
+	static final String LOCATION = "Location";
 	static final String LONGITUDE = "longitude";
 	static final String LOOK_AT = "LookAt";
 	static final String METADATA = "Metadata";
@@ -93,6 +93,8 @@ public interface IKml {
 	static final String POLYGON = "Polygon";
 	static final String POLY_STYLE = "PolyStyle";
 	static final String RANGE = "range";
+	static final String REFRESH_INTERVAL = "refreshInterval";
+	static final String REFRESH_MODE = "refreshMode";
 	static final String REFRESH_VISIBILITY = "refreshVisibility";
 	static final String REGION = "Region";
 	static final String ROTATION = "rotation";
@@ -111,7 +113,7 @@ public interface IKml {
 	static final String STYLE = "Style";
 	static final String STYLE_MAP = "StyleMap";
 	static final String STYLE_URL = "styleUrl";
-    static final String TESSELLATE = "tessellate";
+	static final String TESSELLATE = "tessellate";
 	static final String TEXT = "text";
 	static final String TEXT_COLOR = "textColor";
 	static final String TILT = "tilt";
@@ -120,9 +122,13 @@ public interface IKml {
 	static final String TYPE = "type";
 	static final String URL = "Url"; // (*) attribute deprecated in KML 2.1
 	static final String VALUE = "value";
+	static final String VIEW_BOUND_SCALE = "viewBoundScale";
 	static final String VIEW_FORMAT = "viewFormat";
+	static final String VIEW_REFRESH_MODE = "viewRefreshMode";
+	static final String VIEW_REFRESH_TIME = "viewRefreshTime";
 	static final String VISIBILITY = "visibility";
 	static final String WEST = "west";
 	static final String WHEN = "when";
 	static final String WIDTH = "width";
+
 }
