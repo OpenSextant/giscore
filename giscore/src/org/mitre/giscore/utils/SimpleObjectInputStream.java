@@ -198,6 +198,16 @@ public class SimpleObjectInputStream {
 		return stream.readInt();
 	}
 
+    /**
+     * See the general contract of the <code>readByte</code>
+     * method of <code>DataInput</code>.
+	 * @return the next byte value
+	 * @throws IOException if an I/O error occurs
+	 */
+	public int readByte() throws IOException {
+		return stream.readByte();
+	}
+
 	/**
 	 * @return the next boolean value
 	 * @throws IOException if an I/O error occurs
