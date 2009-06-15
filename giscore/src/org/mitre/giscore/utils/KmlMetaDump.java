@@ -16,14 +16,19 @@ import java.net.MalformedURLException;
 import java.net.URI;
 
 /**
- * Simple Debugging Tool to import KML/KMZ documents by File or URL and dump statistics
+ * Simple KML Debugging Tool to import KML/KMZ documents by File or URL and dump statistics
  * on number of feature elements (Placemarks, Points, Polygons, LineStrings, NetworkLinks, etc.)
- * and optionally export the same KML to a file to verify all content has been properly parsed.
- * This will uncover any issues in reading and writing target KML files. Some KML files fail
- * to parse and those cases fall within the cateogy of those that don't conform to the
- * appropriate KML XML Schema or follow the KML Reference Spec (see
- * http://code.google.com/apis/kml/documentation/kmlreference.html) such "Do not
- * include spaces between the three values that describe a coordinate", etc.
+ * and optionally export the same KML to a file to verify all content has been correctly
+ * parsed. <p/>
+ * 
+ * This will help uncover any issues in reading and writing target KML files.
+ * Some KML files fail to parse and those cases are almost always those that don't
+ * conform to the appropriate KML XML Schema or follow the KML Reference Spec (see
+ * http://code.google.com/apis/kml/documentation/kmlreference.html) such
+ * as in coordinates element which states "Do not include spaces between the
+ * three values that describe a coordinate", etc. <p/>
+ *
+ * If logger at at debug level then all info, warnings and parsing messages will be logged. 
  * 
  * @author Jason Mathews, MITRE Corp.
  * Created: May 20, 2009 12:05:04 PM
@@ -39,7 +44,7 @@ public class KmlMetaDump implements IKml {
 
     public void checkSource(URL url) throws IOException {
 		System.out.println(url);
-		checkReader(new KmlReader(url), url.getFile());
+		checkReader(new KmlReader(url), null, url.getFile());
 	}
 
 	public void checkSource(File file) throws IOException {
@@ -54,7 +59,7 @@ public class KmlMetaDump implements IKml {
 				}
 		} else {
 			System.out.println(file.getAbsolutePath());
-			checkReader(new KmlReader(file), file.getName());
+			checkReader(new KmlReader(file), file, file.getName());
 		}
 	}
 
@@ -96,8 +101,8 @@ public class KmlMetaDump implements IKml {
 		System.out.flush();
 	}
 
-	private void checkReader(KmlReader reader, String name) {
-		KmlWriter writer = getWriter(name);
+	private void checkReader(KmlReader reader, File file, String name) {
+		KmlWriter writer = getWriter(file, name);
 		features = 0;
 		try {
 			IGISObject gisObj;
@@ -134,7 +139,7 @@ public class KmlMetaDump implements IKml {
 		tagSet.clear();
 	}
 
-	private KmlWriter getWriter(String name) {
+	private KmlWriter getWriter(File file, String name) {
 		if (outPath != null) {
 			if (!outPathCheck) {
 				if (!outPath.exists() && !outPath.mkdirs()) {
@@ -148,7 +153,21 @@ public class KmlMetaDump implements IKml {
 				String lowerCaseName = name.toLowerCase();
 				if (!lowerCaseName.endsWith(".kml") && !lowerCaseName.endsWith(".kmz"))
 					name += ".kml";
-				return new KmlWriter(new File(outPath, name));
+                File out = new File(outPath, name);
+                if (file != null) {
+                    try {
+                        if (file.getCanonicalFile().equals(out.getCanonicalFile())) {
+                            System.err.println("*** ERROR: output cannot overwrite input");
+                            return null;
+                        }
+                    } catch(IOException e) {
+                        if (file.getAbsoluteFile().equals(out.getAbsoluteFile())) {
+                            System.err.println("*** ERROR: output cannot overwrite input");
+                            return null;
+                        }
+                    }
+                }
+                return new KmlWriter(out);
 			} catch (IOException e) {
 				System.err.println("*** ERROR: Failed to create output: " + name);
 				e.printStackTrace();
@@ -163,8 +182,8 @@ public class KmlMetaDump implements IKml {
 			addTag(NETWORK_LINK);
 			checkFeature((Feature) gisObj);
 		} else if (gisObj instanceof Overlay) {
+            addTag(gisObj.getClass());
 			checkFeature((Feature) gisObj);
-			addTag(gisObj.getClass());
 		} else if (gisObj instanceof ContainerStart) {
 			addTag(((ContainerStart) gisObj).getType()); // Documemnt | Folder
 		} else {
@@ -183,14 +202,10 @@ public class KmlMetaDump implements IKml {
 						}
 					} else addTag(geomClass);
 				}
-			} else if (cl == Style.class ||
-					cl == Schema.class ||
-					cl == StyleMap.class ||
-					cl == NetworkLinkControl.class) {
-				addTag(cl);
-				// ignore: DocumentStart + ContainerEnd + Comment
-			} else if (cl != ContainerEnd.class && cl != DocumentStart.class && cl != Comment.class)
-				System.err.println("*** other: " + gisObj.getClass().getName()); // note unhandled types for debugging
+			}
+            // ignore: DocumentStart + ContainerEnd + Comment objects
+			else if (cl != ContainerEnd.class && cl != DocumentStart.class && cl != Comment.class)
+                addTag(cl); // e.g. Style, Schema, StyleMap, NetworkLinkControl
 		}
 	}
 
@@ -206,7 +221,10 @@ public class KmlMetaDump implements IKml {
 				addTag(TIME_SPAN);
 			}
 		}
-		// otherwise don't have timestamp or timeSpans
+        // otherwise don't have timestamp or timeSpans
+
+        if (f.getLookAt() != null)
+            addTag(LOOK_AT);
 	}
 
 	private void addTag(Class aClass) {
@@ -235,6 +253,7 @@ public class KmlMetaDump implements IKml {
 		System.out.println("\nOptions:");
 		System.out.println("\t-o<path-to-output-directory>");
 		System.out.println("\t-f Follow networkLinks and loads networkLinks and add features to stats");
+        System.out.println("\t-v Set verbose which dumps out features");
 		System.exit(1);
 	}	
 
@@ -277,8 +296,7 @@ public class KmlMetaDump implements IKml {
 				dumpException(e);
 				System.out.println();
 			}
-		}
-
-	  }
+        }
+    }
 
 }
