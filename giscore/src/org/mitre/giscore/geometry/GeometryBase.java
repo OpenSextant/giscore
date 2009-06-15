@@ -48,7 +48,7 @@ public abstract class GeometryBase extends Geometry {
         this.altitudeMode = AltitudeModeEnumType.getNormalizedMode(altitudeMode);
 	}
 
-    public Boolean isExtrude() {
+    public Boolean getExtrude() {
         return extrude;
     }
 
