@@ -23,11 +23,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.IOUtils;
@@ -36,11 +32,7 @@ import org.junit.Assert;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 
@@ -51,6 +43,8 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
  * @author DRAND
  */
 public class TestGISBase {
+    
+    private static int id;
 	public static File tempdir;
 	public static SimpleDateFormat FMT = new SimpleDateFormat("D-HH-mm-ss");
 	static {
@@ -220,5 +214,90 @@ public class TestGISBase {
 		}
 		return count;
 	}
+
+    /**
+     * Create array of features with all possible MultiGeometry geometries:
+     * MultiPoint, MultiLine, MultiLinearRings, MultiPolygons, GeometryBag    
+     * @return
+     */
+    protected static List<Feature> getMultiGeometries() {
+        List<Feature> feats = new ArrayList<Feature>();
+
+		List<Line> lines = new ArrayList<Line>();
+		List<Point> pts = new ArrayList<Point>();
+		for (int i = 0; i < 10; i++) {
+			pts.add(new Point(i * .01, i * .01));
+		}
+
+        Geometry g = new MultiPoint(pts);
+        feats.add(addFeature(g)); // MultiPoint
+
+        Geodetic2DPoint center = g.getCenter();
+        GeometryBag bag = new GeometryBag();
+        bag.add(new Point(center));
+        bag.addAll(pts);
+        feats.add(addFeature(bag)); // GeometryBag with all points
+
+        lines.add(new Line(pts));
+        pts = new ArrayList<Point>();
+		for (int i = 0; i < 10; i++) {
+			pts.add(new Point(i * .01 + 0.1, i * .01 + 0.1));
+		}
+        lines.add(new Line(pts));
+		g = new MultiLine(lines);
+        feats.add(addFeature(g)); // MultiLine
+
+		List<LinearRing> rings = new ArrayList<LinearRing>();
+		pts = new ArrayList<Point>();
+		pts.add(new Point(.10, .20));
+		pts.add(new Point(.10, .10));
+		pts.add(new Point(.20, .10));
+		pts.add(new Point(.20, .20));
+        LinearRing ring = new LinearRing(pts);
+        rings.add(ring);
+        List<Point> pts2 = new ArrayList<Point>();
+		pts2.add(new Point(.05, .25));
+		pts2.add(new Point(.05, .05));
+		pts2.add(new Point(.25, .05));
+		pts2.add(new Point(.25, .25));
+        rings.add(new LinearRing(pts2));
+		g = new MultiLinearRings(rings);
+        feats.add(addFeature(g)); // MultiLinearRings w/2 rings
+
+		pts = new ArrayList<Point>();
+		pts.add(new Point(.10, .10));
+		pts.add(new Point(.10, -.10));
+		pts.add(new Point(-.10, -.10));
+		pts.add(new Point(-.10, .10));
+		LinearRing outer = new LinearRing(pts);
+		pts.add(new Point(.05, .05));
+		pts.add(new Point(.05, -.05));
+		pts.add(new Point(-.05, -.05));
+		pts.add(new Point(-.05, .05));
+		List<LinearRing> innerRings = new ArrayList<LinearRing>();
+		innerRings.add(new LinearRing(pts));
+		Polygon p = new Polygon(outer, innerRings);
+		g = new MultiPolygons(Arrays.asList(new Polygon(ring), p));
+        feats.add(addFeature(g)); // MultiPolygons with 2 polygons
+
+        Circle circle = new Circle(pts.get(0).getCenter(), 50);
+        g = new GeometryBag(Arrays.asList(pts.get(0), circle));
+        feats.add(addFeature(g)); // GeometryBag with point and Circle
+
+        return feats;
+    }
+
+    private static Feature addFeature(Geometry g) {
+        Feature f = new Feature();
+        f.setName(Integer.toString(++id));
+        /*
+        String type = g.getClass().getName();
+        int ind = type.lastIndexOf('.');
+        if (ind > 0) type = type.substring(ind + 1);
+        */
+        f.setDescription(g.toString());
+        f.setGeometry(g);
+        return f;
+    }
 
 }

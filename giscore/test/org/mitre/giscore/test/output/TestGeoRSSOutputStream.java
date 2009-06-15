@@ -4,27 +4,28 @@ import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.Namespace;
+import org.mitre.giscore.test.TestGISBase;
+import org.mitre.giscore.geometry.*;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.output.rss.GeoRSSOutputStream;
 import org.mitre.giscore.output.rss.IRss;
+import org.mitre.giscore.output.XmlOutputStreamBase;
+import org.mitre.itf.geodesy.FrameOfReference;
+import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.junit.Test;
 
 import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.FileOutputStream;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Date;
+import java.io.*;
+import java.util.*;
 
 /**
  * @author Jason Mathews, MITRE Corp.
  * Date: Jun 6, 2009 7:43:55 PM
  */
-public class TestGeoRSSOutputStream implements IRss {
+public class TestGeoRSSOutputStream extends TestGISBase implements IRss {
 
     /**
      * Simple test to output GeoRSS
@@ -56,7 +57,7 @@ public class TestGeoRSSOutputStream implements IRss {
         channelMap.put(DESCRIPTION, "this is a test");
         channelMap.put("test", "this is an extended element"); // uses "ext:" namespace prefix in output
 
-        GeoRSSOutputStream os = new GeoRSSOutputStream(new FileOutputStream(out), "ISO-8859-1",
+        GeoRSSOutputStream os = new GeoRSSOutputStream(new FileOutputStream(out), XmlOutputStreamBase.ISO_8859_1,
                 namespaceMap, channelMap);
         try {
             IGISObject current;
@@ -78,4 +79,17 @@ public class TestGeoRSSOutputStream implements IRss {
         } catch (IOException e) {
         }
     }
+
+    @Test
+	public void testMultiGeometries() throws Exception {
+        File out = new File("testOutput/testMultiGeometries-rss.xml");
+        GeoRSSOutputStream os = new GeoRSSOutputStream(new FileOutputStream(out),
+                XmlOutputStreamBase.ISO_8859_1, null, null);
+        List<Feature> feats = getMultiGeometries();
+        for (Feature f : feats) {
+            os.write(f);
+        }
+        os.close();
+    }
+
 }

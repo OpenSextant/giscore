@@ -33,9 +33,12 @@ import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.DocumentStart;
+import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.kml.KmlReader;
+import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.IGISOutputStream;
+import org.mitre.giscore.output.XmlOutputStreamBase;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.test.TestGISBase;
 import org.apache.commons.io.IOUtils;
@@ -170,4 +173,19 @@ public class TestKmlOutputStream extends TestGISBase {
         System.out.println("File does not exist: " + file);
         return getClass().getResourceAsStream(filename);
     }
+
+    @Test
+	public void testMultiGeometries() throws Exception {
+        File out = new File("testOutput/testMultiGeometries.kml");
+        KmlOutputStream os = new KmlOutputStream(new FileOutputStream(out),
+                XmlOutputStreamBase.ISO_8859_1);
+        List<Feature> feats = getMultiGeometries();
+        os.write(new DocumentStart(DocumentType.KML));
+        os.write(new ContainerStart(IKml.DOCUMENT));
+        for (Feature f : feats) {
+            os.write(f);
+        }
+        os.close();
+    }
+
 }
