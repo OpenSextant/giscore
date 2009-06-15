@@ -49,7 +49,7 @@ public class TestGISBase {
 	public static SimpleDateFormat FMT = new SimpleDateFormat("D-HH-mm-ss");
 	static {
 		// String dir = System.getProperty("java.io.tmpdir");
-		tempdir = new File("c:/temp/", "t" + FMT.format(new Date()));
+		tempdir = new File("testOutput", "t" + FMT.format(new Date()));
 		tempdir.mkdirs();
 	}
 	public static final AtomicInteger count = new AtomicInteger();
