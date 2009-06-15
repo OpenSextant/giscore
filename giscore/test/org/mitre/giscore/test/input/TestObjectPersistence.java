@@ -71,6 +71,7 @@ public class TestObjectPersistence {
 		pts.add(new Point(.10, -.10));
 		pts.add(new Point(-.10, -.10));
 		pts.add(new Point(-.10, .10));
+        pts.add(pts.get(0)); // add first as last
 		LinearRing r = new LinearRing(pts);
 		soos.writeObject(r);
 
@@ -114,6 +115,7 @@ public class TestObjectPersistence {
 		pts.add(new Point(.10, .10));
 		pts.add(new Point(.20,.10));
 		pts.add(new Point(.20, .20));
+        pts.add(pts.get(0)); // add first as last
 		LinearRing r1 = new LinearRing(pts);
 		rings.add(r1);
 		g = new MultiLinearRings(rings);
@@ -124,12 +126,14 @@ public class TestObjectPersistence {
 		pts.add(new Point(.10, -.10));
 		pts.add(new Point(-.10, -.10));
 		pts.add(new Point(-.10, .10));
+        pts.add(pts.get(0)); // add first as last
 		LinearRing outer = new LinearRing(pts);
 		pts = new ArrayList<Point>();
 		pts.add(new Point(.05, .05));
 		pts.add(new Point(.05, -.05));
 		pts.add(new Point(-.05, -.05));
 		pts.add(new Point(-.05, .05));
+        pts.add(pts.get(0)); // add first as last
 		List<LinearRing> innerRings = new ArrayList<LinearRing>();
 		innerRings.add(new LinearRing(pts));
 		Polygon p = new Polygon(outer, innerRings);
