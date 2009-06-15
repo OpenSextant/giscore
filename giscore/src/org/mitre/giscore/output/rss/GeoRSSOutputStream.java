@@ -117,7 +117,6 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
                     String name = entry.getKey();
                     Namespace ns = namespaceMap == null ? null : namespaceMap.get(name);
                     handleSimpleElement(ns, name, textVal);
-                    //writer.writeCharacters("\n");
                 }
             }
     }
@@ -179,11 +178,9 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             handleSimpleElement(GEORSS_NS, POINT, handleSingleCoordinate(
                     new StringBuilder(), pt).toString());
             if (pt instanceof Geodetic3DPoint) {
-                //writer.writeCharacters("\n");
                 Geodetic3DPoint p3d = (Geodetic3DPoint) pt;
                 handleSimpleElement(GEORSS_NS, ELEV, formatDouble(p3d.getElevation()));
             }
-            //writer.writeCharacters("\n");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -223,14 +220,10 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
         try {
             Geodetic2DPoint center = circle.getCenter();
             handleSimpleElement(GEORSS_NS, CIRCLE, handleSingleCoordinate(center).toString());
-            //writer.writeCharacters("\n");
             handleSimpleElement(GEORSS_NS, RADIUS, formatDouble(circle.getRadius()));
-            //writer.writeCharacters("\n");
             if (center instanceof Geodetic3DPoint) {
-                //writer.writeCharacters("\n");
                 Geodetic3DPoint p3d = (Geodetic3DPoint) center;
                 handleSimpleElement(GEORSS_NS, ELEV, formatDouble(p3d.getElevation()));
-                //writer.writeCharacters("\n");
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -393,6 +386,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
         Iterator<Polygon> it = polygons.getPolygons().iterator();
         if (it.hasNext()) visit(it.next());
         /*
+        boolean oldGmlMode = gmlMode;
         try {
             writer.writeStartElement(GML_NS.getPrefix(), "MultiPolygon", GML_NS.getURI());
             gmlMode = true;
@@ -402,7 +396,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
         } catch (Exception e) {
             throw new RuntimeException(e);
         } finaly {
-
+		gmlMode = oldGmlMode;
         }
         */
     }
@@ -486,7 +480,6 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             /*
             try {
             writer.writeStartElement(GML_NS.getPrefix(), "MultiGeometry", GML_NS.getURI());
-                // ????
                 gmsmode = true
             writer.writeEndElement();
             writer.writeCharacters("\n");
