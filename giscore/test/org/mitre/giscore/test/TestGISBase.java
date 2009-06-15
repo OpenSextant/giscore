@@ -238,12 +238,16 @@ public class TestGISBase {
         bag.addAll(pts);
         feats.add(addFeature(bag)); // GeometryBag with all points
 
-        lines.add(new Line(pts));
+        Line line = new Line(pts);
+        line.setTessellate(true);
+        lines.add(line);
         pts = new ArrayList<Point>();
 		for (int i = 0; i < 10; i++) {
 			pts.add(new Point(i * .01 + 0.1, i * .01 + 0.1));
 		}
-        lines.add(new Line(pts));
+        line = new Line(pts);
+        line.setTessellate(true);
+        lines.add(line);
 		g = new MultiLine(lines);
         feats.add(addFeature(g)); // MultiLine
 
@@ -281,7 +285,7 @@ public class TestGISBase {
         feats.add(addFeature(g)); // MultiPolygons with 2 polygons
 
         Circle circle = new Circle(pts.get(0).getCenter(), 50);
-        g = new GeometryBag(Arrays.asList(pts.get(0), circle));
+        g = new GeometryBag(Arrays.asList((Geometry)pts.get(0), circle));
         feats.add(addFeature(g)); // GeometryBag with point and Circle
 
         return feats;
