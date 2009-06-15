@@ -142,7 +142,7 @@ public class Point extends GeometryBase {
 	 */
 	@Override
 	public int hashCode() {
-		return pt.hashCode();
+		return pt == null ? 0 : pt.hashCode();
 	}
 
 	/**
@@ -154,7 +154,7 @@ public class Point extends GeometryBase {
 	 * @return true if specified Point is equal in value to this Point.
 	 */
 	public boolean equals(Point that) {
-		return this.pt.equals(that.pt);
+		return pt != null && this.pt.equals(that.pt);
 	}
 
 	/**
