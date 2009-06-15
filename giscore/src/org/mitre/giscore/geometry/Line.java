@@ -22,6 +22,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.mitre.giscore.IStreamVisitor;
+import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
@@ -38,7 +39,9 @@ import org.slf4j.LoggerFactory;
  * with a single part.  In Google KML files, this object corresponds to a Geometry object of
  * type LineString. <p/>
  *
- * Note if have points of mixed dimensions then line is downgraded to 2d.
+ * Notes/Limitations: <p/>
+ * - If have points of mixed dimensions then line is downgraded to 2d. <br/>
+ * - Line does not support extrude or tessellate attributes.
  *
  * @author Paul Silvey
  */
@@ -49,6 +52,10 @@ public class Line extends Geometry implements Iterable<Point> {
 
     private List<Point> pointList, publicPointList;
     private boolean idlWrap;  // International Date Line Wrap
+
+    private AltitudeModeEnumType altitudeMode; // default (clampToGround)
+    
+    // todo: add extrude + tessellate fields
 
     /**
      * This method returns an iterator for cycling through the Points in this Line.
@@ -131,6 +138,33 @@ public class Line extends Geometry implements Iterable<Point> {
         numParts = 1;
         numPoints = pts.size();
 	}
+
+	/**
+     * Altitude Mode ([clampToGround], relativeToGround, absolute). If value is null
+     * then the default clampToGround is assumed and altitude can be ignored.
+	 * @return the altitudeMode
+	 */
+	public AltitudeModeEnumType getAltitudeMode() {
+		return altitudeMode;
+	}
+
+	/**
+     * Set altitudeMode
+	 * @param altitudeMode
+	 *            the altitudeMode to set ([clampToGround], relativeToGround, absolute)
+	 */
+	public void setAltitudeMode(AltitudeModeEnumType altitudeMode) {
+		this.altitudeMode = altitudeMode;
+	}
+
+    /**
+     * Set altitudeMode
+	 * @param altitudeMode
+	 *            the altitudeMode to set ([clampToGround], relativeToGround, absolute)
+	 */
+    public void setAltitudeMode(String altitudeMode) {
+        this.altitudeMode = AltitudeModeEnumType.getNormalizedMode(altitudeMode);
+	}    
 
     /**
      * This predicate method is used to tell if this Ring has positive Longitude points
