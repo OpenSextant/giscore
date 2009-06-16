@@ -25,6 +25,8 @@ import java.util.Map;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * There are a number of elements in KML that simply need their data 
@@ -35,7 +37,9 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  */
 public class TaggedMap extends HashMap<String, String> implements IDataSerializable {
 	private static final long serialVersionUID = 1L;
-	
+
+    private static final Logger log = LoggerFactory.getLogger(TaggedMap.class);
+
 	/**
 	 * The tag of the element being held
 	 */
@@ -67,6 +71,19 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
 		return tag;
 	}
 
+    /**
+     * Searches for the property with the specified key in this Map.
+     * The method returns the default value argument if the property is not found.
+     * @param   key            the key.
+     * @param   defaultValue   a default value.
+     * @return  the value in this Map with the specified key value
+     *          or defaultValue if not found.  Never <code>null</code>.
+     */
+    public String get(String key, String defaultValue) {
+        String value = get(key);
+        return value == null ? defaultValue : value;
+    }
+
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
@@ -94,4 +111,38 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
 			out.writeString(entry.getValue());
 		}
 	}
+
+    /**
+     * Converts property to Integer if found.
+     * @param key
+     * @return Integer if property is found and a valid Integer value, otherwise null.
+     */
+    public Integer getIntegerValue(String key) {
+        String val = get(key);
+        if (val != null) {
+            try {
+                return Integer.parseInt(val);
+            } catch (NumberFormatException nfe) {
+                log.error("Error in " + key + " with value: " + val, nfe);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Converts property to Double if found.
+     * @param key
+     * @return Double if property is found and a valid Double value, otherwise null.
+     */
+    public Double getDoubleValue(String key) {
+        String val = get(key);
+        if (val != null) {
+            try {
+                return Double.parseDouble(val);
+            } catch (NumberFormatException nfe) {
+                log.error("Error in " + key + " with value: " + val, nfe);
+            }
+        }
+        return null;
+    }
 }
