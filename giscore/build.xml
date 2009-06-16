@@ -120,7 +120,7 @@
 	<target name="jar" depends="compile">
 		<ivy:cachepath pathid="kf.path" organisation="org.knopflerfish" module="knopflerfish-ant" revision="2.1.0-mitre-8" conf="default" inline="true"/>
 
-		<ivy:buildnumber organisation="org.mitre.itf" module="giscore" />
+		<ivy:buildnumber revision="0.4" organisation="org.mitre.itf" module="giscore" />
 
 		<taskdef resource="org/knopflerfish/ant/antlib.xml" classpathref="kf.path"/>
 		<!-- This isn't perfect because the com.esri.arcgis classes haven't
