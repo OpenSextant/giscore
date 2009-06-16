@@ -55,7 +55,8 @@ public class CsvOutputStream extends StreamVisitorBase implements
     private Character valueDelimiter = ',';
     private String lineDelimiter = "\n";
     private Character quote = '"';
-
+    private Boolean skipHeader = false;
+    
     /**
      * The writer used to output the data, never <code>null</code> after
      * construction
@@ -100,6 +101,9 @@ public class CsvOutputStream extends StreamVisitorBase implements
             }
             if (arguments.length > 2 && arguments[2] != null) {
                 quote = (Character) arguments[2];
+            }
+            if (arguments.length > 3 && arguments[3] != null) {
+            	skipHeader = (Boolean) arguments[3];
             }
         }
     }
@@ -292,6 +296,8 @@ public class CsvOutputStream extends StreamVisitorBase implements
             throw new RuntimeException("Can't set the schema after a schema has already been set");
         }
         schema = s;
+        if (skipHeader) return;
+        
         boolean first = true;
         try {
             for (String field : schema.getKeys()) {

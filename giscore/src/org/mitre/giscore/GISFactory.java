@@ -88,7 +88,8 @@ public class GISFactory {
 					&& arguments.length > 0 ? arguments[0] : null);
 			return new GdbInputStream(type, stream, accepter);
 		} else if (DocumentType.CSV.equals(type)) {
-			checkArguments(new Class[] { Schema.class, String.class, Character.class, Character.class },
+			checkArguments(new Class[] { Schema.class, String.class, 
+					Character.class, Character.class },
 					arguments,
 					new boolean[] { false, false, false, false });
 			return new CsvInputStream(stream, arguments);
@@ -219,9 +220,10 @@ public class GISFactory {
 					return new GdbOutputStream(type, outputStream,
 							(File) arguments[0], strategy);
 				case CSV:
-					checkArguments(new Class[] { String.class, Character.class, Character.class },
+					checkArguments(new Class[] { String.class, Character.class, 
+							Character.class, Boolean.class },
 							arguments,
-							new boolean[] { false, false, false });
+							new boolean[] { false, false, false, false });
 					return new CsvOutputStream(outputStream, arguments);
 				default:
 					throw new UnsupportedOperationException(
