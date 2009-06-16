@@ -24,6 +24,7 @@ public class TestTaggedMap {
         assertEquals("extra", tm.getTag());
         assertNotNull(tm.get("str"));
         assertNull(tm.get("missing"));
+        assertEquals("defaultValue", tm.get("missing", "defaultValue"));
         assertEquals(Integer.valueOf(123), tm.getIntegerValue("int"));
         assertEquals(2.2, tm.getDoubleValue("double"), 1e-5);
         assertEquals(-3.14, tm.getDoubleValue("neg"), 1e-5);
