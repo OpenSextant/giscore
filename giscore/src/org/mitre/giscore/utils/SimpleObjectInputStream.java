@@ -175,7 +175,11 @@ public class SimpleObjectInputStream {
 		int strlen = stream.readInt();
 		if (strlen > 0) {
 			byte strbytes[] = new byte[strlen];
-			stream.read(strbytes);
+            int rc = stream.read(strbytes);
+			if (rc != strlen) {
+                System.err.format("wrong length: expected: %d bytes but was: %d%n", strlen, rc);
+                if (rc == -1) return null;
+            }
 			return new String(strbytes, "UTF8");
 		} else {
 			return null;
