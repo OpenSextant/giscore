@@ -6,8 +6,9 @@
 
 	This is a valid KML document wrt to the KML XSD but some
 	of the coordinate values are questionable wrt KML Reference.
-	This displays all Placemarks in Google Earth which uses default
-	values for all questionable locations with lax parsing.
+
+	This KML displays all Placemarks in Google Earth with default
+	values for all questionable locations under its lax parsing.
 
 	* whitespace before/after lat,lon,elev values (google earth ignores extra whitespace)
 	* missing latitude value (google earth fills in missing values with 0's)
@@ -18,6 +19,9 @@
           Google Earth treats these features as a point w/o an icon.
 	* LinearRing or Polygon with only 2 or 3 points.
           Google Earth treats these features as a LineString.
+	* LinearRing where first and last points are not the same
+          which becomes an open line segment vs a closed ring.
+	  KML Reference: LinearRing coordinate: "The last coordinate must be the same as the first coordinate."
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
     <Document>
@@ -279,6 +283,27 @@
 	</coordinates>
     </LinearRing>
   </Placemark>
+
+  <Placemark>
+	<name>ring4</name>
+        <description>"open" LinearRing with different first and last points</description>
+	<!-- this is rendered as an open line in google earth -->
+	<Style>
+		<LineStyle>
+			<color>ff000000</color>
+			<width>4</width>
+		</LineStyle>
+	</Style>
+            <LinearRing>
+                <coordinates>
+            -77.05788457660967,38.87253259892824,100 
+            -77.05465973756702,38.87291016281703,100 
+            -77.05315536854791,38.87053267794386,100 
+            -77.05552622493516,38.868757801256,100 
+            -77.05844056290393,38.86996206506943,100 
+                </coordinates>
+            </LinearRing>
+    </Placemark>
 
     <Placemark>
       <name>polygon1</name>
