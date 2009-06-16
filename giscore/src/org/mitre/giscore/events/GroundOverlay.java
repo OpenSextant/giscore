@@ -161,6 +161,7 @@ public class GroundOverlay extends Overlay {
 	}
 
 	/**
+     * Get distance above the earth's surface, in meters.
 	 * @return the altitude
 	 */
 	public Double getAltitude() {
@@ -168,6 +169,7 @@ public class GroundOverlay extends Overlay {
 	}
 
 	/**
+     * Set altitude (in meters, and is interpreted according to the altitude mode)
 	 * @param altitude
 	 *            the altitude to set
 	 */
@@ -185,6 +187,7 @@ public class GroundOverlay extends Overlay {
 	}
 
 	/**
+     * Set altitudeMode 
 	 * @param altitudeMode
 	 *            the altitudeMode to set ([clampToGround], relativeToGround, absolute) 
 	 */
@@ -193,8 +196,11 @@ public class GroundOverlay extends Overlay {
 	}
 
     /**
+     * Set altitudeMode
 	 * @param altitudeMode
 	 *            the altitudeMode to set ([clampToGround], relativeToGround, absolute)
+     *              If altitudeMode value is invalid, null or empty string then null
+     *              is assigned and default value is assumed.
 	 */    
     public void setAltitudeMode(String altitudeMode) {
         this.altitudeMode = AltitudeModeEnumType.getNormalizedMode(altitudeMode);

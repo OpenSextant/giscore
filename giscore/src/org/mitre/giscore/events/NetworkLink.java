@@ -74,6 +74,10 @@ public class NetworkLink extends Feature {
 	}
 
 	/**
+     * Get Link property TaggedMap. TaggedMap includes the child elements
+     * associated with the networkLink Link or Url tag which may contain
+     * any of the following attributes: refreshMode, refreshInterval,
+     *  viewRefreshMode, viewRefreshTime, viewBoundScale, viewFormat, httpQuery.
 	 * @return the link
 	 */
 	public TaggedMap getLink() {
