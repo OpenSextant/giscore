@@ -426,14 +426,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     // elements associated with Kml22 LinkType in sequence order for Icon, Link, and Url elements
     private static final String[] LINK_TYPE_TAGS = {
-            "href",
-            "refreshMode",
-            "refreshInterval",
-            "viewRefreshMode",
-            "viewRefreshTime",
-            "viewBoundScale",
-            "viewFormat",
-            "httpQuery"
+            HREF,
+            REFRESH_MODE,
+            REFRESH_INTERVAL,
+            VIEW_REFRESH_MODE,
+            VIEW_REFRESH_TIME,
+            VIEW_BOUND_SCALE,
+            VIEW_FORMAT,
+            HTTP_QUERY
     };
 
     private void handleLinkElement(String elementName, TaggedMap map) throws XMLStreamException {
@@ -716,7 +716,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     /**
      * Handle Geometry attributes common to Point, Line, LinearRing, and Polygon namely
-     * extrude, tessellate, and altitudeMode.  Note tessellate is not applicable to Point
+     * extrude, tessellate, and altitudeMode.  Note tessellate tag is not applicable to Point
      * geometry.
      *
      * @param geom
