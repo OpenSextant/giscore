@@ -13,6 +13,8 @@ public interface IRss {
     static final Namespace GEORSS_NS = Namespace.getNamespace("georss", "http://www.georss.org/georss");
     static final Namespace GML_NS = Namespace.getNamespace("gml", "http://www.opengis.net/gml");
 
+    // RSS Elements
+    // see http://cyber.law.harvard.edu/rss/rss.html
     static final String AUTHOR = "author";
     static final String CATEGORY = "category";
     static final String CHANNEL = "channel";

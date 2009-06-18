@@ -65,7 +65,7 @@ public abstract class GeometryBase extends Geometry {
      * @throws ClassNotFoundException
      * @throws InstantiationException
      * @throws IllegalAccessException
-     * @exception IllegalArgumentException if enumerated value is invalid
+     * @exception IllegalArgumentException if enumerated AltitudeMode value is invalid
      */
     @SuppressWarnings("unchecked")
 	@Override
