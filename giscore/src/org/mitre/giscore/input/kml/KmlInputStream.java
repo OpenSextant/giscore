@@ -98,6 +98,10 @@ import org.slf4j.LoggerFactory;
  * transmitted as tuples of two or three elements. The formatting of these is
  * consistent and is handled by {@link #parseCoordinates(String)}.
  * <p>
+ * Feature properties (i.e., name, description, LookAt, styleUrl, TimeStamp,
+ * and TimeSpan elements) in addition to the geometry are parsed and set
+ * on the Feature object.
+ * <p>
  * Notes/Limitations:
  * <p> 
  * Note only a single Data/SchemaData/Schema ExtendedData mapping is assumed
@@ -106,7 +110,7 @@ import org.slf4j.LoggerFactory;
  * with the last Schema referenced.
  * <p> 
  * Unsupported tags include the following:
- *  atom:author, atom:link, address, xal:AddressDetails, Camera, LookAt,
+ *  atom:author, atom:link, address, xal:AddressDetails, Camera,
  *  Metadata, open, phoneNumber, Region, Snippet, snippet, visibility.
  * <p>
  * While these tags don't break anything if present they are ignored.
@@ -115,9 +119,9 @@ import org.slf4j.LoggerFactory;
  * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
  * ImagePyramid, Point, shape, etc).
  * <p>
- * Limited support for Model geometry.
+ * Limited support for Model geometry type.
  * <p> 
- * Limited support for NetworkLinkControl which creates a wrapper for the link
+ * Limited support for NetworkLinkControl which creates an object wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
  *
  * @author DRAND
@@ -375,7 +379,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
             } else if (localname.equals(STYLE_MAP)) {
                 handleStyleMap(feature, ee);
                 return true;
-            } else if (localname.equals(LOOK_AT) || localname.equals(CAMERA)) {
+            } else if (localname.equals(LOOK_AT)) {
+				handleLookAt(feature);
+                return true;
+			} else if (localname.equals(CAMERA)) {
                 handleAbstractView(feature, ee);
                 return true;
 			} else if (localname.equals(EXTENDED_DATA)) {
@@ -416,7 +423,44 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
         return false;
 	}
 
-    private String getElementText(String localname) throws XMLStreamException {
+	private void handleLookAt(Common feature) throws XMLStreamException {
+		LookAt lookAt = new LookAt();
+		boolean hasData = false;
+		while (true) {
+			XMLEvent e = stream.nextEvent();
+			if (e.getEventType() == XMLEvent.START_ELEMENT) {
+				StartElement se = e.asStartElement();
+				String name = se.getName().getLocalPart();
+				if (ALTITUDE_MODE.equals(name)) {
+					lookAt.altitudeMode = AltitudeModeEnumType.getNormalizedMode(getNonEmptyElementText());
+					if (lookAt.altitudeMode != null) hasData = true;
+				} else {
+					// attempt to set longitude, latitude, altitude, heading, titlt, range on LookAt
+					String value = getNonEmptyElementText();
+					if (value != null)
+						try {
+							Double val = Double.valueOf(value);
+							java.lang.reflect.Field f = LookAt.class.getField(name);
+							f.set(lookAt, val);
+							hasData = true;
+						} catch (NoSuchFieldException e1) {
+							log.warn("Field [" + name + "] not found in LookAt type");
+						} catch (NumberFormatException nfe) {
+							log.warn("Expecting numeric value for LookAt element " + name + "=" + value);
+						} catch (IllegalAccessException e1) {
+							log.warn("Failed to set value for " + name + ": " + value, e1);
+						}
+				}
+			}
+			else if (foundEndTag(e, LOOK_AT)) {
+				break;
+			}
+		}
+		if (hasData)
+			feature.setLookAt(lookAt);
+	}
+
+	private String getElementText(String localname) throws XMLStreamException {
         /*
          * some elements such as description may have HTML elements as child elements rather than
          * within required CDATA block.
