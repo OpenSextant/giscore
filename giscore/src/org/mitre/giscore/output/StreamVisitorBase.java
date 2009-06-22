@@ -218,8 +218,14 @@ public class StreamVisitorBase implements IStreamVisitor {
         // Ignored by default
     }
 
+	/**
+     * Handle the output of a Circle
+     *
+     * @param circle the circle
+     */
     public void visit(Circle circle) {
-        // Ignored by default
+        // treat as Point by default
+        visit((Point)circle);
     }
 
 }

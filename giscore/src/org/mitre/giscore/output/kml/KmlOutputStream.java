@@ -615,19 +615,19 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
     }
 
-    /**
+    /*
      * Handle the output of a circle
      *
      * @param circle the circle, never <code>null</code>
      */
+	/*
     @Override
     public void visit(Circle circle) {
-        // todo output as linearRing...
-        // todo: for now just visit the circle point
-        visit(new Point(circle.getCenter()));
+        // todo: use circle hints to output as linearRing, Polygon, etc.
     }
+    */
 
-        /**
+	/**
      * Output a multigeometry, represented by a geometry bag
      *
      * @param bag the geometry bag, never <code>null</code>
