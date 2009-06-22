@@ -69,7 +69,10 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
  * accept method.
  * <p/>
  * Notes/Limitations:<br/>
- *  -Output does NOT support tessellate attributes for all geometries (only Line)
+ *  -Output does NOT support tessellate attributes for all geometries (only Line)<br/>
+ *  -A few tags are not yet supported on features so are omitted from output:
+ *   atom:author, atom:link, address, xal:AddressDetails, Camera,
+ *   Metadata, open, phoneNumber, Region, Snippet, snippet, visibility.
  *
  * @author DRAND
  * @author J.Mathews
