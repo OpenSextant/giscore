@@ -510,12 +510,13 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
      */
     private void visit(Geometry g) {
         if (g == null) return;
-        if (g instanceof Line)
-            visit((Line)g);
-        else if (g instanceof Circle)
+        if (g instanceof Circle) {
+			// note test for Circle must preceed Point since Circle subclasses Point
             visit((Circle)g);
-        else if (g instanceof Point)
+		} else if (g instanceof Point)
             visit((Point)g);
+		else if (g instanceof Line)
+            visit((Line)g);
         else if (g instanceof LinearRing)
             visit((LinearRing)g);
         else if (g instanceof Polygon)
@@ -533,8 +534,12 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             visit((MultiLinearRings)g);
         else if (g instanceof MultiPolygons)
             visit((MultiPolygons)g);
-        else
-            visit(new Comment("Ignore geometry:\n" + g)); // placeholder
+        else {
+			// all geometries should be handled above. Possibly a new Geometry was created after this OutputStream
+			// was created.
+			log.info("unhandled geometry: " + g);
+            // visit(new Comment("Ignore geometry:\n" + g)); // placeholder
+		}
     }
 
     private void addGeometry(List<Geometry> geoms, Geometry geom) {
