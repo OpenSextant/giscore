@@ -40,8 +40,8 @@ public abstract class Common extends Row {
 	protected Date startTime;
 	protected Date endTime;
 	protected String styleUrl;
-    private LookAt lookAt;
-    
+	private TaggedMap viewGroup;
+
 	/**
 	 * @return the name
 	 */
@@ -117,13 +117,13 @@ public abstract class Common extends Row {
 		this.endTime = endTime;
 	}
 
-    public LookAt getLookAt() {
-        return lookAt;
-    }
+	public TaggedMap getViewGroup() {
+		return viewGroup;
+	}
 
-    public void setLookAt(LookAt lookAt) {
-        this.lookAt = lookAt;
-    }
+	public void setViewGroup(TaggedMap viewGroup) {
+		this.viewGroup = viewGroup;
+	}
 
 	/**
 	 * Read object from the data stream.
@@ -151,6 +151,7 @@ public abstract class Common extends Row {
 		} else {
 			endTime = null;
 		}
+		viewGroup = (TaggedMap) in.readObject();
 	}
 
 	/**
@@ -172,6 +173,7 @@ public abstract class Common extends Row {
 			out.writeLong(endTime.getTime());
 		else 
 			out.writeLong(-1);
+		out.writeObject(viewGroup);
 	}
 
 	/*
@@ -229,4 +231,5 @@ public abstract class Common extends Row {
         }
         return b.toString();
 	}
+
 }

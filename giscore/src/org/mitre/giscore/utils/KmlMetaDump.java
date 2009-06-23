@@ -57,7 +57,7 @@ public class KmlMetaDump implements IKml {
 					if (name.endsWith(".kml") || name.endsWith(".kmz"))
 						checkSource(f);
 				}
-		} else {
+		} else {			
 			System.out.println(file.getAbsolutePath());
 			checkReader(new KmlReader(file), file, file.getName());
 		}
@@ -96,7 +96,12 @@ public class KmlMetaDump implements IKml {
 			tagSet.remove(DOCUMENT); tagSet.remove(FOLDER);
 		}
 		for (Map.Entry<String,Integer> entry: tagSet.entrySet()) {
-			System.out.format("\t%-20s %d%n", entry.getKey(), entry.getValue());
+				String key = entry.getKey();
+				// message/warnings start with : prefix, otherwise show key + count
+				if (key.startsWith(":"))
+					System.out.println("\t" + key.substring(1));
+				else
+					System.out.format("\t%-20s %d%n", key, entry.getValue());
 		}
 		System.out.flush();
 	}
@@ -179,8 +184,8 @@ public class KmlMetaDump implements IKml {
 	private void checkObject(IGISObject gisObj) {
 		features++;
 		if (gisObj instanceof NetworkLink) {
+			checkNetworkLink((NetworkLink)gisObj);
 			addTag(NETWORK_LINK);
-			checkFeature((Feature) gisObj);
 		} else if (gisObj instanceof Overlay) {
             addTag(gisObj.getClass());
 			checkFeature((Feature) gisObj);
@@ -209,6 +214,20 @@ public class KmlMetaDump implements IKml {
 		}
 	}
 
+	private void checkNetworkLink(NetworkLink networkLink) {
+		TaggedMap link = networkLink.getLink();
+		if (link != null) {
+            String href = link.get(HREF);
+			if (href == null)
+				addTag(":NetworkLink missing or empty HREF");
+			else
+				addTag(":url=" + href);
+		}
+		else
+			addTag(":NetworkLink missing Link");
+		checkFeature(networkLink);
+	}
+
 	private void checkFeature(Feature f) {
 		Date startTime = f.getStartTime();
 		Date endTime = f.getEndTime();
@@ -223,7 +242,7 @@ public class KmlMetaDump implements IKml {
 		}
         // otherwise don't have timestamp or timeSpans
 
-        if (f.getLookAt() != null)
+        if (f.getViewGroup() != null)
             addTag(LOOK_AT);
 	}
 
@@ -283,8 +302,14 @@ public class KmlMetaDump implements IKml {
 					app.checkSource(url);
 				} else {
 					File f = new File(arg);
-					if (f.exists())
+					if (f.exists()) {
+						try {
+							f = f.getCanonicalFile();
+						} catch (IOException e) {
+							// ignore
+						}
 						app.checkSource(f);
+					}
 					else
 						app.checkSource(new URL(arg));
 				}

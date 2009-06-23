@@ -98,9 +98,9 @@ import org.slf4j.LoggerFactory;
  * transmitted as tuples of two or three elements. The formatting of these is
  * consistent and is handled by {@link #parseCoordinates(String)}.
  * <p>
- * Feature properties (i.e., name, description, LookAt, styleUrl, TimeStamp,
- * and TimeSpan elements) in addition to the geometry are parsed and set
- * on the Feature object.
+ * Feature properties (i.e., name, description, Camera/LookAt, styleUrl,
+ * TimeStamp/TimeSpan elements) in addition to the geometry are parsed and
+ * set on the Feature object.
  * <p>
  * Notes/Limitations:
  * <p> 
@@ -110,8 +110,8 @@ import org.slf4j.LoggerFactory;
  * with the last Schema referenced.
  * <p> 
  * Unsupported tags include the following:
- *  atom:author, atom:link, address, xal:AddressDetails, Camera,
- *  Metadata, open, phoneNumber, Region, Snippet, snippet, visibility.
+ *  atom:author, atom:link, address, xal:AddressDetails, Metadata,
+ *  open, phoneNumber, Region, Snippet, snippet, visibility.
  * <p>
  * While these tags don't break anything if present they are ignored.
  * <p> 
@@ -295,7 +295,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * 
 	 * @param e
 	 * @return
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private IGISObject handleContainer(XMLEvent e) throws XMLStreamException {
 		StartElement se = e.asStartElement();
@@ -379,11 +379,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
             } else if (localname.equals(STYLE_MAP)) {
                 handleStyleMap(feature, ee);
                 return true;
-            } else if (localname.equals(LOOK_AT)) {
-				handleLookAt(feature);
-                return true;
-			} else if (localname.equals(CAMERA)) {
-                handleAbstractView(feature, ee);
+			} else if (localname.equals(LOOK_AT) || localname.equals(CAMERA)) {
+                handleAbstractView(feature, localname);
                 return true;
 			} else if (localname.equals(EXTENDED_DATA)) {
                 handleExtendedData(feature, ee);
@@ -423,43 +420,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
         return false;
 	}
 
-	private void handleLookAt(Common feature) throws XMLStreamException {
-		LookAt lookAt = new LookAt();
-		boolean hasData = false;
-		while (true) {
-			XMLEvent e = stream.nextEvent();
-			if (e.getEventType() == XMLEvent.START_ELEMENT) {
-				StartElement se = e.asStartElement();
-				String name = se.getName().getLocalPart();
-				if (ALTITUDE_MODE.equals(name)) {
-					lookAt.altitudeMode = AltitudeModeEnumType.getNormalizedMode(getNonEmptyElementText());
-					if (lookAt.altitudeMode != null) hasData = true;
-				} else {
-					// attempt to set longitude, latitude, altitude, heading, titlt, range on LookAt
-					String value = getNonEmptyElementText();
-					if (value != null)
-						try {
-							Double val = Double.valueOf(value);
-							java.lang.reflect.Field f = LookAt.class.getField(name);
-							f.set(lookAt, val);
-							hasData = true;
-						} catch (NoSuchFieldException e1) {
-							log.warn("Field [" + name + "] not found in LookAt type");
-						} catch (NumberFormatException nfe) {
-							log.warn("Expecting numeric value for LookAt element " + name + "=" + value);
-						} catch (IllegalAccessException e1) {
-							log.warn("Failed to set value for " + name + ": " + value, e1);
-						}
-				}
-			}
-			else if (foundEndTag(e, LOOK_AT)) {
-				break;
-			}
-		}
-		if (hasData)
-			feature.setLookAt(lookAt);
-	}
-
 	private String getElementText(String localname) throws XMLStreamException {
         /*
          * some elements such as description may have HTML elements as child elements rather than
@@ -477,7 +437,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
     /**
 	 * @param cs
 	 * @param ee
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleExtendedData(Common cs, XMLEvent ee)
 			throws XMLStreamException {
@@ -642,27 +602,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
-	 * @param ee
-	 * @throws XMLStreamException
+	 * @param feature
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleAbstractView(Common cs, XMLEvent ee)
+	private void handleAbstractView(Common feature, String localname)
 			throws XMLStreamException {
-		StartElement se = ee.asStartElement();
-		XMLEvent next;
-        String localname = se.getName().getLocalPart();
-
-        while (true) {
-			next = stream.nextEvent();
-			if (next == null)
-				return;
-			if (foundEndTag(next, localname))
-				return;
-		}
+		TaggedMap viewGroup = handleTaggedData(localname); // Camera or LookAt
+		feature.setViewGroup(viewGroup);
 	}
 
 	/**
 	 * @param ee
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleStyleMap(Common cs, XMLEvent ee)
 			throws XMLStreamException {
@@ -693,7 +644,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * @param sm
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleStyleMapPair(StyleMap sm) throws XMLStreamException {
 		String key = null, value = null;
@@ -720,7 +671,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	/**
 	 * @param cs
      * @param ee
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleTimePrimitive(Common cs, XMLEvent ee)
 			throws XMLStreamException {
@@ -1606,12 +1557,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	/**
 	 * Handle a set of elements with character values. The block has been found
 	 * that starts with a &lt;localname&gt; tag, and it will end with a matching
-	 * tag. All other elements found will be added to a greated map object.
+	 * tag. All other elements found will be added to a created map object.
 	 * 
 	 * @param localname
 	 *            the localname, assumed not <code>null</code>.
 	 * @return the map, null if no non-empty values are found
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private TaggedMap handleTaggedData(String localname)
 			throws XMLStreamException {
@@ -1638,7 +1589,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * 
 	 * @param overlay
 	 * @param sl
-     * @throws javax.xml.stream.XMLStreamException
+     * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void handleLatLonBox(GroundOverlay overlay, StartElement sl)
 			throws XMLStreamException {
@@ -1898,7 +1849,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param localname
 	 *            the tag name of the containing element
 	 * @return the coordinate
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private Point parseCoordinate(String localname) throws XMLStreamException {
 		Point rval = null;

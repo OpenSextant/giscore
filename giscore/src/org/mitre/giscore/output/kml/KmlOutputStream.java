@@ -50,6 +50,8 @@ import org.mitre.giscore.output.XmlOutputStreamBase;
 import org.mitre.giscore.utils.SafeDateFormat;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The KML output stream creates a result KML file using the given output
@@ -71,13 +73,15 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
  * Notes/Limitations:<br/>
  *  -Output does NOT support tessellate attributes for all geometries (only Line)<br/>
  *  -A few tags are not yet supported on features so are omitted from output:
- *   atom:author, atom:link, address, xal:AddressDetails, Camera,
+ *   atom:author, atom:link, address, xal:AddressDetails,
  *   Metadata, open, phoneNumber, Region, Snippet, snippet, visibility.
  *
  * @author DRAND
  * @author J.Mathews
  */
 public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
+
+	private static final Logger log = LoggerFactory.getLogger(KmlOutputStream.class);
 
     private final List<IGISObject> waitingElements = new ArrayList<IGISObject>();
 
@@ -188,26 +192,33 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
-    private void handleLookAt(Common feature) {
-        LookAt lookAt = feature.getLookAt();
-        if (lookAt != null) {
-            try {
-                writer.writeStartElement(LOOK_AT);
-                handleNonNullSimpleElement(LONGITUDE, lookAt.longitude);
-                handleNonNullSimpleElement(LATITUDE, lookAt.latitude);
-                handleNonNullSimpleElement(ALTITUDE, lookAt.altitude);
-                handleNonNullSimpleElement(HEADING, lookAt.heading);
-                handleNonNullSimpleElement(TILT, lookAt.tilt);
-                handleNonNullSimpleElement(RANGE, lookAt.range);
-                handleNonNullSimpleElement(ALTITUDE_MODE, lookAt.altitudeMode);
-                writer.writeEndElement();
-            } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
-            }
+    private void handleAbstractView(Common feature) {
+        TaggedMap viewGroup = feature.getViewGroup();
+        if (viewGroup != null && !viewGroup.isEmpty()) {
+			String tag = viewGroup.getTag();
+			if (!CAMERA.equals(tag) && !LOOK_AT.equals(tag)) {
+				log.error("Invalid AbstractView type: " + viewGroup);
+				return;
+			}
+			try {
+				writer.writeStartElement(tag); // LookAt or Camera
+				handleTaggedElement(LONGITUDE, viewGroup);
+				handleTaggedElement(LATITUDE, viewGroup);
+				handleTaggedElement(ALTITUDE, viewGroup);
+				handleTaggedElement(HEADING, viewGroup);
+				handleTaggedElement(TILT, viewGroup);
+				handleTaggedElement(RANGE, viewGroup);
+				// if altitudeMode is invalid then it will be omitted
+				handleNonNullSimpleElement(ALTITUDE_MODE,
+						AltitudeModeEnumType.getNormalizedMode(viewGroup.get(ALTITUDE_MODE)));
+				writer.writeEndElement();
+			} catch (XMLStreamException e) {
+				throw new RuntimeException(e);
+			}
         }
     }
 
-    // Thread-safe date formatter helper method
+	// Thread-safe date formatter helper method
     private SafeDateFormat getDateFormatter() {
         if (dateFormatter == null) {
             SafeDateFormat thisDateFormatter = new SafeDateFormat(ISO_DATE_FMT);
@@ -227,7 +238,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         try {
             handleNonNullSimpleElement(NAME, feature.getName());
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
-            handleLookAt(feature);
+            handleAbstractView(feature); // LookAt or Camera AbstractViewGroup
             Date startTime = feature.getStartTime();
             Date endTime = feature.getEndTime();
             if (startTime != null) {
@@ -374,8 +385,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Handle elements specific to a network link feature.
      *
      * @param link NetworkLink to be handled
-     * @throws javax.xml.stream.XMLStreamException
-     *          if error occurs
+	 * @throws XMLStreamException if there is an error with the underlying XML.
      */
     private void handleNetworkLink(NetworkLink link) throws XMLStreamException {
         handleLinkElement(LINK, link.getLink());
@@ -724,7 +734,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      *
      * @param geom
      * @param tessellate
-     * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
      */
     private void handleGeometryAttributes(GeometryBase geom, Boolean tessellate) throws XMLStreamException {
         /*
@@ -906,6 +916,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             if (content.length() != 0) handleSimpleElement(tag, content);
         }
     }
+
+	private void handleTaggedElement(String tag, TaggedMap map) throws XMLStreamException {
+		handleNonNullSimpleElement(tag, map.get(tag));
+	}
 
     /*
      private void writeNonEmptyAttribute(String localName, String value) throws XMLStreamException {
