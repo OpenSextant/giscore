@@ -1121,7 +1121,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} else if (SCHEMA.equals(localname)) {
 				return handleSchema(se, localname);
 			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
-				return handleNetworkLinkControl(stream, localname);
+				return handleNetworkLinkControl(stream);
 			} else if (STYLE.equals(localname)) {
                 log.debug("Out of order Style");
                 StringBuilder sb = new StringBuilder();
@@ -1173,7 +1173,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		}
 	}
 
-	private IGISObject handleNetworkLinkControl(XMLEventReader stream, String localname) throws XMLStreamException {
+	private IGISObject handleNetworkLinkControl(XMLEventReader stream) throws XMLStreamException {
 		NetworkLinkControl c = new NetworkLinkControl();
 		boolean updateFound = false;
 		String updateType = null;
@@ -1183,17 +1183,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				break;
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
+				String tag = se.getName().getLocalPart();
 				if (updateFound) {
-					if (foundStartTag(se, "targetHref")) {
+					if (tag.equals("targetHref")) {
 						String val = getNonEmptyElementText();
 						if (val != null) c.setTargetHref(val);
 						// TODO: NetworkLinkControl can have 1 or more Update controls
 						// ... TODO: handle Update details
-					} else if (foundStartTag(se, "Create")) {
+					} else if (tag.equals("Create")) {
 						updateType = "Create";
-					} else if (foundStartTag(se, "Delete")) {
+					} else if (tag.equals("Delete")) {
 						updateType = "Delete";
-					} else if (foundStartTag(se, "Change")) {
+					} else if (tag.equals("Change")) {
 						updateType = "Change";
 					}
 					if (updateType != null) {
@@ -1203,28 +1204,28 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						break;
 					}
 				} else {
-					if (foundStartTag(se, "minRefreshPeriod")) {
+					if (tag.equals("minRefreshPeriod")) {
 						Double val = getDoubleElementValue("minRefreshPeriod");
 						if (val != null) c.setMinRefreshPeriod(val);
-					} else if (foundStartTag(se, "maxSessionLength")) {
+					} else if (tag.equals("maxSessionLength")) {
 						Double val = getDoubleElementValue("maxSessionLength");
 						if (val != null) c.setMaxSessionLength(val);
-					} else if (foundStartTag(se, "cookie")) {
+					} else if (tag.equals("cookie")) {
 						String val = getNonEmptyElementText();
 						if (val != null) c.setCookie(val);
-					} else if (foundStartTag(se, "message")) {
+					} else if (tag.equals("message")) {
 						String val = getNonEmptyElementText();
 						if (val != null) c.setMessage(val);
-					} else if (foundStartTag(se, "linkName")) {
+					} else if (tag.equals("linkName")) {
 						String val = getNonEmptyElementText();
 						if (val != null) c.setLinkName(val);
-					} else if (foundStartTag(se, "linkDescription")) {
+					} else if (tag.equals("linkDescription")) {
 						String val = getNonEmptyElementText();
 						if (val != null) c.setLinkDescription(val);
-					} else if (foundStartTag(se, "linkSnippet")) {
+					} else if (tag.equals("linkSnippet")) {
 						String val = getNonEmptyElementText();
 						if (val != null) c.setLinkSnippet(val);
-					} else if (foundStartTag(se, "expires")) {
+					} else if (tag.equals("expires")) {
 						String expires = getNonEmptyElementText();
 						if (expires != null)
 							try {
@@ -1232,7 +1233,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 							} catch (ParseException e) {
 								log.warn("Ignoring bad expires value: " + expires + ": " + e);
 							}
-					} else if (foundStartTag(se, "Update")) {
+					} else if (tag.equals(LOOK_AT) || tag.equals(CAMERA)) {
+						TaggedMap viewGroup = handleTaggedData(tag);
+						c.setViewGroup(viewGroup);
+					} else if (tag.equals("Update")) {
 						updateFound = true; // start phase 2 and parse inside Update element
 					}
 				}

@@ -30,6 +30,7 @@ public class NetworkLinkControl implements IGISObject {
 	private Date expires;
 	private String targetHref; // from Update element
 	private String updateType;
+	private TaggedMap viewGroup; // Camera or LookAt
 
 	// TODO: add Update details: need list of Update objects. replace single updateType value with list. 
 
@@ -136,6 +137,14 @@ public class NetworkLinkControl implements IGISObject {
 
 	public void setUpdateType(String updateType) {
 		this.updateType = updateType;
+	}
+
+	public TaggedMap getViewGroup() {
+		return viewGroup;
+	}
+
+	public void setViewGroup(TaggedMap viewGroup) {
+		this.viewGroup = viewGroup;
 	}
 
 	public void accept(IStreamVisitor visitor) {

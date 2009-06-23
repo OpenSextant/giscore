@@ -192,8 +192,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
-    private void handleAbstractView(Common feature) {
-        TaggedMap viewGroup = feature.getViewGroup();
+    private void handleAbstractView(TaggedMap viewGroup) {
         if (viewGroup != null && !viewGroup.isEmpty()) {
 			String tag = viewGroup.getTag();
 			if (!CAMERA.equals(tag) && !LOOK_AT.equals(tag)) {
@@ -238,7 +237,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         try {
             handleNonNullSimpleElement(NAME, feature.getName());
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
-            handleAbstractView(feature); // LookAt or Camera AbstractViewGroup
+            handleAbstractView(feature.getViewGroup()); // LookAt or Camera AbstractViewGroup
             Date startTime = feature.getStartTime();
             Date endTime = feature.getEndTime();
             if (startTime != null) {
@@ -904,6 +903,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				writer.writeEmptyElement(type);//TODO: handle multiple update objects
 				writer.writeEndElement(); // end Update
             }
+			handleAbstractView(networkLinkControl.getViewGroup()); // LookAt or Camera AbstractViewGroup
             writer.writeEndElement();
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
