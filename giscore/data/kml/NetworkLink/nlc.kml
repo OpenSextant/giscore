@@ -17,6 +17,15 @@
                 </Point>
             </Change>
         </Update>
+        <LookAt>
+            <longitude>-122.4739635197011</longitude>
+            <latitude>37.81646244594624</latitude>
+            <altitude>0</altitude>
+            <heading>-1.414837961933334</heading>
+            <tilt>44.99093089823268</tilt>
+            <range>6519.036728889118</range>
+            <altitudeMode>relativeToGround</altitudeMode>
+        </LookAt>
     </NetworkLinkControl>
 </kml>
 
