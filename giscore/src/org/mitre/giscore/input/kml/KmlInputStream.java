@@ -714,7 +714,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * Parse kml:dateTimeType XML date/time field and convert to Date object.
 	 *
 	 * @param datestr  Lexical representation for one of XML Schema date/time datatypes.
-	 * @return <code>Date</code> created from the <code>lexicalRepresentation</code>.
+	 * @return <code>Date</code> created from the <code>lexicalRepresentation</code>, never null.
 	 * @throws ParseException If the <code>lexicalRepresentation</code> is not a valid <code>Date</code>.
 	 */
 	public static Date parseDate(String datestr) throws ParseException {
@@ -1175,8 +1175,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	private IGISObject handleNetworkLinkControl(XMLEventReader stream) throws XMLStreamException {
 		NetworkLinkControl c = new NetworkLinkControl();
-		boolean updateFound = false;
-		String updateType = null;
+		// if true indicates we're parsing the Update element
+		boolean updateFlag = false;
+		//String updateType = null;
 		while (true) {
 			XMLEvent next = stream.nextEvent();
 			if (next == null)
@@ -1184,24 +1185,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				String tag = se.getName().getLocalPart();
-				if (updateFound) {
+				if (updateFlag) {
 					if (tag.equals("targetHref")) {
 						String val = getNonEmptyElementText();
 						if (val != null) c.setTargetHref(val);
 						// TODO: NetworkLinkControl can have 1 or more Update controls
 						// ... TODO: handle Update details
 					} else if (tag.equals("Create")) {
-						updateType = "Create";
+						c.setUpdateType("Create");
 					} else if (tag.equals("Delete")) {
-						updateType = "Delete";
+						c.setUpdateType("Delete");
 					} else if (tag.equals("Change")) {
-						updateType = "Change";
-					}
-					if (updateType != null) {
-						// log.info("XXX: updatetupe=" + updateType);
-						c.setUpdateType(updateType);
-						skipNextElement(stream, NETWORK_LINK_CONTROL);
-						break;
+						c.setUpdateType("Change");
 					}
 				} else {
 					if (tag.equals("minRefreshPeriod")) {
@@ -1237,11 +1232,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						TaggedMap viewGroup = handleTaggedData(tag);
 						c.setViewGroup(viewGroup);
 					} else if (tag.equals("Update")) {
-						updateFound = true; // start phase 2 and parse inside Update element
+						updateFlag = true; // set flag to parse inside Update element
 					}
 				}
-			} else if (foundEndTag(next, NETWORK_LINK_CONTROL)) {
-				break;
+			} else {
+				if (foundEndTag(next, "Update"))
+					updateFlag = false;
+				else if (foundEndTag(next, NETWORK_LINK_CONTROL)) {
+					break;
+				}
 			}
 		}
 		return c;
