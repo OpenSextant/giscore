@@ -1,6 +1,9 @@
 <ivysettings>
+	<!-- Create a ivy.properties file in your home dir and put a line in with your mapsrv user and passwd -->
+	<properties file="${user.home}/ivy.properties" />
 	<property name="repository.dir" value="${user.home}/.ivy2"/>
 	<settings defaultResolver="chained" />
+	<credentials host="mapsrv" username="${mapsrv-user}" passwd="${mapsrv-passwd}" />
 	<namespaces>
     	<namespace name="m2">
 			<rule> 
@@ -34,10 +37,12 @@
 					pattern="${repository.dir}/[organisation](-[module])/[artifact]-[revision](-[type]).[ext]" />
 			</filesystem>
 			<ibiblio name="mapsrv" namespace="m2" checkconsistency="false"
-				root="http://mapsrv.mitre.org/maven-proxy" m2compatible="true" />				
+				root="http://mapsrv:8180/artifactory/repo/" m2compatible="true" />			
 		</chain>
-		<ssh name="ssh" host="mapsrv" >
+		<!--  <ssh name="ssh" host="mapsrv" >
 			<artifact pattern="/data/m2/repo-local/org/mitre/itf/[module]/[revision]/[artifact]-[revision].[ext]" />
-		</ssh>		
+		</ssh>  -->		
+		<ibiblio name="mapsrv-deploy" namespace="m2" 
+			root="http://mapsrv:8180/artifactory/libs-releases-local" m2compatible="true" />
 	</resolvers>
 </ivysettings>

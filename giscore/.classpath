@@ -4,11 +4,6 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	    <classpathentry kind="lib" path="lib/arcobjects-9.3.jar"/>
-    <classpathentry kind="lib" path="lib/com.springsource.com.ctc.wstx-3.2.7.jar"/>
-    <classpathentry kind="lib" path="lib/com.springsource.com.sun.msv-0.0.0.20081113.jar"/>
-    <classpathentry kind="lib" path="lib/com.springsource.com.sun.msv.datatype-0.0.0.20060615.jar"/>
-    <classpathentry kind="lib" path="lib/com.springsource.org.iso_relax.verifier-0.0.0.20041111.jar"/>
-    <classpathentry kind="lib" path="lib/com.springsource.org.relaxng.datatype-1.0.0.jar"/>
     <classpathentry kind="lib" path="lib/commons-io-1.4.jar"/>
     <classpathentry kind="lib" path="lib/commons-lang-2.4.jar"/>
     <classpathentry kind="lib" path="lib/geodesy-1.9.4.jar"/>
