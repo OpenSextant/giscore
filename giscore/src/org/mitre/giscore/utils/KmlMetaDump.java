@@ -14,6 +14,7 @@ import java.util.*;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 
 /**
  * Simple KML Debugging Tool to import KML/KMZ documents by File or URL and dump statistics
@@ -41,10 +42,11 @@ public class KmlMetaDump implements IKml {
 	private boolean outPathCheck;
 	private int features;
     private boolean verbose;
+    private Class lastObjClass;
 
     public void checkSource(URL url) throws IOException {
 		System.out.println(url);
-		checkReader(new KmlReader(url), null, url.getFile());
+		processKmlSource(new KmlReader(url), null, url.getFile());
 	}
 
 	public void checkSource(File file) throws IOException {
@@ -59,7 +61,7 @@ public class KmlMetaDump implements IKml {
 				}
 		} else {			
 			System.out.println(file.getAbsolutePath());
-			checkReader(new KmlReader(file), file, file.getName());
+			processKmlSource(new KmlReader(file), file, file.getName());
 		}
 	}
 
@@ -106,13 +108,18 @@ public class KmlMetaDump implements IKml {
 		System.out.flush();
 	}
 
-	private void checkReader(KmlReader reader, File file, String name) {
+    /**
+     * Process KML Source reading each feature and dump out stats when done
+     * @param reader KmlReader
+     * @param file File if checking File source, other null if URL source
+     * @param name Name part of KML file or URL
+     */
+	private void processKmlSource(KmlReader reader, File file, String name) {
 		KmlWriter writer = getWriter(file, name);
 		features = 0;
 		try {
 			IGISObject gisObj;
 			while ((gisObj = reader.read()) != null) {
-                if (verbose) System.out.println(gisObj);
 				checkObject(gisObj);
 				if (writer != null) {
 					KmlWriter.normalizeUrls(gisObj);
@@ -131,7 +138,15 @@ public class KmlMetaDump implements IKml {
 			List<URI> networkLinks = reader.getNetworkLinks();
 			if (networkLinks.size() != 0)
 				reader.importFromNetworkLinks(new KmlReader.ImportEventHandler() {
+                    private URI last;
 					public boolean handleEvent(UrlRef ref, IGISObject gisObj) {
+                        URI uri = ref.getURI();
+                        if (verbose && !uri.equals(last)) {
+                            System.out.println("Check NetworkLink: " +
+                                    (ref.isKmz() ? ref.getKmzRelPath() : uri.toString()));
+                            System.out.println();
+                            last = uri;
+                        }
 						checkObject(gisObj);
 						return true;
 					}
@@ -182,6 +197,7 @@ public class KmlMetaDump implements IKml {
 	}
 
 	private void checkObject(IGISObject gisObj) {
+        if (verbose) System.out.println(gisObj);
 		features++;
 		if (gisObj instanceof NetworkLink) {
 			checkNetworkLink((NetworkLink)gisObj);
@@ -212,6 +228,7 @@ public class KmlMetaDump implements IKml {
 			else if (cl != ContainerEnd.class && cl != DocumentStart.class && cl != Comment.class)
                 addTag(cl); // e.g. Style, Schema, StyleMap, NetworkLinkControl
 		}
+        lastObjClass = gisObj.getClass();
 	}
 
 	private void checkNetworkLink(NetworkLink networkLink) {
@@ -220,8 +237,18 @@ public class KmlMetaDump implements IKml {
             String href = link.get(HREF);
 			if (href == null)
 				addTag(":NetworkLink missing or empty HREF");
-			else
-				addTag(":url=" + href);
+			else {
+                String url;
+                try {
+                    UrlRef urlRef = new UrlRef(new URI(href));
+                    url = urlRef.toString();
+                } catch (MalformedURLException e) {
+                    url = href;
+                } catch (URISyntaxException e) {
+                    url = href;
+                }
+                addTag(":url=" + url);
+            }
 		}
 		else
 			addTag(":NetworkLink missing Link");
@@ -244,20 +271,31 @@ public class KmlMetaDump implements IKml {
 
         if (f.getViewGroup() != null)
             addTag(LOOK_AT);
+
+        //if (lastObj instanceof StyleSelector) {
+        if (lastObjClass == Style.class || lastObjClass == StyleMap.class)
+            System.out.println(" Feature uses inline local " + getClassName(lastObjClass)); // Style or StyleMap
 	}
 
 	private void addTag(Class aClass) {
-		if (aClass != null) {
+        String tag = getClassName(aClass);
+        if (tag != null) addTag(tag);
+	}
+
+    private static String getClassName(Class aClass) {
+        if (aClass != null) {
 			String name = aClass.getName();
 			int ind = name.lastIndexOf('.');
 			if (ind > 0) {
 				name = name.substring(ind + 1);
-				addTag(name);
+                return name;
 			}
+            return name;
 		}
-	}
+        return null;
+    }
 
-	private static void dumpException(IOException e) {
+    private static void dumpException(IOException e) {
 		String msg = e.getMessage();
 		if (msg != null)
 			System.out.println("\t*** " + e.getClass().getName() + ": " + msg);
@@ -270,8 +308,8 @@ public class KmlMetaDump implements IKml {
 	public static void usage() {
 		System.out.println("Usage: java KmlMetaDump [options] <file, directory, or URL..>");
 		System.out.println("\nOptions:");
-		System.out.println("\t-o<path-to-output-directory>");
-		System.out.println("\t-f Follow networkLinks and loads networkLinks and add features to stats");
+		System.out.println("\t-o<path-to-output-directory> Writes KML to file in specified directory\n\t\tusing same base file as original file");
+		System.out.println("\t-f Follow networkLinks: recursively loads content from NetworkLinks\n\t\tand add features to resulting statistics");
         System.out.println("\t-v Set verbose which dumps out features");
 		System.exit(1);
 	}	
@@ -284,9 +322,9 @@ public class KmlMetaDump implements IKml {
 			if (arg.startsWith("-")) {
 				if (arg.startsWith("-o") && arg.length() > 2)
 					app.setOutPath(new File(arg.substring(2)));
-				else if (arg.equals("-f"))
+				else if (arg.startsWith("-f"))
 					app.setFollowLinks(true);
-                else if (arg.equals("-v"))
+                else if (arg.startsWith("-v"))
 					app.setVerbose(true);
 				else usage();
 			} else
