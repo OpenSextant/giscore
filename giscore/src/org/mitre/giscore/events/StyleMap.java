@@ -37,24 +37,9 @@ import org.mitre.giscore.IStreamVisitor;
  *
  * @author DRAND
  */
-public class StyleMap implements IGISObject {
+public class StyleMap extends StyleSelector {
 	
-	private String id;
 	private final Map<String, String> mappings = new HashMap<String, String>();
-	
-	/**
-	 * @return the id
-	 */
-	public String getId() {
-		return id;
-	}
-
-	/**
-	 * @param id the id to set
-	 */
-	public void setId(String id) {
-		this.id = id;
-	}
 
 	public void put(String key, String url) {
 		if (key == null || key.trim().length() == 0) {
@@ -79,28 +64,5 @@ public class StyleMap implements IGISObject {
     public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
     }
-	
-	/* (non-Javadoc)
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		return EqualsBuilder.reflectionEquals(this, obj);
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		return HashCodeBuilder.reflectionHashCode(this);
-	}
-
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
-	}
+		
 }

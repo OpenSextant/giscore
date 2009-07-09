@@ -47,15 +47,16 @@ import org.mitre.giscore.IStreamVisitor;
  * <p>
  * Notes/Limitations:
  * <p>
- * TODO: ListStyle not supported
+ *  TODO: ListStyle not supported
+ * <br>
+ *  Some less common tags (e.g. heading & hotSpot in IconStyle) are not preserved.
  * 
  * @author DRAND
  */
-public class Style implements IGISObject {
+public class Style extends StyleSelector {
+    
 	public enum ColorMode { NORMAL, RANDOM }
 	
-	private String id;
-
 	private boolean hasIconStyle = false;
 	private Color iconColor;
 	private double iconScale;
@@ -366,53 +367,8 @@ public class Style implements IGISObject {
 		return polyoutline;
 	}
 
-	/**
-	 * @return the id to use to distinguish this style from another
-	 */
-	public String getId() {
-		return id;
-	}
-
-	/**
-	 * @param id
-	 *            the id to set
-	 */
-	public void setId(String id) {
-		this.id = id;
-	}
-
 	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		return EqualsBuilder.reflectionEquals(this, obj);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#hashCode()
-	 */
-	@Override
-	public int hashCode() {
-		return HashCodeBuilder.reflectionHashCode(this);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#toString()
-	 */
-	@Override
-	public String toString() {
-		return ToStringBuilder.reflectionToString(this,
-				ToStringStyle.MULTI_LINE_STYLE);
-	}
 }
