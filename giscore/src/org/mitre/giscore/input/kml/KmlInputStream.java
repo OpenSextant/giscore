@@ -112,8 +112,11 @@ import org.slf4j.LoggerFactory;
  * Unsupported tags include the following:
  *  atom:author, atom:link, address, xal:AddressDetails, Metadata,
  *  open, phoneNumber, Region, Snippet, snippet, visibility.
- * <p>
+  * <p>
  * While these tags don't break anything if present they are ignored.
+ * <p> 
+ * StyleMaps with inline Styles or nested StyleMaps are not supported.
+ * StyleMaps must specify styleUrl.
  * <p> 
  * Limited support for PhotoOverlay which creates an basic overlay object
  * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
@@ -280,6 +283,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		}
 	}
 
+    /*
     private IGISObject handleComment(XMLEvent e) throws XMLStreamException {
         if (e instanceof javax.xml.stream.events.Comment) {
             String text = ((javax.xml.stream.events.Comment)e).getText();
@@ -288,6 +292,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
         }
         return null;
     }
+    */
 
     /**
 	 * Read elements until we find a feature or a schema element. Use the name
@@ -653,14 +658,17 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (ce.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = ce.asStartElement();
 				if (foundStartTag(se, KEY)) {
-					key = stream.getElementText();
+                    // key: type="kml:styleStateEnumType" default="normal"/>
+                    // styleStateEnumType: [normal] or highlight
+					key = getNonEmptyElementText();
 				} else if (foundStartTag(se, STYLE_URL)) {
-					value = stream.getElementText();
+                    value = getNonEmptyElementText(); // type=anyURI
 				}
 			}
 			XMLEvent ne = stream.peek();
 			if (foundEndTag(ne, STYLE_MAP)) {
-				if (key != null && value != null) {
+				if (value != null) {
+                    if (key == null) key = "normal"; // default 
 					sm.put(key, value);
 				}
 				return;
