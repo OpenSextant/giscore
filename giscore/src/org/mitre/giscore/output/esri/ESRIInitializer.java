@@ -91,7 +91,7 @@ public class ESRIInitializer {
 		}
 
 		try {
-			// Step 1: Initialize the Java Componet Object Model (COM) Interop.
+			// Step 1: Initialize the Java Component Object Model (COM) Interop.
 			EngineInitializer.initializeEngine();
 			for(int i = 0; i < LicensesToTry.length; i++) {
 				// Step 2: Initialize a valid license. 

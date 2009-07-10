@@ -121,9 +121,9 @@
 		<ivy:cachepath pathid="kf.path" organisation="org.knopflerfish" module="knopflerfish-ant" revision="2.1.0-mitre-8" conf="default" inline="true"/>
 
 		<!-- buildnumber isn't working correctly with artifactory -->
-		<!-- <ivy:buildnumber revision="0.4" organisation="org.mitre.itf" module="giscore" /> -->
-		<property name="ivy.new.revision" value="0.4.2" />
-
+		<!--  <ivy:buildnumber revision="0.4" organisation="org.mitre.itf" module="giscore" /> -->
+		<property name="ivy.new.revision" value="0.4.3" /> 
+			
 		<taskdef resource="org/knopflerfish/ant/antlib.xml" classpathref="kf.path"/>
 		<!-- This isn't perfect because the com.esri.arcgis classes haven't
 		     been bundled. However all of the native code makes bundling them
@@ -197,7 +197,7 @@
 	<target name="publish" depends="pom, javadoc, sourcejar" 
 		description="Publish directly to a repository">		
 		<echo>Publishing revision ${ivy.new.revision}</echo>
-		<ivy:publish resolver="mapsrv-deploy" revision="${ivy.new.revision}" update="true" overwrite="true" >
+		<ivy:publish resolver="mapsrv-deploy" revision="${ivy.new.revision}" update="true" overwrite="true">
 			<artifacts pattern="rel/[artifact].[ext]" />
 			<artifacts pattern="rel/jars/[artifact].[ext]" />
 		</ivy:publish>
