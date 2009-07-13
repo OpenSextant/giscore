@@ -20,7 +20,8 @@
         <key>highlight</key>
         <Style>
           <IconStyle>
-            <scale>1.3</scale>
+            <color>ff00ff00</color>        <!-- green -->
+            <scale>1.5</scale>
             <Icon>
               <href>http://maps.google.com/mapfiles/kml/paddle/B.png</href>
             </Icon>
