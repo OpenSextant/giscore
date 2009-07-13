@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+
+The KML Handbook: Geographic Visualization for the Web
+Chapter 4: page 96 Shared Styles Example
+
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Shared Style Example</name>
+    <Style id="blue_arrow">
+      <IconStyle>
+        <color>ffff0000</color>
+        <scale>1.4</scale>
+        <Icon>
+          <href>http://maps.google.com/mapfiles/kml/shapes/arrow.png
+          </href>
+        </Icon>
+        <hotSpot x="32" y="1" xunits="pixels" yunits="pixels"/>
+      </IconStyle>
+      <LabelStyle>
+        <color>ff0000ff</color>
+      </LabelStyle>
+      <LineStyle>
+        <color>ff0080ff</color>
+        <width>3</width>
+      </LineStyle>
+      <BalloonStyle>
+        <bgColor>fffff8ce</bgColor>
+      </BalloonStyle>
+    </Style>
+    <Placemark>
+      <name>Placemark 1</name>
+      <styleUrl>#blue_arrow</styleUrl>
+      <Point>
+        <coordinates>-119.232195,36.016021,0</coordinates>
+      </Point>
+    </Placemark>
+    <Placemark>
+      <name>Placemark 2</name>
+      <styleUrl>#blue_arrow</styleUrl>
+      <Point>
+          <coordinates>-119.290316,35.967076,0
+          </coordinates>
+      </Point>
+    </Placemark>
+  </Document>
+</kml>
+
