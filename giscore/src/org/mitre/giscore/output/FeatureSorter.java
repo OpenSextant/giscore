@@ -18,10 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.output;
 
-import java.io.DataOutputStream;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -37,7 +34,7 @@ import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.utils.SimpleObjectOutputStream;
+import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 
 /**
@@ -51,7 +48,7 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  */
 public class FeatureSorter {
 	private static final String OID = "OID";
-	
+	private static final int MAX_IN_MEMORY = 2000;
 	private static SimpleField oid = null;
 	
 	static {
@@ -77,15 +74,10 @@ public class FeatureSorter {
 	 */
 	private Map<Set<SimpleField>, Schema> internalSchema = null;
 	/**
-	 * Each schema's data is stored in a temporary file since the actual record
+	 * Each schema's data is stored in a buffer since the actual record
 	 * sets need to be written for one type at a time.
 	 */
-	private Map<FeatureKey, File> dataFileMap = null;
-	/**
-	 * The output streams must be held open while features are being sorted. 
-	 * Otherwise the output stream becomes corrupted, at least sometimes.
-	 */
-	private Map<FeatureKey, SimpleObjectOutputStream> dataStreamMap = null;
+	private Map<FeatureKey, ObjectBuffer> bufferMap = null;
 	/**
 	 * The class keeps track of the overall extent of the features in a
 	 * particular collection.
@@ -113,7 +105,7 @@ public class FeatureSorter {
 	 * @return the known keys to the files
 	 */
 	public Collection<FeatureKey> keys() {
-		return dataFileMap.keySet();
+		return bufferMap.keySet();
 	}
 	
 	/**
@@ -132,12 +124,12 @@ public class FeatureSorter {
 	 *         unknown, which cannot occur if the {@link #keys()} method was
 	 *         used to obtain the key set.
 	 */
-	public File getFeatureFile(FeatureKey featureKey) {
+	public ObjectBuffer getBuffer(FeatureKey featureKey) {
 		if (featureKey == null) {
 			throw new IllegalArgumentException(
 					"featureKey should never be null");
 		}
-		return dataFileMap.get(featureKey);
+		return bufferMap.get(featureKey);
 	}
 
 	/**
@@ -166,21 +158,17 @@ public class FeatureSorter {
 
 			}
 			FeatureKey key = new FeatureKey(s, path, geoclass, row.getClass());
-			SimpleObjectOutputStream stream = null;
+			ObjectBuffer buffer = null;
 			if (!key.equals(currentKey)) {
 				currentKey = key;
-				File stemp = dataFileMap.get(key);
-				if (stemp == null) {
-					stemp = File.createTempFile("sorter", ".data");
-					dataFileMap.put(key, stemp);
-					FileOutputStream os = new FileOutputStream(stemp, true);
-					DataOutputStream dos = new DataOutputStream(os);
-					SimpleObjectOutputStream oos = new SimpleObjectOutputStream(dos);
-					dataStreamMap.put(key, oos);
+				buffer = bufferMap.get(key);
+				if (buffer == null) {
+					buffer = new ObjectBuffer(MAX_IN_MEMORY);
+					bufferMap.put(key, buffer);
 				}
 			}
-			stream = dataStreamMap.get(key);
-			stream.writeObject(row);
+			buffer = bufferMap.get(key);
+			buffer.write(row);
 			if (g != null) {
 				Geodetic2DBounds bounds = boundingBoxes.get(key);
 				if (bounds == null) {
@@ -286,11 +274,9 @@ public class FeatureSorter {
 	 * @throws IOException 
 	 */
 	public void close() throws IOException {
-		if (dataStreamMap != null) {
-			for(SimpleObjectOutputStream os : dataStreamMap.values()) {
-				os.flush();
-				os.close();
-				dataStreamMap = null;
+		if (bufferMap != null) {
+			for (ObjectBuffer buffer : bufferMap.values()) {
+				buffer.close();
 			}
 		}
 	}
@@ -301,26 +287,9 @@ public class FeatureSorter {
 	 */
 	public void cleanup() throws IOException {
 		close();
-		if (dataFileMap != null) {
-			for (File tfile : dataFileMap.values()) {
-				int count = 0;
-				while (!tfile.delete() && count < 10) {
-					synchronized (this) {
-						// Wait a second and try again
-						try {
-							wait(1000L);
-						} catch (InterruptedException e) {
-							// ignore
-						}
-						count++;
-					}
-				}
-			}
-		}
 		schemata = new HashMap<URI, Schema>();
 		internalSchema = new HashMap<Set<SimpleField>, Schema>();
-		dataFileMap = new HashMap<FeatureKey, File>();
-		dataStreamMap = new HashMap<FeatureKey, SimpleObjectOutputStream>();
+		bufferMap = new HashMap<FeatureKey, ObjectBuffer>();
 		boundingBoxes = new HashMap<FeatureKey, Geodetic2DBounds>();
 		currentKey = null;
 	}

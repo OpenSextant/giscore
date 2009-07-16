@@ -18,19 +18,14 @@
  ***************************************************************************************/
 package org.mitre.giscore.output;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.ICategoryNameExtractor;
-import org.mitre.giscore.events.Comment;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.DocumentStart;
@@ -40,7 +35,7 @@ import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.StyleMap;
-import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.ObjectBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -256,28 +251,23 @@ public class SortingOutputStream extends StreamVisitorBase implements
 			stream.write(schema);
 		}
 		for(FeatureKey key : keys) {
-			File file = sorter.getFeatureFile(key);
+			ObjectBuffer buffer = sorter.getBuffer(key);
 			String pathstr = key.getPath();
 			String pieces[] = pathstr.split("_");
 			List<String> path = Arrays.asList(pieces);
-			FileInputStream fis = null;
 			try {
-				fis = new FileInputStream(file);
-				SimpleObjectInputStream sois = new SimpleObjectInputStream(fis);
 				ContainerStart cs = new ContainerStart("Folder");
 				cs.setName(strategy.deriveContainerName(path, key));
 				stream.write(cs);
-				IGISObject obj = (IGISObject) sois.readObject();
+				IGISObject obj = (IGISObject) buffer.read();
 				do {
 					stream.write(obj);
-					obj = (IGISObject) sois.readObject();
+					obj = (IGISObject) buffer.read();
 				} while(obj != null);
 				ContainerEnd ce = new ContainerEnd();
 				stream.write(ce);
 			} catch (Exception e) {
 				logger.error("Problem reifying data from stream",e);
-			} finally {
-				IOUtils.closeQuietly(fis);
 			}
 		}
 		sorter.cleanup();

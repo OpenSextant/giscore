@@ -33,6 +33,7 @@ import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.FeatureSorter;
+import org.mitre.giscore.utils.ObjectBuffer;
 
 /**
  * @author DRAND
@@ -69,10 +70,10 @@ public class TestFeatureSorter extends TestGISBase {
 		int totalcount = 0;
 		Assert.assertEquals(3, sorter.keys().size());
 		for(FeatureKey key : sorter.keys()) {
-			File f = sorter.getFeatureFile(key);
-			Assert.assertNotNull(f);
-			Assert.assertTrue(f.exists());
-			totalcount += countFeatures(f);
+			ObjectBuffer buffer = sorter.getBuffer(key);
+			Assert.assertNotNull(buffer);
+			Assert.assertTrue(buffer.count() > 0);
+			totalcount += buffer.count();
 		}
 		Assert.assertEquals(18, totalcount);
 		sorter.cleanup(); // Delete temp files
@@ -129,10 +130,10 @@ public class TestFeatureSorter extends TestGISBase {
 		int totalcount = 0;
 		Assert.assertEquals(3, sorter.keys().size());
 		for(FeatureKey key : sorter.keys()) {
-			File f = sorter.getFeatureFile(key);
-			Assert.assertNotNull(f);
-			Assert.assertTrue(f.exists());
-			totalcount += countFeatures(f);
+			ObjectBuffer buffer = sorter.getBuffer(key);
+			Assert.assertNotNull(buffer);
+			Assert.assertTrue(buffer.count() > 0);
+			totalcount += buffer.count();
 		}
 		Assert.assertEquals(60, totalcount);
 		sorter.cleanup(); // Delete temp files

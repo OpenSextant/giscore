@@ -27,6 +27,8 @@ import org.mitre.giscore.events.IGISObject;
  * a queue fed by the source object. The interface does not guarantee thread
  * safety, read the implementation classes for details. The methods here
  * are meant to be analogues of those in {@link java.io.InputStream}.
+ * <p>
+ * GIS streams are generally not thread safe.
  * 
  * @author DRAND
  */

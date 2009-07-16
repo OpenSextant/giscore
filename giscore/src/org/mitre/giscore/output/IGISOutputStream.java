@@ -26,6 +26,8 @@ import org.mitre.giscore.events.IGISObject;
 /**
  * A stream that accepts GIS objects to be consumed. Generally it consumes
  * GIS objects to be written to a given sink.
+ * <p>
+ * GIS output streams are generally not thread safe.
  * 
  * @author DRAND
  */

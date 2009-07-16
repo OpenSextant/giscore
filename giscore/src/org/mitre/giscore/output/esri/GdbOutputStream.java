@@ -25,7 +25,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TimeZone;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -52,7 +59,7 @@ import org.mitre.giscore.output.FeatureSorter;
 import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.StreamVisitorBase;
-import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.utils.SafeDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -383,22 +390,14 @@ public class GdbOutputStream extends StreamVisitorBase implements
      * @throws IOException if an IO error occurs
      */
     private void addData(FeatureKey key, IFeatureClass fc) throws IOException {
-        File ffile = sorter.getFeatureFile(key);
+        ObjectBuffer obuffer = sorter.getBuffer(key);
         Map<String, SimpleField> etosf = fieldmap.get(key);
-
-        if (!ffile.exists()) {
-            logger.error("Feature file doesn't exist: "
-                    + key.getSchema().getName());
-            return;
-        }
-        InputStream is = new FileInputStream(ffile);
-        SimpleObjectInputStream ois = new SimpleObjectInputStream(is);
         IFeatureBuffer buffer = fc.createFeatureBuffer();
         IFeatureCursor cursor = fc.IFeatureClass_insert(true);
         try {
             Feature current;
             int oid = 0;
-            while ((current = (Feature) ois.readObject()) != null) {
+            while ((current = (Feature) obuffer.read()) != null) {
                 IFields fields = fc.getFields();
                 for (int i = 0; i < fields.getFieldCount(); i++) {
                     IField field = fields.getField(i);
@@ -448,8 +447,6 @@ public class GdbOutputStream extends StreamVisitorBase implements
         } finally {
             cursor.flush();
             Cleaner.release(cursor);
-            ois.close();
-            IOUtils.closeQuietly(is);
         }
 
     }

@@ -57,6 +57,7 @@ import org.mitre.giscore.input.gdb.IXmlGdb;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.FeatureSorter;
 import org.mitre.giscore.output.XmlOutputStreamBase;
+import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 
@@ -398,32 +399,25 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			throws XMLStreamException {
 		writer.writeStartElement(RECORDS);
 		writeEsriType("ArrayOfRecord");
-		File tf = sorter.getFeatureFile(featureKey);
+		ObjectBuffer buffer = sorter.getBuffer(featureKey);
 		Schema schema = featureKey.getSchema();
-		if (tf == null) {
+		if (buffer == null) {
 			throw new RuntimeException("Couldn't find temp file for schema "
 					+ schema.getName());
 		}
-		InputStream is = null;
-		SimpleObjectInputStream ois = null;
 		try {
-			is = new FileInputStream(tf);
-			ois = new SimpleObjectInputStream(is);
 			Object next = null;
 			SimpleField geofielddef = new SimpleField(geometryField);
 			geofielddef.setType(SimpleField.Type.GEOMETRY);
 			int index = 0;
-			while ((next = ois.readObject()) != null) {
+			while ((next = buffer.read()) != null) {
 				Feature feature = (Feature) next;
 				writeRecord(featureKey, feature, geofielddef, index++);
 			}
-			ois.close();
 		} catch (EOFException e) {
 			// Done reading, just ignore
 		} catch (Exception e) {
 			throw new RuntimeException(e);
-		} finally {
-			IOUtils.closeQuietly(is);
 		}
 
 		writer.writeEndElement(); // RECORDS
