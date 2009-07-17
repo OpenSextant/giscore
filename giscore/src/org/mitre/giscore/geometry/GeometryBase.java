@@ -8,7 +8,7 @@ import java.io.IOException;
 
 /**
  * Abstract Geometry class with common altitudeMode and extrude
- * fields assoicated with Points, Lines, Polygons, etc.
+ * fields associated with Points, Lines, Polygons, etc.
  *  
  * @author Jason Mathews, MITRE Corp.
  * Date: Jun 15, 2009 2:02:35 PM

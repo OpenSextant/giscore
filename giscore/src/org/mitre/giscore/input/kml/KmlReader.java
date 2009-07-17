@@ -181,6 +181,8 @@ public class KmlReader extends KmlBaseReader {
 			Style style = (Style)gisObj;
 			if (style.hasIconStyle()) {
 				String href = style.getIconUrl();
+                // rewrite relative URLs with UrlRef to include context with parent source
+                // note: could also use URI.isAbsolute() to test rel vs abs URL
 				if (href != null && !absUrlPattern.matcher(href).lookingAt()) {
 					//System.out.println("XXX: Relative iconStyle href: " + href);
 					URI uri = getLink(href);

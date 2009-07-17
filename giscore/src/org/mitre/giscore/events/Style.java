@@ -30,8 +30,8 @@ import org.mitre.giscore.IStreamVisitor;
 /**
  * Represents style information for points and lines. This information is used
  * by the rendering code to emit the correct information for the output format.
- * <p>                                                 Km
- * Generic information from a kml reference.
+ * <p>
+ * Generic information from a KML reference.
  * <p>
  * Color and opacity (alpha) values are expressed in hexadecimal notation. The
  * range of values for any one color is 0 to 255 (00 to ff). For alpha, 00 is
