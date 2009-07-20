@@ -227,8 +227,8 @@
 
 	<Placemark>
 		<name>line6</name>
-		<styleUrl>#sn_ylw-pushpin</styleUrl>
 		<description>Shown to compare polygon3 and ring3</description>
+		<styleUrl>#sn_ylw-pushpin</styleUrl>
 		<LineString>
 			<extrude>1</extrude>
 			<tessellate>1</tessellate>
@@ -340,8 +340,8 @@
     <!-- google earth treats this as a 2 line segments -->
     <Style>
 	<LineStyle>
-		<width>4</width>
 		<color>ffff0000</color>
+		<width>4</width>
 	</LineStyle>
 	<PolyStyle>
 		<color>bfff0000</color>
