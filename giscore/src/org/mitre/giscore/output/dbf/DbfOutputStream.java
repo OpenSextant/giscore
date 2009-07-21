@@ -25,7 +25,6 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
 import java.util.Date;
 
 import org.mitre.giscore.events.IGISObject;
@@ -54,12 +53,10 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
 			new SimpleDateFormat("MM/dd/yyyy hh:mm"),
 			new SimpleDateFormat("MM/dd/yyyy"),
-			new SimpleDateFormat("dd-MMM-yyyy"),
-			dateFormat
-	};
+			new SimpleDateFormat("dd-MMM-yyyy"), dateFormat };
 	private DecimalFormat decimalFormat = new DecimalFormat(
-		"+###############0.################;-###############0.################");
-	
+			"+###############0.################;-###############0.################");
+
 	/**
 	 * Output stream, set in ctor.
 	 */
@@ -129,63 +126,99 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 
 	@Override
 	public void close() throws IOException {
-		if (buffer.count() > 65535) {
-			throw new IllegalStateException(
-					"Trying to persist too many elements to DBF file, only 2^16 - 1 are allowed");
-		}
-
-
-
-		// Write today's date as the date of last update (3 byte binary YY MM DD
-		// format)
-		String today = dateFormat.format(new Date(System.currentTimeMillis()));
-		// 2 digit year is written with Y2K +1900 assumption so add 100 since
-		// we're past 2000
-		stream.write(100 + Byte.parseByte(today.substring(2, 4)));
-		for (int i = 4; i <= 6; i += 2)
-			stream.write(Byte.parseByte(today.substring(i, i + 2)));
-
-		// Write record count, header length (based on number of fields), and
-		// record length
-		stream.writeInt(buffer.count(), ByteOrder.LITTLE_ENDIAN);
-		stream.writeShort((short) ((schema.getKeys().size() * 32) + 33),
-				ByteOrder.LITTLE_ENDIAN);
-		stream.writeShort((short) buffer.count(), ByteOrder.LITTLE_ENDIAN);
-
-		// Fill in reserved and unused header fields we don't care about with
-		// zeros
-		for (int k = 0; k < 20; k++)
-			stream.writeByte(NUL);
-
 		if (stream != null) {
+			if (buffer.count() > 65535) {
+				throw new IllegalStateException(
+						"Trying to persist too many elements to DBF file, only 2^16 - 1 are allowed");
+			}
+
+			// Write today's date as the date of last update (3 byte binary YY
+			// MM DD
+			// format)
+			String today = dateFormat.format(new Date(System
+					.currentTimeMillis()));
+			// 2 digit year is written with Y2K +1900 assumption so add 100
+			// since
+			// we're past 2000
+			stream.write(100 + Byte.parseByte(today.substring(2, 4)));
+			for (int i = 4; i <= 6; i += 2)
+				stream.write(Byte.parseByte(today.substring(i, i + 2)));
+
+			// Write record count, header length (based on number of fields),
+			// and
+			// record length
+			stream.writeInt(buffer.count(), ByteOrder.LITTLE_ENDIAN);
+			stream.writeShort((short) ((schema.getKeys().size() * 32) + 33),
+					ByteOrder.LITTLE_ENDIAN);
+			stream.writeShort((short) getRecordLength(), ByteOrder.LITTLE_ENDIAN);
+
+			// Fill in reserved and unused header fields we don't care about
+			// with
+			// zeros
+			for (int k = 0; k < 20; k++)
+				stream.writeByte(NUL);
+
+			byte len[] = outputHeader();
+			
+			try {
+				outputRows(len);
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			} catch (InstantiationException e) {
+				throw new RuntimeException(e);
+			} catch (IllegalAccessException e) {
+				throw new RuntimeException(e);
+			}
+
 			stream.close();
 			stream = null;
 		}
-
-		byte len[] = outputHeader();
-
-		try {
-			outputRows(len);
-		} catch (ClassNotFoundException e) {
-			throw new RuntimeException(e);
-		} catch (InstantiationException e) {
-			throw new RuntimeException(e);
-		} catch (IllegalAccessException e) {
-			throw new RuntimeException(e);
-		}
 	}
 
-	private void outputRows(byte len[])
-			throws ClassNotFoundException, IOException, InstantiationException,
-			IllegalAccessException {
+	private short getRecordLength() {
+		short rval = 1; // Marker byte for deleted records
+		for (String fieldname : schema.getKeys()) {
+			SimpleField field = schema.get(fieldname);
+			rval += getFieldLength(field);
+		}
+		return rval;
+	}
+
+	private int getFieldLength(SimpleField field) {
+		Type ft = field.getType();
+		int fieldlen = field.getLength();
+		if (Type.STRING.equals(field.getType())) {
+			if (fieldlen > MAX_CHARLEN)
+				fieldlen = MAX_CHARLEN;
+		} else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
+			fieldlen = 34;
+		} else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
+			fieldlen = 10;
+		} else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
+			fieldlen = 6;
+		} else if (Type.OID.equals(ft)) {
+			fieldlen = 10;
+		} else if (Type.DATE.equals(ft)) {
+			fieldlen = 8;
+		} else if (Type.BOOL.equals(ft)) {
+			fieldlen = 1;
+		} else {
+			fieldlen = 32;
+		}
+		return fieldlen;
+	}
+
+	private void outputRows(byte len[]) throws ClassNotFoundException,
+			IOException, InstantiationException, IllegalAccessException {
 		Row row = (Row) buffer.read();
 
 		while (row != null) {
-			row = (Row) buffer.read();
+			stream.writeByte(' ');
 			int i = 0;
 			for (String fieldname : schema.getKeys()) {
 				SimpleField field = schema.get(fieldname);
-				byte length = len[i++];
+				short length = (short) len[i++];
+				if (length < 0) length += 256;
 				Type ft = field.getType();
 				if (Type.STRING.equals(field.getType())) {
 					String data = getString(row.getData(field));
@@ -195,8 +228,10 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 					if (data == null)
 						writeField(stream, "", length);
 					else
-						writeField(stream, decimalFormat.format(data.doubleValue()), 34);
-				} else if (Type.INT.equals(ft) || Type.UINT.equals(ft) || Type.OID.equals(ft)) {
+						writeField(stream, decimalFormat.format(data
+								.doubleValue()), 34);
+				} else if (Type.INT.equals(ft) || Type.UINT.equals(ft)
+						|| Type.OID.equals(ft)) {
 					Number data = getNumber(row.getData(field));
 					if (data != null) {
 						int val = (int) data.longValue();
@@ -225,7 +260,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 						writeField(stream, "?", 1);
 					else if (bool)
 						writeField(stream, "t", 1);
-					else 
+					else
 						writeField(stream, "f", 1);
 				} else {
 					String data = getString(row.getData(field));
@@ -235,21 +270,27 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 						writeField(stream, data, 32);
 				}
 			}
+			row = (Row) buffer.read();
 		}
 
 	}
 
 	/**
 	 * Write the field data, truncating at the field length
-	 * @param stream the stream
-	 * @param data the string to write, may be more or less 
-	 * than the field length. This will be converted to ascii
-	 * @param length the field length
-	 * @throws IOException 
+	 * 
+	 * @param stream
+	 *            the stream
+	 * @param data
+	 *            the string to write, may be more or less than the field
+	 *            length. This will be converted to ascii
+	 * @param length
+	 *            the field length
+	 * @throws IOException
 	 */
-	private void writeField(BinaryOutputStream stream, String data, int length) throws IOException {
+	private void writeField(BinaryOutputStream stream, String data, int length)
+			throws IOException {
 		byte str[] = data.getBytes(US_ASCII);
-		for(int i = 0; i < length; i++) {
+		for (int i = 0; i < length; i++) {
 			if (i < str.length) {
 				stream.writeByte(str[i]);
 			} else {
@@ -264,9 +305,10 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		} else if (data instanceof String) {
 			String val = (String) data;
 			val = val.toLowerCase();
-			if (val.equals("?")) 
+			if (val.equals("?"))
 				return null;
-			return val.startsWith("t") || val.startsWith("y") || "1".equals(val);
+			return val.startsWith("t") || val.startsWith("y")
+					|| "1".equals(val);
 		} else {
 			return false;
 		}
@@ -287,10 +329,10 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			return (Date) data;
 		} else {
 			String dstr = data.toString();
-			for(int i = 0; i < inputDateFormats.length; i++) {
+			for (int i = 0; i < inputDateFormats.length; i++) {
 				try {
 					return inputDateFormats[i].parse(dstr);
-				} catch(ParseException pe) {
+				} catch (ParseException pe) {
 					// Continue
 				}
 			}
@@ -323,42 +365,40 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		for (String fieldname : schema.getKeys()) {
 			// Write the field name, padded with null bytes
 			byte name[] = new byte[11];
-			Arrays.copyOf(StringHelper.esriFieldName(fieldname), 11);
+			byte fn[] = StringHelper.esriFieldName(fieldname);
+			for(int k = 0; k < 11; k++) {
+				if (k < fn.length) {
+					name[k] = fn[k];
+				} else {
+					name[k] = 0;
+				}
+			}
 			stream.write(name); // 0 -> 10
 			SimpleField field = schema.get(fieldname);
 			byte type;
-			int fieldlen = field.getLength();
+			int fieldlen = getFieldLength(field);
 			int fielddec = 0;
 			Type ft = field.getType();
-			if (Type.STRING.equals(field.getType())) {
+			if (Type.STRING.equals(ft)) {
 				type = 'C';
-				if (fieldlen > MAX_CHARLEN)
-					fieldlen = MAX_CHARLEN;
 			} else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
 				type = 'F';
 				fielddec = 16;
-				fieldlen = 34;
 			} else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
 				type = 'F';
-				fieldlen = 10;
 			} else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
 				type = 'F';
-				fieldlen = 6;
 			} else if (Type.OID.equals(ft)) {
 				type = 'F';
-				fieldlen = 10;
 			} else if (Type.DATE.equals(ft)) {
 				type = 'D';
-				fieldlen = 8;
 			} else if (Type.BOOL.equals(ft)) {
 				type = 'L';
-				fieldlen = 1;
 			} else {
 				type = 'C';
-				fieldlen = 32;
 			}
 			len[i++] = (byte) fieldlen;
-			stream.write(type); // 11
+			stream.writeByte(type); // 11
 			stream.writeByte(NUL); // 12
 			stream.writeByte(NUL); // 13
 			stream.writeByte(NUL); // 14
@@ -379,20 +419,11 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			stream.writeByte(NUL); // 29 Reserved
 			stream.writeByte(NUL); // 30 Reserved
 			stream.writeByte(Type.OID.equals(ft) ? 1 : 0); // 31 Index field
-															// marker
+			// marker
 		}
 
 		// Write end-of-header (EOH) carriage-return character (hex 0x0d)
 		stream.writeByte(EOH);
 		return len;
 	}
-
-	// Utility method for printing out bytes
-	private static String byteToHex(byte b) {
-		String hex = Integer.toHexString(b & 0xff);
-		if (hex.length() == 1)
-			hex = "0" + hex;
-		return hex;
-	}
-
 }
