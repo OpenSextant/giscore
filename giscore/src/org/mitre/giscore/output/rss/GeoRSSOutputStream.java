@@ -160,7 +160,8 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             handleAttributes(feature);
             if (feature instanceof Overlay) {
                 handleOverlay((Overlay) feature);
-            } else if (feature.getGeometry() != null) {
+            }
+            if (feature.getGeometry() != null) {
                 //log.debug("Visit " + feature.getName());
                 feature.getGeometry().accept(this);
             }
@@ -561,8 +562,26 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
         }
     }
 
-    private void handleOverlay(Overlay overlay) {
-        // todo encode geom in georss or gml
+    private void handleOverlay(Overlay overlay) throws XMLStreamException {
+        /*
+        if (overlay instanceof GroundOverlay) {
+            GroundOverlay go = (GroundOverlay)overlay;
+            TaggedMap icon = go.getIcon();
+            if (icon != null) {
+                String href = icon.get("href");
+                if (StringUtils.isNotBlank(href)) {
+                    //writer.writeStartElement("link");
+                    handleSimpleElement("link", href);
+                    //handleNonNullSimpleElement("width", icon.get("width"));
+                    //handleNonNullSimpleElement("height", icon.get("height"));
+                    //writer.writeEndElement();
+                    //writer.writeCharacters("\n");
+                    return;
+                }
+            }
+        }
+       */
+        // todo encode geom and/or overlay image in georss or gml
         visit(new Comment("Ignore Overlay\n" + overlay)); // placeholder
     }
 
