@@ -72,7 +72,9 @@ public class ESRIInitializer {
 	private static int LicensesToTry[] = new int[] {
 		esriLicenseProductCode.esriLicenseProductCodeArcEditor,
 		esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB,
-		esriLicenseProductCode.esriLicenseProductCodeArcView
+		esriLicenseProductCode.esriLicenseProductCodeArcView,
+		esriLicenseProductCode.esriLicenseProductCodeArcServer,
+		esriLicenseProductCode.esriLicenseProductCodeArcInfo
 	};
 	
 	/**
