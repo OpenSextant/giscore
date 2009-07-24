@@ -33,6 +33,7 @@ import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.FeatureSorter;
+import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.ObjectBuffer;
 
 /**
@@ -76,6 +77,18 @@ public class TestFeatureSorter extends TestGISBase {
 			totalcount += buffer.count();
 		}
 		Assert.assertEquals(18, totalcount);
+		
+		// Read data from sorter, counting elements retrieved
+		int read = 0;
+		for(FeatureKey key : sorter.keys()) {
+			ObjectBuffer buf = sorter.getBuffer(key);
+			IDataSerializable ser = buf.read();
+			while(ser != null) {
+				read++;
+				ser = buf.read();
+			}
+		}
+		Assert.assertEquals(18, read);
 		sorter.cleanup(); // Delete temp files
 	}
 	

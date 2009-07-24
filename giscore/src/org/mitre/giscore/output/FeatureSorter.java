@@ -276,7 +276,7 @@ public class FeatureSorter {
 	public void close() throws IOException {
 		if (bufferMap != null) {
 			for (ObjectBuffer buffer : bufferMap.values()) {
-				buffer.close();
+				buffer.closeOutputStream();
 			}
 		}
 	}
@@ -286,7 +286,11 @@ public class FeatureSorter {
 	 * @throws IOException 
 	 */
 	public void cleanup() throws IOException {
-		close();
+		if (bufferMap != null) {
+			for (ObjectBuffer buffer : bufferMap.values()) {
+				buffer.close();
+			}
+		}
 		schemata = new HashMap<URI, Schema>();
 		internalSchema = new HashMap<Set<SimpleField>, Schema>();
 		bufferMap = new HashMap<FeatureKey, ObjectBuffer>();

@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +36,11 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class ObjectBuffer {	
+	/**
+	 * Default number of elements to allow in memory.
+	 */
+	private static final int DEFAULT_SIZE = 2000;
+
 	/**
 	 * The maximum number of buffered elements to hold in
 	 * memory before overflowing into secondary storage.
@@ -78,6 +84,10 @@ public class ObjectBuffer {
 	 */
 	private int readIndex = 0;
 	
+	public ObjectBuffer() {
+		this(DEFAULT_SIZE);
+	}
+	
 	/**
 	 * Ctor
 	 * @param size the maximum count of elements held in memory, must
@@ -97,16 +107,28 @@ public class ObjectBuffer {
 	 * @throws IOException 
 	 */
 	public void close() throws IOException {
-		if (outputStream != null) {
-			outputStream.close();
-			outputStream = null;
-		}
+		closeOutputStream();
 		if (secondaryStore != null) {
 			secondaryStore.delete();
+		}
+		if (inputStream != null) {
+			inputStream.close();
+			inputStream = null; 
 		}
 		buffer = null;
 		readIndex = 0;
 		storeIndex = 0;
+	}
+	
+	/**
+	 * Close any open output streams but leave the data alone
+	 * @throws IOException 
+	 */
+	public void closeOutputStream() throws IOException {
+		if (outputStream != null) {
+			outputStream.close();
+			outputStream = null;
+		}
 	}
 	
 	/**
@@ -167,5 +189,14 @@ public class ObjectBuffer {
 	public int count() {
 		return storeIndex;
 	}
+
+	/**
+	 * Reset the read pointer to the start of the buffer
+	 */
+	public void resetReadIndex() {
+		readIndex = 0;
+	}
+
+
 	
 }

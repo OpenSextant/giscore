@@ -18,6 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.output.dbf;
 
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
@@ -96,6 +97,20 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		}
 		stream = new BinaryOutputStream(outputStream);
 
+		// Write the xBaseFile signature (should be 0x03 for dBase III)
+		stream.writeByte(SIGNATURE);
+	}
+
+	public DbfOutputStream(OutputStream outputStream, Schema schema,
+			ObjectBuffer buffer) throws IOException {
+		if (outputStream == null) {
+			throw new IllegalArgumentException("outputStream should never be null");
+		}
+		this.schema = schema;
+		this.buffer = buffer;
+		stream = new BinaryOutputStream(outputStream);
+		numRecords = buffer.count();
+		
 		// Write the xBaseFile signature (should be 0x03 for dBase III)
 		stream.writeByte(SIGNATURE);
 	}

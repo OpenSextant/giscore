@@ -38,6 +38,13 @@ public class BinaryOutputStream extends DataOutputStream {
     }
 
     /**
+     * @return the wrapped output stream
+     */
+    public OutputStream getWrappedStream() {
+    	return out;
+    }
+    
+    /**
      * Writes Integer (4 bytes) to this BinaryOutputStream according to the byte order specified.
      *
      * @param order ByteOrder constant indicating endian order

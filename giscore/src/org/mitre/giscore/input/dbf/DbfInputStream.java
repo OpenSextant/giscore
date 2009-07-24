@@ -53,7 +53,10 @@ public class DbfInputStream extends GISInputStreamBase implements
 	private static final Logger logger = LoggerFactory
 			.getLogger(DbfInputStream.class);
 
-
+	/**
+	 * Class to instantiate when reading in rows
+	 */
+	Class<? extends Row> rowClass = Row.class;
 
 	/**
 	 * Stream reading in the dbf file
@@ -233,7 +236,14 @@ public class DbfInputStream extends GISInputStreamBase implements
 		if (hasSaved())
 			return readSaved();
 		else {
-			Row rval = new Row();
+			Row rval;
+			try {
+				rval = rowClass.newInstance();
+			} catch (Exception e) {
+				throw new RuntimeException(
+						"Cannot instantiate given row class "
+								+ rowClass.getCanonicalName(), e);
+			}
 			if (readRecord(rval))
 				return rval;
 			else
@@ -332,4 +342,11 @@ public class DbfInputStream extends GISInputStreamBase implements
 		return val;
 	}
 
+	public Class<? extends Row> getRowClass() {
+		return rowClass;
+	}
+
+	public void setRowClass(Class<? extends Row> rowClass) {
+		this.rowClass = rowClass;
+	}
 }
