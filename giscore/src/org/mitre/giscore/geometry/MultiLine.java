@@ -93,15 +93,12 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	private void init(List<Line> lines) {
 		// Make sure all the lines have the same number of dimensions (2D or 3D)
         is3D = lines.get(0).is3D();
-        numParts = lines.size();
-        numPoints = 0;
         boolean mixedDims = false;
         for (Line ln : lines) {
             if (is3D != ln.is3D()) {
                 mixedDims = true;
                 is3D = false;
             }
-            numPoints += ln.getNumPoints();
         }
         if (mixedDims)
             log.info("MultiLine lines have mixed dimensionality: downgrading to 2d");
@@ -166,5 +163,21 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
 		out.writeObjectCollection(lineList);
+	}
+
+	@Override
+	public int getNumParts() {
+		return lineList != null ? lineList.size() : 0;
+	}
+
+	@Override
+	public int getNumPoints() {
+		int count = 0;
+		if (publicLineList != null) {
+			for(Line l : publicLineList) {
+				count += l.getNumPoints();
+			}
+		}
+		return count;
 	}
 }

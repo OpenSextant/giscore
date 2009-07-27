@@ -108,8 +108,6 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
         for (Point p : pts) bbox.include(p.asGeodetic2DPoint());
         pointList = pts;
 		publicPointList = Collections.unmodifiableList(pointList);
-        numPoints = pts.size();
-        numParts = numPoints;      // We might choose to make this 1 instead of numPoints
 	}
 
     /**
@@ -163,5 +161,15 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 			for(Point p : pointList) {
 				out.writeObject(p);
 			}
+	}
+
+	@Override
+	public int getNumParts() {
+		return pointList != null ? pointList.size() : 0;
+	}
+
+	@Override
+	public int getNumPoints() {
+		return getNumParts(); // Happily the count of parts and points is the same
 	}
 }

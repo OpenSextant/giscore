@@ -133,8 +133,6 @@ public class Line extends GeometryBase implements Iterable<Point> {
         }
         pointList = pts;
 		publicPointList = Collections.unmodifiableList(pointList);
-        numParts = 1;
-        numPoints = pts.size();
 	}
 
     public Boolean getTessellate() {
@@ -197,4 +195,13 @@ public class Line extends GeometryBase implements Iterable<Point> {
 		out.writeObjectCollection(pointList);
 	}
 
+	@Override
+	public int getNumParts() {
+		return 1;
+	}
+
+	@Override
+	public int getNumPoints() {
+		return publicPointList != null ? publicPointList.size() : 0;
+	}
 }

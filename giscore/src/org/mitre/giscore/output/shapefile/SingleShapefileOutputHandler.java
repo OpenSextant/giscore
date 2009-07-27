@@ -336,7 +336,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			}
 			// Write header
 			putShapeHeader(shpbos, offset, shapeAll, is3D, bbox);
-			putShapeHeader(shxbos, offset, shapeAll, is3D, bbox);
+			int shxlen = 50 + (recordNumber - 1) * 4;
+			putShapeHeader(shxbos, shxlen, shapeAll, is3D, bbox);
 		} finally {
 			if (shxbos != null)
 				shxbos.close();

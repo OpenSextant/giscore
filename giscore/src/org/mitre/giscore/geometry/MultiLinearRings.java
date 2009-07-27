@@ -126,12 +126,9 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
         if (validateTopology) validateTopology(rings);
         // Make sure all the rings have the same number of dimensions (2D or 3D)
         is3D = rings.get(0).is3D();
-        numParts = rings.size();
-        numPoints = 0;
         boolean mixedDims = false;
         for (LinearRing rg : rings) {
             if (is3D != rg.is3D()) mixedDims = true;
-            numPoints += rg.getNumPoints();
         }
         if (mixedDims) {
             log.info("LinearRings have mixed dimensionality: downgrading to 2d");
@@ -199,5 +196,21 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
 		out.writeObjectCollection(ringList);
+	}
+
+	@Override
+	public int getNumParts() {
+		return publicRingList != null ? publicRingList.size() : 0;
+	}
+
+	@Override
+	public int getNumPoints() {
+		int count = 0;
+		if (publicRingList != null) {
+			for(LinearRing ring : publicRingList) {
+				count += ring.getNumPoints();
+			}
+		}
+		return count;
 	}
 }

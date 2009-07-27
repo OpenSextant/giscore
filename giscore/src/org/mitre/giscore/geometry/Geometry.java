@@ -38,8 +38,6 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	// initialize
 	boolean is3D;
 	Geodetic2DBounds bbox;
-	int numParts;
-	int numPoints;
 
 	/**
 	 * This method returns a boolean indicating if this geometry object is
@@ -75,9 +73,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * @return integer number of separate parts that make up this Geometry
 	 *         object.
 	 */
-	public int getNumParts() {
-		return numParts;
-	}
+	public abstract int getNumParts();
 
 	/**
 	 * This method returns the total number of points in all the parts of this
@@ -86,9 +82,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * @return integer number of total points in all the parts of this Geometry
 	 *         object.
 	 */
-	public int getNumPoints() {
-		return numPoints;
-	}
+	public abstract int getNumPoints();
 
 	/**
 	 * This method returns a <code>Geodetic2DPoint</code> or <code>Geodetic3DPoint</code>
@@ -177,8 +171,6 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
             // fails to write out min/max elevation
 		}
 		out.writeBoolean(is3D);
-		out.writeInt(numParts);
-		out.writeInt(numPoints);
 	}
 
 	/*
@@ -207,8 +199,6 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 			bbox.setWestLon(new Longitude(readAngle(in)));
 		}
 		is3D = in.readBoolean();
-		numParts = in.readInt();
-		numPoints = in.readInt();
 	}
 
 	/**

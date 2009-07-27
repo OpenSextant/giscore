@@ -49,16 +49,22 @@ public class Model extends Geometry {
                 is3D = false;
                 bbox = new Geodetic2DBounds(gp);
             }
-            numPoints = 1;
-            numParts = 1;
         } else {
             bbox = null;
-            numPoints = 0;
-            numParts = 0;
             is3D = false;
         }
     }
 
+	@Override
+	public int getNumParts() {
+		return location != null ? 1 : 0;
+	}
+
+	@Override
+	public int getNumPoints() {
+		return getNumParts(); // Happily they happen to be the same here
+	}
+	
     public AltitudeModeEnumType getAltitudeMode() {
         return altitudeMode;
     }

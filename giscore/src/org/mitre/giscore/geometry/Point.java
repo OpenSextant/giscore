@@ -109,8 +109,6 @@ public class Point extends GeometryBase {
 		} else
 			throw new IllegalArgumentException("Point must be in Geodetic form");
 		pt = (Geodetic2DPoint) gp;
-		numParts = 1;
-		numPoints = 1;
 	}
 
 	/**
@@ -227,5 +225,15 @@ public class Point extends GeometryBase {
 		}
 		writeAngle(out, pt.getLatitude());
 		writeAngle(out, pt.getLongitude());
+	}
+
+	@Override
+	public int getNumParts() {
+		return 1;
+	}
+
+	@Override
+	public int getNumPoints() {
+		return 1;
 	}
 }

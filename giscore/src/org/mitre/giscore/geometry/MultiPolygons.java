@@ -47,7 +47,6 @@ import org.slf4j.LoggerFactory;
 public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiPolygons.class);
-
     private List<Polygon> polygonList, publicPolygonList;
 
     /**
@@ -98,13 +97,9 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	private void init(List<Polygon> polygonList) {
 		// Make sure all the polygons have the same number of dimensions (2D or 3D)
         is3D = polygonList.get(0).is3D();
-        numParts = 0;
-        numPoints = 0;
         boolean mixedDims = false;
         for (Polygon nr : polygonList) {
             if (is3D != nr.is3D()) mixedDims = true;
-            numParts += nr.getNumParts();
-            numPoints += nr.getNumPoints();
         }
         if (mixedDims) {
             log.info("Polygons have mixed dimensionality: downgrading MultiPolygon to 2d");
@@ -173,5 +168,27 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
 		out.writeObjectCollection(polygonList);
+	}
+
+	@Override
+	public int getNumParts() {
+		int pcount = 0;
+		if (publicPolygonList != null) {
+			for(Polygon poly : publicPolygonList) {
+				pcount += poly.getNumParts();
+			}
+		}
+		return pcount;
+	}
+
+	@Override
+	public int getNumPoints() {
+		int pcount = 0;
+		if (publicPolygonList != null) {
+			for(Polygon poly : publicPolygonList) {
+				pcount += poly.getNumPoints();
+			}
+		}
+		return pcount;
 	}
 }

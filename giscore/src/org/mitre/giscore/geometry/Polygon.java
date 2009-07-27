@@ -189,12 +189,9 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
         if (validateTopology) validateTopology(rings);
         // Make sure all the rings have the same number of dimensions (2D or 3D)
         is3D = outerRing.is3D();
-        numParts = 1 + rings.size();
-        numPoints = outerRing.getNumPoints();
         boolean mixedDims = false;
         for (LinearRing rg : rings) {
             if (is3D != rg.is3D()) mixedDims = true;
-            numPoints += rg.getNumPoints();
         }
         if (mixedDims) {
             log.info("Rings have mixed dimensionality: downgrading Polygon to 2d");
@@ -262,5 +259,25 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 		super.writeData(out);
 		out.writeObject(outerRing);
 		out.writeObjectCollection(ringList);
+	}
+
+	@Override
+	public int getNumParts() {
+		int pcount = 0;
+		if (outerRing != null) pcount++;
+		if (ringList != null) pcount += ringList.size();
+		return pcount;
+	}
+
+	@Override
+	public int getNumPoints() {
+		int count = 0;
+		if (outerRing != null) count += outerRing.getNumPoints();
+		if (ringList != null) {
+			for(LinearRing ring : ringList) {
+				count += ring.getNumPoints();
+			}
+		}
+		return count;
 	}
 }

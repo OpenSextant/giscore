@@ -18,7 +18,6 @@ package org.mitre.giscore.geometry;
 import java.awt.geom.Line2D;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -178,10 +177,18 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         }
         pointList = pts;
 		publicPointList = Collections.unmodifiableList(pointList);
-        numParts = 1;
-        numPoints = pts.size();
     }
 
+	@Override
+	public int getNumParts() {
+		return 1;
+	}
+
+	@Override
+	public int getNumPoints() {
+		return publicPointList != null ? publicPointList.size() : 0;
+	}
+	
     /**
      * This Constructor takes a list of points and initializes a Geometry Object for this Ring. By
      * default, it does not do topology validation.  To do validation, use alternate constructor.
