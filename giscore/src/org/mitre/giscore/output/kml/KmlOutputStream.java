@@ -85,7 +85,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     private final List<IGISObject> waitingElements = new ArrayList<IGISObject>();
 
-    private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
+    private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     private SafeDateFormat dateFormatter;    
 
     /**
@@ -398,8 +398,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      */
     private void handleOverlay(Overlay overlay) throws XMLStreamException {
         handleColor(COLOR, overlay.getColor());
-        handleSimpleElement(DRAW_ORDER, Integer
-                .toString(overlay.getDrawOrder()));
+        int order = overlay.getDrawOrder();
+        // don't bother to output drawOrder element if is the default value (0) 
+        if (order != 0) handleSimpleElement(DRAW_ORDER, Integer.toString(order));
         handleLinkElement(ICON, overlay.getIcon());
 
         if (overlay instanceof GroundOverlay) {
