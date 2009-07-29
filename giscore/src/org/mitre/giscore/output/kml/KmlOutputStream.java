@@ -244,24 +244,24 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 if (endTime == null) {
                     // start time with no end time
                     writer.writeStartElement(TIME_SPAN);
-                    handleSimpleElement(BEGIN, getDateFormatter().format(startTime));
+                    handleSimpleElement(BEGIN, formatDate(startTime));
                 } else if (endTime.equals(startTime)) {
                     // start == end represents a timestamp
                     // note that having feature with a timeSpan with same begin and end time
                     // is identical to one with a timestamp of same time in Google Earth client.
                     writer.writeStartElement(TIME_STAMP);
-                    handleSimpleElement(WHEN, getDateFormatter().format(startTime));
+                    handleSimpleElement(WHEN, formatDate(startTime));
                 } else {
                     // start != end represents a timeSpan
                     writer.writeStartElement(TIME_SPAN);
-                    handleSimpleElement(BEGIN, getDateFormatter().format(startTime));
-                    handleSimpleElement(END, getDateFormatter().format(endTime));
+                    handleSimpleElement(BEGIN, formatDate(startTime));
+                    handleSimpleElement(END, formatDate(endTime));
                 }
                 writer.writeEndElement();
             } else if (endTime != null) {
                 // end time with no start time
                 writer.writeStartElement(TIME_SPAN);
-                handleSimpleElement(END, getDateFormatter().format(endTime));
+                handleSimpleElement(END, formatDate(endTime));
                 writer.writeEndElement();
             }
 
@@ -299,6 +299,20 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     }
 
     /**
+     * Format date in ISO format and trim milliseconds field  if 0
+     * @param date
+     * @return formatted date (e.g. 2003-09-30T00:00:06.930Z)
+     */
+    private String formatDate(Date date) {
+        String d = getDateFormatter().format(date);
+        if (d.endsWith(".000Z")) {
+            // trim milliseconds field
+            d = d.substring(0, d.length() - 5) + "Z";
+        }
+        return d;
+    }
+
+    /**
      * Format a value according to the type, defaults to using toString.
      *
      * @param type the type, assumed not <code>null</code>
@@ -324,7 +338,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 }
             }
             if (val instanceof Date) {
-                return getDateFormatter().format((Date) val);
+                return formatDate((Date) val);
             } else {
                 return val.toString();
             }
@@ -894,7 +908,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             handleNonEmptySimpleElement("linkDescription", networkLinkControl.getLinkDescription());
             handleNonEmptySimpleElement("linkSnippet", networkLinkControl.getLinkSnippet());
             Date expires = networkLinkControl.getExpires();
-            if (expires != null) handleSimpleElement("expires", getDateFormatter().format(expires));
+            if (expires != null) handleSimpleElement("expires", formatDate(expires));
             String targetHref = networkLinkControl.getTargetHref();
 			String type = networkLinkControl.getUpdateType();
 			if (targetHref != null && type != null) {
