@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+
+timestamps on Folders/Documents inherited by child
+features (i.e. placemarks) contained in that container
+that lack a time component.
+
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <Document>
+        <name>Inherited time</name>
+        <Style id="paddle-a">
+            <IconStyle>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/kml/paddle/A.png</href>
+                </Icon>
+                <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+            </IconStyle>
+        </Style>
+        <Style id="paddle-b">
+            <IconStyle>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/kml/paddle/B.png</href>
+                </Icon>
+                <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+            </IconStyle>
+        </Style>
+        <Style id="hiker-icon">
+            <IconStyle>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/ms/icons/hiker.png</href>
+                </Icon>
+                <hotSpot x="0" xunits="fraction" y=".5" yunits="fraction"/>
+            </IconStyle>
+        </Style>
+        <Style id="check-hide-children">
+            <ListStyle>
+                <listItemType>checkHideChildren</listItemType>
+            </ListStyle>
+        </Style>
+        <Placemark>
+            <TimeStamp>
+                <when>2007-01-14T21:05:02Z</when>
+            </TimeStamp>
+            <styleUrl>#paddle-a</styleUrl>
+            <Point>
+                <coordinates>-122.536226,37.86047,0</coordinates>
+            </Point>
+        </Placemark>
+
+        <Folder>
+            <name>Group1</name>
+            <TimeSpan>
+                <begin>2007-01-14T21:05:20Z</begin>
+                <end>2007-01-14T21:06:04Z</end>
+            </TimeSpan>
+            <styleUrl>#check-hide-children</styleUrl>
+            <Placemark>
+                <styleUrl>#hiker-icon</styleUrl>
+                <Point>
+                    <coordinates>-122.536422,37.860303,0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <styleUrl>#hiker-icon</styleUrl>
+                <Point>
+                    <coordinates>-122.536688,37.860072,0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <styleUrl>#hiker-icon</styleUrl>
+                <Point>
+                    <coordinates>-122.536923,37.859855,0</coordinates>
+                </Point>
+            </Placemark>
+        </Folder>
+
+        <Folder>
+            <name>Group2</name>
+            <TimeSpan>
+                <begin>2007-01-14T21:06:24Z</begin>
+                <end>2007-01-14T21:07:07Z</end>
+            </TimeSpan>
+            <styleUrl>#check-hide-children</styleUrl>
+            <Placemark>
+                <styleUrl>#hiker-icon</styleUrl>
+                <Point>
+                    <coordinates>-122.537116,37.85961000000001,0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <styleUrl>#hiker-icon</styleUrl>
+                <Point>
+                    <coordinates>-122.537298,37.859336,0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <styleUrl>#hiker-icon</styleUrl>
+                <Point>
+                    <coordinates>-122.537469,37.85907,0</coordinates>
+                </Point>
+            </Placemark>
+        </Folder>
+
+        <Folder>
+            <name>Group3</name>
+            <TimeSpan>
+                <begin>2007-01-14T21:07:27Z</begin>
+                <end>2007-01-14T21:08:11Z</end>
+            </TimeSpan>
+            <styleUrl>#check-hide-children</styleUrl>
+            <Placemark>
+                <styleUrl>#hiker-icon</styleUrl>
+                <Point>
+                    <coordinates>-122.537635,37.858822,0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <styleUrl>#hiker-icon</styleUrl>
+                <Point>
+                    <coordinates>-122.537848,37.858526,0</coordinates>
+                </Point>
+            </Placemark>
+            <Placemark>
+                <styleUrl>#hiker-icon</styleUrl>
+                <Point>
+                    <coordinates>-122.538044,37.858288,0</coordinates>
+                </Point>
+            </Placemark>
+        </Folder>
+
+<!--
+	note having non-overlapping timestamps in folder
+	and placemark has strange behavior.
+
+	google earth uses visiability of the container then
+	visiability of features. If intervals don't overlap
+	then placemarks are not visible.
+	Below "B" placemarks only appear if start time earlier
+	than T21:08 and end time is at end of range 21:09.
+-->
+        <Folder>
+            <name>Group4</name>
+            <TimeStamp>
+                <when>2007-01-14T21:09:33Z</when>
+            </TimeStamp>
+            <styleUrl>#check-hide-children</styleUrl>
+            <Placemark>
+                <TimeStamp>
+                    <when>2007-01-14T21:08:11Z</when>
+                </TimeStamp>
+                <styleUrl>#paddle-b</styleUrl>
+                <Point>
+                    <coordinates>-122.538307,37.858064,0</coordinates>
+                </Point>
+            </Placemark>
+        </Folder>
+
+        <Folder>
+            <name>Group5</name>
+            <TimeStamp>
+                <when>2007-01-14T21:08:11Z</when>
+            </TimeStamp>
+            <styleUrl>#check-hide-children</styleUrl>
+            <Placemark>
+                <TimeStamp>
+                    <when>2007-01-14T21:09:33Z</when>
+                </TimeStamp>
+                <styleUrl>#paddle-b</styleUrl>
+                <Point>
+                    <coordinates>-122.538601,37.857837,0</coordinates>
+                </Point>
+            </Placemark>
+        </Folder>
+
+        <Placemark>
+            <TimeSpan>
+              <begin>2007-01-14T21:08:11Z</begin>
+              <end>2007-01-14T21:09:33Z</end>
+            </TimeSpan>
+            <styleUrl>#paddle-b</styleUrl>
+            <Point>
+                <coordinates>-122.53887,37.857604,0</coordinates>
+            </Point>
+        </Placemark>
+    </Document>
+</kml>
+
