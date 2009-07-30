@@ -40,7 +40,7 @@ import java.net.URISyntaxException;
  * Handles the following tasks:
  * 
  * <ul>
- * <li>write to KMZ/KML files transparently. If file has a .kmz file extension then a KMZ (ZIP)
+ * <li>write to KMZ/KML files transparently. If file has a .kmz file extension (or .zip) then a KMZ (ZIP)
  *    file is created with that file name.
  * <li>discards empty containers if ContainerStart is followed by a ContainerEnd element
  *    in a successive write() call.
@@ -64,7 +64,7 @@ public class KmlWriter {
 
 	/**
 	 * Construct a KmlWriter whiuch starts writing a KML document into
-	 * the specified KML or KMZ file.  If filename ends with .kmz extension
+	 * the specified KML or KMZ file.  If filename ends with .kmz or .zip extension
 	 * then a compressed KMZ (ZIP) file is produced with the main KML document
 	 * stored as "doc.kml" in the root directory. <p/>
 	 *
@@ -75,7 +75,9 @@ public class KmlWriter {
 	 * @throws IOException if an I/O error occurs
 	 */
 	public KmlWriter(File file) throws IOException {
-        compressed = (file.getName().toLowerCase().endsWith(".kmz"));
+        String name = file.getName().toLowerCase();
+        // if  filename ends in .zip create then treat as .KMZ file ending with .ZIP extension
+        compressed = name.endsWith(".kmz") || name.endsWith(".zip"); 
         OutputStream os = new FileOutputStream(file);
         try {
             if (compressed) {
