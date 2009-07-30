@@ -1,8 +1,26 @@
 package org.mitre.giscore.output.shapefile;
 
+import org.mitre.giscore.IStreamVisitor;
+import org.mitre.giscore.events.Comment;
+import org.mitre.giscore.events.ContainerEnd;
+import org.mitre.giscore.events.ContainerStart;
+import org.mitre.giscore.events.DocumentStart;
+import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.events.GroundOverlay;
+import org.mitre.giscore.events.NetworkLink;
+import org.mitre.giscore.events.NetworkLinkControl;
+import org.mitre.giscore.events.PhotoOverlay;
+import org.mitre.giscore.events.Row;
+import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.ScreenOverlay;
+import org.mitre.giscore.events.Style;
+import org.mitre.giscore.events.StyleMap;
+import org.mitre.giscore.geometry.Circle;
 import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.Model;
 import org.mitre.giscore.geometry.MultiLine;
 import org.mitre.giscore.geometry.MultiLinearRings;
 import org.mitre.giscore.geometry.MultiPoint;
@@ -18,7 +36,7 @@ import org.mitre.giscore.geometry.Polygon;
  * @author DRAND
  * 
  */
-public class ShapefileBaseClass {
+public abstract class ShapefileBaseClass implements IStreamVisitor {
     // Constants
     protected static final int SIGNATURE = 9994;
     protected static final int VERSION = 1000;
@@ -66,31 +84,181 @@ public class ShapefileBaseClass {
     
 
     /**
-     * Determine the shape type of the specified Geometry object
-     * @param geom
-     * @return
-     * @throws IllegalArgumentException
+     * Visting a row causes an error for non-row oriented output streams
+     * @param row
      */
-    protected static int getShapeType(Geometry geom) throws IllegalArgumentException {
-        if (geom == null) return NULL_TYPE;
-        int shapeType;
-        if (geom instanceof Point)
-            shapeType = POINT_TYPE;                 // Point and PointZ
-        else if (geom instanceof MultiPoint)
-            shapeType = MULTIPOINT_TYPE;            // MultiPoint and MultiPointZ
-        else if ((geom instanceof Line) ||
-                (geom instanceof MultiLine))
-            shapeType = MULTILINE_TYPE;             // PolyLine and PolyLineZ
-        // TBD: should LinearRing + MultiLinearRings be treated set as MULTILINE_TYPE for polyLine
-        // if so need to change logic in putPolyLine() and putPolygon() 
-        else if ((geom instanceof LinearRing) ||
-                (geom instanceof MultiLinearRings) ||
-                (geom instanceof Polygon) ||
-                (geom instanceof MultiPolygons))
-            shapeType = MULTINESTEDRINGS_TYPE;      // Polygon and PolygonZ
-        else
-            throw new IllegalArgumentException("Geometry type for " + geom + " is not recognized");
-        if (geom.is3D()) shapeType += 10;
-        return shapeType;
+    public void visit(Row row) {
+    	throw new UnsupportedOperationException("Can't output a tabular row");
     }
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.NetworkLink)
+	 */
+	public void visit(NetworkLink link) {
+		visit((Feature) link);
+	}
+
+	/**
+	 * Visit NetworkLinkControl.
+	 * Default behavior ignores NetworkLinkControls 
+	 * @param networkLinkControl
+	 */
+	public void visit(NetworkLinkControl networkLinkControl) {
+		// Ignored by default
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.PhotoOverlay)
+	 */
+	public void visit(PhotoOverlay overlay) {
+		visit((Feature) overlay);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.ScreenOverlay)
+	 */
+	public void visit(ScreenOverlay overlay) {
+		visit((Feature) overlay);
+	}
+
+	/**
+     * @param overlay
+     */
+    public void visit(GroundOverlay overlay) {
+    	visit((Feature) overlay);
+    } 
+
+	
+    /**
+	 * @param point
+	 */
+	public void visit(Point point) {
+		// do nothing
+	}
+
+    /**
+     * @param multiPoint
+     */
+    public void visit(MultiPoint multiPoint) {
+        for (Point point : multiPoint) {
+            point.accept(this);
+        }
+    }
+
+    /**
+     * @param line
+     */
+    public void visit(Line line) {
+        for (Point pt : line) {
+            pt.accept(this);
+        }
+	}
+
+    /**
+     * @param geobag a geometry bag
+     */
+    public void visit(GeometryBag geobag) {
+    	for(Geometry geo : geobag) {
+    		geo.accept(this);
+    	}
+    }
+    
+	/**
+	 * @param multiLine
+	 */
+	public void visit(MultiLine multiLine) {
+        for (Line line : multiLine) {
+            line.accept(this);
+        }
+	}
+
+	/**
+	 * @param ring
+	 */
+	public void visit(LinearRing ring) {
+        for (Point pt : ring) {
+            pt.accept(this);
+        }
+	}
+
+    /**
+     * @param rings
+     */
+    public void visit(MultiLinearRings rings) {
+        for (LinearRing ring : rings) {
+            ring.accept(this);
+        }
+    }
+
+    /**
+	 * @param polygon
+	 */
+	public void visit(Polygon polygon) {
+        polygon.getOuterRing().accept(this);
+        for (LinearRing ring : polygon.getLinearRings()) {
+            ring.accept(this);
+        }
+	}
+
+    /**
+     * @param polygons
+     */
+    public void visit(MultiPolygons polygons) {
+        for (Polygon polygon : polygons) {
+            polygon.accept(this);
+        }
+    }
+
+	public void visit(Comment comment) {
+		// Ignored by default
+	}
+
+    public void visit(Model model) {
+        // Ignored by default
+    }
+
+	/**
+     * Handle the output of a Circle
+     *
+     * @param circle the circle
+     */
+    public void visit(Circle circle) {
+        // treat as Point by default
+        visit((Point)circle);
+    }
+    
+	@Override
+	public void visit(DocumentStart documentStart) {
+		// Ignore
+	}
+
+	@Override
+	public void visit(ContainerStart containerStart) {
+		// Ignore		
+	}
+
+	@Override
+	public void visit(StyleMap styleMap) {
+		// Ignore		
+	}
+
+	@Override
+	public void visit(Style style) {
+		// Ignore
+	}
+
+	@Override
+	public void visit(Schema schema) {
+		// Ignore
+	}
+
+	@Override
+	public void visit(Feature feature) {
+		// Ignore
+	}
+
+	@Override
+	public void visit(ContainerEnd containerEnd) {
+		// Ignore
+	}
 }

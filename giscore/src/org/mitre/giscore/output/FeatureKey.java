@@ -17,6 +17,7 @@ import org.mitre.giscore.geometry.Geometry;
 public class FeatureKey {
 	private Schema schema;
 	private String path;
+	private String styleRef = null;
 	private Class<? extends Geometry> geoclass;
 	private Class<? extends Row> featureClass;
 	
@@ -62,6 +63,14 @@ public class FeatureKey {
 	 */
 	public String getPath() {
 		return path;
+	}
+	
+	public String getStyleRef() {
+		return styleRef;
+	}
+
+	public void setStyleRef(String styleRef) {
+		this.styleRef = styleRef;
 	}
 
 	/*

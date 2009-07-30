@@ -60,7 +60,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(LinearRing.class);
 
-    private List<Point> pointList, publicPointList;
+    private List<Point> pointList;
     private boolean idlWrap;  // International Date Line Wrap
 
     // private Boolean tessellate; // default (false)
@@ -72,7 +72,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
      * @return Iterator over Geodetic2DPoint point objects
      */
     public Iterator<Point> iterator() {
-        return publicPointList.iterator();
+        return  Collections.unmodifiableList(pointList).iterator();
     }
 
 	/**
@@ -83,7 +83,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
 	 * @return Collection of the point objects.
 	 */
 	public List<Point> getPoints() {
-		return publicPointList;
+		return  Collections.unmodifiableList(pointList);
 	}
 
     // This method will check that this LinearRing is closed and non-self-intersecting.
@@ -176,7 +176,6 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
             gp1 = gp2;
         }
         pointList = pts;
-		publicPointList = Collections.unmodifiableList(pointList);
     }
 
 	@Override
@@ -186,7 +185,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
 
 	@Override
 	public int getNumPoints() {
-		return publicPointList != null ? publicPointList.size() : 0;
+		return pointList != null ? pointList.size() : 0;
 	}
 	
     /**

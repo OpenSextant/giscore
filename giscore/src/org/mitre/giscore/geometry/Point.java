@@ -16,6 +16,9 @@
 package org.mitre.giscore.geometry;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -235,5 +238,10 @@ public class Point extends GeometryBase {
 	@Override
 	public int getNumPoints() {
 		return 1;
+	}
+
+	@Override
+	public List<Point> getPoints() {
+		return Collections.singletonList(new Point(pt));
 	}
 }

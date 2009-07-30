@@ -284,7 +284,9 @@ public class TestObjectPersistence {
 		go.setSchema(new URI("#123"));
 		go.setStyleUrl("#style1");
 		
-		go.putData(new SimpleField("f1"), 5.6);
+		SimpleField f1 = new SimpleField("f1");
+		f1.setLength(100);
+		go.putData(f1, 5.6);
 		return go;
 	}
 }

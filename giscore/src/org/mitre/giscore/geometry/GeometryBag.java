@@ -21,6 +21,7 @@ package org.mitre.giscore.geometry;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -44,7 +45,7 @@ import org.mitre.itf.geodesy.Longitude;
 public class GeometryBag extends Geometry implements Collection<Geometry> {
 	private static final long serialVersionUID = 1L;
 	
-	Collection<Geometry> geometries = new ArrayList<Geometry>();
+	List<Geometry> geometries = new ArrayList<Geometry>();
 
 	/**
 	 * Empty ctor for object io
@@ -122,6 +123,11 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		}
 		return total;
 	}
+	
+	@Override
+	public Geometry getPart(int i) {
+		return geometries != null ? geometries.get(i) : null;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.Geometry#getNumPoints()
@@ -133,6 +139,15 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 			total += geo.getNumPoints();
 		}
 		return total;
+	}
+	
+	@Override
+	public List<Point> getPoints() {
+		List<Point> rval = new ArrayList<Point>();
+		for(Geometry geo : geometries) {
+			rval.addAll(geo.getPoints());
+		}
+		return Collections.unmodifiableList(rval);
 	}
 
 	/* (non-Javadoc)
@@ -259,7 +274,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException, IllegalAccessException {
 		super.readData(in);
-		geometries = (Collection<Geometry>) in.readObjectCollection();
+		geometries = (List<Geometry>) in.readObjectCollection();
 	}
 
 	/* (non-Javadoc)

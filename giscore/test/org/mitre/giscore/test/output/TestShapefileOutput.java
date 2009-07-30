@@ -26,11 +26,16 @@ import java.util.List;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
+import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.MultiLine;
+import org.mitre.giscore.geometry.MultiLinearRings;
+import org.mitre.giscore.geometry.MultiPoint;
+import org.mitre.giscore.geometry.MultiPolygons;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.output.shapefile.SingleShapefileOutputHandler;
@@ -86,6 +91,28 @@ public class TestShapefileOutput {
 		soh.process();
 	}
 	
+	@Test public void testMultiPointOutput() throws Exception {
+		Schema schema = new Schema(new URI("urn:test"));
+		SimpleField id = new SimpleField("testid");
+		id.setLength(10);
+		schema.put(id);
+		ObjectBuffer buffer = new ObjectBuffer();
+		Feature f = new Feature();
+		f.putData(id, "id multipoint");
+		f.setSchema(schema.getId());
+		List<Point> pts = new ArrayList<Point>();
+		for(int i = 0; i < 5; i++) {
+			Point point = getRandomPoint();
+			pts.add(point);
+		}
+		f.setGeometry(new MultiPoint(pts));
+		buffer.write(f);
+		SingleShapefileOutputHandler soh =
+			new SingleShapefileOutputHandler(schema, null, buffer, 
+					new File("c:/temp/shptest/"), "multipoint", null);
+		soh.process();
+	}
+	
 	@Test public void testLineOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -111,6 +138,35 @@ public class TestShapefileOutput {
 					new File("c:/temp/shptest/"), "lines", null);
 		soh.process();
 	}
+	
+	@Test public void testMultiLineOutput() throws Exception {
+		Schema schema = new Schema(new URI("urn:test"));
+		SimpleField id = new SimpleField("testid");
+		id.setLength(10);
+		schema.put(id);
+		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
+		schema.put(date);
+		ObjectBuffer buffer = new ObjectBuffer();
+		Feature f = new Feature();
+		f.putData(id, "id multiline");
+		f.putData(date, new Date());
+		f.setSchema(schema.getId());
+		List<Line> lines = new ArrayList<Line>();
+		for(int i = 0; i < 5; i++) {
+			List<Point> pts = new ArrayList<Point>();
+			pts.add(getRandomPoint());
+			pts.add(getRandomPoint());
+			Line line = new Line(pts);
+			lines.add(line);
+		}
+		MultiLine mline = new MultiLine(lines);
+		f.setGeometry(mline);
+		buffer.write(f);
+		SingleShapefileOutputHandler soh =
+			new SingleShapefileOutputHandler(schema, null, buffer, 
+					new File("c:/temp/shptest/"), "multilines", null);
+		soh.process();
+	}	
 	
 	@Test public void testRingOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
@@ -139,6 +195,36 @@ public class TestShapefileOutput {
 		SingleShapefileOutputHandler soh =
 			new SingleShapefileOutputHandler(schema, null, buffer, 
 					new File("c:/temp/shptest/"), "rings", null);
+		soh.process();
+	}
+	
+	@Test public void testRingZOutput() throws Exception {
+		Schema schema = new Schema(new URI("urn:test"));
+		SimpleField id = new SimpleField("testid");
+		id.setLength(10);
+		schema.put(id);
+		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
+		schema.put(date);
+		ObjectBuffer buffer = new ObjectBuffer();
+		for(int i = 0; i < 5; i++) {
+			Point cp = getRandomPoint();
+			Feature f = new Feature();
+			f.putData(id, "id " + i);
+			f.putData(date, new Date());
+			f.setSchema(schema.getId());
+			List<Point> pts = new ArrayList<Point>();
+			pts.add(getRingPointZ(cp, 0, 5, .3, .4));
+			pts.add(getRingPointZ(cp, 1, 5, .3, .4));
+			pts.add(getRingPointZ(cp, 2, 5, .3, .4));
+			pts.add(getRingPointZ(cp, 3, 5, .3, .4));
+			pts.add(getRingPointZ(cp, 4, 5, .3, .4));
+			LinearRing ring = new LinearRing(pts);
+			f.setGeometry(ring);
+			buffer.write(f);
+		}
+		SingleShapefileOutputHandler soh =
+			new SingleShapefileOutputHandler(schema, null, buffer, 
+					new File("c:/temp/shptest/"), "ringz", null);
 		soh.process();
 	}
 	
@@ -178,6 +264,202 @@ public class TestShapefileOutput {
 			new SingleShapefileOutputHandler(schema, null, buffer, 
 					new File("c:/temp/shptest/"), "polys", null);
 		soh.process();
+	}
+	
+	@Test public void testPolyZOutput() throws Exception {
+		Schema schema = new Schema(new URI("urn:test"));
+		SimpleField id = new SimpleField("testid");
+		id.setLength(10);
+		schema.put(id);
+		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
+		schema.put(date);
+		ObjectBuffer buffer = new ObjectBuffer();
+		for(int i = 0; i < 5; i++) {
+			Point cp = getRandomPoint(25.0); // Center of outer poly
+			Feature f = new Feature();
+			f.putData(id, "id polyz " + i);
+			f.putData(date, new Date());
+			f.setSchema(schema.getId());
+			List<Point> pts = new ArrayList<Point>();
+			for(int k = 0; k < 5; k++) {
+				pts.add(getRingPointZ(cp, k, 5, 1.0, 2.0));
+			}
+			LinearRing outerRing = new LinearRing(pts);
+			List<LinearRing> innerRings = new ArrayList<LinearRing>();
+			for(int j = 0; j < 4; j++) {
+				pts = new ArrayList<Point>();
+				Point ircp = getRingPointZ(cp, j, 4, .5, 1.0);
+				for(int k = 0; k < 5; k++) {
+					pts.add(getRingPointZ(ircp, k, 5, .24, .2));
+				}	
+				innerRings.add(new LinearRing(pts));
+			}
+			Polygon p = new Polygon(outerRing, innerRings);
+			f.setGeometry(p);
+			buffer.write(f);
+		}
+		SingleShapefileOutputHandler soh =
+			new SingleShapefileOutputHandler(schema, null, buffer, 
+					new File("c:/temp/shptest/"), "polyz", null);
+		soh.process();
+	}	
+	
+	
+	@Test public void testMultiRingOutput() throws Exception {
+		Schema schema = new Schema(new URI("urn:test"));
+		SimpleField id = new SimpleField("testid");
+		id.setLength(10);
+		schema.put(id);
+		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
+		schema.put(date);
+		ObjectBuffer buffer = new ObjectBuffer();
+		Feature f = new Feature();
+		f.putData(id, "id multiring");
+		f.putData(date, new Date());
+		f.setSchema(schema.getId());
+		List<LinearRing> rings = new ArrayList<LinearRing>();
+		for(int i = 0; i < 5; i++) {
+			Point cp = getRandomPoint(25.0); // Center of outer poly
+			List<Point> pts = new ArrayList<Point>();
+			for(int k = 0; k < 5; k++) {
+				pts.add(getRingPoint(cp, k, 5, .2, .5));
+			}
+			LinearRing outerRing = new LinearRing(pts);
+			rings.add(outerRing);
+		}
+		MultiLinearRings mring = new MultiLinearRings(rings);
+		f.setGeometry(mring);
+		buffer.write(f);
+		SingleShapefileOutputHandler soh =
+			new SingleShapefileOutputHandler(schema, null, buffer, 
+					new File("c:/temp/shptest/"), "multirings", null);
+		soh.process();
+	}
+		
+	@Test public void testMultiRingZOutput() throws Exception {
+		Schema schema = new Schema(new URI("urn:test"));
+		SimpleField id = new SimpleField("testid");
+		id.setLength(10);
+		schema.put(id);
+		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
+		schema.put(date);
+		ObjectBuffer buffer = new ObjectBuffer();
+		Feature f = new Feature();
+		f.putData(id, "id multiringz");
+		f.putData(date, new Date());
+		f.setSchema(schema.getId());
+		List<LinearRing> rings = new ArrayList<LinearRing>();
+		for(int i = 0; i < 5; i++) {
+			Point cp = getRandomPoint(25.0); // Center of outer poly
+			List<Point> pts = new ArrayList<Point>();
+			for(int k = 0; k < 5; k++) {
+				pts.add(getRingPointZ(cp, k, 5, 1.0, 2.0));
+			}
+			LinearRing outerRing = new LinearRing(pts);
+			rings.add(outerRing);
+		}
+		MultiLinearRings mring = new MultiLinearRings(rings);
+		f.setGeometry(mring);
+		buffer.write(f);
+		SingleShapefileOutputHandler soh =
+			new SingleShapefileOutputHandler(schema, null, buffer, 
+					new File("c:/temp/shptest/"), "multiringz", null);
+		soh.process();
+	}
+	
+	@Test public void testMultiPolyOutput() throws Exception {
+		Schema schema = new Schema(new URI("urn:test"));
+		SimpleField id = new SimpleField("testid");
+		id.setLength(10);
+		schema.put(id);
+		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
+		schema.put(date);
+		ObjectBuffer buffer = new ObjectBuffer();
+		Feature f = new Feature();
+		f.putData(id, "id multipoly");
+		f.putData(date, new Date());
+		f.setSchema(schema.getId());
+		List<Polygon> polys = new ArrayList<Polygon>();
+		for(int i = 0; i < 5; i++) {
+			Point cp = getRandomPoint(25.0); // Center of outer poly
+			List<Point> pts = new ArrayList<Point>();
+			for(int k = 0; k < 5; k++) {
+				pts.add(getRingPoint(cp, k, 5, 1.0, 2.0));
+			}
+			LinearRing outerRing = new LinearRing(pts);
+			List<LinearRing> innerRings = new ArrayList<LinearRing>();
+			for(int j = 0; j < 4; j++) {
+				pts = new ArrayList<Point>();
+				Point ircp = getRingPoint(cp, j, 4, .5, 1.0);
+				for(int k = 0; k < 5; k++) {
+					pts.add(getRingPoint(ircp, k, 5, .24, .2));
+				}	
+				innerRings.add(new LinearRing(pts));
+			}
+			Polygon p = new Polygon(outerRing, innerRings);
+			polys.add(p);
+		}
+		MultiPolygons mp = new MultiPolygons(polys);
+		f.setGeometry(mp);
+		buffer.write(f);
+		SingleShapefileOutputHandler soh =
+			new SingleShapefileOutputHandler(schema, null, buffer, 
+					new File("c:/temp/shptest/"), "multipolys", null);
+		soh.process();
+	}
+	
+	
+	@Test public void testMultiPolyZOutput() throws Exception {
+		Schema schema = new Schema(new URI("urn:test"));
+		SimpleField id = new SimpleField("testid");
+		id.setLength(10);
+		schema.put(id);
+		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
+		schema.put(date);
+		ObjectBuffer buffer = new ObjectBuffer();
+		Feature f = new Feature();
+		f.putData(id, "id multipolyz");
+		f.putData(date, new Date());
+		f.setSchema(schema.getId());
+		List<Polygon> polys = new ArrayList<Polygon>();
+		for(int i = 0; i < 5; i++) {
+			Point cp = getRandomPoint(25.0); // Center of outer poly
+			List<Point> pts = new ArrayList<Point>();
+			for(int k = 0; k < 5; k++) {
+				pts.add(getRingPointZ(cp, k, 5, 2, 1.5));
+			}
+			LinearRing outerRing = new LinearRing(pts);
+			List<LinearRing> innerRings = new ArrayList<LinearRing>();
+			for(int j = 0; j < 4; j++) {
+				pts = new ArrayList<Point>();
+				Point ircp = getRingPointZ(cp, j, 4, .5, 1.0);
+				for(int k = 0; k < 5; k++) {
+					pts.add(getRingPointZ(ircp, k, 5, .24, .2));
+				}	
+				innerRings.add(new LinearRing(pts));
+			}
+			Polygon p = new Polygon(outerRing, innerRings);
+			polys.add(p);
+		}
+		MultiPolygons mp = new MultiPolygons(polys);
+		f.setGeometry(mp);
+		buffer.write(f);
+		SingleShapefileOutputHandler soh =
+			new SingleShapefileOutputHandler(schema, null, buffer, 
+					new File("c:/temp/shptest/"), "multipolyz", null);
+		soh.process();
+	}	
+
+	private Point getRingPointZ(Point cp, int n, int total, double size, double min) {
+		double lat = cp.getCenter().getLatitude().inDegrees();
+		double lon = cp.getCenter().getLongitude().inDegrees();
+		double theta = Math.toRadians(360.0 * n / total);
+		double magnitude = min + RandomUtils.nextDouble() * size;
+		double dy = magnitude * Math.sin(theta);
+		double dx = magnitude * Math.cos(theta);
+		Point pt = new Point(lat + dy, lon + dx, true);
+		pt.setAltitudeMode(AltitudeModeEnumType.absolute);
+		return pt;
 	}
 
 	private Point getRingPoint(Point cp, int n, int total, double size, double min) {

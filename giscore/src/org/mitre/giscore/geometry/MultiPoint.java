@@ -47,7 +47,7 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiPoint.class);
 
-    private List<Point> pointList, publicPointList;
+    private List<Point> pointList;
 
     /**
      * This method returns an iterator for cycling through the geodetic Points in this MultiPoint.
@@ -56,7 +56,7 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
      * @return Iterator over geodetic Point objects.
      */
     public Iterator<Point> iterator() {
-        return publicPointList.iterator();
+        return Collections.unmodifiableCollection(pointList).iterator();
     }
 
 	/**
@@ -66,8 +66,8 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	 *
 	 * @return Collection of the {@code Point} objects.
 	 */
-	public Collection<Point> getPoints() {
-		return publicPointList;
+	public List<Point> getPoints() {
+		return Collections.unmodifiableList(pointList);
 	}
 	
 	/**
@@ -107,7 +107,6 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
         bbox = is3D ? new Geodetic3DBounds((Geodetic3DPoint)gp) : new Geodetic2DBounds(gp);
         for (Point p : pts) bbox.include(p.asGeodetic2DPoint());
         pointList = pts;
-		publicPointList = Collections.unmodifiableList(pointList);
 	}
 
     /**
@@ -166,6 +165,11 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	@Override
 	public int getNumParts() {
 		return pointList != null ? pointList.size() : 0;
+	}
+	
+	@Override
+	public Geometry getPart(int i) {
+		return pointList != null ? pointList.get(i) : null;
 	}
 
 	@Override

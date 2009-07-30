@@ -50,7 +50,7 @@ public class Line extends GeometryBase implements Iterable<Point> {
 	
     private static final Logger log = LoggerFactory.getLogger(Line.class);
 
-    private List<Point> pointList, publicPointList;
+    private List<Point> pointList;
     private boolean idlWrap;  // International Date Line Wrap
 
     private Boolean tessellate; // default (false)
@@ -62,7 +62,7 @@ public class Line extends GeometryBase implements Iterable<Point> {
      * @return Iterator over Geodetic2DPoint point objects.
      */
     public Iterator<Point> iterator() {
-        return publicPointList.iterator();
+        return  Collections.unmodifiableList(pointList).iterator();
     }
 
 	/**
@@ -72,8 +72,8 @@ public class Line extends GeometryBase implements Iterable<Point> {
 	 *
 	 * @return Collection of the point objects.
 	 */
-	public Collection<Point> getPoints() {
-		return publicPointList;
+	public List<Point> getPoints() {
+		return  Collections.unmodifiableList(pointList);
 	}
 
 	/**
@@ -132,7 +132,6 @@ public class Line extends GeometryBase implements Iterable<Point> {
             gp1 = gp2;
         }
         pointList = pts;
-		publicPointList = Collections.unmodifiableList(pointList);
 	}
 
     public Boolean getTessellate() {
@@ -202,6 +201,6 @@ public class Line extends GeometryBase implements Iterable<Point> {
 
 	@Override
 	public int getNumPoints() {
-		return publicPointList != null ? publicPointList.size() : 0;
+		return pointList != null ? pointList.size() : 0;
 	}
 }

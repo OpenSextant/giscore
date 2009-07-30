@@ -16,6 +16,7 @@
 package org.mitre.giscore.geometry;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -54,7 +55,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiLinearRings.class);
 
-    private List<LinearRing> ringList, publicRingList;
+    private List<LinearRing> ringList;
 
     /**
      * Empty ctor for object io
@@ -94,7 +95,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
      * @return Iterator over Line objects.
      */
     public Iterator<LinearRing> iterator() {
-        return publicRingList.iterator();
+        return Collections.unmodifiableList(ringList).iterator();
     }
 
 	/**
@@ -105,7 +106,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 	 * @return Collection of the {@code LinearRing} objects.
 	 */
 	public Collection<LinearRing> getLinearRings() {
-		return publicRingList;
+		return Collections.unmodifiableList(ringList);
 	}
 
     // This method will check that this MultiLinearRings Object has rings that
@@ -149,7 +150,6 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
             }
         }
         ringList = rings;
-		publicRingList = Collections.unmodifiableList(ringList);
     }
 
     /**
@@ -200,17 +200,33 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 
 	@Override
 	public int getNumParts() {
-		return publicRingList != null ? publicRingList.size() : 0;
+		return ringList != null ? ringList.size() : 0;
+	}
+	
+	@Override
+	public Geometry getPart(int i) {
+		return ringList != null ? ringList.get(i) : null;
 	}
 
 	@Override
 	public int getNumPoints() {
 		int count = 0;
-		if (publicRingList != null) {
-			for(LinearRing ring : publicRingList) {
+		if (ringList != null) {
+			for(LinearRing ring : ringList) {
 				count += ring.getNumPoints();
 			}
 		}
 		return count;
+	}
+
+	@Override
+	public List<Point> getPoints() {
+		List<Point> pts = new ArrayList<Point>();
+		if (ringList != null) {
+			for(LinearRing ring : ringList) {
+				pts.addAll(ring.getPoints());
+			}
+		}
+		return Collections.unmodifiableList(pts);
 	}
 }

@@ -17,7 +17,6 @@ package org.mitre.giscore.geometry;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -58,7 +57,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
     private static final Logger log = LoggerFactory.getLogger(Polygon.class);
 
     private LinearRing outerRing;
-    private List<LinearRing> ringList, publicRingList;
+    private List<LinearRing> ringList;
 
     // private Boolean tessellate; // default (false)
 
@@ -135,7 +134,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
      * @return Iterator over LinearRing objects.
      */
     public Iterator<LinearRing> iterator() {
-        return publicRingList.iterator();
+        return Collections.unmodifiableList(ringList).iterator();
     }
 
 	/**
@@ -145,8 +144,8 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 	 *
 	 * @return Collection of the {@code LinearRing} objects.
 	 */
-	public Collection<LinearRing> getLinearRings() {
-		return publicRingList;
+	public List<LinearRing> getLinearRings() {
+		return Collections.unmodifiableList(ringList);
 	}
 
     // This method will check that this Polygon Object has a single outer ring that
@@ -213,7 +212,6 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
             }
         }
         ringList = rings;
-		publicRingList = Collections.unmodifiableList(ringList);
     }
 
     /**
@@ -268,6 +266,16 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 		if (ringList != null) pcount += ringList.size();
 		return pcount;
 	}
+	
+	@Override
+	public Geometry getPart(int i) {
+		if (i < 0)
+			throw new IllegalArgumentException("i must be non-negative");
+		else if (i == 0) 
+			return outerRing;
+		else 
+			return ringList.get(i - 1);
+	}
 
 	@Override
 	public int getNumPoints() {
@@ -280,4 +288,16 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 		}
 		return count;
 	}
+
+	@Override
+	public List<Point> getPoints() {
+		List<Point> rval = new ArrayList<Point>();
+		if (outerRing != null) rval.addAll(outerRing.getPoints());
+		if (ringList != null) {
+			for(LinearRing ring : ringList) {
+				rval.addAll(ring.getPoints());
+			}
+		}
+		return rval;
+	}	
 }

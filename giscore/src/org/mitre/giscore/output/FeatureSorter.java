@@ -62,6 +62,11 @@ public class FeatureSorter {
 	}
 	
 	/**
+	 * Depending on the output, split the features by style as well as
+	 * by the other information. 
+	 */
+	private boolean splitOnStyle = false;
+	/**
 	 * Maps the schema name to the schema. The schemata included are both
 	 * defined schemata as well as implied or inline schemata that are defined
 	 * with their data.
@@ -94,7 +99,17 @@ public class FeatureSorter {
 	 * Empty ctor
 	 */
 	public FeatureSorter() {
+		this(false);
+	}
+	
+	/**
+	 * Ctor
+	 * @param splitOnStyle if <code>true</code> then split features by the
+	 * referenced style as well as geometry and path.
+	 */
+	public FeatureSorter(boolean splitOnStyle) {
 		try {
+			this.splitOnStyle = splitOnStyle;
 			cleanup();
 		} catch (IOException e) {
 			// Ignore, can't happen since no stream is open
@@ -150,14 +165,20 @@ public class FeatureSorter {
 			if (s.getOidField() == null) {
 				s.put(oid);
 			}
+			String styleid = null;
 			if (row instanceof Feature) {
 				Feature feature = (Feature) row;
-				if (feature.getGeometry() != null)
+				if (feature.getGeometry() != null) {
 					g = feature.getGeometry();
 					geoclass = feature.getGeometry().getClass();
-
+				}
+				if (splitOnStyle && feature.getStyleUrl() != null 
+						&& feature.getStyleUrl().startsWith("#")) {
+					styleid = feature.getStyleUrl().substring(1);
+				}
 			}
 			FeatureKey key = new FeatureKey(s, path, geoclass, row.getClass());
+			if (styleid != null) key.setStyleRef(styleid);
 			ObjectBuffer buffer = null;
 			if (!key.equals(currentKey)) {
 				currentKey = key;

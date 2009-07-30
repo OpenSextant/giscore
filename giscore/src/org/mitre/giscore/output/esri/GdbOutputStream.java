@@ -28,7 +28,6 @@ import java.io.OutputStream;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
@@ -61,6 +60,7 @@ import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.StreamVisitorBase;
 import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.utils.SafeDateFormat;
+import org.mitre.giscore.utils.ZipUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -118,36 +118,6 @@ public class GdbOutputStream extends StreamVisitorBase implements
      * Checker to use for dataset names
      */
     private FieldChecker checker = null;
-
-    /**
-     * Strategy that uses the current "container" along with the geometry to
-     * derive a name.
-     */
-    public static class GdbContainerNameStrategy implements
-            IContainerNameStrategy {
-
-        /*
-           * (non-Javadoc)
-           *
-           * @see
-           * org.mitre.giscore.output.IContainerNameStrategy#deriveContainerName
-           * (java.util.List, org.mitre.giscore.output.FeatureKey)
-           */
-        public String deriveContainerName(List<String> path, FeatureKey key) {
-            StringBuilder setname = new StringBuilder();
-
-            setname.append(StringUtils.join(path, '_'));
-            if (key.getGeoclass() != null) {
-                if (setname.length() > 0)
-                    setname.append("_");
-                setname.append(key.getGeoclass().getSimpleName());
-            }
-            String datasetname = setname.toString();
-            datasetname = datasetname.replaceAll("\\s", "_");
-
-            return datasetname;
-        }
-    }
 
     /**
      * Reference environment to create geospatial references
@@ -243,7 +213,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
     /**
      * The container naming strategy. If not supplied in the ctor then
-     * {@link GdbContainerNameStrategy} will be used.
+     * {@link BasicContainerNameStrategy} will be used.
      */
     private IContainerNameStrategy containerNameStrategy = null;
 
@@ -282,7 +252,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
                     "path should never be null and parent must exist");
         }
         if (containerNameStrategy == null) {
-            this.containerNameStrategy = new GdbContainerNameStrategy();
+            this.containerNameStrategy = new BasicContainerNameStrategy();
         } else {
             this.containerNameStrategy = containerNameStrategy;
         }
@@ -337,7 +307,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
                 throw new IllegalStateException(
                         "Can't output multi-component output without a zip output stream");
             }
-            outputZipComponents(outputPath.getName(), outputPath, (ZipOutputStream) outputStream);
+            ZipUtils.outputZipComponents(outputPath.getName(), outputPath, (ZipOutputStream) outputStream);
         } else {
             InputStream is = null;
             try {
@@ -345,39 +315,6 @@ public class GdbOutputStream extends StreamVisitorBase implements
                 IOUtils.copy(is, outputStream);
             } finally {
                 IOUtils.closeQuietly(is);
-            }
-        }
-    }
-
-    /**
-     * Outputting data to zip
-     *
-     * @param prefix String file path prefix
-     * @param outputPath File or Directory to be recursively processed
-     * @param outputStream ZipOutputStream to write to
-     */
-    private void outputZipComponents(String prefix, File outputPath,
-                                     ZipOutputStream outputStream) {
-        InputStream is = null;
-        for (File component : outputPath.listFiles()) {
-            if (component.isDirectory()) {
-                outputZipComponents(prefix + "/" + component.getName(),
-                        component, outputStream);
-            } else {
-                try {
-                    ZipEntry entry = new ZipEntry(prefix + "/"
-                            + component.getName());
-                    outputStream.putNextEntry(entry);
-                    is = new FileInputStream(component);
-                    IOUtils.copy(is, outputStream);
-                } catch (FileNotFoundException e) {
-                    // Ignore since lock files may linger and cause this
-                } catch (IOException e) {
-                    throw new RuntimeException("Problem writing zip output", e);
-                } finally {
-                    IOUtils.closeQuietly(is);
-                    is = null;
-                }
             }
         }
     }

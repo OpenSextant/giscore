@@ -110,6 +110,7 @@ public class TestObjectBuffer {
 		URI suri = new URI("urn:mitre:test:uri1");
 		Schema s = new Schema(suri);
 		SimpleField text = new SimpleField("text");
+		text.setLength(100);
 		s.put(text);
 
 		IDataSerializable objects[] = new IDataSerializable[count];

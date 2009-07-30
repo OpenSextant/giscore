@@ -16,6 +16,7 @@
 package org.mitre.giscore.geometry;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -44,7 +45,6 @@ public class MultiLine extends Geometry implements Iterable<Line> {
     private static final Logger log = LoggerFactory.getLogger(MultiLine.class);
 
     private List<Line> lineList;
-	private List<Line> publicLineList;
 
     /**
      * This method returns an iterator for cycling through Lines in this MultiLine.
@@ -53,7 +53,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
      * @return Iterator over Line objects.
      */
     public Iterator<Line> iterator() {
-        return publicLineList.iterator();
+        return Collections.unmodifiableList(lineList).iterator();
     }
 
 	/**
@@ -64,7 +64,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	 * @return Collection of the {@code Line} objects.
 	 */
 	public Collection<Line> getLines() {
-		return publicLineList;
+		return Collections.unmodifiableList(lineList);
 	}
 
 	/**
@@ -117,7 +117,6 @@ public class MultiLine extends Geometry implements Iterable<Line> {
             }
         }
         lineList = lines;
-		publicLineList = Collections.unmodifiableList(lineList);
 	}
 
     /**
@@ -171,13 +170,29 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	}
 
 	@Override
+	public Geometry getPart(int i) {
+		return lineList != null ? lineList.get(i) : null;
+	}
+	
+	@Override
 	public int getNumPoints() {
 		int count = 0;
-		if (publicLineList != null) {
-			for(Line l : publicLineList) {
+		if (lineList != null) {
+			for(Line l : lineList) {
 				count += l.getNumPoints();
 			}
 		}
 		return count;
+	}
+
+	@Override
+	public List<Point> getPoints() {
+		List<Point> pts = new ArrayList<Point>();
+		if (lineList != null) {
+			for(Line l : lineList) {
+				pts.addAll(l.getPoints());
+			}
+		}
+		return Collections.unmodifiableList(pts);
 	}
 }

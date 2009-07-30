@@ -19,6 +19,8 @@
 package org.mitre.giscore.geometry;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.utils.IDataSerializable;
@@ -64,11 +66,8 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 
 	/**
 	 * This method returns the number of separate parts of the Geometry object.
-	 * Note that this is used by ESRI Shapefiles, so MultiNestedRings geometry
-	 * objects treat each Ring within their NestedRings as a separate part,
-	 * instead of counting the number of NestedRings as parts. This flattening
-	 * of the hierarchy is because ESRI polygons can have multiple outer rings,
-	 * whereas KML polygons can not.
+	 * The count of parts corresponds to the count of parts for use in 
+	 * creating ESRI Shapefiles. 
 	 * 
 	 * @return integer number of separate parts that make up this Geometry
 	 *         object.
@@ -225,5 +224,21 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 		} else {
 			out.writeDouble(0.0);
 		}
+	}
+
+	/**
+	 * @return the component points for the given geometry
+	 */
+	public abstract List<Point> getPoints();
+	
+	/**
+	 * @param i the desired part, 0 origin
+	 * @return the referenced part
+	 */
+	public Geometry getPart(int i) {
+		if (i == 0)
+			return this;
+		else
+			return null;
 	}
 }

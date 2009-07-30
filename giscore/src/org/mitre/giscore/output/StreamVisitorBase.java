@@ -196,7 +196,7 @@ public class StreamVisitorBase implements IStreamVisitor {
 	 */
 	public void visit(Polygon polygon) {
         polygon.getOuterRing().accept(this);
-        for (LinearRing ring : polygon) {
+        for (LinearRing ring : polygon.getLinearRings()) {
             ring.accept(this);
         }
 	}

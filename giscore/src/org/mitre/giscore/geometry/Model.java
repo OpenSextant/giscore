@@ -1,5 +1,9 @@
 package org.mitre.giscore.geometry;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
@@ -97,7 +101,12 @@ public class Model extends Geometry {
 		return location;
 	}
 
-    public void accept(IStreamVisitor visitor) {
+    @Override
+	public List<Point> getPoints() {
+		return Collections.singletonList(new Point(location));
+	}
+
+	public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
     }
 
@@ -126,5 +135,4 @@ public class Model extends Geometry {
 	public String toString() {
 		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
-
 }

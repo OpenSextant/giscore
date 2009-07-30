@@ -16,6 +16,7 @@
 package org.mitre.giscore.geometry;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -47,7 +48,7 @@ import org.slf4j.LoggerFactory;
 public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiPolygons.class);
-    private List<Polygon> polygonList, publicPolygonList;
+    private List<Polygon> polygonList;
 
     /**
      * This method returns an iterator for cycling through the Polygons in this Object.
@@ -56,7 +57,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
      * @return Iterator over Polygons objects.
      */
     public Iterator<Polygon> iterator() {
-        return publicPolygonList.iterator();
+        return Collections.unmodifiableCollection(polygonList).iterator();
     }
 
 	/**
@@ -67,7 +68,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	 * @return Collection of the {@code Polygon} objects.
 	 */
 	public Collection<Polygon> getPolygons() {
-		return publicPolygonList;
+		return Collections.unmodifiableCollection(polygonList);
 	}
 
 	/**
@@ -120,7 +121,6 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
             }
         }
         this.polygonList = polygonList;
-		this.publicPolygonList = Collections.unmodifiableList(polygonList);
 	}
 
     /**
@@ -172,23 +172,33 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 
 	@Override
 	public int getNumParts() {
-		int pcount = 0;
-		if (publicPolygonList != null) {
-			for(Polygon poly : publicPolygonList) {
-				pcount += poly.getNumParts();
-			}
-		}
-		return pcount;
+		return polygonList != null ? polygonList.size() : 0;
+	}
+	
+	@Override
+	public Geometry getPart(int i) {
+		return polygonList != null ? polygonList.get(i) : null;
 	}
 
 	@Override
 	public int getNumPoints() {
 		int pcount = 0;
-		if (publicPolygonList != null) {
-			for(Polygon poly : publicPolygonList) {
+		if (polygonList != null) {
+			for(Polygon poly : polygonList) {
 				pcount += poly.getNumPoints();
 			}
 		}
 		return pcount;
 	}
+	
+	@Override
+	public List<Point> getPoints() {
+		List<Point> rval = new ArrayList<Point>();
+		if (polygonList != null) {
+			for(Polygon poly : polygonList) {
+				rval.addAll(poly.getPoints());
+			}
+		}
+		return rval;
+	}	
 }

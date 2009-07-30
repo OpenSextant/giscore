@@ -36,6 +36,8 @@ import org.mitre.giscore.output.esri.GdbOutputStream;
 import org.mitre.giscore.output.esri.XmlGdbOutputStream;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmzOutputStream;
+import org.mitre.giscore.output.shapefile.PointShapeMapper;
+import org.mitre.giscore.output.shapefile.ShapefileOutputStream;
 
 /**
  * Factory class which creates concrete instantiations of input and output
@@ -194,12 +196,14 @@ public class GISFactory {
 					return new KmzOutputStream(outputStream);
 				case Shapefile:
 					checkArguments(new Class[] { File.class,
-							IContainerNameStrategy.class }, arguments,
-							new boolean[] { true, false });
+							IContainerNameStrategy.class, PointShapeMapper.class },
+							arguments, new boolean[] { true, false, false });
 					strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
 							: null);
-					return new GdbOutputStream(type, outputStream,
-							(File) arguments[0], strategy);
+					PointShapeMapper mapper = (PointShapeMapper) (arguments.length > 2 ? arguments[2]
+							: null);
+					return new ShapefileOutputStream(outputStream,
+							(File) arguments[0], strategy, mapper);
 				case FileGDB:
 					checkArguments(new Class[] { File.class,
 							IContainerNameStrategy.class }, arguments,
