@@ -21,8 +21,14 @@ import java.net.URISyntaxException;
  * on number of feature elements (Placemarks, Points, Polygons, LineStrings, NetworkLinks, etc.)
  * and optionally export the same KML to a file to verify all content has been correctly
  * parsed. <p/>
+ *
+ * Notes following conditions if found:
+ * <ul>
+ *  <li> Features inherit time from parent container
+ *  <li> NetworkLink has missing or empty HREF
+ * </ul>
  * 
- * This will help uncover any issues in reading and writing target KML files.
+ * This tool helps to uncover issues in reading and writing target KML files.
  * Some KML files fail to parse and those cases are almost always those that don't
  * conform to the appropriate KML XML Schema or follow the KML Reference Spec (see
  * http://code.google.com/apis/kml/documentation/kmlreference.html) such
@@ -43,6 +49,8 @@ public class KmlMetaDump implements IKml {
 	private int features;
     private boolean verbose;
     private Class lastObjClass;
+    private Date containerStartDate;
+    private Date containerEndDate;
 
     public void checkSource(URL url) throws IOException {
 		System.out.println(url);
@@ -206,6 +214,9 @@ public class KmlMetaDump implements IKml {
             addTag(gisObj.getClass());
 			checkFeature((Feature) gisObj);
 		} else if (gisObj instanceof ContainerStart) {
+            ContainerStart cs = (ContainerStart)gisObj;
+            containerStartDate = cs.getStartTime();
+            containerEndDate = cs.getEndTime();
 			addTag(((ContainerStart) gisObj).getType()); // Documemnt | Folder
 		} else {
 			Class cl = gisObj.getClass();
@@ -223,10 +234,19 @@ public class KmlMetaDump implements IKml {
 						}
 					} else addTag(geomClass);
 				}
-			}
-            // ignore: DocumentStart + ContainerEnd + Comment objects
-			else if (cl != ContainerEnd.class && cl != DocumentStart.class && cl != Comment.class)
+			} else if (cl == ContainerEnd.class) {
+                // Note: need to clear container time when matching ContainerEnd is found
+                // if container with time has several child containers then we simply
+                // clear inherited dates on first container end found but should match
+                // one associated with ContainerStart having the time. Could use stack
+                // to keep track or keep track of depth. For purpose of debugging
+                // it doesn't matter.
+                containerStartDate = null;
+                containerEndDate = null;
+            } else if (cl != DocumentStart.class && cl != Comment.class) {
+                // ignore: DocumentStart + Comment objects
                 addTag(cl); // e.g. Style, Schema, StyleMap, NetworkLinkControl
+            }
 		}
         lastObjClass = gisObj.getClass();
 	}
@@ -267,7 +287,10 @@ public class KmlMetaDump implements IKml {
 				addTag(TIME_SPAN);
 			}
 		}
-        // otherwise don't have timestamp or timeSpans
+        else if (containerStartDate != null || containerEndDate != null) {
+            addTag(":Container overrides feature time");
+        }
+        // otherwise feature doesn't have timeStamp or timeSpans
 
         if (f.getViewGroup() != null)
             addTag(LOOK_AT);
