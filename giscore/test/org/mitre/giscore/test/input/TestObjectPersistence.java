@@ -159,7 +159,7 @@ public class TestObjectPersistence {
 		assertNotNull(p2.getOuterRing());
 
 		MultiPolygons mp = (MultiPolygons) sois.readObject();
-		assertEquals(2, mp.getNumParts());
+		assertEquals(1, mp.getNumParts());
 		
 		sois.close();
 	}

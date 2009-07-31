@@ -43,14 +43,26 @@ public class TestShapefileInput {
 	@Test public void testMultilines() throws Exception {
 		doTest("multilines");
 	}
+	
+	@Test public void testMultipoint() throws Exception {
+		doTest("multipoint");
+	}
 
 	@Test public void testMultipolys() throws Exception {
 		doTest("multipolys");
+	}
+	
+	@Test public void testMultipolyz() throws Exception {
+		doTest("multipolyz");
 	}
 
 	@Test public void testMultirings() throws Exception {
 		doTest("multirings");
 	}
+	
+	@Test public void testMultiringz() throws Exception {
+		doTest("multiringz");
+	}	
 
 	@Test public void testPoints() throws Exception {
 		doTest("points");
@@ -59,11 +71,18 @@ public class TestShapefileInput {
 	@Test public void testPolys() throws Exception {
 		doTest("polys");
 	}
+	
+	@Test public void testPolyz() throws Exception {
+		doTest("polyz");
+	}
 
 	@Test public void testRings() throws Exception {
 		doTest("rings");
 	}
-
+	
+	@Test public void testRingz() throws Exception {
+		doTest("ringz");
+	}
 	
 	private void doTest(String file) throws URISyntaxException, IOException {
 		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shpdir, file);
