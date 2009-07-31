@@ -51,7 +51,6 @@ import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.MultiPolygons;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
-import org.mitre.giscore.input.shapefile.PolygonCountingVisitor;
 import org.mitre.giscore.output.dbf.DbfOutputStream;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.ObjectBuffer;
@@ -420,28 +419,76 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	@Override
 	public void visit(LinearRing ring) {
-		outputPolygon(ring);
+		outputPolygon(ring, 1);
 	}
 
 	@Override
 	public void visit(MultiLinearRings rings) {
-		outputPolygon(rings);
+		try {
+			PointOffsetVisitor pv = new PointOffsetVisitor();
+			rings.accept(pv);
+			putBBox(bos, rings.getBoundingBox());
+			bos.writeInt(pv.getPartCount(), ByteOrder.LITTLE_ENDIAN); 
+			bos.writeInt(pv.getTotal(), ByteOrder.LITTLE_ENDIAN);
+			for(Integer offset : pv.getOffsets()) {
+				bos.writeInt(offset, ByteOrder.LITTLE_ENDIAN);	
+			}
+			for(LinearRing ring : rings.getLinearRings()) {
+				putPolyPointsXY(ring);
+			}
+			if (rings.is3D()) {
+				bos.writeDouble(pv.getZmin(), ByteOrder.LITTLE_ENDIAN);
+				bos.writeDouble(pv.getZmax(), ByteOrder.LITTLE_ENDIAN);
+				for(LinearRing ring : rings.getLinearRings()) {
+					putPolyPointsZ(ring);
+				}	
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public void visit(MultiPolygons polygons) {
-		outputPolygon(polygons);
+		try {
+			PointOffsetVisitor pv = new PointOffsetVisitor();
+			polygons.accept(pv);
+			putBBox(bos, polygons.getBoundingBox());
+			bos.writeInt(pv.getPartCount(), ByteOrder.LITTLE_ENDIAN); 
+			bos.writeInt(pv.getTotal(), ByteOrder.LITTLE_ENDIAN);
+			for(Integer offset : pv.getOffsets()) {
+				bos.writeInt(offset, ByteOrder.LITTLE_ENDIAN);	
+			}
+			for(Polygon poly : polygons.getPolygons()) {
+				putPolyPointsXY(poly.getOuterRing());
+				for(LinearRing ring : poly.getLinearRings()) {
+					putPolyPointsXY(ring);
+				}
+			}
+			if (polygons.is3D()) {
+				bos.writeDouble(pv.getZmin(), ByteOrder.LITTLE_ENDIAN);
+				bos.writeDouble(pv.getZmax(), ByteOrder.LITTLE_ENDIAN);
+				for(Polygon poly : polygons.getPolygons()) {
+					putPolyPointsZ(poly.getOuterRing());
+					for(LinearRing ring : poly.getLinearRings()) {
+						putPolyPointsZ(ring);
+					}	
+				}
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	@Override
 	public void visit(Polygon polygon) {
-		outputPolygon(polygon);
+		outputPolygon(polygon, 1 + polygon.getLinearRings().size());
 	}
 
-	private void outputPolygon(Geometry geo) {
+	private void outputPolygon(Geometry geo, int partcount) {
 		try {
 			putBBox(bos, geo.getBoundingBox());
-			putPartCount(geo);
+			bos.writeInt(partcount, ByteOrder.LITTLE_ENDIAN);
 			putPartsVector(geo);
 			putPolyPointsXY(geo);
 			if (geo.is3D()) {
@@ -521,9 +568,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 					bos.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN);
 				}
 			}
-
 		}
-
 	}
 
 	/**
@@ -837,7 +882,11 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 */
 	private void putPointZ(Point pt) throws IOException {
 		Geodetic2DPoint gp = pt.asGeodetic2DPoint();
-		bos.writeDouble(((Geodetic3DPoint) gp).getElevation(),
-				ByteOrder.LITTLE_ENDIAN);
+		if (gp instanceof Geodetic3DPoint) {
+			bos.writeDouble(((Geodetic3DPoint) gp).getElevation(),
+					ByteOrder.LITTLE_ENDIAN);
+		} else {
+			bos.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN);
+		}
 	}
 }

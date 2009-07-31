@@ -380,17 +380,19 @@ public class TestShapefileOutput {
 		f.putData(date, new Date());
 		f.setSchema(schema.getId());
 		List<Polygon> polys = new ArrayList<Polygon>();
-		for(int i = 0; i < 5; i++) {
+		for(int i = 0; i < 4; i++) {
 			Point cp = getRandomPoint(25.0); // Center of outer poly
 			List<Point> pts = new ArrayList<Point>();
-			for(int k = 0; k < 5; k++) {
-				pts.add(getRingPoint(cp, k, 5, 1.0, 2.0));
+			int sides = RandomUtils.nextInt(4) + 4;
+			for(int k = 0; k < sides; k++) {
+				pts.add(getRingPoint(cp, k, sides, 1.0, 2.0));
 			}
 			LinearRing outerRing = new LinearRing(pts);
 			List<LinearRing> innerRings = new ArrayList<LinearRing>();
-			for(int j = 0; j < 4; j++) {
+			int inners = RandomUtils.nextInt(4) + 1;
+			for(int j = 0; j < inners; j++) {
 				pts = new ArrayList<Point>();
-				Point ircp = getRingPoint(cp, j, 4, .5, 1.0);
+				Point ircp = getRingPoint(cp, j, inners, .5, 1.0);
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPoint(ircp, k, 5, .24, .2));
 				}	

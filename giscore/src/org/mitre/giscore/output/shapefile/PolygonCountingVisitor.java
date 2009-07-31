@@ -16,7 +16,7 @@
  *  their occurrence.
  *
  ***************************************************************************************/
-package org.mitre.giscore.input.shapefile;
+package org.mitre.giscore.output.shapefile;
 
 import java.util.List;
 
