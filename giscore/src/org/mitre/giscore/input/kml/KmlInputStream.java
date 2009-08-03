@@ -126,6 +126,9 @@ import org.slf4j.LoggerFactory;
  * <p> 
  * Limited support for NetworkLinkControl which creates an object wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
+ * <p>
+ * Allow timestamps to omit seconds field. Strict schema requires seconds field in the dateTime (YYYY-MM-DDThh:mm:ssZ) format
+ * since Google Earth is lax in its rules. Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC. 
  *
  * @author DRAND
  * @author J.Mathews
@@ -146,7 +149,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private Map<String, String> schemaAliases;
 	private Map<String, Schema> schemata = new HashMap<String, Schema>();
 
-	private static final List<DateFormat> ms_dateFormats = new ArrayList<DateFormat>();
+	private static final List<SimpleDateFormat> ms_dateFormats = new ArrayList<SimpleDateFormat>(6);
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 	private static DatatypeFactory fact;
 	private static final Longitude COORD_ERROR = new Longitude();
@@ -174,11 +177,17 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		ms_geometries.add(MULTI_GEOMETRY);
 		ms_geometries.add(MODEL);
 
+        // Reference states: dateTime (YYYY-MM-DDThh:mm:ssZ) in KML states that T is the separator
+        // between the calendar and the hourly notation of time, and Z indicates UTC. (Seconds are required.)
+        // however, we will also check time w/o seconds since it is accepted by Google Earth.
+        // http://code.google.com/apis/kml/documentation/kmlreference.html#timestamp
+
 		ms_dateFormats.add(new SimpleDateFormat(ISO_DATE_FMT)); // default: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd"));
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));
-		ms_dateFormats.add(new SimpleDateFormat("yyyy"));
+        ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")); // dateTime format w/o seconds        
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd")); // date (YYYY-MM-DD)
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));    // gYearMonth (YYYY-MM)
+		ms_dateFormats.add(new SimpleDateFormat("yyyy"));       // gYear (YYYY)
 		for (DateFormat fmt : ms_dateFormats) {
 			fmt.setTimeZone(UTC);
 		}
@@ -695,10 +704,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				String time = null;
 				try {
                     if (foundStartTag(se, WHEN)) {
-                        time = stream.getElementText();
-                        Date date = parseDate(time.trim());
-                        cs.setStartTime(date);
-                        cs.setEndTime(date);
+                        time = getNonEmptyElementText();
+						if (time != null) {
+                            Date date = parseDate(time);
+                            cs.setStartTime(date);
+                            cs.setEndTime(date);
+                        }
                     } else if (foundStartTag(se, BEGIN)) {
 						time = stream.getElementText();
 						cs.setStartTime(parseDate(time.trim()));
@@ -726,6 +737,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @throws ParseException If the <code>lexicalRepresentation</code> is not a valid <code>Date</code>.
 	 */
 	public static Date parseDate(String datestr) throws ParseException {
+        if (StringUtils.isEmpty(datestr)) throw new ParseException("Empty or null date string", 0);
 		try {
 			if (fact == null) fact = DatatypeFactory.newInstance();
 			XMLGregorianCalendar o = fact.newXMLGregorianCalendar(datestr);
@@ -762,6 +774,33 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			}
 			return cal.getTime();
 		} catch (IllegalArgumentException iae) {
+            // try individual date formats
+            int ind = datestr.indexOf('T');
+            int i;
+            if (ind == -1) {
+                i = 3; // if no 'T' in date then skip to date (YYYY-MM-DD) format @ index=3
+            } else {
+                i = 0;
+                // sloppy KML might drop the 'Z' suffix for dates. Google Earth defaults to UTC.
+                if (!datestr.endsWith("Z") && datestr.indexOf(':', ind + 1) != -1
+                        && datestr.indexOf('+', ind + 1) == -1) {
+                    log.debug("Append Z suffix to date");
+                    datestr += 'Z'; // append 'Z' to date
+                }
+            }
+            while (i < ms_dateFormats.size()) {
+                SimpleDateFormat fmt = ms_dateFormats.get(i++);
+				try {
+                    Date date = fmt.parse(datestr);
+                    if (log.isDebugEnabled())
+                        log.debug(String.format("Failed to parse date %s with DatatypeFactory. Parsed using dateFormat: %s",
+                                datestr, fmt.toPattern()));
+					return date;
+				} catch (ParseException pe) {
+                    // ignore
+				}
+			}
+            // give up
 			final ParseException e2 = new ParseException(iae.getMessage(), 0);
 			e2.initCause(iae);
 			throw e2;
@@ -1198,7 +1237,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						String val = getNonEmptyElementText();
 						if (val != null) c.setTargetHref(val);
 						// TODO: NetworkLinkControl can have 1 or more Update controls
-						// ... TODO: handle Update details
+						// TODO: -- handle Update details
 					} else if (tag.equals("Create")) {
 						c.setUpdateType("Create");
 					} else if (tag.equals("Delete")) {
