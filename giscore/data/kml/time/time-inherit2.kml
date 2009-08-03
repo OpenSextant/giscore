@@ -133,8 +133,8 @@ that lack a time component.
 	note having non-overlapping timestamps in folder
 	and placemark has strange behavior.
 
-	google earth uses visiability of the container then
-	visiability of features. If intervals don't overlap
+	google earth uses visibility of the container then
+	visibility of features. If intervals don't overlap
 	then placemarks are not visible.
 	Below "B" placemarks only appear if start time earlier
 	than T21:08 and end time is at end of range 21:09.
