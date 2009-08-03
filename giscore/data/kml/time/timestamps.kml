@@ -6,7 +6,7 @@
             "2009", 			// gYear (YYYY)
             "2009-07", 			// gYearMonth (YYYY-MM)
             "2009-07-16",		// date (YYYY-MM-DD)
-            "2009-07-16T07:30:15Z",	// dateTime (YYYY-MM-DDThh:mm[:ss][Z])
+            "2009-07-16T07:30:15Z",	// dateTime (YYYY-MM-DDThh:mm:ssZ)
             "2009-07-16T10:30:15+03:00" // dateTime (YYYY-MM-DDThh:mm:sszzzzzz)
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -87,26 +87,6 @@
             </TimeSpan>
             <Point>
                 <coordinates>-122.537635,37.858822,0</coordinates>
-            </Point>
-        </Placemark>
-        <Placemark>
-            <name>when 2009-03-14T21:06:45</name>
-            <description>Z suffix omitted</description>
-            <TimeStamp>
-                <when>2009-03-14T21:06:45</when>
-            </TimeStamp>
-            <Point>
-                <coordinates>-122.537469,37.85907,0</coordinates>
-            </Point>
-        </Placemark>
-        <Placemark>
-            <name>when 2009-03-14T21:06</name>
-            <description>seconds field and Z suffix omitted</description>
-            <TimeStamp>
-                <when>2009-03-14T21:06</when>
-            </TimeStamp>
-            <Point>
-                <coordinates>-122.537469,37.85907,0</coordinates>
             </Point>
         </Placemark>
         <Placemark>
