@@ -29,6 +29,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Collection;
 import java.util.List;
+import java.util.Date;
+import java.util.TimeZone;
+import java.text.SimpleDateFormat;
+import java.text.ParseException;
 
 import org.junit.Test;
 import org.junit.Assert;
@@ -46,6 +50,7 @@ import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.StyleMap;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.kml.KmlInputStream;
+import org.mitre.giscore.input.kml.IKml;
 import org.mitre.itf.geodesy.*;
 import org.apache.commons.io.IOUtils;
 
@@ -145,6 +150,31 @@ public class TestKmlInputStream {
 		    IOUtils.closeQuietly(stream);
 		}
 	}
+
+    @Test public void testParseDate() {
+        SimpleDateFormat df = new SimpleDateFormat(IKml.ISO_DATE_FMT);
+        df.setTimeZone(TimeZone.getTimeZone("UTC"));
+        // allow lax date parsing
+        // dateTime (YYYY-MM-DDThh:mm:ssZ) -> (YYYY-MM-DDThh:mm[:ss][Z])
+        String[] timestamps = {
+            "500",                  "0500-01-01T00:00:00.000Z", // gYear (YYYY)
+            "2001",                 "2001-01-01T00:00:00.000Z", // gYear (YYYY)
+            "3500",                 "3500-01-01T00:00:00.000Z", // gYear (YYYY)
+            "2009-03-14T21:06:45",  "2009-03-14T21:06:45.000Z", // when  'Z' suffix omitted
+            "2009-03-14T21:06Z",    "2009-03-14T21:06:00.000Z", // seconds field omitted
+            "2009-03-14T21:06",     "2009-03-14T21:06:00.000Z", // seconds + 'Z' suffix omitted
+        };
+        for (int i = 0; i < timestamps.length; i += 2) {
+            Date date = null;
+            try {
+                date = KmlInputStream.parseDate(timestamps[i]);                
+            } catch (ParseException e) {
+                Assert.fail("failed to parse " + timestamps[i]);
+            }
+            assertEquals(timestamps[i+1], df.format(date));
+            System.out.format("DEBUG %s => %s%n", timestamps[i], timestamps[i+1]);
+        }
+    }
 
 	/**
 	 * Test KmlInputStream.parseCoord() for all variations of valid and invalid coordinate strings. 
