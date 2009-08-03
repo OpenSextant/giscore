@@ -519,7 +519,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		if (data == null)
 			return;
 		writer.writeStartElement(data.getTag());
-        // TODO: this writes elements in tag order which DOES NOT match order in KML XML schema
+        // Note: this writes elements in hash order which DOES NOT match order in KML XML schema
         // KML is well-formed and should correctly display in Google Earth but is not valid KML wrt spec.
         for (Map.Entry<String,String> entry : data.entrySet()) {
 			handleSimpleElement(entry.getKey(), entry.getValue());
