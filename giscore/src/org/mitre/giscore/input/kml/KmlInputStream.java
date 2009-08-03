@@ -180,6 +180,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
         // Reference states: dateTime (YYYY-MM-DDThh:mm:ssZ) in KML states that T is the separator
         // between the calendar and the hourly notation of time, and Z indicates UTC. (Seconds are required.)
         // however, we will also check time w/o seconds since it is accepted by Google Earth.
+        // Thus allowing the form: YYYY-MM-DDThh:mm[:ss][Z]
         // http://code.google.com/apis/kml/documentation/kmlreference.html#timestamp
 
 		ms_dateFormats.add(new SimpleDateFormat(ISO_DATE_FMT)); // default: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
@@ -711,11 +712,11 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                             cs.setEndTime(date);
                         }
                     } else if (foundStartTag(se, BEGIN)) {
-						time = stream.getElementText();
-						cs.setStartTime(parseDate(time.trim()));
+						time = getNonEmptyElementText();
+						cs.setStartTime(parseDate(time));
 					} else if (foundStartTag(se, END)) {
-						time = stream.getElementText();
-						cs.setEndTime(parseDate(time.trim()));
+						time = getNonEmptyElementText();
+						cs.setEndTime(parseDate(time));
 					}
 				} catch (IllegalArgumentException e) {
 					log.warn("Ignoring bad time: " + time + ": " + e);
@@ -733,11 +734,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * Parse kml:dateTimeType XML date/time field and convert to Date object.
 	 *
 	 * @param datestr  Lexical representation for one of XML Schema date/time datatypes.
+     *                  Must be non-null and non-blank string.
 	 * @return <code>Date</code> created from the <code>lexicalRepresentation</code>, never null.
 	 * @throws ParseException If the <code>lexicalRepresentation</code> is not a valid <code>Date</code>.
 	 */
 	public static Date parseDate(String datestr) throws ParseException {
-        if (StringUtils.isEmpty(datestr)) throw new ParseException("Empty or null date string", 0);
+        if (StringUtils.isBlank(datestr)) throw new ParseException("Empty or null date string", 0);
 		try {
 			if (fact == null) fact = DatatypeFactory.newInstance();
 			XMLGregorianCalendar o = fact.newXMLGregorianCalendar(datestr);
@@ -781,8 +783,14 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 i = 3; // if no 'T' in date then skip to date (YYYY-MM-DD) format @ index=3
             } else {
                 i = 0;
-                // sloppy KML might drop the 'Z' suffix for dates. Google Earth defaults to UTC.
-                if (!datestr.endsWith("Z") && datestr.indexOf(':', ind + 1) != -1
+                // Sloppy KML might drop the 'Z' suffix or for dates. Google Earth defaults to UTC.
+                // Likewise KML might drop the seconds field in timestamp.
+                // Note these forms are not valid with respect to KML Schema and kml:dateTimeType
+                // definition but Google Earth has lax parsing for such cases so we attempt
+                // to parse as such.
+                // This will NOT handle alternate time zones format with missing second field: e.g. 2009-03-14T16:10-05:00
+                if (!datestr.endsWith("Z") && datestr.indexOf(':', ind + 1) > 0
+                        && datestr.indexOf('-', ind + 1) == -1
                         && datestr.indexOf('+', ind + 1) == -1) {
                     log.debug("Append Z suffix to date");
                     datestr += 'Z'; // append 'Z' to date
