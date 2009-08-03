@@ -90,6 +90,26 @@
             </Point>
         </Placemark>
         <Placemark>
+            <name>when 2009-03-14T21:06:45</name>
+            <description>Z suffix omitted</description>
+            <TimeStamp>
+                <when>2009-03-14T21:06:45</when>
+            </TimeStamp>
+            <Point>
+                <coordinates>-122.537469,37.85907,0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark>
+            <name>when 2009-03-14T21:06</name>
+            <description>seconds field and Z suffix omitted</description>
+            <TimeStamp>
+                <when>2009-03-14T21:06</when>
+            </TimeStamp>
+            <Point>
+                <coordinates>-122.537469,37.85907,0</coordinates>
+            </Point>
+        </Placemark>
+        <Placemark>
             <name>when 2009-03-14T21:10:46+03:00</name>
             <TimeStamp>
                 <when>2009-03-14T21:10:46+03:00</when>

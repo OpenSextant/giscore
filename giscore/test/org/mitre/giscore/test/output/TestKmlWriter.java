@@ -41,7 +41,7 @@ public class TestKmlWriter extends TestGISBase {
             System.out.println("Created temp output directory: " + tempKmlDir);
     }
 
-    @Test
+    //@Test
     public void test_read_write_Kml() {
         checkDir(new File("data/kml"));
     }
@@ -327,6 +327,8 @@ public class TestKmlWriter extends TestGISBase {
 			"2009-03-14T00:00:00.000Z	2009-03-14T00:00:00.000Z", // span 2009-03-14
 			"2009-03-14T21:06:30.000Z	2009-03-14T21:06:30.000Z", // when 2009-03-14T21:06:30Z
 			"2009-03-14T21:06:00.000Z	2009-03-14T21:06:59.000Z", // span 2009-03-14T21:06Z
+            "2009-03-14T21:06:45.000Z	2009-03-14T21:06:45.000Z", // when 2009-03-14T21:06:45 'Z' suffix omitted
+            "2009-03-14T21:06:00.000Z	2009-03-14T21:06:00.000Z", // when 2009-03-14T21:06  seconds + 'Z' suffix omitted
 			"2009-03-14T18:10:46.000Z	2009-03-14T18:10:46.000Z", // when 2009-03-14T21:10:46+03:00
 			"2009-03-14T21:10:50.000Z	2009-03-14T21:10:50.000Z", // when 2009-03-14T16:10:50-05:00
 			"2009-03-14T21:10:50.000Z	2009-03-14T21:10:50.000Z"  // when 2009-03-14T16:10:50 (no timezone assumes UTC)
@@ -350,7 +352,7 @@ public class TestKmlWriter extends TestGISBase {
 				if (o instanceof Feature)
 					features.add((Feature)o);
 			}
-			assertEquals(11, features.size());
+			assertEquals(13, features.size());
 
 			SimpleDateFormat df = new SimpleDateFormat(IKml.ISO_DATE_FMT);
         	df.setTimeZone(tz);
@@ -379,7 +381,7 @@ public class TestKmlWriter extends TestGISBase {
 
 			reader = new KmlReader(temp);
 			List<IGISObject> objs2 = reader.readAll();
-			assertEquals(14, objs2.size());
+			assertEquals(16, objs2.size());
 			for (int i = 0; i < objs.size(); i++) {
 				TestKmlOutputStream.checkApproximatelyEquals(objs.get(i), objs2.get(i));
 			}
