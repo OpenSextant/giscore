@@ -197,7 +197,7 @@
 	<target name="publish" depends="pom, javadoc, sourcejar" 
 		description="Publish directly to a repository">		
 		<echo>Publishing revision ${ivy.new.revision}</echo>
-		<ivy:publish resolver="mapsrv-deploy" revision="${ivy.new.revision}" update="true" overwrite="true">
+		<ivy:publish resolver="maven-proxy" revision="${ivy.new.revision}" update="true" overwrite="true">
 			<artifacts pattern="rel/[artifact].[ext]" />
 			<artifacts pattern="rel/jars/[artifact].[ext]" />
 		</ivy:publish>
