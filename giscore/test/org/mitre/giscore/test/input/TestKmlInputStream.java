@@ -164,6 +164,7 @@ public class TestKmlInputStream {
             "2009-03-14T21:06Z",    "2009-03-14T21:06:00.000Z", // seconds field omitted
             "2009-03-14T21:06",     "2009-03-14T21:06:00.000Z", // seconds + 'Z' suffix omitted
         };
+        // does not handle alternate time zones format with missing second field: e.g. 2009-03-14T16:10-05:00
         for (int i = 0; i < timestamps.length; i += 2) {
             Date date = null;
             try {
