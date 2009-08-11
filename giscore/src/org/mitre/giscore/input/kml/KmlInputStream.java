@@ -185,7 +185,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 		ms_dateFormats.add(new SimpleDateFormat(ISO_DATE_FMT)); // default: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-        ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")); // dateTime format w/o seconds        
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")); // dateTime format w/o seconds
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd")); // date (YYYY-MM-DD)
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));    // gYearMonth (YYYY-MM)
 		ms_dateFormats.add(new SimpleDateFormat("yyyy"));       // gYear (YYYY)
@@ -196,8 +196,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * Creates a <code>KmlInputStream</code>
-     * and saves its argument, the input stream
-     * <code>input</code>, for later use. 
+	 * and saves its argument, the input stream
+	 * <code>input</code>, for later use. 
 	 * 
 	 * @param input
 	 *            input stream for the kml file, never <code>null</code>
@@ -687,8 +687,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
-	 * @param cs
-     * @param ee
+     * Handle timePrimitives (TimeStamp or timeSpan elements)
+	 * @param cs feature to set with time
+	 * @param ee
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleTimePrimitive(Common cs, XMLEvent ee)
@@ -703,38 +704,38 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				String time = null;
-				try {
+                try {
                     if (foundStartTag(se, WHEN)) {
                         time = getNonEmptyElementText();
-						if (time != null) {
+                        if (time != null) {
                             Date date = parseDate(time);
                             cs.setStartTime(date);
                             cs.setEndTime(date);
                         }
                     } else if (foundStartTag(se, BEGIN)) {
-						time = getNonEmptyElementText();
-						cs.setStartTime(parseDate(time));
-					} else if (foundStartTag(se, END)) {
-						time = getNonEmptyElementText();
-						cs.setEndTime(parseDate(time));
-					}
-				} catch (IllegalArgumentException e) {
-					log.warn("Ignoring bad time: " + time + ": " + e);
-				} catch (ParseException e) {
-					log.warn("Ignoring bad time: " + time + ": " + e);
-				}
-			}
-			if (foundEndTag(next, tag.getLocalPart())) {
-				return;
-			}
-		}
+                        time = getNonEmptyElementText();
+                        cs.setStartTime(parseDate(time));
+                    } else if (foundStartTag(se, END)) {
+                        time = getNonEmptyElementText();
+                        cs.setEndTime(parseDate(time));
+                    }
+                } catch (IllegalArgumentException e) {
+                    log.warn("Ignoring bad time: " + time + ": " + e);
+                } catch (ParseException e) {
+                    log.warn("Ignoring bad time: " + time + ": " + e);
+                }
+            }
+            if (foundEndTag(next, tag.getLocalPart())) {
+                return;
+            }
+        }
 	}
 
 	/**
 	 * Parse kml:dateTimeType XML date/time field and convert to Date object.
 	 *
 	 * @param datestr  Lexical representation for one of XML Schema date/time datatypes.
-     *                  Must be non-null and non-blank string.
+	 *                  Must be non-null and non-blank string.
 	 * @return <code>Date</code> created from the <code>lexicalRepresentation</code>, never null.
 	 * @throws ParseException If the <code>lexicalRepresentation</code> is not a valid <code>Date</code>.
 	 */
