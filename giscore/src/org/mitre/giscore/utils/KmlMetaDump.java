@@ -297,7 +297,7 @@ public class KmlMetaDump implements IKml {
 
         //if (lastObj instanceof StyleSelector) {
         if (lastObjClass == Style.class || lastObjClass == StyleMap.class)
-            System.out.println(" Feature uses inline " + getClassName(lastObjClass)); // Style or StyleMap
+            addTag(":Feature uses inline " + getClassName(lastObjClass)); // Style or StyleMap
 	}
 
 	private void addTag(Class aClass) {
