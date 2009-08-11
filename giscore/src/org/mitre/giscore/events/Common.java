@@ -37,6 +37,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
 public abstract class Common extends Row {
 	protected String name;
 	protected String description;
+	private Boolean visibility;
 	protected Date startTime;
 	protected Date endTime;
 	protected String styleUrl;
@@ -121,9 +122,26 @@ public abstract class Common extends Row {
 		return viewGroup;
 	}
 
+    /**
+     * Set ViewGroup on feature (e.g. Camera or LookAt element)
+     * @param viewGroup
+     */
 	public void setViewGroup(TaggedMap viewGroup) {
 		this.viewGroup = viewGroup;
 	}
+
+	public Boolean getVisibility() {
+		return visibility;
+	}
+
+    /**
+     * Specifies whether the feature is "visible" when it is initially loaded
+     * @param visibility Flag whether feature is visible or not.
+     *      default value is null (or undefined).
+     */
+    public void setVisibility(Boolean visibility) {
+        this.visibility = visibility;
+    }
 
 	/**
 	 * Read object from the data stream.

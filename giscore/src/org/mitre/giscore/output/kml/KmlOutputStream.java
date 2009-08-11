@@ -237,6 +237,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         try {
             handleNonNullSimpleElement(NAME, feature.getName());
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
+            Boolean visibility = feature.getVisibility();
+            if (visibility != null && !visibility)
+                handleSimpleElement(VISIBILITY, "0"); // default=1
             handleAbstractView(feature.getViewGroup()); // LookAt or Camera AbstractViewGroup
             Date startTime = feature.getStartTime();
             Date endTime = feature.getEndTime();

@@ -66,7 +66,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Read a KML file in as an input stream. Each time the read method is called,
+ * Read a KML/KMZ file in as an input stream. Each time the read method is called,
  * the code tries to read a single event's worth of data. Generally that is one
  * of the following events:
  * <ul>
@@ -98,9 +98,9 @@ import org.slf4j.LoggerFactory;
  * transmitted as tuples of two or three elements. The formatting of these is
  * consistent and is handled by {@link #parseCoordinates(String)}.
  * <p>
- * Feature properties (i.e., name, description, Camera/LookAt, styleUrl,
- * TimeStamp/TimeSpan elements) in addition to the geometry are parsed and
- * set on the Feature object.
+ * Feature properties (i.e., name, description, visibility, Camera/LookAt,
+ * styleUrl, inline Styles, TimeStamp/TimeSpan elements) in addition
+ * to the geometry are parsed and set on the Feature object.
  * <p>
  * Notes/Limitations:
  * <p> 
@@ -111,9 +111,9 @@ import org.slf4j.LoggerFactory;
  * <p> 
  * Unsupported tags include the following:
  *  atom:author, atom:link, address, xal:AddressDetails, Metadata,
- *  open, phoneNumber, Region, Snippet, snippet, visibility.
+ *  open, phoneNumber, Region, Snippet, snippet.
   * <p>
- * While these tags don't break anything if present they are ignored.
+ * These tags are consumed but discarded.
  * <p> 
  * StyleMaps with inline Styles or nested StyleMaps are not supported.
  * StyleMaps must specify styleUrl.
@@ -128,7 +128,7 @@ import org.slf4j.LoggerFactory;
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
  * <p>
  * Allow timestamps to omit seconds field. Strict schema requires seconds field in the dateTime (YYYY-MM-DDThh:mm:ssZ) format
- * since Google Earth is lax in its rules. Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC. 
+ * but Google Earth is lax in its rules. Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC. 
  *
  * @author DRAND
  * @author J.Mathews
@@ -375,6 +375,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 return true;
             } else if (localname.equals(DESCRIPTION)) {
                 feature.setDescription(getElementText(localname));
+                return true;
+            } else if (localname.equals(VISIBILITY)) {
+                feature.setVisibility(Boolean.valueOf("1".equals(getNonEmptyElementText())));
                 return true;
             } else if (localname.equals(STYLE)) {
                 handleStyle(feature, ee);
