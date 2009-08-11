@@ -182,18 +182,23 @@ public class KmlMetaDump implements IKml {
 				if (!lowerCaseName.endsWith(".kml") && !lowerCaseName.endsWith(".kmz"))
 					name += ".kml";
                 File out = new File(outPath, name);
-                if (file != null) {
-                    try {
-                        if (file.getCanonicalFile().equals(out.getCanonicalFile())) {
-                            System.err.println("*** ERROR: output cannot overwrite input");
-                            return null;
-                        }
-                    } catch(IOException e) {
-                        if (file.getAbsoluteFile().equals(out.getAbsoluteFile())) {
-                            System.err.println("*** ERROR: output cannot overwrite input");
-                            return null;
-                        }
+                /*
+                // check to not overwrite input file
+                try {
+                    if (file.getCanonicalFile().equals(out.getCanonicalFile())) {
+                        System.err.println("*** ERROR: output cannot overwrite input");
+                        return null;
                     }
+                } catch(IOException e) {
+                    if (file.getAbsoluteFile().equals(out.getAbsoluteFile())) {
+                        System.err.println("*** ERROR: output cannot overwrite input");
+                        return null;
+                    }
+                }
+                */
+                if (out.exists()) {
+                    System.err.println("*** WARNING: target file " + out + " exists");
+                    return null;
                 }
                 return new KmlWriter(out);
 			} catch (IOException e) {
@@ -211,8 +216,11 @@ public class KmlMetaDump implements IKml {
 			checkNetworkLink((NetworkLink)gisObj);
 			addTag(NETWORK_LINK);
 		} else if (gisObj instanceof Overlay) {
-            addTag(gisObj.getClass());
-			checkFeature((Feature) gisObj);
+            Overlay ov = (Overlay)gisObj;
+            addTag(ov.getClass());
+			checkFeature(ov);
+            if (ov.getIcon() == null)
+                addTag(":Overlay missing icon");
 		} else if (gisObj instanceof ContainerStart) {
             ContainerStart cs = (ContainerStart)gisObj;
             containerStartDate = cs.getStartTime();
@@ -261,7 +269,7 @@ public class KmlMetaDump implements IKml {
                 String url;
                 try {
                     UrlRef urlRef = new UrlRef(new URI(href));
-                    url = urlRef.toString();
+                    url = urlRef.isKmz() ? urlRef.getKmzRelPath() : urlRef.toString();
                 } catch (MalformedURLException e) {
                     url = href;
                 } catch (URISyntaxException e) {
@@ -330,9 +338,13 @@ public class KmlMetaDump implements IKml {
 
 	public static void usage() {
 		System.out.println("Usage: java KmlMetaDump [options] <file, directory, or URL..>");
+        System.out.println("\nIf a directory is choosen that all kml/kmz files in any subfolder will be examined");
 		System.out.println("\nOptions:");
-		System.out.println("\t-o<path-to-output-directory> Writes KML to file in specified directory\n\t\tusing same base file as original file");
-		System.out.println("\t-f Follow networkLinks: recursively loads content from NetworkLinks\n\t\tand add features to resulting statistics");
+		System.out.println("\t-o<path-to-output-directory> Writes KML/KMZ to file in specified directory");
+        System.out.println("\t\tusing same base file as original file.");
+        System.out.println("\t\tFiles with same name in target location will be skipped as NOT to overwrite anything.");
+		System.out.println("\t-f Follow networkLinks: recursively loads content from NetworkLinks");
+		System.out.println("\t\tand adds features to resulting statistics");
         System.out.println("\t-v Set verbose which dumps out features");
 		System.exit(1);
 	}	
