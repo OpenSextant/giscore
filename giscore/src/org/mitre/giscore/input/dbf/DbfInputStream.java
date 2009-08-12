@@ -219,7 +219,6 @@ public class DbfInputStream extends GISInputStreamBase implements
 		return hex;
 	}
 
-	@Override
 	public void close() {
 		if (stream != null) {
 			try {
@@ -231,7 +230,6 @@ public class DbfInputStream extends GISInputStreamBase implements
 		}
 	}
 
-	@Override
 	public IGISObject read() throws IOException {
 		if (hasSaved())
 			return readSaved();
@@ -289,7 +287,9 @@ public class DbfInputStream extends GISInputStreamBase implements
 			try {
 				row.putData(field, parseValStr(field.getType(), valStr));
 			} catch (ParseException e) {
-				throw new IOException(e);
+				final IOException e2 = new IOException();
+				e2.initCause(e);
+				throw e2;
 			}
 			start += field.getLength();
 		}

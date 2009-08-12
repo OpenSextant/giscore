@@ -115,7 +115,6 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		stream.writeByte(SIGNATURE);
 	}
 
-	@Override
 	public void write(IGISObject object) {
 		if (object instanceof Schema) {
 			if (schema == null) {
@@ -139,7 +138,6 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		buffer.write(object);
 	}
 
-	@Override
 	public void close() throws IOException {
 		if (stream != null) {
 			if (buffer.count() > 65535) {

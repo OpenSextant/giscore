@@ -227,37 +227,30 @@ public abstract class ShapefileBaseClass implements IStreamVisitor {
         visit((Point)circle);
     }
     
-	@Override
 	public void visit(DocumentStart documentStart) {
 		// Ignore
 	}
 
-	@Override
 	public void visit(ContainerStart containerStart) {
 		// Ignore		
 	}
 
-	@Override
 	public void visit(StyleMap styleMap) {
 		// Ignore		
 	}
 
-	@Override
 	public void visit(Style style) {
 		// Ignore
 	}
 
-	@Override
 	public void visit(Schema schema) {
 		// Ignore
 	}
 
-	@Override
 	public void visit(Feature feature) {
 		// Ignore
 	}
 
-	@Override
 	public void visit(ContainerEnd containerEnd) {
 		// Ignore
 	}

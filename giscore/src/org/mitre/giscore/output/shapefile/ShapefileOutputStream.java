@@ -160,7 +160,6 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
 		object.accept(this);
 	}
 
-	@Override
 	public void close() throws IOException {
 		for(FeatureKey key : sorter.keys()) {
 			ObjectBuffer buffer = sorter.getBuffer(key);

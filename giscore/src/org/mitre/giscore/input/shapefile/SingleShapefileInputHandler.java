@@ -191,7 +191,6 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 		}
 	}
 
-	@Override
 	public void close() {
 		if (stream != null)
 			try {
@@ -206,7 +205,6 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 		stream = null;
 	}
 
-	@Override
 	public IGISObject read() throws IOException {
 		if (hasSaved()) {
 			return readSaved();

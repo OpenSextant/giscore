@@ -621,7 +621,9 @@ public class NumberStreamTokenizer {
 	    int i = 0;
 	    do {
 		if (i >= buf.length) {
-                    buf = Arrays.copyOf(buf, buf.length * 2);
+                    char[] nbuf = new char[buf.length * 2];
+                    System.arraycopy(buf, 0, nbuf, 0, buf.length);
+                    buf = nbuf;
 		}
 		buf[i++] = (char) c;
 		c = read();
@@ -690,7 +692,9 @@ public class NumberStreamTokenizer {
 		    d = read();
 		}
 		if (i >= buf.length) {
-                    buf = Arrays.copyOf(buf, buf.length * 2);
+                    char[] nbuf = new char[buf.length * 2];
+                    System.arraycopy(buf, 0, nbuf, 0, buf.length);
+                    buf = nbuf;
 		}
 		buf[i++] = (char)c;
 	    }
