@@ -18,14 +18,18 @@
  ***************************************************************************************/
 package org.mitre.giscore.output.esri;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.AoInitialize;
 import com.esri.arcgis.system.EngineInitializer;
 import com.esri.arcgis.system.esriLicenseProductCode;
 import com.esri.arcgis.system.esriLicenseStatus;
+
+import java.io.IOException;
+
+import org.mitre.javautil.Pair;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Encapsulate initializing the ESRI environment
@@ -68,13 +72,13 @@ public class ESRIInitializer {
 		}
 		return true;
 	}
-	
-	private static int LicensesToTry[] = new int[] {
-		esriLicenseProductCode.esriLicenseProductCodeArcEditor,
-		esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB,
-		esriLicenseProductCode.esriLicenseProductCodeArcView,
-		esriLicenseProductCode.esriLicenseProductCodeArcServer,
-		esriLicenseProductCode.esriLicenseProductCodeArcInfo
+
+	private static Pair<Integer, String> LicensesToTry[] = new Pair[] {
+		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeArcEditor, "Arc Editor"),
+		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB, "Arc Engine GeoDB"),
+		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeArcView, "Arc View"),
+		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeArcServer, "Arc Server"),
+		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeArcInfo, "Arc Info")
 	};
 	
 	/**
@@ -82,6 +86,7 @@ public class ESRIInitializer {
 	 */
 	private ESRIInitializer(final boolean force) throws LinkageError {
 		if(!force) {
+			logger.debug("Attempting to load libraries ourselves.");
 			try {
 				// We can't use the ESRIInitializer because esri shuts down the
 				// JVM if the libraries can't be found.
@@ -94,17 +99,54 @@ public class ESRIInitializer {
 
 		try {
 			// Step 1: Initialize the Java Component Object Model (COM) Interop.
+			logger.debug("Initializing ESRI engine");
 			EngineInitializer.initializeEngine();
+			logger.debug("Initializing licenses");
+			boolean worked = false;
 			for(int i = 0; i < LicensesToTry.length; i++) {
 				// Step 2: Initialize a valid license. 
 				try {
-					int code = new AoInitialize().initialize(LicensesToTry[i]);
+					int code = new AoInitialize().initialize(LicensesToTry[i].a);
 					if (code == esriLicenseStatus.esriLicenseAvailable ||
-							code == esriLicenseStatus.esriLicenseAlreadyInitialized)
+							code == esriLicenseStatus.esriLicenseAlreadyInitialized) {
+						logger.info("Successfully initialized ESRI using license: {}", LicensesToTry[i].b);
+						worked = true;
 						break; // Worked!
+					}
+					if(logger.isDebugEnabled()) {
+						switch(code) {
+							case esriLicenseStatus.esriLicenseCheckedIn:
+								logger.debug("Initialization of " + LicensesToTry[i].b + " reported license checked in.");
+								break;
+							case esriLicenseStatus.esriLicenseCheckedOut:
+								logger.debug("Initialization of " + LicensesToTry[i].b + " reported license checked out.");
+								break;
+							case esriLicenseStatus.esriLicenseFailure:
+								logger.debug("Initialization of " + LicensesToTry[i].b + " reported license failure.");
+								break;
+							case esriLicenseStatus.esriLicenseNotInitialized:
+								logger.debug("Initialization of " + LicensesToTry[i].b + " reported license not initialized.");
+								break;
+							case esriLicenseStatus.esriLicenseNotLicensed:
+								logger.debug("Initialization of " + LicensesToTry[i].b + " reported not licensed.");
+								break;
+							case esriLicenseStatus.esriLicenseUnavailable:
+								logger.debug("Initialization of " + LicensesToTry[i].b + " reported license unavailable.");
+								break;
+							default:
+								logger.debug("Initialization of " + LicensesToTry[i].b + " reported strange license response: " + code);
+						}
+					}
 				} catch(AutomationException e) {
 					// Ignore
+					logger.debug("Automation exception initializing ESRI using license: {} : {}", LicensesToTry[i].b, e.getMessage());
+				} catch(IOException e) {
+					// Ignore
+					logger.debug("IO exception initializing ESRI using license: {} : {}", LicensesToTry[i].b, e.getMessage());
 				}
+			}
+			if(!worked) {
+				logger.warn("All attempts at license initialization failed. ESRI operations may fail randomly.");
 			}
 		} catch (Throwable t) {
 			logger.error("Problem initializing the ESRI interop system", t);
