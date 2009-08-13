@@ -12,7 +12,7 @@
         <Schema>
             <name>S_FOBS_USA_ISAF_NATO_DSSSSSSDDDD</name>
             <parent>Placemark</parent>
-            <SimpleField name="NAME" type="string"/>
+            <SimpleField name="CLASS" type="string"/>
             <SimpleField name="DATE" type="string"/>
             <SimpleField name="MGRS" type="string"/>
         </Schema>
@@ -21,8 +21,9 @@
             <S_FOBS_USA_ISAF_NATO_DSSSSSSDDDD>
                 <name>1</name>
                 <description><![CDATA[<b type="N">Id: </b>1<br><b type="C">Lat: </b>42 30.3653N<br><b type="C">Lon: </b>071 14.0274W<br><b type="C">TimeString: </b>2008-07-08T18:01:53.000Z]]></description>
+                <CLASS>U</CLASS>
                 <MGRS>38SMB4587388305</MGRS>
-                <TIME>2008-07-08T18:01:53.000Z</TIME>
+                <DATE>2008-07-08T18:01:53.000Z</DATE>
                 <Point>
                     <coordinates>-71.23379000000001,42.50608833333333</coordinates>
                 </Point>
@@ -30,8 +31,9 @@
             <S_FOBS_USA_ISAF_NATO_DSSSSSSDDDD>
                 <name>2</name>
                 <description><![CDATA[<b type="N">Id: </b>2<br><b type="C">Lat: </b>42 30.3648N<br><b type="C">Lon: </b>071 14.0250W<br><b type="C">TimeString: </b>2008-07-08T18:02:03.000Z]]></description>
+                <CLASS>U</CLASS>
                 <MGRS>38SMB4587388305</MGRS>
-                <TIME>2008-07-08T18:02:03.000Z</TIME>
+                <DATE>2008-07-08T18:02:03.000Z</DATE>
                 <Point>
                     <coordinates>-71.23375,42.50608</coordinates>
                 </Point>
@@ -39,8 +41,9 @@
             <S_FOBS_USA_ISAF_NATO_DSSSSSSDDDD>
                 <name>3</name>
                 <description><![CDATA[<b type="N">Id: </b>3<br><b type="C">Lat: </b>42 30.3617N<br><b type="C">Lon: </b>071 14.0326W<br><b type="C">TimeString: </b>2008-07-08T18:02:11.000Z]]></description>
+                <CLASS>U</CLASS>
                 <MGRS>38SMB4587388305</MGRS>
-                <TIME>2008-07-08T18:02:11.000Z</TIME>
+                <DATE>2008-07-08T18:02:11.000Z</DATE>
                 <Point>
                     <coordinates>-71.23387666666666,42.50602833333334</coordinates>
                 </Point>
