@@ -26,6 +26,7 @@ import java.net.URISyntaxException;
  * <ul>
  *  <li> Features inherit time from parent container
  *  <li> NetworkLink has missing or empty HREF
+ *  <li> Overlay does not contain Icon element 
  * </ul>
  * 
  * This tool helps to uncover issues in reading and writing target KML files.
