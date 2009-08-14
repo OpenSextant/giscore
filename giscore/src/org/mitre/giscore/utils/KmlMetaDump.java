@@ -7,7 +7,9 @@ import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.output.kml.KmlWriter;
+import org.mitre.giscore.output.kml.KmlOutputStream;
 
+import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
@@ -43,7 +45,6 @@ import java.net.URISyntaxException;
  */
 public class KmlMetaDump implements IKml {
 
-	private final Map<String,Integer> tagSet = new java.util.TreeMap<String,Integer>();
 	private boolean followLinks;
 	private File outPath;
 	private boolean outPathCheck;
@@ -53,7 +54,18 @@ public class KmlMetaDump implements IKml {
     private Date containerStartDate;
     private Date containerEndDate;
 
-    public void checkSource(URL url) throws IOException {
+	/**
+	 * count of number of KML resources were processed and stats were tallied
+	 * this means the number of times the tagSet keys were dumped into the totals set
+	 * if dumpConut == 1 then the totals the same the single tagSet dumped.
+ 	 */
+	private int dumpCount;
+
+	private final Map<String,Integer> tagSet = new java.util.TreeMap<String,Integer>();
+	private final Set<String> totals = new TreeSet();
+	private boolean useStdout;
+
+	public void checkSource(URL url) throws IOException {
 		System.out.println(url);
 		processKmlSource(new KmlReader(url), null, url.getFile());
 	}
@@ -87,6 +99,10 @@ public class KmlMetaDump implements IKml {
         this.verbose = verbose;
     }
 
+	public void setUseStdout(boolean useStdout) {
+		this.useStdout = useStdout;
+	}
+
 	private void addTag(String tag) {
 		if (tag != null) {
 			Integer val = tagSet.get(tag);
@@ -114,6 +130,7 @@ public class KmlMetaDump implements IKml {
 				else
 					System.out.format("\t%-20s %d%n", key, entry.getValue());
 		}
+		totals.addAll(tagSet.keySet()); // accumulate total tag set
 		System.out.flush();
 	}
 
@@ -166,6 +183,7 @@ public class KmlMetaDump implements IKml {
 		System.out.println("\t# features=" + features);
 		System.out.println();
 		tagSet.clear();
+		dumpCount++;
 	}
 
 	private KmlWriter getWriter(File file, String name) {
@@ -207,6 +225,19 @@ public class KmlMetaDump implements IKml {
 				e.printStackTrace();
 			}
 		}
+
+		if (useStdout) {
+			//ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			try {
+				KmlOutputStream kos = new KmlOutputStream(System.out);
+				System.out.println();
+				return new KmlWriter(kos);
+			} catch (XMLStreamException e) {
+				System.err.println("*** ERROR: Failed to create stdout outputStream");
+				e.printStackTrace();
+			}
+		}
+
 		return null;
 	}
 
@@ -346,6 +377,7 @@ public class KmlMetaDump implements IKml {
         System.out.println("\t\tFiles with same name in target location will be skipped as NOT to overwrite anything.");
 		System.out.println("\t-f Follow networkLinks: recursively loads content from NetworkLinks");
 		System.out.println("\t\tand adds features to resulting statistics");
+		System.out.println("\t-stdout Write KML output to STDOUT instead of writing files");
         System.out.println("\t-v Set verbose which dumps out features");
 		System.exit(1);
 	}	
@@ -362,6 +394,8 @@ public class KmlMetaDump implements IKml {
 					app.setFollowLinks(true);
                 else if (arg.startsWith("-v"))
 					app.setVerbose(true);
+				else if (arg.startsWith("-stdout"))
+					app.setUseStdout(true);
 				else usage();
 			} else
 				sources.add(arg);
@@ -396,6 +430,16 @@ public class KmlMetaDump implements IKml {
 				System.out.println();
 			}
         }
+		
+		if (app.dumpCount > 1 && !app.totals.isEmpty()) {
+			System.out.println("Summary: count=" + app.dumpCount + "\n");
+			for (String tag : app.totals) {
+				// message/warnings start with : prefix, otherwise show key + count
+				
+				if (tag.startsWith(":")) tag = tag.substring(1);
+				System.out.println("\t" + tag);
+			}
+		}
     }
 
 }
