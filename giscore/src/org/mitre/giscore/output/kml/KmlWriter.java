@@ -38,7 +38,7 @@ import java.net.URISyntaxException;
  * basic KML or KMZ files.
  * <p/>
  * Handles the following tasks:
- * 
+ *
  * <ul>
  * <li>write to KMZ/KML files transparently. If file has a .kmz file extension (or .zip) then a KMZ (ZIP)
  *    file is created with that file name.
@@ -63,7 +63,7 @@ public class KmlWriter {
 	private boolean compressed;
 
 	/**
-	 * Construct a KmlWriter whiuch starts writing a KML document into
+	 * Construct a KmlWriter which starts writing a KML document into
 	 * the specified KML or KMZ file.  If filename ends with .kmz or .zip extension
 	 * then a compressed KMZ (ZIP) file is produced with the main KML document
 	 * stored as "doc.kml" in the root directory. <p/>
@@ -96,8 +96,22 @@ public class KmlWriter {
 			throw e2;
         }
         kos.write(new DocumentStart(DocumentType.KML));
-		// TODO: consider adding KmlWriter(InoutStream is, boolean compress) constructor
+		// TODO: consider adding KmlWriter(InputStream is, boolean compress) constructor
     }
+
+	/**
+	 * Construct a KmlWriter with KmlOutputStream. Basically wraps a KmlOutputStream
+	 * with <code>KmlWriter</code>.
+	 *
+	 * @param os the KmlOutputStream to be opened for writing, never null.
+	 */
+	public KmlWriter(KmlOutputStream os) {
+		compressed = false;
+		kos = os;
+		kos.write(new DocumentStart(DocumentType.KML));
+		// note: could check kos if wraps an underlying ZipOutputStream 
+		// compress = kos.getStream() instanceof ZipOutputStream
+	}
 
     /**
      * Tests whether the output file is a compressed KMZ file.
