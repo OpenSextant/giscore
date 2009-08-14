@@ -250,6 +250,13 @@ public class KmlMetaDump implements IKml {
 		} else if (gisObj instanceof Overlay) {
             Overlay ov = (Overlay)gisObj;
             addTag(ov.getClass());
+			if (ov instanceof GroundOverlay) {
+				GroundOverlay go = (GroundOverlay)ov;
+				if (go.getNorth() != null || go.getSouth() != null 
+						|| go.getEast() != null || go.getWest() != null
+						|| go.getRotation() != null)
+					addTag(IKml.LAT_LON_BOX);
+			}
 			checkFeature(ov);
             if (ov.getIcon() == null)
                 addTag(":Overlay missing icon");
