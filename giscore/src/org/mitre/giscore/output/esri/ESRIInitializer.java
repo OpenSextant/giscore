@@ -73,7 +73,8 @@ public class ESRIInitializer {
 		return true;
 	}
 
-	private static Pair<Integer, String> LicensesToTry[] = new Pair<Integer, String>[] {
+	@SuppressWarnings("unchecked")
+	private static Pair<Integer, String> LicensesToTry[] = new Pair[] {
 		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeArcEditor, "Arc Editor"),
 		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB, "Arc Engine GeoDB"),
 		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeArcView, "Arc View"),
