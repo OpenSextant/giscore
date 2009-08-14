@@ -363,8 +363,13 @@ public class KmlMetaDump implements IKml {
         }
         // otherwise feature doesn't have timeStamp or timeSpans
 
-        if (f.getViewGroup() != null)
-            addTag(LOOK_AT);
+		if (f.hasExtendedData())
+			addTag(EXTENDED_DATA);
+
+		TaggedMap viewGroup = f.getViewGroup();
+		if (viewGroup != null) {
+            addTag(viewGroup.getTag()); // Camera or LookAt
+		}
 
         //if (lastObj instanceof StyleSelector) {
         if (lastObjClass == Style.class || lastObjClass == StyleMap.class)
