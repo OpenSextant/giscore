@@ -62,7 +62,7 @@ public class KmlMetaDump implements IKml {
 	private int dumpCount;
 
 	private final Map<String,Integer> tagSet = new java.util.TreeMap<String,Integer>();
-	private final Set<String> totals = new TreeSet();
+	private final Set<String> totals = new TreeSet<String>();
 	private boolean useStdout;
 
 	public void checkSource(URL url) throws IOException {
@@ -269,9 +269,7 @@ public class KmlMetaDump implements IKml {
 					Class geomClass = geom.getClass();
 					if (geomClass == GeometryBag.class) {
 						addTag(MULTI_GEOMETRY);
-						for (Geometry g : (GeometryBag) geom) {
-							if (g != null) addTag(g.getClass());
-						}
+						checkBag((GeometryBag) geom);
 					} else addTag(geomClass);
 				}
 			} else if (cl == ContainerEnd.class) {
@@ -283,12 +281,38 @@ public class KmlMetaDump implements IKml {
                 // it doesn't matter.
                 containerStartDate = null;
                 containerEndDate = null;
+			} else if (cl == Style.class) {
+				addTag(cl);
+				Style s = (Style)gisObj;
+				if (s.hasBalloonStyle())
+					addTag(IKml.BALLOON_STYLE);
+				if (s.hasIconStyle())
+					addTag(IKml.ICON_STYLE);
+				if (s.hasLabelStyle())
+					addTag(IKml.LABEL_STYLE);
+				if (s.hasLineStyle())
+					addTag(IKml.LINE_STYLE);
+				if (s.hasPolyStyle())
+					addTag(IKml.POLY_STYLE);
+				// giscore does not support ListStyle
             } else if (cl != DocumentStart.class && cl != Comment.class) {
                 // ignore: DocumentStart + Comment objects
-                addTag(cl); // e.g. Style, Schema, StyleMap, NetworkLinkControl
+                addTag(cl); // e.g. Schema, StyleMap, NetworkLinkControl
             }
 		}
         lastObjClass = gisObj.getClass();
+	}
+
+	private void checkBag(GeometryBag geometryBag) {
+		for (Geometry g : geometryBag) {
+			if (g != null) {
+				Class gClass = g.getClass();
+				if (gClass == GeometryBag.class)
+					checkBag((GeometryBag)g);
+				else
+					addTag(gClass);
+			}
+		}
 	}
 
 	private void checkNetworkLink(NetworkLink networkLink) {
