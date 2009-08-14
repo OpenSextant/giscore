@@ -184,7 +184,7 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
 			}
 		}
 		sorter.cleanup();
-		ZipUtils.outputZipComponents(outputPath.getName(), outputPath, (ZipOutputStream) outputStream);
+		ZipUtils.outputZipComponents(outputPath.getName(), outputPath, outputStream);
 	}
 
 	/* (non-Javadoc)
