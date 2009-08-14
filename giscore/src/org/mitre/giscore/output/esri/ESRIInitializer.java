@@ -73,7 +73,7 @@ public class ESRIInitializer {
 		return true;
 	}
 
-	private static Pair<Integer, String> LicensesToTry[] = new Pair[] {
+	private static Pair<Integer, String> LicensesToTry[] = new Pair<Integer, String>[] {
 		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeArcEditor, "Arc Editor"),
 		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB, "Arc Engine GeoDB"),
 		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeArcView, "Arc View"),
