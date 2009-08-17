@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+Example with Shared Style in bad form.
+
+http://portal.opengeospatial.org/files/index.php?artifact_id=27811
+OGC KML 2.2: Abstract Test Suite
+
+ATC 7: Shared style definition
+Confirm that a 'shared' style definition (any element that may substitute for kml:AbstractStyleSelectorGroup)
+satisfies all of the following constraints:
+ * its parent element is kml:Document;
+ * it has an 'id' attribute value.
+Pass if all assertions are satisfied; fail otherwise
+Reference: OGC-07-147r2: cl. 6.4
+
+Therefore all shared styled must be defined within a Document element not a Folder
+although Google Earth client ignores this restriction.
+
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <Folder>
+        <name>StyleContainer</name>
+	<description>Don't put shared styles in folders. This is bad form.</description>
+        <Style id="blue_arrow">
+            <IconStyle>
+                <color>ffff0000</color>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/kml/shapes/arrow.png</href>
+                </Icon>
+                <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+            </IconStyle>
+            <LabelStyle>
+                <color>ff0000ff</color>
+            </LabelStyle>
+        </Style>
+        <Placemark>
+            <name>Placemark 1</name>
+            <styleUrl>#blue_arrow</styleUrl>
+            <Point>
+                <coordinates>-119.232195,36.016021,0</coordinates>
+            </Point>
+        </Placemark>
+    </Folder>
+</kml>
