@@ -75,6 +75,8 @@ import org.slf4j.LoggerFactory;
  *  -A few tags are not yet supported on features so are omitted from output:
  *   atom:author, atom:link, address, xal:AddressDetails,
  *   Metadata, open, phoneNumber, Region, Snippet, snippet, visibility.
+ * -Warns if shared styles appear in Folders. According to OGC KML specification
+ *  shared styles should only appear in Documents.
  *
  * @author DRAND
  * @author J.Mathews
@@ -186,7 +188,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             String tag = containerStart.getType();
             writer.writeStartElement(tag);
             handleAttributes(containerStart);
-            handleWaitingElements();
+            handleWaitingElements(tag);
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
@@ -382,7 +384,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             String tag = feature.getType();
             writer.writeStartElement(tag);
             handleAttributes(feature);
-            handleWaitingElements();
+            handleWaitingElements(null);
             if (feature instanceof Overlay) {
                 handleOverlay((Overlay) feature);
             } else if (feature.getGeometry() != null) {
@@ -536,16 +538,26 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * found and output on the next feature or container.
      *
      * @throws XMLStreamException if an error occurs
-     * @throws IllegalStateException if invalid element is found in waitingElements list
+     * @throws IllegalStateException if invalid element is found in waitingElements list  @param containerType
      */
-    private void handleWaitingElements() throws XMLStreamException {
+    private void handleWaitingElements(String containerType) throws XMLStreamException {
         for (int i = waitingElements.size() - 1; i >= 0; i--) {
             IGISObject element = waitingElements.get(i);
-            if (element instanceof Style) {
-                handle((Style) element);
-            } else if (element instanceof StyleMap) {
-                handle((StyleMap) element);
-            } else {
+			if (element instanceof StyleSelector) {
+				StyleSelector style = (StyleSelector)element;
+				if (containerType != null && StringUtils.isNotBlank(style.getId()) && FOLDER.equals(containerType)) {
+					// http://code.google.com/apis/kml/documentation/kmlreference.html#document
+					// see definition of Shared Styles in OGC KML specification [OGC 07-147r2 section 6.4]
+					// shared styles should only appear in Documents
+					log.warn("Do not put shared styles within a Folder. Fails OGC constraint.");
+				}
+				if (element instanceof Style) {
+					handle((Style) element);
+				} else if (element instanceof StyleMap) {
+					handle((StyleMap) element);
+				}
+			}
+			else {
                 throw new IllegalStateException("Unknown kind of deferred element: "
                         + element.getClass());
             }
