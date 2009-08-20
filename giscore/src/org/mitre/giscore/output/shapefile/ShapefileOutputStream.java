@@ -135,9 +135,9 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
     	if (!(stream instanceof ZipOutputStream)) {
     		throw new IllegalArgumentException("stream must be a zip output stream");
     	}
-        if (path == null || !path.getParentFile().exists()) {
+        if (path == null || path.getParentFile() == null || !path.getParentFile().exists()) {
             throw new IllegalArgumentException(
-                    "path should never be null and parent must exist");
+                    "path should never be null, its parent should never be null and the parent must exist");
         }
         if (containerNameStrategy == null) {
             this.containerNameStrategy = new BasicContainerNameStrategy();
