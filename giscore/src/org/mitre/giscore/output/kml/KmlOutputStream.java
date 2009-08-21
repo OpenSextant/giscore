@@ -186,6 +186,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     public void visit(ContainerStart containerStart) {
         try {
             String tag = containerStart.getType();
+            if (!IKml.DOCUMENT.equals(tag) && !IKml.FOLDER.equals(tag)) {
+                // Folder has more restrictions than Document in KML (e.g. shared styles cannot appear in Folders)
+                // so if container is unknown then use Document type.
+                tag = IKml.FOLDER.equalsIgnoreCase(tag) ? IKml.FOLDER : IKml.DOCUMENT;
+            }
             writer.writeStartElement(tag);
             handleAttributes(containerStart);
             handleWaitingElements(tag);
