@@ -2,10 +2,15 @@
 <!-- 
 
 Timestamps on Folders with nested Folders.
-Child placemarks in containers inherit the
+Child placemarks in containers may "inherit" the
 time interval of its parent containers.
 
-Example shows how temporal visibility is inherited.
+In order for a feature to be visible, all of its ancestors must be visible
+and that feature must be visible given visibility flags and temporal
+conditions up the chain to top-most feature.
+
+Example shows how temporal visibility is determined
+in nested features.
 
  Folder1 [T00:00 - 02:00]
    - placemark1 *[inherits time from folder1]
@@ -14,37 +19,14 @@ Example shows how temporal visibility is inherited.
    - end folder2
    - placemark3 *[inherits time from folder1]
    - placemark4  [T01:00 - 03:00] [inherits end time from folder1 visible @ T01:00 - 02:00]
+   - placemark5  [T02:01 - 03:00] [visible when both parent and feature is visible]
  end folder1
- placemark5 [T02:00 - 03:00]
+ placemark6 [T02:00 - 03:00]
 
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
     <Document>
         <name>Inherited time</name>
-        <Style id="paddle-a">
-            <IconStyle>
-                <Icon>
-                    <href>http://maps.google.com/mapfiles/kml/paddle/A.png</href>
-                </Icon>
-                <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
-            </IconStyle>
-        </Style>
-        <Style id="paddle-b">
-            <IconStyle>
-                <Icon>
-                    <href>http://maps.google.com/mapfiles/kml/paddle/B.png</href>
-                </Icon>
-                <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
-            </IconStyle>
-        </Style>
-        <Style id="hiker-icon">
-            <IconStyle>
-                <Icon>
-                    <href>http://maps.google.com/mapfiles/ms/icons/hiker.png</href>
-                </Icon>
-                <hotSpot x="0" xunits="fraction" y="0.5" yunits="fraction"/>
-            </IconStyle>
-        </Style>
         <Folder>
             <name>Group1</name>
             <TimeSpan>
@@ -53,7 +35,14 @@ Example shows how temporal visibility is inherited.
             </TimeSpan>
             <Placemark>
                 <name>1</name>
-                <styleUrl>#paddle-a</styleUrl>
+                <Style>
+                    <IconStyle>
+                        <Icon>
+                            <href>http://maps.google.com/mapfiles/kml/paddle/1.png</href>
+                        </Icon>
+                        <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+                    </IconStyle>
+                </Style>
                 <Point>
                     <coordinates>-122.536226,37.86047,0</coordinates>
                 </Point>
@@ -62,7 +51,14 @@ Example shows how temporal visibility is inherited.
                 <name>nested folder</name>
                 <Placemark>
                     <name>2</name>
-                    <styleUrl>#hiker-icon</styleUrl>
+                    <Style>
+                        <IconStyle>
+                            <Icon>
+                                <href>http://maps.google.com/mapfiles/kml/paddle/2.png</href>
+                            </Icon>
+                            <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+                        </IconStyle>
+                    </Style>
                     <Point>
                         <coordinates>-122.537116,37.85961000000001,0</coordinates>
                     </Point>
@@ -70,7 +66,14 @@ Example shows how temporal visibility is inherited.
             </Folder>
             <Placemark>
                 <name>3</name>
-                <styleUrl>#hiker-icon</styleUrl>
+                <Style>
+                    <IconStyle>
+                        <Icon>
+                            <href>http://maps.google.com/mapfiles/kml/paddle/3.png</href>
+                        </Icon>
+                        <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+                    </IconStyle>
+                </Style>
                 <Point>
                     <coordinates>-122.537469,37.85907,0</coordinates>
                 </Point>
@@ -87,22 +90,59 @@ Example shows how temporal visibility is inherited.
                     <begin>2007-01-14T01:00:00Z</begin>
                     <end>2007-01-14T03:00:00Z</end>
                 </TimeSpan>
-                <styleUrl>#hiker-icon</styleUrl>
+                <Style>
+                    <IconStyle>
+                        <Icon>
+                            <href>http://maps.google.com/mapfiles/kml/paddle/4.png</href>
+                        </Icon>
+                        <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+                    </IconStyle>
+                </Style>
                 <Point>
                     <coordinates>-122.537635,37.858822,0</coordinates>
                 </Point>
             </Placemark>
+            <Placemark>
+                <name>5</name>
+                <!--
+NOTE: placemark 5 time interval exists outside range of its parent folder,
+however, placemark 5 appears when both its parent is visible and
+the placemark is visible meaning the start time is 2pm or earlier
+and the end time is after 2pm.
+-->
+                <TimeSpan>
+                    <begin>2007-01-14T02:01:00Z</begin>
+                    <end>2007-01-14T03:00:00Z</end>
+                </TimeSpan>
+                <Style>
+                    <IconStyle>
+                        <Icon>
+                            <href>http://maps.google.com/mapfiles/kml/paddle/5.png</href>
+                        </Icon>
+                    </IconStyle>
+                </Style>
+                <Point>
+                    <coordinates>-122.53887,37.857604,0</coordinates>
+                </Point>
+            </Placemark>
         </Folder>
         <Placemark>
-            <name>5</name>
+            <name>6</name>
             <TimeSpan>
                 <begin>2007-01-14T02:00:00Z</begin>
                 <end>2007-01-14T03:00:00Z</end>
             </TimeSpan>
-            <styleUrl>#paddle-b</styleUrl>
+            <Style>
+                <IconStyle>
+                    <Icon>
+                        <href>http://maps.google.com/mapfiles/kml/paddle/6.png</href>
+                    </Icon>
+                </IconStyle>
+            </Style>
             <Point>
-                <coordinates>-122.53887,37.857604,0</coordinates>
+                <coordinates>-122.539052,37.857262,0</coordinates>
             </Point>
         </Placemark>
     </Document>
 </kml>
+
