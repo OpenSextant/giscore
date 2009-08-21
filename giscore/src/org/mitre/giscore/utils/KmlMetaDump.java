@@ -28,7 +28,8 @@ import java.net.URISyntaxException;
  * <ul>
  *  <li> Features inherit time from parent container
  *  <li> NetworkLink has missing or empty HREF
- *  <li> Overlay does not contain Icon element 
+ *  <li> Overlay does not contain Icon element
+ *  <li> Invalid TimeSpan if begin later than end value 
  * </ul>
  * 
  * This tool helps to uncover issues in reading and writing target KML files.
@@ -351,16 +352,21 @@ public class KmlMetaDump implements IKml {
 		Date endTime = f.getEndTime();
 		if (startTime != null || endTime != null) {
 			if (startTime != null && startTime.equals(endTime)) {
-				 // if start == stop then assume timestamp/when -- no way to determine if TimeSpan was used with start=end=timestamp
+				// if start == stop then assume timestamp/when -- no way to determine if TimeSpan was used with start=end=timestamp
 				addTag(TIME_STAMP);
 			} else {
 				// otherwise timespan used with start and/or end dates
 				addTag(TIME_SPAN);
+
+				if (startTime != null && endTime != null && startTime.compareTo(endTime) > 0) {
+					// assertion: the begin value is earlier than the end value.
+					// if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
+					addTag(":Invalid time range: start > end");
+				}
 			}
+		} else if (containerStartDate != null || containerEndDate != null) {
+			addTag(":Feature inherits container time");
 		}
-        else if (containerStartDate != null || containerEndDate != null) {
-            addTag(":Container overrides feature time");
-        }
         // otherwise feature doesn't have timeStamp or timeSpans
 
 		if (f.hasExtendedData())
