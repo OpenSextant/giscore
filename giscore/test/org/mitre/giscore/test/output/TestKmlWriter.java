@@ -147,6 +147,21 @@ public class TestKmlWriter extends TestGISBase {
 		}
 	}
 
+	@Test
+	public void test_write_kml_byte_stream() throws IOException, XMLStreamException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		KmlWriter writer = new KmlWriter(kos);
+		kos.write(new DocumentStart(DocumentType.KML));
+		Feature f = new Feature();
+		f.setGeometry(new Point(42.504733587704, -71.238861602674));
+		f.setName("test");
+		f.setDescription("this is a test placemark");
+		writer.write(f);
+		writer.close();
+		assertTrue(bos.toString().indexOf("this is a test placemark") > 0);
+	}
+
     @Test
 	public void test_NetworkLink_Kmz() throws IOException, XMLStreamException {
 		File temp = createTemp("testNetworkLinks", ".kmz", tempKmlDir);
