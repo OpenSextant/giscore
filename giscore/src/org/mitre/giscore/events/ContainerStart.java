@@ -35,17 +35,20 @@ public class ContainerStart extends Common {
 	private static final long serialVersionUID = 1L;
 	
 	private String type;
-	
-	/**
+
+    /**
 	 * Empty ctor for data IO
 	 */
 	public ContainerStart() {
 		// 
 	}
 	
-	/**
-	 * Ctor
-	 */
+    /**
+     * Constructs a container that can hold zero or more features or other containers.
+     * <code>ContainerStart</code> should be followed by a matching <code>ContainerEnd</code> element. 
+     * @param type Type of container
+     * @throws IllegalArgumentException if type is null 
+     */
 	public ContainerStart(String type) {
 		if (type == null) {
 			throw new IllegalArgumentException("type should never be null");
@@ -105,5 +108,5 @@ public class ContainerStart extends Common {
 		super.writeData(out);
 		out.writeString(type);
 	}
-    
+
 }

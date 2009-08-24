@@ -26,8 +26,10 @@ import org.mitre.giscore.IStreamVisitor;
 
 
 /**
+ * End of a container which should be associated with corresponding
+ * <code>ContainerStart</code> element.
+ *  
  * @author DRAND
- *
  */
 public class ContainerEnd  implements IGISObject {
 	

@@ -315,7 +315,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private IGISObject handleContainer(XMLEvent e) throws XMLStreamException {
 		StartElement se = e.asStartElement();
 		String containerTag = se.getName().getLocalPart();
-		ContainerStart cs = new ContainerStart(containerTag);
+		ContainerStart cs = new ContainerStart(containerTag); // Folder or Document
 		addFirst(cs);
 
 		while (true) {
