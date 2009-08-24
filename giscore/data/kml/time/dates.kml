@@ -4,11 +4,11 @@
  Examples of date (YYYY-MM-DD) timestamps (e.g. "1997-07-16")
 
  Google Earth client treats following two time durations
- the same as a single instant at 2007-03-14T00:00:00Z
- not with the end at 23:59:59.
+ the same as a single instant at 2007-03-14 T 00:00:00Z
+ as opposed to having an end time at 23:59:59.
 
             <TimeStamp>
-                <when>2007-03-13</when>
+                <when>2007-03-14</when>
             </TimeStamp>
 
             <TimeSpan>
