@@ -148,17 +148,18 @@ public class KmlWriter {
 	 * @param entryName the entry name for file as it will appear in the KMZ.
 	 * 					This should be a root-level or relative file path (e.g. myOtherData.kml or images/image.png).
 	 * @throws IOException if an I/O error occurs
-	 * @throws IllegalArgumentException if arguments are null or KmlWriter is not writing
-	 * 			a compressed KMZ file 
+	 * @throws IllegalArgumentException if arguments are null
+     * @throws IllegalStateException if KmlWriter is not writing
+	 * 			a compressed KMZ file
 	 */
 	public void write(InputStream is, String entryName) throws IOException {
 		if (is == null) throw new IllegalArgumentException("InputStream cannot be null"); 
         try {
 			if (!compressed)
-            	throw new IllegalArgumentException("Not a compressed KMZ file. Cannot add arbitrary content to non-KMZ output.");
+            	throw new IllegalStateException("Not a compressed KMZ file. Cannot add arbitrary content to non-KMZ output");
         	if (StringUtils.isBlank(entryName))
             	throw new IllegalArgumentException("localName must be non-blank file name");
-			if (zoS == null) throw new IOException("stream is alreay closed");
+			if (zoS == null) throw new IOException("stream is already closed");
 			if (kos != null) {
 				kos.closeWriter();
 				kos = null;
@@ -181,10 +182,10 @@ public class KmlWriter {
 	 * @param object IGISObject object to write
 	 * 
 	 * @throws RuntimeException if failed with XMLStreamException
-	 * @throws IllegalArgumentException if KmlOutputStream is closed
+	 * @throws IllegalStateException if KmlOutputStream is closed
 	 */
 	public void write(IGISObject object) {
-		if (kos == null) throw new IllegalArgumentException("cannot write after stream is closed");
+		if (kos == null) throw new IllegalStateException("cannot write after stream is closed");
 		// log.info("> Write: " + object.getClass().getName());
         if (object instanceof ContainerStart) {
             if (waiting != null) {
