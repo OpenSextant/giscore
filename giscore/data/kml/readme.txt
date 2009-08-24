@@ -1,4 +1,4 @@
-Example KML files originally harvested at kml-samples.googlecode.com
+Sample KML files originally harvested at kml-samples.googlecode.com
 URL: http://kml-samples.googlecode.com/svn/trunk/interactive/index.html
 These KML files have been modified to validate against appropriate KML schema.
 
@@ -13,9 +13,39 @@ See also http://kml-samples.googlecode.com/svn/trunk/morekml/
 
 ----------------------------------------------------------------------------------------------------
 
-data\kml\atom\sevenWonders-atom-link.kml
-	DEBUG [main] (KmlInputStream.java:424) - skip atom:link
+Summary of tags and properties used in KML collection
 
+	Feature begin time earilier than start of one of its ancestors
+	Feature end time later than start of one of its ancestors
+	Feature inherits container time
+	Feature uses inline Style
+	Feature uses inline StyleMap
+	Invalid time range: start > end
+	NetworkLink missing Link
+	Overlay missing icon
+
+	BalloonStyle		 MultiPoint
+	Camera			 NetworkLink
+	Document		 NetworkLinkControl
+	ExtendedData		 PhotoOverlay
+	Folder			 Placemark
+	GroundOverlay		 Point
+	IconStyle		 PolyStyle
+	LabelStyle		 Polygon
+	LatLonBox		 Schema
+	Line			 ScreenOverlay
+	LineStyle		 Style
+	LinearRing		 StyleMap
+	LookAt			 TimeSpan
+	Model			 TimeStamp
+	MultiGeometry
+
+----------------------------------------------------------------------------------------------------
+
+data\kml\atom\sevenWonders-atom-link.kml
+DEBUG [main] (KmlInputStream.java:427) - skip atom:link
+
+	IconStyle            1
 	Placemark            7
 	Point                7
 	Style                1
@@ -24,6 +54,7 @@ data\kml\atom\sevenWonders-atom-link.kml
 data\kml\balloon\balloonstyle-color-inline.kml
 
 	Feature uses inline Style
+	BalloonStyle         1
 	Placemark            1
 	Point                1
 	Style                1
@@ -31,6 +62,7 @@ data\kml\balloon\balloonstyle-color-inline.kml
 
 data\kml\balloon\balloonstyle-color-shared.kml
 
+	BalloonStyle         1
 	Placemark            1
 	Point                1
 	Style                1
@@ -56,6 +88,7 @@ data\kml\balloon\noballoon.kml
 
 data\kml\BalloonStyle\displayMode.kml
 
+	BalloonStyle         3
 	Document             1
 	Folder               2
 	Placemark            6
@@ -65,6 +98,7 @@ data\kml\BalloonStyle\displayMode.kml
 
 data\kml\BalloonStyle\simpleBalloonStyles.kml
 
+	BalloonStyle         5
 	Placemark            5
 	Point                5
 	Style                5
@@ -72,7 +106,7 @@ data\kml\BalloonStyle\simpleBalloonStyles.kml
 
 data\kml\Camera\golden-gate.kml
 
-	LookAt               10
+	Camera               10
 	Placemark            10
 	# features=13
 
@@ -90,6 +124,8 @@ data\kml\ExtendedData\data-ext.kml
 
 data\kml\ExtendedData\data-golf.kml
 
+	BalloonStyle         2
+	ExtendedData         2
 	Placemark            2
 	Point                2
 	Style                2
@@ -98,7 +134,10 @@ data\kml\ExtendedData\data-golf.kml
 data\kml\ExtendedData\mti-data.kmz
 
 	Document             1
+	ExtendedData         33
 	Folder               3
+	IconStyle            2
+	LineStyle            1
 	LinearRing           2
 	Placemark            33
 	Point                31
@@ -108,8 +147,12 @@ data\kml\ExtendedData\mti-data.kmz
 
 data\kml\ExtendedData\mti-schema-data.kmz
 
+	BalloonStyle         1
 	Document             1
+	ExtendedData         33
 	Folder               3
+	IconStyle            2
+	LineStyle            1
 	LinearRing           2
 	Placemark            33
 	Point                31
@@ -153,7 +196,9 @@ data\kml\FeatureType\life-of-a-feature-view-data.kml
 
 	NetworkLink missing Link
 	Overlay missing icon
+	BalloonStyle         1
 	Document             2
+	ExtendedData         5
 	Folder               1
 	GroundOverlay        1
 	LookAt               5
@@ -173,12 +218,14 @@ data\kml\GroundOverlay\empty.kml
 data\kml\GroundOverlay\etna.kml
 
 	GroundOverlay        1
+	LatLonBox            1
 	LookAt               1
 	# features=2
 
 data\kml\GroundOverlay\etna.kmz
 
 	GroundOverlay        1
+	LatLonBox            1
 	LookAt               1
 	# features=2
 
@@ -252,6 +299,9 @@ data\kml\kmz\dir\UrlLink.kmz
 data\kml\kmz\iconStyle\styled_placemark.kmz
 
 	Feature uses inline Style
+	BalloonStyle         1
+	IconStyle            1
+	LabelStyle           1
 	Placemark            1
 	Point                1
 	Style                1
@@ -870,6 +920,8 @@ data\kml\Schema\MixedTypes.kml
 
 data\kml\Schema\schemadata-trailhead.kml
 
+	BalloonStyle         1
+	ExtendedData         2
 	Placemark            2
 	Point                2
 	Schema               1
@@ -1067,7 +1119,10 @@ data\kml\time\dates.kml
 
 data\kml\time\multiNestedInherits.kml
 
+	Feature begin time earilier than start of one of its ancestors
+	Feature end time later than start of one of its ancestors
 	Feature uses inline Style
+	IconStyle            2
 	Placemark            2
 	Point                2
 	Style                2
@@ -1076,7 +1131,11 @@ data\kml\time\multiNestedInherits.kml
 
 data\kml\time\multiNestedInheritsUnboundedSpans.kml
 
+	Feature begin time earilier than start of one of its ancestors
+	Feature end time later than start of one of its ancestors
 	Feature uses inline Style
+	--
+	IconStyle            2
 	Placemark            2
 	Point                2
 	Style                2
@@ -1085,18 +1144,25 @@ data\kml\time\multiNestedInheritsUnboundedSpans.kml
 
 data\kml\time\nestedInherits.kml
 
-	Container overrides feature time
+	Feature end time later than start of one of its ancestors
+	Feature inherits container time
+	Feature uses inline Style
+	--
 	Document             1
 	Folder               2
-	Placemark            5
-	Point                5
-	Style                3
-	TimeSpan             2
-	# features=15
+	IconStyle            6
+	Placemark            6
+	Point                6
+	Style                6
+	TimeSpan             3
+	# features=19
 
 data\kml\time\time-inherit2.kml
 
-	Container overrides feature time
+	Feature begin time earilier than start of one of its ancestors
+	Feature end time later than start of one of its ancestors
+	Feature inherits container time
+	--
 	Document             1
 	Folder               5
 	Placemark            13
@@ -1109,6 +1175,7 @@ data\kml\time\time-inherit2.kml
 data\kml\time\time-inherits.kml
 
 	Container overrides feature time
+	--
 	Folder               4
 	GroundOverlay        6
 	# features=15
