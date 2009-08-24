@@ -8,6 +8,14 @@
 	4) TimeSpan with only begin time
 	5) TimeStamp placemark - end marker marks latest time in dataset
 	6) no time -> static placemark
+
+	1) [1]
+	2)  .    2]
+	3)          [3    4]
+	4)                    [5    .
+	5)                         [6]
+        6)  .    .   .    .    .    .
+        
 -->
 <kml xmlns="http://earth.google.com/kml/2.1">
     <Document>
@@ -16,8 +24,16 @@
             <name>startPointMarker</name>
             <description>point 1</description>
             <TimeStamp>
-                <when>2008-08-12T20:16:00Z</when>
+                <when>2008-08-12T01:00:00Z</when>
             </TimeStamp>
+            <Style>
+                <IconStyle>
+                    <Icon>
+                        <href>http://maps.google.com/mapfiles/kml/paddle/1.png</href>
+                    </Icon>
+                    <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+                </IconStyle>
+            </Style>
             <Point>
                 <coordinates>-76.72894181350101,39.104144789924,8.5</coordinates>
             </Point>
@@ -27,8 +43,16 @@
             <name>no-start-time-point</name>
             <description>point 2</description>
             <TimeSpan>
-                <end>2008-08-12T20:16:10Z</end>
+                <end>2008-08-12T02:00:00Z</end>
             </TimeSpan>
+            <Style>
+                <IconStyle>
+                    <Icon>
+                        <href>http://maps.google.com/mapfiles/kml/paddle/2.png</href>
+                    </Icon>
+                    <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+                </IconStyle>
+            </Style>
             <Point>
                 <coordinates>-76.72756248803701,39.104244115439,14.5</coordinates>
             </Point>
@@ -38,9 +62,17 @@
             <name>start-end-time-point</name>
             <description>point 3</description>
             <TimeSpan>
-                <begin>2008-08-12T20:16:20Z</begin>
-                <end>2008-08-12T20:16:30Z</end>
+                <begin>2008-08-12T03:00:00Z</begin>
+                <end>2008-08-12T04:00:00Z</end>
             </TimeSpan>
+            <Style>
+                <IconStyle>
+                    <Icon>
+                        <href>http://maps.google.com/mapfiles/kml/paddle/3.png</href>
+                    </Icon>
+                    <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+                </IconStyle>
+            </Style>
             <Point>
                 <coordinates>-76.72727574323801,39.102729087014005,19.5</coordinates>
             </Point>
@@ -50,8 +82,16 @@
             <name>no-end-time-point</name>
             <description>point 4</description>
             <TimeSpan>
-                <begin>2008-08-12T20:16:40Z</begin>
+                <begin>2008-08-12T05:00:00Z</begin>
             </TimeSpan>
+            <Style>
+                <IconStyle>
+                    <Icon>
+                        <href>http://maps.google.com/mapfiles/kml/paddle/4.png</href>
+                    </Icon>
+                    <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+                </IconStyle>
+            </Style>
             <Point>
                 <coordinates>-76.726920769773,39.100620200974,13.0</coordinates>
             </Point>
@@ -61,8 +101,16 @@
             <name>endPointMarker</name>
             <description>point 5</description>
             <TimeStamp>
-                <when>2008-08-12T20:16:50Z</when>
+                <when>2008-08-12T06:00:00Z</when>
             </TimeStamp>
+            <Style>
+                <IconStyle>
+                    <Icon>
+                        <href>http://maps.google.com/mapfiles/kml/paddle/5.png</href>
+                    </Icon>
+                    <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+                </IconStyle>
+            </Style>
             <Point>
                 <coordinates>-76.72668766913401,39.099571373827004,16.0</coordinates>
             </Point>
@@ -71,6 +119,14 @@
         <Placemark>
             <name>noTime-StaticMarker</name>
             <description>point 6</description>
+            <Style>
+                <IconStyle>
+                    <Icon>
+                        <href>http://maps.google.com/mapfiles/kml/paddle/6.png</href>
+                    </Icon>
+                    <hotSpot x="32" xunits="pixels" y="1" yunits="pixels"/>
+                </IconStyle>
+            </Style>
             <Point>
                 <coordinates>-76.725516550066,39.099512700527,15.0</coordinates>
             </Point>
