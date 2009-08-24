@@ -26,20 +26,26 @@ import java.net.URISyntaxException;
  *
  * Notes following conditions if found:
  * <ul>
- *  <li> Features inherit time from parent container
+ *  <li> Feature inherits time from parent container
  *  <li> NetworkLink has missing or empty HREF
  *  <li> Overlay does not contain Icon element
- *  <li> Invalid TimeSpan if begin later than end value 
+ *  <li> Invalid TimeSpan if begin later than end value
+ *  <li> End container with no matching start container
+ *  <li> Starting container tag with no matching end container
+ *  <li> Feature begin time earilier than that of one of its ancestors
+ *  <li> Feature end time later than that of one of its ancestors
  * </ul>
  * 
  * This tool helps to uncover issues in reading and writing target KML files.
  * Some KML files fail to parse and those cases are almost always those that don't
- * conform to the appropriate KML XML Schema or follow the KML Reference Spec (see
+ * conform to the appropriate KML XML Schema or strictly follow the OGC KML standard
+ * or the KML Reference Spec (see
  * http://code.google.com/apis/kml/documentation/kmlreference.html) such
  * as in coordinates element which states "Do not include spaces between the
- * three values that describe a coordinate", etc. <p/>
+ * three values that describe a coordinate", etc. Likewise, the OGC KML Best
+ * Practices and KML Test Suite have additional restrictions. <p/>
  *
- * If logger at at debug level then all info, warnings and parsing messages will be logged. 
+ * If logger is at debug level then all info, warnings and parsing messages will be logged. 
  * 
  * @author Jason Mathews, MITRE Corp.
  * Created: May 20, 2009 12:05:04 PM
@@ -50,10 +56,13 @@ public class KmlMetaDump implements IKml {
 	private File outPath;
 	private boolean outPathCheck;
 	private int features;
-    private boolean verbose;
-    private Class lastObjClass;
-    private Date containerStartDate;
-    private Date containerEndDate;
+	private boolean verbose;
+	private Class lastObjClass;
+	
+	private boolean inheritsTime;
+	private Date containerStartDate;
+	private Date containerEndDate;
+	private final Stack<ContainerStart> containers = new Stack<ContainerStart>();
 
 	/**
 	 * count of number of KML resources were processed and stats were tallied
@@ -160,24 +169,32 @@ public class KmlMetaDump implements IKml {
 			if (writer != null)
 				writer.close();
 		}
+		if (!containers.isEmpty())
+			addTag(":Starting container tag with no matching end container");
+		
+		resetSourceState();
 
 		if (followLinks) {
 			List<URI> networkLinks = reader.getNetworkLinks();
-			if (networkLinks.size() != 0)
+			if (networkLinks.size() != 0) {
 				reader.importFromNetworkLinks(new KmlReader.ImportEventHandler() {
                     private URI last;
 					public boolean handleEvent(UrlRef ref, IGISObject gisObj) {
                         URI uri = ref.getURI();
                         if (verbose && !uri.equals(last)) {
+							// first gisObj found from a new KML source 
                             System.out.println("Check NetworkLink: " +
                                     (ref.isKmz() ? ref.getKmzRelPath() : uri.toString()));
                             System.out.println();
                             last = uri;
+							resetSourceState();
                         }
 						checkObject(gisObj);
 						return true;
 					}
 				});
+			}
+			resetSourceState();
 		}
 
 		dumpTags();
@@ -185,6 +202,13 @@ public class KmlMetaDump implements IKml {
 		System.out.println();
 		tagSet.clear();
 		dumpCount++;
+	}
+
+	private void resetSourceState() {
+		containers.clear();
+		inheritsTime = false;
+		containerStartDate = null;
+		containerEndDate = null;
 	}
 
 	private KmlWriter getWriter(File file, String name) {
@@ -244,70 +268,159 @@ public class KmlMetaDump implements IKml {
 
 	private void checkObject(IGISObject gisObj) {
         if (verbose) System.out.println(gisObj);
-		features++;
-		if (gisObj instanceof NetworkLink) {
-			checkNetworkLink((NetworkLink)gisObj);
-			addTag(NETWORK_LINK);
-		} else if (gisObj instanceof Overlay) {
-            Overlay ov = (Overlay)gisObj;
-            addTag(ov.getClass());
-			if (ov instanceof GroundOverlay) {
-				GroundOverlay go = (GroundOverlay)ov;
-				if (go.getNorth() != null || go.getSouth() != null 
-						|| go.getEast() != null || go.getWest() != null
-						|| go.getRotation() != null)
-					addTag(IKml.LAT_LON_BOX);
-			}
-			checkFeature(ov);
-            if (ov.getIcon() == null)
-                addTag(":Overlay missing icon");
-		} else if (gisObj instanceof ContainerStart) {
-            ContainerStart cs = (ContainerStart)gisObj;
-            containerStartDate = cs.getStartTime();
-            containerEndDate = cs.getEndTime();
-			addTag(((ContainerStart) gisObj).getType()); // Documemnt | Folder
-		} else {
-			Class cl = gisObj.getClass();
-			if (cl == Feature.class) {
-				Feature f = (Feature) gisObj;
-				Geometry geom = f.getGeometry();
-				addTag(PLACEMARK);
-				checkFeature(f);
-				if (geom != null) {
-					Class geomClass = geom.getClass();
-					if (geomClass == GeometryBag.class) {
-						addTag(MULTI_GEOMETRY);
-						checkBag((GeometryBag) geom);
-					} else addTag(geomClass);
-				}
-			} else if (cl == ContainerEnd.class) {
-                // Note: need to clear container time when matching ContainerEnd is found
-                // if container with time has several child containers then we simply
-                // clear inherited dates on first container end found but should match
-                // one associated with ContainerStart having the time. Could use stack
-                // to keep track or keep track of depth. For purpose of debugging
-                // it doesn't matter.
+        features++;
+        Class cl = gisObj.getClass();
+        if (cl == Feature.class) {
+            Feature f = (Feature) gisObj;
+            Geometry geom = f.getGeometry();
+            addTag(PLACEMARK);
+            checkFeature(f);
+            if (geom != null) {
+                Class geomClass = geom.getClass();
+                if (geomClass == GeometryBag.class) {
+                    addTag(MULTI_GEOMETRY);
+                    checkBag((GeometryBag) geom);
+                } else addTag(geomClass);
+            }
+        } else if (cl == NetworkLink.class) {
+            NetworkLink networkLink = (NetworkLink) gisObj;
+            checkNetworkLink(networkLink);
+            checkFeature(networkLink);
+            addTag(NETWORK_LINK);
+            // isn't NetworkLink like a Container where child features are affected by
+            // properties of parent NetworkLink such as time, region, etc.
+        } else if (cl == ContainerStart.class) {
+            ContainerStart cs = (ContainerStart) gisObj;
+            addTag(((ContainerStart) gisObj).getType()); // Documemnt | Folder
+            containers.push(cs);
+            Date startDate = cs.getStartTime();
+            Date endDate = cs.getEndTime();
+            if (startDate != null || endDate != null) {
+                //
+                // Container time inheritance is aggregated with simple approach:
+                // compare against previous container start/end dates and select
+                // the largest interval that contains the feature's time range and
+                // that of its ancestors. Complete interpretation would be a test
+                // if the intervals are intersecting or disjoint:
+                //
+                // 1) if intervals are intersecting then the effective interval for
+                // the inner feature would be the intersecting interval,
+                //
+                // 2) disjoint intervals would use the largest interval that
+                // contains it and its ancestors.
+                //
+                // For simplicity sake we're being safe and using the largest
+                // interval and being inclusive rather than exclusive.
+                //
+                inheritsTime = true;
+                if (verbose) System.out.println(cs.getType() + " container has time");
+                if (startDate != null) {
+                    if (endDate != null && startDate.compareTo(endDate) > 0) {
+                        // assertion: the begin value is earlier than the end value.
+                        // if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
+                        addTag(":Invalid time range: start > end");
+                    }
+                    // take earlier start date in interval of feature and all of its ancestors
+                    if (containerStartDate == null || startDate.compareTo(containerStartDate) < 0) {
+                        // log.debug("use container start date");
+                        containerStartDate = startDate;
+                        // TODO: if startDate > containerEndDate then ??
+                    } else if (verbose) System.out.println("container start date is earlier than its parent container");
+                }
+                if (endDate != null) {
+                    // take later end date in interval of feature and all of its ancestors
+                    if (containerEndDate == null || endDate.compareTo(containerEndDate) > 0) {
+                        // log.debug("use container end date");
+                        containerEndDate = endDate;
+                        // TODO: if endDate < containerStartDate then ??
+                    } else if (verbose) System.out.println("container end date is later than its parent container");
+                }
+            }
+        } else if (cl == ContainerEnd.class) {
+            //
+            // when ContainerEnd is found then we pop the last containerStart found
+            // and re-check if other containers still have inheritable time.
+            //
+            // Example:
+            //
+            // Folder1 [time]
+            //     Folder2
+            //         placemark1 *[inherits time from folder1]
+            //     end folder2
+            //     Folder3
+            //         placemark2 *[inherits time from folder1]
+            //     end folder3
+            //  end folder1
+            //
+            if (!containers.empty()) {
+                ContainerStart cs = containers.pop();
+                if (verbose) System.out.println(containers.size() + "-end container " + cs.getType());
+            } else {
+                addTag(":end container with no matching start container");
+            }
+
+            if (inheritsTime) {
+                // reset and recompute starting at outer-most container and aggregate
+                // times of inner containers to compute intersecting time interval.
+                inheritsTime = false;
                 containerStartDate = null;
                 containerEndDate = null;
-			} else if (cl == Style.class) {
-				addTag(cl);
-				Style s = (Style)gisObj;
-				if (s.hasBalloonStyle())
-					addTag(IKml.BALLOON_STYLE);
-				if (s.hasIconStyle())
-					addTag(IKml.ICON_STYLE);
-				if (s.hasLabelStyle())
-					addTag(IKml.LABEL_STYLE);
-				if (s.hasLineStyle())
-					addTag(IKml.LINE_STYLE);
-				if (s.hasPolyStyle())
-					addTag(IKml.POLY_STYLE);
-				// giscore does not support ListStyle
-            } else if (cl != DocumentStart.class && cl != Comment.class) {
-                // ignore: DocumentStart + Comment objects
-                addTag(cl); // e.g. Schema, StyleMap, NetworkLinkControl
+                for (ContainerStart cs : containers) {
+                    Date startDate = cs.getStartTime();
+                    Date endDate = cs.getEndTime();
+                    if (startDate != null) {
+                        // take earlier start date in interval of feature and all of its ancestors
+                        if (containerStartDate == null || startDate.compareTo(containerStartDate) < 0) {
+                            //log.debug(i + "-use container start date");
+                            containerStartDate = startDate;
+                            // TODO: if startDate > containerEndDate then ??
+                        } // else log.debug(i + "-container start date is earlier than its parent container");
+                    }
+                    if (endDate != null) {
+                        // take later end date in interval of feature and all of its ancestors
+                        if (containerEndDate == null || endDate.compareTo(containerEndDate) > 0) {
+                            //log.debug(i + "-use container end date");
+                            containerEndDate = endDate;
+                            // TODO: if endDate < containerStartDate then ??
+                        } // else log.debug(i + "-container end date is later than its parent container");
+                    }
+                } // for each time
+                if (containerStartDate != null || containerEndDate != null) {
+                    // log.info("Container has inheritable time");
+                    inheritsTime = true;
+                }
             }
-		}
+        } else if (cl == Style.class) {
+            addTag(cl);
+            Style s = (Style) gisObj;
+            if (s.hasBalloonStyle())
+                addTag(IKml.BALLOON_STYLE);
+            if (s.hasIconStyle())
+                addTag(IKml.ICON_STYLE);
+            if (s.hasLabelStyle())
+                addTag(IKml.LABEL_STYLE);
+            if (s.hasLineStyle())
+                addTag(IKml.LINE_STYLE);
+            if (s.hasPolyStyle())
+                addTag(IKml.POLY_STYLE);
+            // giscore does not support ListStyle
+        } else if (gisObj instanceof Overlay) {
+            Overlay ov = (Overlay) gisObj;
+            addTag(ov.getClass());
+            if (ov instanceof GroundOverlay) {
+                GroundOverlay go = (GroundOverlay) ov;
+                if (go.getNorth() != null || go.getSouth() != null
+                        || go.getEast() != null || go.getWest() != null
+                        || go.getRotation() != null)
+                    addTag(IKml.LAT_LON_BOX);
+            }
+            checkFeature(ov);
+            if (ov.getIcon() == null)
+                addTag(":Overlay missing icon");
+        } else if (cl != DocumentStart.class && cl != Comment.class) {
+            // ignore: DocumentStart + Comment objects
+            addTag(cl); // e.g. Schema, StyleMap, NetworkLinkControl
+        }
         lastObjClass = gisObj.getClass();
 	}
 
@@ -344,7 +457,6 @@ public class KmlMetaDump implements IKml {
 		}
 		else
 			addTag(":NetworkLink missing Link");
-		checkFeature(networkLink);
 	}
 
 	private void checkFeature(Feature f) {
@@ -364,7 +476,19 @@ public class KmlMetaDump implements IKml {
 					addTag(":Invalid time range: start > end");
 				}
 			}
+			if (containerStartDate != null && startTime != null && containerStartDate.compareTo(startTime) > 0)
+				addTag(":Feature begin time earilier than that of one of its ancestors");
+			if (containerEndDate != null && endTime != null && containerEndDate.compareTo(endTime) < 0)
+				addTag(":Feature end time later than that of one of its ancestors");
 		} else if (containerStartDate != null || containerEndDate != null) {
+            /*
+                In order for a feature to be visible, all of its ancestors must be
+                visible and that feature must be visible given visibility flags and
+                temporal conditions up the chain to top-most feature.
+
+                Features with no time properties basically inherit the time
+                of its ancestors if they have time constraints.
+            */
 			addTag(":Feature inherits container time");
 		}
         // otherwise feature doesn't have timeStamp or timeSpans
@@ -412,15 +536,15 @@ public class KmlMetaDump implements IKml {
 
 	public static void usage() {
 		System.out.println("Usage: java KmlMetaDump [options] <file, directory, or URL..>");
-        System.out.println("\nIf a directory is choosen that all kml/kmz files in any subfolder will be examined");
+		System.out.println("\nIf a directory is choosen that all kml/kmz files in any subfolder will be examined");
 		System.out.println("\nOptions:");
 		System.out.println("\t-o<path-to-output-directory> Writes KML/KMZ to file in specified directory");
-        System.out.println("\t\tusing same base file as original file.");
-        System.out.println("\t\tFiles with same name in target location will be skipped as NOT to overwrite anything.");
+		System.out.println("\t\tusing same base file as original file.");
+		System.out.println("\t\tFiles with same name in target location will be skipped as NOT to overwrite anything.");
 		System.out.println("\t-f Follow networkLinks: recursively loads content from NetworkLinks");
 		System.out.println("\t\tand adds features to resulting statistics");
 		System.out.println("\t-stdout Write KML output to STDOUT instead of writing files");
-        System.out.println("\t-v Set verbose which dumps out features");
+ 		System.out.println("\t-v Set verbose which dumps out features");
 		System.exit(1);
 	}	
 
@@ -434,7 +558,7 @@ public class KmlMetaDump implements IKml {
 					app.setOutPath(new File(arg.substring(2)));
 				else if (arg.startsWith("-f"))
 					app.setFollowLinks(true);
-                else if (arg.startsWith("-v"))
+				else if (arg.startsWith("-v"))
 					app.setVerbose(true);
 				else if (arg.startsWith("-stdout"))
 					app.setUseStdout(true);
