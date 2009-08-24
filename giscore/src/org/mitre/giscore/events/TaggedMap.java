@@ -27,6 +27,7 @@ import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * There are a number of elements in KML that simply need their data 
@@ -55,9 +56,10 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
 	/**
 	 * Ctor
 	 * @param tag the tag for the collection, never <code>null</code> or empty
+     * @throws IllegalArgumentException if tag is null or empty 
 	 */
 	public TaggedMap(String tag) {
-		if (tag == null || tag.trim().length() == 0) {
+		if (StringUtils.isBlank(tag)) {
 			throw new IllegalArgumentException(
 					"tag should never be null or empty");
 		}
