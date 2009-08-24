@@ -1,19 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 
-Timestamps on nested Containers with unbounded intervals.
-Child placemark inherits time from each of its parent containers and
-the time is clipped such that it is the smaller span that intersects
-that of all its parent containers.
+Timestamps on nested Features with unbounded intervals.
+
+Child placemarks "inherit" time from each of its parent containers.
+
+In order for a feature to be visible, all of its ancestors must be visible
+and that feature must be visible given visibility flags and temporal
+conditions up the chain to top-most feature.
 
 Example shows how temporal visibility is inherited.
 
 	[1    .   .    .    . 	timespan of outer-most container: begin only
 [0       .    .   .    .    5] 	timespan of placemark#1
-	[1    .   .    .    5]	temporal visilbity of placemark #1
+	[1    .   .    .    5]	effective temporal visilbity of placemark #1
  .	 .    .   3]		timespan of inner-most container end only
 [0	 .    .   .    .    5] 	timespan of placemark#2
-	[1    .   3]      	temporal visilbity of placemark #2
+	[1    .   3]      	effective temporal visilbity of placemark #2
 
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">

@@ -1,13 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- 
 
-Timestamps on Folders with nested Folders.
+Timestamps on nested Features.
+
 Child placemarks in containers may "inherit" the
 time interval of its parent containers.
 
 In order for a feature to be visible, all of its ancestors must be visible
 and that feature must be visible given visibility flags and temporal
 conditions up the chain to top-most feature.
+
+Features with no time properties basically inherit the time of its ancestors
+if they have time constraints.
 
 Example shows how temporal visibility is determined
 in nested features.
@@ -18,8 +22,8 @@ in nested features.
        - placemark2 *[inherits time from folder1]
    - end folder2
    - placemark3 *[inherits time from folder1]
-   - placemark4  [T01:00 - 03:00] [inherits end time from folder1 visible @ T01:00 - 02:00]
-   - placemark5  [T02:01 - 03:00] [visible when both parent and feature is visible]
+   - placemark4  [T01:00 - 03:00] [effective visibility @ T01:00 - 02:00]
+   - placemark5  [T02:01 - 03:00] [visible when both parent and feature are visible]
  end folder1
  placemark6 [T02:00 - 03:00]
 
