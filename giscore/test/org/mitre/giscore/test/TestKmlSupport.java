@@ -212,7 +212,7 @@ public class TestKmlSupport extends TestGISBase {
         } catch (IOException e) {
             System.out.println(" *Failed to parse KML for testcase: " + testcase.getName());
             String msg = e.getMessage();
-            if (msg == null || msg.indexOf("Message: Invalid byte 1 of 1-byte UTF-8 sequence") == -1)
+            if (msg == null || !msg.contains("Message: Invalid byte 1 of 1-byte UTF-8 sequence"))
                 throw e;
             // otherwise we wrote a KML source with wrong XML encoding
             // this is an error in the tester not the giscore framework

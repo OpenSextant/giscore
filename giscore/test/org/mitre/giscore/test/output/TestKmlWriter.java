@@ -160,7 +160,7 @@ public class TestKmlWriter extends TestGISBase {
 		f.setDescription("this is a test placemark");
 		writer.write(f);
 		writer.close();
-		assertTrue(bos.toString().indexOf("this is a test placemark") > 0);
+		assertTrue(bos.toString().contains("this is a test placemark"));
 	}
 
     @Test
