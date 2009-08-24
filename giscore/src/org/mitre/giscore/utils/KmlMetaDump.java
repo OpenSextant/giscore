@@ -19,10 +19,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 /**
- * Simple KML Debugging Tool to import KML/KMZ documents by File or URL and dump statistics
+ * Simple KML Debugging Tool to read KML/KMZ documents by File or URL and dump statistics
  * on number of feature elements (Placemarks, Points, Polygons, LineStrings, NetworkLinks, etc.)
- * and optionally export the same KML to a file to verify all content has been correctly
- * parsed. <p/>
+ * and properties (ExtendedData, Schema, etc.) and optionally export the same KML to a
+ * file (or stdout) to verify all content has been correctly interpreted. <p/>
  *
  * Notes following conditions if found:
  * <ul>
@@ -126,19 +126,19 @@ public class KmlMetaDump implements IKml {
 
 	private void dumpTags() {
 		System.out.flush();
-        System.out.println();
+		System.out.println();
 		Integer docCnt = tagSet.get(DOCUMENT); Integer fldCnt = tagSet.get(FOLDER);
 		if ((docCnt == null || docCnt == 1) && (fldCnt == null || fldCnt == 1)) {
 			// if have only one document and/or folder then omit these
 			tagSet.remove(DOCUMENT); tagSet.remove(FOLDER);
 		}
 		for (Map.Entry<String,Integer> entry: tagSet.entrySet()) {
-				String key = entry.getKey();
-				// message/warnings start with : prefix, otherwise show key + count
-				if (key.startsWith(":"))
-					System.out.println("\t" + key.substring(1));
-				else
-					System.out.format("\t%-20s %d%n", key, entry.getValue());
+			String key = entry.getKey();
+			// message/warnings start with : prefix, otherwise show key + count
+			if (key.startsWith(":"))
+				System.out.println("\t" + key.substring(1));
+			else
+				System.out.format("\t%-20s %d%n", key, entry.getValue());
 		}
 		totals.addAll(tagSet.keySet()); // accumulate total tag set
 		System.out.flush();
@@ -252,7 +252,6 @@ public class KmlMetaDump implements IKml {
 		}
 
 		if (useStdout) {
-			//ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			try {
 				KmlOutputStream kos = new KmlOutputStream(System.out);
 				System.out.println();
@@ -293,9 +292,12 @@ public class KmlMetaDump implements IKml {
             ContainerStart cs = (ContainerStart) gisObj;
             addTag(((ContainerStart) gisObj).getType()); // Documemnt | Folder
             containers.push(cs);
-            Date startDate = cs.getStartTime();
-            Date endDate = cs.getEndTime();
-            if (startDate != null || endDate != null) {
+            Date startTime = cs.getStartTime();
+            Date endTime = cs.getEndTime();
+            if (startTime != null || endTime != null) {
+                //
+                // Note nested times in KML is undocumented in Google and OGC documentation.
+                // Following is from direct observation of Google Earth client.
                 //
                 // Container time inheritance is aggregated with simple approach:
                 // compare against previous container start/end dates and select
@@ -314,26 +316,27 @@ public class KmlMetaDump implements IKml {
                 //
                 inheritsTime = true;
                 if (verbose) System.out.println(cs.getType() + " container has time");
-                if (startDate != null) {
-                    if (endDate != null && startDate.compareTo(endDate) > 0) {
+                if (startTime != null) {
+                    if (endTime != null && startTime.compareTo(endTime) > 0) {
                         // assertion: the begin value is earlier than the end value.
                         // if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
                         addTag(":Invalid time range: start > end");
+                        if (verbose) System.out.println(" Error: Invalid time range: start > end\n");
                     }
                     // take earlier start date in interval of feature and all of its ancestors
-                    if (containerStartDate == null || startDate.compareTo(containerStartDate) < 0) {
+                    if (containerStartDate == null || startTime.compareTo(containerStartDate) < 0) {
                         // log.debug("use container start date");
-                        containerStartDate = startDate;
-                        // TODO: if startDate > containerEndDate then ??
-                    } else if (verbose) System.out.println("container start date is earlier than its parent container");
+                        containerStartDate = startTime;
+                        // TODO: if startTime > containerEndDate then ??
+                    } else if (verbose) System.out.println(" container start date is later than its parent container");
                 }
-                if (endDate != null) {
+                if (endTime != null) {
                     // take later end date in interval of feature and all of its ancestors
-                    if (containerEndDate == null || endDate.compareTo(containerEndDate) > 0) {
+                    if (containerEndDate == null || endTime.compareTo(containerEndDate) > 0) {
                         // log.debug("use container end date");
-                        containerEndDate = endDate;
-                        // TODO: if endDate < containerStartDate then ??
-                    } else if (verbose) System.out.println("container end date is later than its parent container");
+                        containerEndDate = endTime;
+                        // TODO: if endTime < containerStartDate then ??
+                    } else if (verbose) System.out.println(" container end date is earlier than its parent container");
                 }
             }
         } else if (cl == ContainerEnd.class) {
@@ -474,6 +477,7 @@ public class KmlMetaDump implements IKml {
 					// assertion: the begin value is earlier than the end value.
 					// if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
 					addTag(":Invalid time range: start > end");
+					if (verbose) System.out.println(" Error: Invalid time range: start > end\n");
 				}
 			}
 			if (containerStartDate != null && startTime != null && containerStartDate.compareTo(startTime) > 0)
