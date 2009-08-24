@@ -213,7 +213,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		try {
 			stream = ms_fact.createXMLEventReader(is);
 		} catch (XMLStreamException e) {
-			throw new IOException(e.getMessage(), e);
+			throw new IOException(e);
 		}
 	}
 
@@ -284,7 +284,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} catch (NoSuchElementException e) {
 				return null;
 			} catch (XMLStreamException e) {
-				throw new IOException(e.getMessage(), e);
+				throw new IOException(e);
 			}
 		}
 	}

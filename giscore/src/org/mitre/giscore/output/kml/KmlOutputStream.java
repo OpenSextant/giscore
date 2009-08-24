@@ -132,9 +132,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             writer.writeCharacters("\n");
             writer.writeEndDocument();
         } catch (XMLStreamException e) {
-            final IOException e2 = new IOException();
-            e2.initCause(e);
-            throw e2;
+            throw new IOException(e);
         } finally {
             super.close();
         }
@@ -157,9 +155,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 // don't call super.close() which closes the outputStream
             }
         } catch (XMLStreamException e) {
-            final IOException e2 = new IOException();
-            e2.initCause(e);
-            throw e2;
+            throw new IOException(e);
         }
     }
 
