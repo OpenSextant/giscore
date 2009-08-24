@@ -7,6 +7,7 @@ import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
+import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
@@ -232,15 +233,15 @@ public class TestKmlWriter extends TestGISBase {
 	}
 
 	/**
-	 * Using TimeTest.kml example test 6 variations of timeStamps or timeSpans.  Verify 
-	 * read and write various time start and end time combinations.
+	 * Using TimeTest.kml example test 6 variations of timeStamps and timeSpans.
+     * Verify read and write of various time start and end time combinations.
 	 *
 	 * @throws Exception
 	 */
     @Test
 	public void test_Timestamp_Feature() throws Exception {
 		File input = new File("data/kml/time/TimeTest.kml");
-		TimeZone gmt = TimeZone.getTimeZone("GMT");
+		//TimeZone gmt = TimeZone.getTimeZone("GMT");
 		File temp = createTemp("TestTimeTest", ".kml", tempKmlDir);
 		try {
 			KmlReader reader = new KmlReader(input);
@@ -248,7 +249,7 @@ public class TestKmlWriter extends TestGISBase {
 
 			//System.out.println(features);
 			//System.out.println("# features=" + features.size());
-			assertEquals(9, objs.size());
+			assertEquals(15, objs.size());
 
 			/*
 			 Structure of KML objects:
@@ -272,11 +273,13 @@ public class TestKmlWriter extends TestGISBase {
 
 			// feature 0 timeStamp placemark - start marker marks earlier time in dataset
 			Feature f = features.get(0);
+			/*
 			DatatypeFactory fact = DatatypeFactory.newInstance();
-			XMLGregorianCalendar xmlCal = fact.newXMLGregorianCalendar("2008-08-12T20:16:00Z");
+			XMLGregorianCalendar xmlCal = fact.newXMLGregorianCalendar("2008-08-12T01:00:00Z");
 			GregorianCalendar cal = xmlCal.toGregorianCalendar();
 			cal.setTimeZone(gmt);
-			Date firstTime = cal.getTime();
+            */
+			Date firstTime = KmlInputStream.parseDate("2008-08-12T01:00:00Z");
 			assertEquals(firstTime, f.getStartTime());
 			assertEquals(firstTime, f.getEndTime());
 			Geometry geom = f.getGeometry();
