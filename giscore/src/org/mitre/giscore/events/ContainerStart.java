@@ -23,6 +23,7 @@ import java.io.IOException;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
+import org.apache.commons.lang.StringUtils;
 
 
 /**
@@ -47,11 +48,11 @@ public class ContainerStart extends Common {
      * Constructs a container that can hold zero or more features or other containers.
      * <code>ContainerStart</code> should be followed by a matching <code>ContainerEnd</code> element. 
      * @param type Type of container
-     * @throws IllegalArgumentException if type is null 
+     * @throws IllegalArgumentException if type is null or empty 
      */
 	public ContainerStart(String type) {
-		if (type == null) {
-			throw new IllegalArgumentException("type should never be null");
+		if (StringUtils.isBlank(type)) {
+			throw new IllegalArgumentException("type should never be null or empty");
 		}
 		this.type = type;
 	}
