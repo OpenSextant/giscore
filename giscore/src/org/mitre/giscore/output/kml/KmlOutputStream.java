@@ -188,8 +188,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 tag = IKml.FOLDER.equalsIgnoreCase(tag) ? IKml.FOLDER : IKml.DOCUMENT;
             }
             writer.writeStartElement(tag);
-            handleAttributes(containerStart);
-            handleWaitingElements(tag);
+            handleAttributes(containerStart, tag);
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
@@ -235,8 +234,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * and other features like Placemarks and Overlays.
      *
      * @param feature Common feature object for whom attributes will be written
+     * @param containerType type of Container were visiting if (Feature is a Document or Folder) otherwise null
      */
-    private void handleAttributes(Common feature) {
+    private void handleAttributes(Common feature, String containerType) {
         try {
             handleNonNullSimpleElement(NAME, feature.getName());
             Boolean visibility = feature.getVisibility();
@@ -272,6 +272,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
 
             handleNonNullSimpleElement(STYLE_URL, feature.getStyleUrl());
+            // if feature has inline style needs to write here
+            handleWaitingElements(containerType);
+
             if (feature.hasExtendedData()) {
                 URI schema = feature.getSchema();
                 writer.writeStartElement(EXTENDED_DATA);
@@ -384,8 +387,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         try {
             String tag = feature.getType();
             writer.writeStartElement(tag);
-            handleAttributes(feature);
-            handleWaitingElements(null);
+            handleAttributes(feature, null);
             if (feature instanceof Overlay) {
                 handleOverlay((Overlay) feature);
             } else if (feature.getGeometry() != null) {
@@ -538,6 +540,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Handle elements that have been deferred. Style information is stored as
      * found and output on the next feature or container.
      *
+     * @param containerType type of Container were visiting if (Feature is a Document or Folder) otherwise null
      * @throws XMLStreamException if an error occurs
      * @throws IllegalStateException if invalid element is found in waitingElements list  @param containerType
      */
