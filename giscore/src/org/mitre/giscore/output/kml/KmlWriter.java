@@ -225,7 +225,7 @@ public class KmlWriter {
         // we have a ContainerStart with no matching ContainerEnd so ignore it
 		if (kos != null)
 			try {
-				kos.closeWriter();
+                kos.close();
 				kos = null;
 			} catch (IOException e) {
 				log.warn("Failed to close writer", e);
