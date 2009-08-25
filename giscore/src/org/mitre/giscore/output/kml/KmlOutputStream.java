@@ -40,6 +40,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.io.IOUtils;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.*;
@@ -157,6 +158,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         } catch (XMLStreamException e) {
             throw new IOException(e);
         }
+    }
+
+    /**
+     * Closes the underlying stream typically done after calling closeWriter
+     */
+    public void closeStream()  {
+        IOUtils.closeQuietly(stream);
     }
 
     /*
@@ -1162,4 +1170,5 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     public boolean isWaiting() {
         return waitingElements.size() != 0;
     }
+
 }

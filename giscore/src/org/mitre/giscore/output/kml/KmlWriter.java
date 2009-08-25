@@ -225,12 +225,11 @@ public class KmlWriter {
         // we have a ContainerStart with no matching ContainerEnd so ignore it
 		if (kos != null)
 			try {
-                kos.close();
-				kos = null;
+                kos.closeWriter();
 			} catch (IOException e) {
 				log.warn("Failed to close writer", e);
 			}
-
+        // if we're writing zipStream then need to close the entry before closing the underlying stream 
         if (zoS != null) {
             try {
                 zoS.closeEntry();
@@ -240,6 +239,10 @@ public class KmlWriter {
 			IOUtils.closeQuietly(zoS);
 			zoS = null;
 		}
+        if (kos != null) {
+            kos.closeStream(); // close underlying closing the underlying XmlOutputStreamBase.stream
+            kos = null;
+        }
 
         waiting = null;
     }
