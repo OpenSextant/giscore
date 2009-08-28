@@ -215,25 +215,29 @@ public class Style extends StyleSelector {
 	/**
 	 * Set the balloon style
 	 * 
-	 * @param color
-	 *            the color for the balloon background, never <code>null</code>
+	 * @param bgColor
+	 *            the color for the balloon background, if <code>null</code>
+     *            will use default color: opaque white (ffffffff). 
 	 * @param text
 	 *            the textual template for the balloon content, never
 	 *            <code>null</code>
 	 * @param textColor
-	 *            the color for the text in the balloon
-	 * @throws IllegalArgumentException if color or text are null.
+	 *            the color for the text in the balloon.
+     *            The default is black (ff000000). 
+	 * @param displayMode
+     *            If <displayMode> is default, Google Earth uses the information
+     *            supplied in <text> to create a balloon . If <displayMode> is hide,
+     *            Google Earth does not display the balloon. "default" is the default value
+     *            if null value is supplied.
+     * @throws IllegalArgumentException if text is null.
 	 */
-	public void setBalloonStyle(Color color, String text, Color textColor,
+	public void setBalloonStyle(Color bgColor, String text, Color textColor,
 			String displayMode) {
-		if (color == null) {
-			throw new IllegalArgumentException("color should never be null");
-		}
 		if (text == null) {
 			throw new IllegalArgumentException("text should never be null");
 		}
 		hasBalloonStyle = true;
-		this.balloonBgColor = color;
+		this.balloonBgColor = bgColor;
 		this.balloonText = text;
 		this.balloonTextColor = textColor;
 		this.balloonDisplayMode = displayMode;
