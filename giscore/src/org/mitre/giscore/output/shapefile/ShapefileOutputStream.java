@@ -121,8 +121,8 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
      *                              <code>null</code>.
      * @param path                  the directory and file that should hold the file gdb, never
      *                              <code>null</code>.
-     * @param containerNameStrategy a name strategy to override the default, may be
-     *                              <code>null</code>.
+     * @param containerNameStrategy a name strategy to override the default, if
+     *                              <code>null</code> then uses BasicContainerNameStrategy.
      * @param mapper				point to shape mapper
      * @throws IOException if an IO error occurs
      */

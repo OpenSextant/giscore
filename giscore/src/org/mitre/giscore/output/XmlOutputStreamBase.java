@@ -104,7 +104,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 		} finally {
             IOUtils.closeQuietly(stream);
         }
-	}
+	}    
 
 	/*
 	 * (non-Javadoc)
