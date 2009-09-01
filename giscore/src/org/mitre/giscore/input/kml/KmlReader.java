@@ -45,7 +45,7 @@ import java.io.*;
  * @author Jason Mathews, MITRE Corp.
  * Created: Mar 5, 2009 9:12:19 AM
  */
-public class KmlReader extends KmlBaseReader {
+public class KmlReader extends KmlBaseReader implements IGISInputStream {
 
 	private static final Logger log = LoggerFactory.getLogger(KmlReader.class);
 
