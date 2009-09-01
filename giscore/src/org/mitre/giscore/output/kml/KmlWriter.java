@@ -19,6 +19,7 @@ package org.mitre.giscore.output.kml;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.events.*;
@@ -45,7 +46,7 @@ import java.net.URISyntaxException;
  * <li>discards empty containers if ContainerStart is followed by a ContainerEnd element
  *    in a successive write() call.
  * <li>write Files or contents from inputStream to entries in KMZ for networkLinked content,
- *    overlay images, etc.
+ *    overlay images, icons, etc.
  * </ul>
  * 
  * Complements the KmlReader class. Advanced KML support should use the <code>KmlOutputStream</code> class directly.
@@ -53,7 +54,7 @@ import java.net.URISyntaxException;
  * @author Jason Mathews, MITRE Corp.
  * Created: Mar 13, 2009 10:06:17 AM
  */
-public class KmlWriter {
+public class KmlWriter implements IGISOutputStream {
 
     private static final Logger log = LoggerFactory.getLogger(KmlWriter.class);
 
