@@ -38,10 +38,7 @@
 			</filesystem>
 			<ibiblio name="maven-proxy" namespace="m2" checkconsistency="false"
 				root="http://maven-proxy:8081/artifactory/repo/" m2compatible="true" />			
-		</chain>
-		<!--  <ssh name="ssh" host="mapsrv" >
-			<artifact pattern="/data/m2/repo-local/org/mitre/itf/[module]/[revision]/[artifact]-[revision].[ext]" />
-		</ssh>  -->		
+		</chain>	
 		<ibiblio name="maven-proxy" namespace="m2" 
 			root="http://maven-proxy:8081/artifactory/libs-releases-local" m2compatible="true" />
 	</resolvers>

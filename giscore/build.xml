@@ -122,7 +122,7 @@
 
 		<!-- buildnumber isn't working correctly with artifactory -->
 		<!--  <ivy:buildnumber revision="0.4" organisation="org.mitre.itf" module="giscore" /> -->
-		<property name="ivy.new.revision" value="0.4.7" /> 
+		<property name="ivy.new.revision" value="0.4.10" /> 
 			
 		<taskdef resource="org/knopflerfish/ant/antlib.xml" classpathref="kf.path"/>
 		<!-- This isn't perfect because the com.esri.arcgis classes haven't

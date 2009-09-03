@@ -108,12 +108,12 @@ public class ObjectBuffer {
 	 */
 	public void close() throws IOException {
 		closeOutputStream();
-		if (secondaryStore != null) {
-			secondaryStore.delete();
-		}
 		if (inputStream != null) {
 			inputStream.close();
 			inputStream = null; 
+		}
+		if (secondaryStore != null) {
+			secondaryStore.delete();
 		}
 		buffer = null;
 		readIndex = 0;
