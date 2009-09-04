@@ -63,19 +63,20 @@ public class KmlWriter implements IGISOutputStream {
     private ContainerStart waiting;
 	private boolean compressed;
 
-	/**
+    /**
 	 * Construct a KmlWriter which starts writing a KML document into
-	 * the specified KML or KMZ file.  If filename ends with .kmz or .zip extension
+	 * the specified KML or KMZ file.  If file name ends with .kmz or .zip extension
 	 * then a compressed KMZ (ZIP) file is produced with the main KML document
 	 * stored as "doc.kml" in the root directory. <p/>
 	 *
 	 * For details on .KMZ files see "Creating a .kmz Archive" section
 	 * of http://code.google.com/apis/kml/documentation/kml_21tutorial.html
-	 * 
+	 *
 	 * @param file the file to be opened for writing.
+     * @param encoding the encoding to use, if null default encoding (UTF-8) is assumed
 	 * @throws IOException if an I/O error occurs
 	 */
-	public KmlWriter(File file) throws IOException {
+    public KmlWriter(File file, String encoding) throws IOException {
         String name = file.getName().toLowerCase();
         // if  filename ends in .zip create then treat as .KMZ file ending with .ZIP extension
         compressed = name.endsWith(".kmz") || name.endsWith(".zip"); 
@@ -87,9 +88,9 @@ public class KmlWriter implements IGISOutputStream {
                 zoS = new ZipOutputStream(boS);
                 ZipEntry zEnt = new ZipEntry("doc.kml");
                 zoS.putNextEntry(zEnt);
-                kos = new KmlOutputStream(zoS);
+                kos = new KmlOutputStream(zoS, encoding);
             } else {
-                kos = new KmlOutputStream(os);
+                kos = new KmlOutputStream(os, encoding);
             }
         } catch (XMLStreamException e) {
 			final IOException e2 = new IOException();
@@ -98,6 +99,22 @@ public class KmlWriter implements IGISOutputStream {
         }
         kos.write(new DocumentStart(DocumentType.KML));
 		// TODO: consider adding KmlWriter(InputStream is, boolean compress) constructor
+    }
+
+    /**
+	 * Construct a KmlWriter which starts writing a KML document into
+	 * the specified KML or KMZ file.  If filename ends with .kmz or .zip extension
+	 * then a compressed KMZ (ZIP) file is produced with the main KML document
+	 * stored as "doc.kml" in the root directory. <p/>
+	 *
+	 * For details on .KMZ files see "Creating a .kmz Archive" section
+	 * of http://code.google.com/apis/kml/documentation/kml_21tutorial.html
+	 *
+	 * @param file the file to be opened for writing.
+	 * @throws IOException if an I/O error occurs
+	 */
+	public KmlWriter(File file) throws IOException {
+        this(file, null);
     }
 
 	/**
