@@ -112,6 +112,7 @@ import org.slf4j.LoggerFactory;
  * Unsupported tags include the following:
  *  atom:author, atom:link, address, xal:AddressDetails, Metadata,
  *  open, phoneNumber, Region, Snippet, snippet.
+ *  gx extensions (e.g. Tour, Playlist, etc.)
   * <p>
  * These tags are consumed but discarded.
  * <p> 
@@ -127,8 +128,9 @@ import org.slf4j.LoggerFactory;
  * Limited support for NetworkLinkControl which creates an object wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
  * <p>
- * Allow timestamps to omit seconds field. Strict schema requires seconds field in the dateTime (YYYY-MM-DDThh:mm:ssZ) format
- * but Google Earth is lax in its rules. Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC. 
+ * Allow timestamps to omit seconds field. Strict XML schema validation requires seconds field
+ * in the dateTime (YYYY-MM-DDThh:mm:ssZ) format but Google Earth is lax in its rules.
+ * Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC. 
  *
  * @author DRAND
  * @author J.Mathews
@@ -1153,6 +1155,22 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException, IOException {
 		StartElement se = e.asStartElement();
 		String localname = se.getName().getLocalPart();
+
+		// check if element is from extension namespace
+		String ns = se.getName().getNamespaceURI();
+		if (ns != null && ns.startsWith("http://www.google.com/kml/ext/")) {
+			// if extension namespace then skip it (e.g. http://www.google.com/kml/ext/2.2)
+			log.debug("SKIP: " + se.getName());
+			try {
+				skipNextElement(stream, localname);
+			} catch (XMLStreamException xe) {
+				final IOException e2 = new IOException();
+				e2.initCause(xe);
+				throw e2;
+			}
+			return NullObject.getInstance();
+		}
+		
 		String elementName = localname; // differs from localname if aliased by Schema mapping
 		//System.out.println(localname); //debug
 		// check if element has been aliased in Schema
