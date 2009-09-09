@@ -95,7 +95,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Ctor
      *
      * @param stream OutputStream to decorate as a KmlOutputStream
-     * @param encoding the encoding to use
+     * @param encoding the encoding to use, if null default encoding (UTF-8) is assumed
      * @throws XMLStreamException if error occurs creating output stream
      */
     public KmlOutputStream(OutputStream stream, String encoding) throws XMLStreamException {
