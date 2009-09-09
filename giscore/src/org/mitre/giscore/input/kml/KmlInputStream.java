@@ -112,7 +112,8 @@ import org.slf4j.LoggerFactory;
  * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
  * ImagePyramid, Point, shape, etc).
  * <p>
- * Limited support for Model geometry type.
+ * Limited support for Model geometry type. Keeps only location and altitude
+ * properties.
  * <p> 
  * Limited support for NetworkLinkControl which creates an object wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
@@ -301,17 +302,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 */
 	private IGISObject handleContainer(XMLEvent e) throws XMLStreamException {
 		StartElement se = e.asStartElement();
-		String containerTag = se.getName().getLocalPart();
+		QName name = se.getName();
+		String containerTag = name.getLocalPart();
 		ContainerStart cs = new ContainerStart(containerTag); // Folder or Document
 		addFirst(cs);
 
 		while (true) {
 			XMLEvent ne = stream.peek();
 			// Found end tag, sometimes a container has no other content
-			if (foundEndTag(ne, containerTag)) {
+			if (foundEndTag(ne, name)) {
 				break;
-			} else if (ne != null
-					&& ne.getEventType() == XMLStreamReader.START_ELEMENT) {
+			}
+			if (ne.getEventType() == XMLStreamReader.START_ELEMENT) {
 				StartElement nextel = ne.asStartElement();
 				String tag = nextel.getName().getLocalPart();
 				// check if element has been aliased in Schema
@@ -332,11 +334,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			XMLEvent ee = stream.nextEvent();
 			if (ee == null) {
 				break;
-			} else if (ee.getEventType() == XMLStreamReader.START_ELEMENT) {
+			}
+			if (ee.getEventType() == XMLStreamReader.START_ELEMENT) {
 				StartElement sl = ee.asStartElement();
-				QName name = sl.getName();
+				QName qname = sl.getName();
 				//System.out.println(localname);//debug
-				if (!handleProperties(cs, ee, name)) {
+				if (!handleProperties(cs, ee, qname)) {
 					// Ignore other attributes
 				}
             }
@@ -367,7 +370,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 feature.setVisibility(Boolean.valueOf("1".equals(getNonEmptyElementText())));
                 return true;
             } else if (localname.equals(STYLE)) {
-                handleStyle(feature, ee);
+                handleStyle(feature, ee, name);
                 return true;
             } else if (ms_attributes.contains(localname)) {
                 // Skip, but consume
@@ -382,22 +385,22 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 handleTimePrimitive(feature, ee);
                 return true;
             } else if (localname.equals(STYLE_MAP)) {
-                handleStyleMap(feature, ee);
+                handleStyleMap(feature, ee, name);
                 return true;
 			} else if (localname.equals(LOOK_AT) || localname.equals(CAMERA)) {
                 handleAbstractView(feature, localname);
                 return true;
 			} else if (localname.equals(EXTENDED_DATA)) {
-                handleExtendedData(feature, ee);
+                handleExtendedData(feature, name);
                 return true;
 			} else if (localname.equals(METADATA)) {
-                handleMetadata(feature, ee);
+                handleMetadata(feature, name);
                 return true;
 			} else if (localname.equals(SNIPPET)) {
-                handleSnippet(feature, ee); // Snippet
+                handleSnippet(feature, name); // Snippet
                 return true;
 			} else if (localname.equals("snippet")) {
-				handleSnippet(feature, ee); // snippet (deprecated in 2.2)
+				handleSnippet(feature, name); // snippet (deprecated in 2.2)
 				// Note: schema shows Snippet is deprecated but Google documentation and examples
 				// suggestion snippet (lower case 's') is deprecated instead...
 				return true;
@@ -448,36 +451,37 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
     /**
 	 * @param cs
-	 * @param ee
+	 * @param name  the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleExtendedData(Common cs, XMLEvent ee)
+	private void handleExtendedData(Common cs, QName name)
 			throws XMLStreamException {
 		XMLEvent next;
 		while (true) {
 			next = stream.nextEvent();
-			if (next == null)
+			if (foundEndTag(next, name)) {
 				return;
+			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
-				String tag = se.getName().getLocalPart();
+				QName qname = se.getName();
+				String tag = qname.getLocalPart();
 				/*
 				 * TODO: Add xmlns:prefix handling
 				 */
 				if (tag.equals(DATA)) {
-					Attribute name = se.getAttributeByName(new QName(NAME));
-					if (name != null) {
-						String value = parseValue(DATA);
+					Attribute nameAttr= se.getAttributeByName(new QName(NAME));
+					if (nameAttr != null) {
+						String value = parseValue(qname);
                         if (value != null)
-    						cs.putData(new SimpleField(name.getValue()), value);
+    						cs.putData(new SimpleField(nameAttr.getValue()), value);
                         // NOTE: if feature has mixed Data and SchemaData then Data fields will be associated with last SchemaData schema processed
 					}
 				} else if (tag.equals(SCHEMA_DATA)) {
-					Attribute url = se
-							.getAttributeByName(new QName(SCHEMA_URL));
+					Attribute url = se.getAttributeByName(new QName(SCHEMA_URL));
 					if (url != null) {
 						String uri = url.getValue();
-						handleSchemaData(uri, cs);
+						handleSchemaData(uri, cs, qname);
 						try {
 							cs.setSchema(new URI(uri));
 						} catch (URISyntaxException e) {
@@ -494,8 +498,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					  <camp:tentSites>4</camp:tentSites>
 					</ExtendedData>
 				 */
-			} else if (foundEndTag(next, EXTENDED_DATA)) {
-				return;
 			}
 		}
 	}
@@ -558,9 +560,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param uri a reference to a schema, if local then use that schema's
 	 * simple field objects instead of creating ones on the fly
 	 * @param cs Feature/Container for ExtendedData tag
+	 * @param qname the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleSchemaData(String uri, Common cs)
+	private void handleSchemaData(String uri, Common cs, QName qname)
 			throws XMLStreamException {
 		XMLEvent next;
 		if (uri.startsWith("#")) uri = uri.substring(1);
@@ -568,8 +571,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		
 		while (true) {
 			next = stream.nextEvent();
-			if (next == null)
+			if (foundEndTag(next, qname)) {
 				return;
+			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				if (foundStartTag(se, SIMPLE_DATA)) {
@@ -588,55 +592,53 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						cs.putData(field, value);
 					}
 				}
-			} else if (foundEndTag(next, SCHEMA_DATA)) {
-				return;
 			}
 		}
 	}
 
 	/**
-	 * @param tag
+	 * @param name  the qualified name of this event
 	 * @return the value associated with the element
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private String parseValue(String tag) throws XMLStreamException {
+	private String parseValue(QName name) throws XMLStreamException {
 		XMLEvent next;
 		String rval = null;
 		while (true) {
 			next = stream.nextEvent();
-			if (next == null)
+			if (foundEndTag(next, name)) {
 				return rval;
+			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				if (foundStartTag(se, VALUE)) {
 					rval = stream.getElementText();
 				}
-			} else if (foundEndTag(next, tag)) {
-				return rval;
 			}
 		}
 	}
 
 	/**
 	 * @param cs
-	 * @param ee
+	 * @param name
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleMetadata(Common cs, XMLEvent ee)
+	private void handleMetadata(Common cs, QName name)
 			throws XMLStreamException {
+		skipNextElement(stream, name);
+		/*
 		XMLEvent next;
-
 		while (true) {
 			next = stream.nextEvent();
-			if (next == null)
-				return;
-			if (foundEndTag(next, METADATA))
+			if (foundEndTag(next, name))
 				return;
 		}
+		*/
 	}
 
 	/**
 	 * @param feature
+	 * @param localname
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleAbstractView(Common feature, String localname)
@@ -646,10 +648,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
+	 * @param cs
 	 * @param ee
+	 * @param name
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleStyleMap(Common cs, XMLEvent ee)
+	private void handleStyleMap(Common cs, XMLEvent ee, QName name)
 			throws XMLStreamException {
 		XMLEvent next;
 		StyleMap sm = new StyleMap();
@@ -662,16 +666,14 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 		while (true) {
 			next = stream.nextEvent();
-			if (next == null)
+			if (foundEndTag(next, name)) {
 				return;
+			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement ie = next.asStartElement();
 				if (foundStartTag(ie, PAIR)) {
 					handleStyleMapPair(sm);
 				}
-			}
-			if (foundEndTag(next, STYLE_MAP)) {
-				return;
 			}
 		}
 	}
@@ -684,6 +686,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		String key = null, value = null;
 		while (true) {
 			XMLEvent ce = stream.nextEvent();
+			if (ce == null)
+				return;
 			if (ce.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = ce.asStartElement();
 				if (foundStartTag(se, KEY)) {
@@ -744,7 +748,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                     log.warn("Ignoring bad time: " + time + ": " + e);
                 }
             }
-            if (foundEndTag(next, tag.getLocalPart())) {
+            if (foundEndTag(next, tag)) {
                 return;
             }
         }
@@ -869,33 +873,33 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * @param cs
-	 * @param ee
+	 * @param name
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleSnippet(Common cs, XMLEvent ee)
+	private void handleSnippet(Common cs, QName name)
 			throws XMLStreamException {
-        StartElement se = ee.asStartElement();
+		skipNextElement(stream, name);
+		/*
 		XMLEvent next;
-        String localname = se.getName().getLocalPart();
-
 		while (true) {
 			next = stream.nextEvent();
-			if (next == null)
-				return;
-			if (foundEndTag(next, localname)) {
+			if (foundEndTag(next, name)) {
 				return;
 			}
 		}
+		*/
 	}
 
 	/**
 	 * Get the style data and push the style onto the buffer so it is returned
 	 * first, before its container or placemark
 	 * 
+	 * @param cs
 	 * @param ee
+	 * @param name
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleStyle(Common cs, XMLEvent ee)
+	private void handleStyle(Common cs, XMLEvent ee, QName name)
 			throws XMLStreamException {
 		XMLEvent next;
 
@@ -908,56 +912,54 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		addFirst(style);
 		while (true) {
 			next = stream.nextEvent();
-			if (next == null)
+			if (foundEndTag(next, name)) {
 				return;
-
+			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
-				String name = se.getName().getLocalPart();
-				if (name.equals(ICON_STYLE)) {
-					handleIconStyle(style);
-				} else if (name.equals(LINE_STYLE)) {
-					handleLineStyle(style);
-				} else if (name.equals(BALLOON_STYLE)) {
-					handleBalloonStyle(style);
-				} else if (name.equals(LABEL_STYLE)) {
-					handleLabelStyle(style);
-				} else if (name.equals(POLY_STYLE)) {
-					handlePolyStyle(style);
+				QName qname = se.getName();
+				String localPart = qname.getLocalPart();
+				if (localPart.equals(ICON_STYLE)) {
+					handleIconStyle(style, qname);
+				} else if (localPart.equals(LINE_STYLE)) {
+					handleLineStyle(style, qname);
+				} else if (localPart.equals(BALLOON_STYLE)) {
+					handleBalloonStyle(style, qname);
+				} else if (localPart.equals(LABEL_STYLE)) {
+					handleLabelStyle(style, qname);
+				} else if (localPart.equals(POLY_STYLE)) {
+					handlePolyStyle(style, qname);
 				}
                 // TODO: ListStyle
-			}
-
-			if (foundEndTag(next, STYLE)) {
-				return;
 			}
 		}
 	}
 
 	/**
 	 * @param style
+	 * @param qname
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handlePolyStyle(Style style) throws XMLStreamException {
+	private void handlePolyStyle(Style style, QName qname) throws XMLStreamException {
 		Color color = Color.white;
 		boolean fill = true;
 		boolean outline = true;
 		while (true) {
 			XMLEvent e = stream.nextEvent();
-			if (e.getEventType() == XMLEvent.START_ELEMENT) {
-				StartElement se = e.asStartElement();
-				String name = se.getName().getLocalPart();
-				if (name.equals(FILL)) {
-					fill = isTrue(stream.getElementText());
-				} else if (name.equals(OUTLINE)) {
-					outline = isTrue(stream.getElementText());
-				} else if (name.equals(COLOR)) {
-					color = parseColor(stream.getElementText());
-				}
-			}
-			if (foundEndTag(e, POLY_STYLE)) {
+			if (foundEndTag(e, qname)) {
 				style.setPolyStyle(color, fill, outline);
 				return;
+			}
+			if (e.getEventType() == XMLEvent.START_ELEMENT) {
+				StartElement se = e.asStartElement();
+				String localPart = se.getName().getLocalPart();
+				if (localPart.equals(FILL)) {
+					fill = isTrue(stream.getElementText());
+				} else if (localPart.equals(OUTLINE)) {
+					outline = isTrue(stream.getElementText());
+				} else if (localPart.equals(COLOR)) {
+					color = parseColor(stream.getElementText());
+				}
 			}
 		}
 	}
@@ -975,13 +977,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * @param style
+	 * @param qname
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleLabelStyle(Style style) throws XMLStreamException {
+	private void handleLabelStyle(Style style, QName qname) throws XMLStreamException {
 		double scale = 1;
 		Color color = Color.black;
 		while (true) {
 			XMLEvent e = stream.nextEvent();
+			if (foundEndTag(e, qname)) {
+				style.setLabelStyle(color, scale);
+				return;
+			}
 			if (e.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
@@ -997,22 +1004,23 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					color = parseColor(stream.getElementText());
 				}
 			}
-			else if (foundEndTag(e, LABEL_STYLE)) {
-				style.setLabelStyle(color, scale);
-				return;
-			}
 		}
 	}
 
 	/**
 	 * @param style
+	 * @param qname
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleLineStyle(Style style) throws XMLStreamException {
+	private void handleLineStyle(Style style, QName qname) throws XMLStreamException {
 		double width = 1;
 		Color color = Color.white;
 		while (true) {
 			XMLEvent e = stream.nextEvent();
+			if (foundEndTag(e, qname)) {
+				style.setLineStyle(color, width);
+				return;
+			}
 			if (e.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
@@ -1033,24 +1041,25 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					}
 				}
 			}
-			else if (foundEndTag(e, LINE_STYLE)) {
-				style.setLineStyle(color, width);
-				return;
-			}
 		}
 	}
 
 	/**
 	 * @param style
+	 * @param qname
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleBalloonStyle(Style style) throws XMLStreamException {
+	private void handleBalloonStyle(Style style, QName qname) throws XMLStreamException {
 		String text = "";
 		Color color = Color.white;
 		Color textColor = Color.black;
 		String displayMode = "default"; // [default] | hide
 		while (true) {
 			XMLEvent e = stream.nextEvent();
+			if (foundEndTag(e, qname)) {
+				style.setBalloonStyle(color, text, textColor, displayMode);
+				return;
+			}
 			if (e.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
@@ -1064,10 +1073,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					textColor = parseColor(stream.getElementText());
 				}
 			}
-			if (foundEndTag(e, BALLOON_STYLE)) {
-				style.setBalloonStyle(color, text, textColor, displayMode);
-				return;
-			}
 		}
 	}
 
@@ -1076,20 +1081,21 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * 
 	 * @return the href, <code>null</code> if not found.
 	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 * @param qname
 	 */
-	private String parseIconHref() throws XMLStreamException {
+	private String parseIconHref(QName qname) throws XMLStreamException {
 		String href = null;
 		while (true) {
 			XMLEvent e = stream.nextEvent();
+			if (foundEndTag(e, qname)) {
+				return href;
+			}
 			if (e.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(HREF)) {
 					href = getNonEmptyElementText();
 				}
-			}
-			if (foundEndTag(e, ICON)) {
-				return href;
 			}
 		}
 	}
@@ -1121,18 +1127,28 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
     /**
 	 * @param style
+	 * @param name
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleIconStyle(Style style) throws XMLStreamException {
+	private void handleIconStyle(Style style, QName name) throws XMLStreamException {
 		String url = null;
 		double scale = 1.0;		// default value
 		Color color = Color.white;	// default="ffffffff"
 		while (true) {
 			XMLEvent e = stream.nextEvent();
+			if (foundEndTag(e, name)) {
+				try {
+					style.setIconStyle(color, scale, url);
+				} catch (IllegalArgumentException iae) {
+					log.warn("Invalid style: " + iae);
+				}
+				return;
+			}
 			if (e.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = e.asStartElement();
-				String name = se.getName().getLocalPart();
-				if (name.equals(SCALE)) {
+				QName qname = se.getName();
+				String localPart = qname.getLocalPart();
+				if (localPart.equals(SCALE)) {
                     String value = getNonEmptyElementText();
                     if (value != null)
                         try {
@@ -1140,24 +1156,16 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                         } catch (NumberFormatException nfe) {
                             log.warn("Invalid scale value: " + value);
                         }
-				} else if (name.equals(COLOR)) {
+				} else if (localPart.equals(COLOR)) {
 					String value = stream.getElementText();
 					color = parseColor(value);
 					if (color == null) {
 						//log.warn("Invalid IconStyle color: " + value);
 						color = Color.white; // use default="ffffffff"
 					}
-				} else if (name.equals(ICON)) {
-					url = parseIconHref();
+				} else if (localPart.equals(ICON)) {
+					url = parseIconHref(qname);
 				}
-			}
-			if (foundEndTag(e, ICON_STYLE)) {
-				try {
-					style.setIconStyle(color, scale, url);
-				} catch (IllegalArgumentException iae) {
-					log.warn("Invalid style: " + iae);
-				}
-				return;
 			}
 		}
 	}
@@ -1211,9 +1219,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				//System.out.println("** handle container: " + elementName);
 				return handleContainer(se);
 			} else if (SCHEMA.equals(localname)) {
-				return handleSchema(se, localname);
+				return handleSchema(se, name);
 			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
-				return handleNetworkLinkControl(stream);
+				return handleNetworkLinkControl(stream, name);
 			} else if (STYLE.equals(localname)) {
                 log.debug("Out of order Style");
                 StringBuilder sb = new StringBuilder();
@@ -1271,15 +1279,16 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		}
 	}
 
-	private IGISObject handleNetworkLinkControl(XMLEventReader stream) throws XMLStreamException {
+	private IGISObject handleNetworkLinkControl(XMLEventReader stream, QName name) throws XMLStreamException {
 		NetworkLinkControl c = new NetworkLinkControl();
 		// if true indicates we're parsing the Update element
 		boolean updateFlag = false;
 		//String updateType = null;
 		while (true) {
 			XMLEvent next = stream.nextEvent();
-			if (next == null)
+			if (foundEndTag(next, name)) {
 				break;
+			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				String tag = se.getName().getLocalPart();
@@ -1336,9 +1345,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} else {
 				if (foundEndTag(next, "Update"))
 					updateFlag = false;
-				else if (foundEndTag(next, NETWORK_LINK_CONTROL)) {
-					break;
-				}
 			}
 		}
 		return c;
@@ -1350,7 +1356,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @return
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private IGISObject handleSchema(StartElement element, String localname)
+	private IGISObject handleSchema(StartElement element, QName qname)
 			throws XMLStreamException {
 		Schema s = new Schema();
 		addLast(s);
@@ -1383,8 +1389,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		int gen = 0;
 		while (true) {
 			XMLEvent next = stream.nextEvent();
-			if (next == null)
+			if (foundEndTag(next, qname)) {
 				break;
+			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				if (foundStartTag(se, SIMPLE_FIELD)) {
@@ -1427,14 +1434,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					String nameVal = getNonEmptyElementText();
 					if (nameVal != null) name = nameVal;
 				}
-			} else if (foundEndTag(next, SCHEMA)) {
-				break;
 			}
 		}
 
 		if (name != null) s.setName(name);
 
-		// define old-style parent association
+		// define old-style Schema parent association
 		if (parent != null) {
 			s.setParent(parent);
 			if (name != null) {
@@ -1525,19 +1530,20 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			return NullObject.getInstance();
 		}
 
+		QName name = se.getName();
 		addFirst(fs);
 		while (true) {
 			XMLEvent ee = stream.nextEvent();
-			if (ee == null) {
-				break;
+			if (foundEndTag(ee, name)) {
+				break; // End of feature
 			}
 			if (ee.getEventType() == XMLStreamReader.START_ELEMENT) {
 				StartElement sl = ee.asStartElement();
-				QName name = sl.getName();
-				String localname = name.getLocalPart();
+				QName qName = sl.getName();
+				String localname = qName.getLocalPart();
 				// Note: if element is aliased Placemark then metadata fields won't be saved
 				// could treat as ExtendedData if want to preserve this data.
-				if (!handleProperties(fs, ee, name)) {
+				if (!handleProperties(fs, ee, qName)) {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
 						// Point, LineString, Polygon, Model, etc.
@@ -1562,7 +1568,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						}
 						if (ground) {
 							if (LAT_LON_BOX.equals(localname)) {
-								handleLatLonBox((GroundOverlay) fs, sl);
+								handleLatLonBox((GroundOverlay) fs, qName);
 							} else if (ALTITUDE.equals(localname)) {
 								String text = getNonEmptyElementText();
 								if (text != null) {
@@ -1613,8 +1619,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						}
 					}
 				}
-			} else if (foundEndTag(ee, se.getName().getLocalPart())) {
-				break; // End of feature
 			}
 		}
 		return readSaved();
@@ -1686,19 +1690,17 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
-	 * Handle a lat lon box with north, south, east and west elements
+	 * Handle a lat lon box with north, south, east and west elements.
 	 * 
 	 * @param overlay
-	 * @param sl
+	 * @param name  the qualified name of this event
      * @throws XMLStreamException if there is an error with the underlying XML
 	 */
-	private void handleLatLonBox(GroundOverlay overlay, StartElement sl)
+	private void handleLatLonBox(GroundOverlay overlay, QName name)
 			throws XMLStreamException {
-		QName name = sl.getName();
-		String localname = name.getLocalPart();
 		while (true) {
 			XMLEvent event = stream.nextEvent();
-			if (foundEndTag(event, localname)) {
+			if (foundEndTag(event, name)) {
 				break;
 			}
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
@@ -1803,6 +1805,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			List<Geometry> geometries = new ArrayList<Geometry>();
 			while (true) {
 				XMLEvent event = stream.nextEvent();
+				if (foundEndTag(event, name)) {
+					break;
+				}
 				if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 					StartElement el = (StartElement) event;
 					String tag = el.getName().getLocalPart();
@@ -1814,9 +1819,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 							log.warn("Failed geometry: " + tag, rte);
 						}
 					}
-				}
-				if (foundEndTag(event, localname)) {
-					break;
 				}
 			}
             // if no valid geometries then return null 
@@ -1842,23 +1844,24 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				return new GeometryBag(geometries);
 			}
 		} else if (localname.equals(MODEL)) {
-			// we don't really have a way to represent this yet, look for end
-			// element and continue
+			// we don't really have a way to represent this yet
             Model model = new Model();
             while (true) {
 				XMLEvent event = stream.nextEvent();
+				if (foundEndTag(event, name)) {
+					break;
+				}
 				if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 					StartElement se = event.asStartElement();
-					String sename = se.getName().getLocalPart();
-					if (sename.equals(LOCATION)) {
-                        Geodetic2DPoint point = parseLocation(sename);
+					QName qname = se.getName();
+					String localPart = qname.getLocalPart();
+					if (localPart.equals(LOCATION)) {
+                        Geodetic2DPoint point = parseLocation(qname);
                         if (point != null)
                             model.setLocation(point);
-                    } else if (sename.equals(ALTITUDE_MODE)) {
+                    } else if (localPart.equals(ALTITUDE_MODE)) {
                         model.setAltitudeMode(getNonEmptyElementText());
                     }
-                } else if (foundEndTag(event, localname)) {
-					break;
 				}                        
             }
             return model;
@@ -1866,12 +1869,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		return null; // Default
 	}
 
-    private Geodetic2DPoint parseLocation(String localname) throws XMLStreamException {
+    private Geodetic2DPoint parseLocation(QName qname) throws XMLStreamException {
         Latitude latitude = null;
         Longitude longitude = null;
         Double altitude = null;
         while (true) {
             XMLEvent event = stream.nextEvent();
+			if (foundEndTag(event, qname)) {
+                break;
+			}
             if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
                 StartElement se = event.asStartElement();
                 String name = se.getName().getLocalPart();
@@ -1900,8 +1906,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                             log.warn("Invalid altitude value: " + value);
                         }
                 }
-            } else if (foundEndTag(event, localname)) {
-                break;
             }
         }
         
