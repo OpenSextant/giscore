@@ -10,32 +10,44 @@
  *  their occurrence.
 -->
 <html>
-<head><title>giscore</title></head>
+<head><title>GIScore</title></head>
 <body>
 The <a
  href="http://developer.mitre.org/projects/giscore" target="_blank"><span
- style="font-weight: bold;">giscore</span></a> package provides the capability to perform streaming
+ style="font-weight: bold;">GIScore</span></a> package provides the capability to perform streaming
  input and output of data from GIS representation file formats, such as ESRI Shapefiles or geo-databases (GDB),
- and Google Earth KML.  <em>giscore</em> is a standalone Java library that uses StAX (STreaming Api for XML processing)
- to process XML an element at a time rather than read entire document into memory in a DOM-like structure.
-The geometric classes include points, lines, rings, polygons and provide all the validation
-needed to enforce the integrity of a valid geometric representation.
+Google Earth <a href="http://mitrepedia.mitre.org/index.php/KML" target="_blank">KML</a>/KMZ, and GeoRSS.
+<em>GIScore</em> is a standalone Java library that uses StAX (STreaming Api for XML processing)
+to process XML an element at a time rather than read entire document into memory in
+a DOM-like structure. Some non-XML formats such as CSV are supported as well. The
+geometric classes include points, lines, rings, polygons and provide all the
+validation needed to enforce the integrity of a valid geometric representation.
 <P/>
-A <em>KmlReader</em> class transparently handles KML and compressed KMZ files by file or URL along with fetching all NetworkLinks.
-Likewise, a KmlWriter class handles creation of KML or KMZ files and optionally allowing adding other files
-as entries in the KMZ (ZIP) file. All versions of KML specifications are imported so don't need to convert older
-2.0 and 2.1 KML documents into the latest OGC KML 2.2 spec. The API takes care of most dirty details.
+<span style="font-weight: bold;">KML</span>
+<P/>
+<blockquote>
+A <em>KmlReader</em> class transparently handles KML and compressed KMZ files by file or URL
+along with fetching all NetworkLinks. Likewise, a KmlWriter class handles creation of KML or
+KMZ files and optionally allowing adding other files as entries in the KMZ (ZIP) file. All
+versions of KML specifications are imported so don't need to convert older 2.0 and 2.1
+KML documents into the latest <a href="http://www.opengeospatial.org/standards/kml/"
+ target="_blank">OGC KML 2.2</a> spec. The API takes care of most dirty details.
+For example, all valid forms of time are handled including some lax forms that do
+not conform to XML Schema validation yet are allowed by Google Earth.
 <P/>
 While some deprecated and removed features from older KML specs are implemented to support importing
 of legacy KML data, the export creates KML conforming to KML 2.2 so some deprecated/deleted features
 may not be preserved on output without some manual intervention. For example having the <em>parent</em> element
 or attribute in Schema element is correctly handled in import in that aliased elements are converted to
 Placemarks to be valid KML but the metadata is not auto-converted to <em>ExtendedData</em> fields.
-
+<P/>
 Some fine-grain customization may be lost in a few cases (e.g. KML regions, models,
-ballon styles, etc.), the core geospatial and temporal data is preserved in a common representation.
-The feature structure can be exported to these standard formats once the common representation 
-is created programmically or imported from an existing source.
+NetworkLinkControls, <a href="http://code.google.com/apis/kml/documentation/kmlreference.html#kmlextensions"
+ target="_blank">gx extensions</a>, etc.), the core geospatial and temporal data is
+preserved in a common representation. The feature structure can be exported to
+these standard formats once the common representation is created programmically
+or imported from an existing source.
+</blockquote>
 <P/>
 This package uses the <a 
 href="http://developer.mitre.org/projects/gis-geodesy" target="_blank">geodesy</a>
