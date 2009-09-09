@@ -24,18 +24,7 @@ import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.TimeZone;
+import java.util.*;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -90,13 +79,13 @@ import org.slf4j.LoggerFactory;
  * The actual handling of containers and other features has some uniform
  * methods. Every feature in KML can have a set of common attributes and
  * additional elements. The
- * {@link #handleProperties(Common, XMLEvent, String)} method takes care of
- * these. This returns <code>false</code> if the current element isn't a common
- * element, which allows the caller to handle the code.
+ * {@link #handleProperties(Common,XMLEvent,QName)} method takes care of
+ * these. This returns <code>false</code> if the current element isn't a
+ * common element, which allows the caller to handle the code.
  * <p>
  * Geometry is handled by common code as well. All coordinates in KML are
  * transmitted as tuples of two or three elements. The formatting of these is
- * consistent and is handled by {@link #parseCoordinates(String)}.
+ * consistent and is handled by {@link #parseCoordinates(QName)}.
  * <p>
  * Feature properties (i.e., name, description, visibility, Camera/LookAt,
  * styleUrl, inline Styles, TimeStamp/TimeSpan elements) in addition
@@ -106,8 +95,8 @@ import org.slf4j.LoggerFactory;
  * <p> 
  * Note only a single Data/SchemaData/Schema ExtendedData mapping is assumed
  * per Feature but Collections can reference among several Schemas. Features
- * with mixed Data and/or Multiple SchemaData elements will be associated only
- * with the last Schema referenced.
+ * with mixed Data and/or Multiple SchemaData elements will be associated
+ * only with the last Schema referenced.
  * <p> 
  * Unsupported tags include the following:
  *  atom:author, atom:link, address, xal:AddressDetails, Metadata,
@@ -346,9 +335,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} else if (ee.getEventType() == XMLStreamReader.START_ELEMENT) {
 				StartElement sl = ee.asStartElement();
 				QName name = sl.getName();
-				String localname = name.getLocalPart();
 				//System.out.println(localname);//debug
-				if (!handleProperties(cs, ee, localname)) {
+				if (!handleProperties(cs, ee, name)) {
 					// Ignore other attributes
 				}
             }
@@ -362,17 +350,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * 
 	 * @param feature
 	 * @param ee
-	 * @param localname
+	 * @param name  the qualified name of this event
 	 * @return <code>true</code> if the event has been handled
 	 */
 	private boolean handleProperties(Common feature, XMLEvent ee,
-			String localname) {
+			QName name) {
+		String localname = name.getLocalPart();
         try {
             if (localname.equals(NAME)) {
                 feature.setName(getNonEmptyElementText());
                 return true;
             } else if (localname.equals(DESCRIPTION)) {
-                feature.setDescription(getElementText(localname));
+                feature.setDescription(getElementText(name));
                 return true;
             } else if (localname.equals(VISIBILITY)) {
                 feature.setVisibility(Boolean.valueOf("1".equals(getNonEmptyElementText())));
@@ -415,15 +404,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
             } else if (localname.equals("AddressDetails")) {
                 // skip AddressDetails (namespace: urn:oasis:names:tc:ciq:xsdschema:xAL:2.0)
                 log.debug("skip " + localname);
-                skipNextElement(stream, localname);
+                skipNextElement(stream, name);
                 return true;
 			} else {
-                StartElement sl = ee.asStartElement();
-				QName name = sl.getName();
+                //StartElement sl = ee.asStartElement();
+				//QName name = sl.getName();
                 // skip atom:link and atom:author elements
                 if ("http://www.w3.org/2005/Atom".equals(name.getNamespaceURI())) {
                     log.debug("skip atom:" + localname);
-                    skipNextElement(stream, localname);
+                    skipNextElement(stream, name);
                     return true;
                 }
                 //System.out.println("*** skip other: " + localname + " sl=" + sl + " name=" + name.getNamespaceURI());
@@ -436,7 +425,14 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
         return false;
 	}
 
-	private String getElementText(String localname) throws XMLStreamException {
+	/**
+	 * Get non-empty element text.
+	 * 
+	 * @param name  the qualified name of this event
+	 * @return non-empty element text or null if text content is missing, empty or null.
+	 * @throws XMLStreamException
+	 */
+	private String getElementText(QName name) throws XMLStreamException {
         /*
          * some elements such as description may have HTML elements as child elements rather than
          * within required CDATA block.
@@ -444,8 +440,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
         try {
             return getNonEmptyElementText();
         } catch (XMLStreamException e) {
-            log.warn("Unable to parse " + localname + " as text element: " + e);
-            skipNextElement(stream, localname);
+            log.warn("Unable to parse " + name.getLocalPart() + " as text element: " + e);
+            skipNextElement(stream, name);
             return null;
         }
     }
@@ -526,6 +522,28 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
+	 * Is this event a matching end tag?
+	 *
+	 * @param event
+	 *            the event
+	 * @param name
+	 *            the qualified name of this event
+	 * 
+	 * @return <code>true</code> if this is an end element event for the
+	 *         matching tag
+	 */	
+	private boolean foundEndTag(XMLEvent event, QName name) {
+		if (event == null) {
+           return true;
+        }
+        if (event.getEventType() == XMLEvent.END_ELEMENT) {
+			if (event.asEndElement().getName().equals(name))
+				return true;
+		}
+		return false;
+	}
+
+	/**
 	 * Found a specific start tag
 	 * 
 	 * @param se
@@ -540,7 +558,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param uri a reference to a schema, if local then use that schema's
 	 * simple field objects instead of creating ones on the fly
 	 * @param cs Feature/Container for ExtendedData tag
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleSchemaData(String uri, Common cs)
 			throws XMLStreamException {
@@ -579,7 +597,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	/**
 	 * @param tag
 	 * @return the value associated with the element
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private String parseValue(String tag) throws XMLStreamException {
 		XMLEvent next;
@@ -602,7 +620,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	/**
 	 * @param cs
 	 * @param ee
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleMetadata(Common cs, XMLEvent ee)
 			throws XMLStreamException {
@@ -831,8 +849,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
+	 * Handle KML region
 	 * @param ee
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleRegion(Common cs, XMLEvent ee)
 			throws XMLStreamException {
@@ -851,7 +870,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	/**
 	 * @param cs
 	 * @param ee
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleSnippet(Common cs, XMLEvent ee)
 			throws XMLStreamException {
@@ -874,7 +893,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * first, before its container or placemark
 	 * 
 	 * @param ee
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleStyle(Common cs, XMLEvent ee)
 			throws XMLStreamException {
@@ -917,7 +936,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * @param style
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handlePolyStyle(Style style) throws XMLStreamException {
 		Color color = Color.white;
@@ -956,7 +975,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * @param style
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleLabelStyle(Style style) throws XMLStreamException {
 		double scale = 1;
@@ -987,7 +1006,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * @param style
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleLineStyle(Style style) throws XMLStreamException {
 		double width = 1;
@@ -1023,7 +1042,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * @param style
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleBalloonStyle(Style style) throws XMLStreamException {
 		String text = "";
@@ -1056,7 +1075,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * Get the href subelement from the Icon element.
 	 * 
 	 * @return the href, <code>null</code> if not found.
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private String parseIconHref() throws XMLStreamException {
 		String href = null;
@@ -1102,7 +1121,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
     /**
 	 * @param style
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleIconStyle(Style style) throws XMLStreamException {
 		String url = null;
@@ -1147,22 +1166,21 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param e current XML element
 	 * @return IGISObject representing current element,
 	 * 			NullObject if failed to parse and unable to skip to end tag for that element
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException if there is an error with the underlying XML. 
 	 * @throws IOException if encountered NetworkLinkControl or out of order Style element
 	 * 			and failed to skip to end tag for that element.
 	 */
 	@SuppressWarnings("unchecked")
 	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException, IOException {
 		StartElement se = e.asStartElement();
-		String localname = se.getName().getLocalPart();
-
+		QName name = se.getName();
 		// check if element is from extension namespace
-		String ns = se.getName().getNamespaceURI();
+		String ns = name.getNamespaceURI();
 		if (ns != null && ns.startsWith("http://www.google.com/kml/ext/")) {
 			// if extension namespace then skip it (e.g. http://www.google.com/kml/ext/2.2)
-			log.debug("SKIP: " + se.getName());
+			log.debug("SKIP: " + name);
 			try {
-				skipNextElement(stream, localname);
+				skipNextElement(stream, name);
 			} catch (XMLStreamException xe) {
 				final IOException e2 = new IOException();
 				e2.initCause(xe);
@@ -1170,7 +1188,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			}
 			return NullObject.getInstance();
 		}
-		
+
+		String localname = name.getLocalPart();
 		String elementName = localname; // differs from localname if aliased by Schema mapping
 		//System.out.println(localname); //debug
 		// check if element has been aliased in Schema
@@ -1213,7 +1232,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				//handleStyle(null, e);
 				//return buffered.removeFirst();
                 try {
-					skipNextElement(stream, localname);
+					skipNextElement(stream, name);
 				} catch (XMLStreamException xe) {
 					final IOException e2 = new IOException();
 					e2.initCause(xe);
@@ -1230,17 +1249,23 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			}
 		} catch (XMLStreamException e1) {
 			log.warn("Failed at element: " + localname);
-			skipNextElement(stream, localname);
+			skipNextElement(stream, name);
 		}
 
 		// return non-null NullObject to skip but not end parsing...
 		return NullObject.getInstance();
 	}
 
-	private void skipNextElement(XMLEventReader element, String localname) throws XMLStreamException {
+	/**
+	 * Skip to end of target element given its fully qualified <code>QName</code>
+	 * @param element
+	 * @param name  the qualified name of this event
+	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 */
+	private void skipNextElement(XMLEventReader element, QName name) throws XMLStreamException {
 		while (true) {
 			XMLEvent next = element.nextEvent();
-			if (next == null || foundEndTag(next, localname)) {
+			if (next == null || foundEndTag(next, name)) {
 				break;
 			}
 		}
@@ -1323,7 +1348,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param element
 	 * @param localname
 	 * @return
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private IGISObject handleSchema(StartElement element, String localname)
 			throws XMLStreamException {
@@ -1470,7 +1495,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param e
 	 * @param type
 	 * @return
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private IGISObject handleFeature(XMLEvent e, String type) throws XMLStreamException {
 		StartElement se = e.asStartElement();
@@ -1512,7 +1537,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				String localname = name.getLocalPart();
 				// Note: if element is aliased Placemark then metadata fields won't be saved
 				// could treat as ExtendedData if want to preserve this data.
-				if (!handleProperties(fs, ee, localname)) {
+				if (!handleProperties(fs, ee, name)) {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
 						// Point, LineString, Polygon, Model, etc.
@@ -1719,9 +1744,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		QName name = sl.getName();
 		String localname = name.getLocalPart();
 		if (localname.equals(POINT)) {
-			return parseCoordinate(localname);
+			return parseCoordinate(name);
 		} else if (localname.equals(LINE_STRING)) {
-			List<Point> coords = parseCoordinates(localname);
+			List<Point> coords = parseCoordinates(name);
             if (coords.size() == 1) {
                 Point pt = coords.get(0); 
                 log.warn("line with single coordinate converted to point: " + pt);
@@ -1729,7 +1754,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
             }
 			else return new Line(coords);
 		} else if (localname.equals(LINEAR_RING)) {
-			List<Point> coords = parseCoordinates(localname);
+			List<Point> coords = parseCoordinates(name);
             if (coords.size() == 1) {
                 Point pt = coords.get(0);
                 log.warn("ring with single coordinate converted to point: " + pt);
@@ -1745,14 +1770,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			List<LinearRing> inners = new ArrayList<LinearRing>();
 			while (true) {
 				XMLEvent event = stream.nextEvent();
-				if (foundEndTag(event, localname)) {
+				if (foundEndTag(event, name)) {
 					break;
 				}
 				if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 					StartElement se = event.asStartElement();
-					String sename = se.getName().getLocalPart();
+					QName qname = se.getName();
+					String sename = qname.getLocalPart();
 					if (sename.equals(OUTER_BOUNDARY_IS)) {
-						List<Point> coords = parseCoordinates(sename);
+						List<Point> coords = parseCoordinates(qname);
                         if (coords.size() == 1) {
                             Point pt = coords.get(0);
                             log.warn("polygon with single coordinate converted to point: " + pt);
@@ -1763,7 +1789,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                         }
 						outer = new LinearRing(coords);
 					} else if (sename.equals(INNER_BOUNDARY_IS)) {
-						List<Point> coords = parseCoordinates(sename);
+						List<Point> coords = parseCoordinates(qname);
 						inners.add(new LinearRing(coords));
 					}
 				}
@@ -1891,29 +1917,29 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * into an array. The element name is used to spot if we leave the "end" of
 	 * the block. The stream will be positioned after the element when this
 	 * returns.
-	 * 
-	 * @param localname
-	 *            the tag name of the containing element
-	 * @return the coordinates
+	 *
+	 * @param name  the qualified name of this event
+	 * @return the list coordinates, empty list if no valid coordinates are found
      * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private List<Point> parseCoordinates(String localname)
+	private List<Point> parseCoordinates(QName name)
 			throws XMLStreamException {
 		List<Point> rval = null;
 		while (true) {
 			XMLEvent event = stream.nextEvent();
-			if (foundEndTag(event, localname)) {
+			if (foundEndTag(event, name)) {
 				break;
 			}
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT &&
 					COORDINATES.equals(event.asStartElement().getName().getLocalPart())) {
 				String text = getNonEmptyElementText();
 				if (text != null) rval = parseCoord(text);
-				skipNextElement(stream, localname);
+				skipNextElement(stream, name);
 				break;
 			}
 		}
-		return rval == null ? new ArrayList<Point>() : rval;
+		if (rval == null) rval = Collections.emptyList();
+		return rval;
 	}
 
 	/**
@@ -1922,16 +1948,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * the block. The stream will be positioned after the element when this
 	 * returns.
 	 *
-	 * @param localname
-	 *            the tag name of the containing element
-	 * @return the coordinate
+	 * @param name  the qualified name of this event
+	 * @return the coordinate (first valid coordinate if found), null if not
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private Point parseCoordinate(String localname) throws XMLStreamException {
+	private Point parseCoordinate(QName name) throws XMLStreamException {
 		Point rval = null;
 		while (true) {
 			XMLEvent event = stream.nextEvent();
-			if (foundEndTag(event, localname)) {
+			if (foundEndTag(event, name)) {
 				break;
 			}
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT &&
@@ -1941,7 +1966,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				// lat and lon values; e.g. <coordinates>-121.9921875, 37.265625</coordinates>
 				// http://kml-samples.googlecode.com/svn/trunk/kml/ListStyle/radio-folder-vis.kml
 				if (text != null) rval = parsePointCoord(text);
-				skipNextElement(stream, localname);
+				skipNextElement(stream, name);
 				break;
 			}
 		}
@@ -1950,7 +1975,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	private static Point parsePointCoord(String coord) {
 		List<Point> list = parseCoord(coord);
-		return list.size() == 0 ? null : list.get(0);
+		return list.isEmpty() ? null : list.get(0);
 	}
 
 	/**
