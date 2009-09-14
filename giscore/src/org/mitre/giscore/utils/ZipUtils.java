@@ -45,7 +45,10 @@ public class ZipUtils {
     public static void outputZipComponents(String prefix, File outputPath,
                                      ZipOutputStream outputStream) {
         InputStream is = null;
-        for (File component : outputPath.listFiles()) {
+        if (outputPath == null) return;
+        File[] files = outputPath.listFiles();
+        if (files == null) return;
+        for (File component : files) {
             if (component.isDirectory()) {
                 outputZipComponents(prefix + "/" + component.getName(),
                         component, outputStream);
