@@ -11,7 +11,7 @@ conditions up the chain to top-most feature.
 
 Example shows how temporal visibility is inherited.
 
-	[2    .   3] 			timespan of outer-most container
+	[2    .   4] 			timespan of outer-most container
 [1       .    .   .     .    6] 	timespan of placemark #1
 	[2    .   4] 			effective temporal visilbity of placemark #1
              [3   .     5]		timespan of inner-most container
