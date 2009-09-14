@@ -1,7 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
-
-KML 2.2 is beta. YMMV.
 
 <SchemaData> is a power tool...
 
@@ -12,14 +10,21 @@ The following shows how Feature is extended
        <TrailLength>...</TrailLength>
        <ElevationGain>...</ElevationGain>
     </TrailHeadType>
-    
 
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document>
     <name>ExtendedData+SchemaData</name>
     <open>1</open>
+    <LookAt>
+	<longitude>-121.999988608839</longitude>
+	<latitude>37.00200774001624</latitude>
+	<range>162.1731361321575</range>
+	<altitudeMode>relativeToGround</altitudeMode>
+    </LookAt>
+
     <!-- Create a balloon template referring to the user-defined type -->
+
     <Style id="trailhead-balloon-template">
       <BalloonStyle>
         <text>
@@ -35,7 +40,9 @@ The following shows how Feature is extended
         </text>
       </BalloonStyle>
     </Style>
+
     <!-- Declare the type "TrailHeadType" with 3 fields -->
+
     <Schema name="TrailHeadType" id="TrailHeadTypeId">
       <SimpleField type="string" name="TrailHeadName">
         <displayName>
@@ -53,7 +60,9 @@ The following shows how Feature is extended
         </displayName>
       </SimpleField>
     </Schema>
+
     <!-- Instantiate some Placemarks extended with TrailHeadType fields -->
+
     <Placemark>
       <name>Easy trail</name>
       <styleUrl>#trailhead-balloon-template</styleUrl>
@@ -65,9 +74,10 @@ The following shows how Feature is extended
         </SchemaData>
       </ExtendedData>
       <Point>
-        <coordinates>-122.000,37.002</coordinates>
+	<coordinates>-122.000031,37.002,0</coordinates>
       </Point>
     </Placemark>
+
     <Placemark>
       <name>Difficult trail</name>
       <styleUrl>#trailhead-balloon-template</styleUrl>
