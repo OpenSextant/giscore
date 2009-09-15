@@ -167,11 +167,7 @@ public class Style extends StyleSelector {
 	}
 
 	/**
-	 * @return the iconIndex, a numeric identifier that is translated by the
-	 *         rendering code to a specific icon. There are no semantics
-	 *         associated with a particular value, that is determined by the
-	 *         rendering code. Valid if {@link #hasIconStyle} returns
-	 *         <code>true</code>.
+	 * @return the url of the icon. If null then href was either missing or an empty string.
 	 */
 	public String getIconUrl() {
 		return iconUrl;
