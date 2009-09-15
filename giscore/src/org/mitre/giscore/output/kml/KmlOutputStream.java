@@ -246,6 +246,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      */
     private void handleAttributes(Common feature, String containerType) {
         try {
+            String id = feature.getId();
+            if (id != null) writer.writeAttribute(ID, id);
             handleNonNullSimpleElement(NAME, feature.getName());
             Boolean visibility = feature.getVisibility();
             if (visibility != null && !visibility)

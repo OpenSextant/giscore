@@ -69,12 +69,13 @@ import org.slf4j.LoggerFactory;
  * stream needs to buffer data before returning. For example, KML contains
  * elements like Style and StyleMap that are part of the feature. To handle this
  * correctly on output, these elements need to be earlier in the output stream
- * than the container itself.
+ * than the container (or feature) itself.
  * <p>
  * This is handled in the KML stream by buffering those elements before the
- * container. The container (and feature) handlers return the top element in the
- * stack, not necessarily the container or feature. Additionally, the read
- * method always empties the stack before looking for another element to return.
+ * container (or feature). The container (and feature) handlers return the top
+ * element in the stack, not necessarily the container or feature. Additionally,
+ * the read method always empties the stack before looking for another element
+ * to return.
  * <p>
  * The actual handling of containers and other features has some uniform
  * methods. Every feature in KML can have a set of common attributes and
@@ -107,6 +108,8 @@ import org.slf4j.LoggerFactory;
  * <p> 
  * StyleMaps with inline Styles or nested StyleMaps are not supported.
  * StyleMaps must specify styleUrl.
+ * <p>
+ * ListStyle not supported.
  * <p> 
  * Limited support for PhotoOverlay which creates an basic overlay object
  * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
@@ -145,8 +148,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 	private static DatatypeFactory fact;
 	private static final Longitude COORD_ERROR = new Longitude();
+	private static final QName ID_ATTR = new QName(ID);
 
-	static {
+    static {
 		ms_fact = XMLInputFactory.newInstance();
 		ms_features.add(PLACEMARK);
 		ms_features.add(NETWORK_LINK);
@@ -306,6 +310,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		String containerTag = name.getLocalPart();
 		ContainerStart cs = new ContainerStart(containerTag); // Folder or Document
 		addFirst(cs);
+		Attribute id = se.getAttributeByName(ID_ATTR);
+		if (id != null) cs.setId(id.getValue());
 
 		while (true) {
 			XMLEvent ne = stream.peek();
@@ -362,7 +368,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
         try {
             if (localname.equals(NAME)) {
                 feature.setName(getNonEmptyElementText());
-                return true;
+                return true;            
             } else if (localname.equals(DESCRIPTION)) {
                 feature.setDescription(getElementText(name));
                 return true;
@@ -659,7 +665,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		StyleMap sm = new StyleMap();
 		addFirst(sm);
 		StartElement sl = ee.asStartElement();
-		Attribute id = sl.getAttributeByName(new QName(ID));
+		Attribute id = sl.getAttributeByName(ID_ATTR);
 		if (id != null) {
 			sm.setId(id.getValue());
 		}
@@ -905,7 +911,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 		Style style = new Style();
 		StartElement sse = ee.asStartElement();
-		Attribute id = sse.getAttributeByName(new QName(ID));
+		Attribute id = sse.getAttributeByName(ID_ATTR);
 		if (id != null) {
 			style.setId(id.getValue());
 		}
@@ -1352,7 +1358,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * @param element
-	 * @param localname
+     * @param qname  the qualified name of this event
 	 * @return
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
@@ -1374,7 +1380,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 */
 		attr = element.getAttributeByName(new QName(PARENT));
 		String parent = getNonEmptyAttrValue(attr);
-		Attribute id = element.getAttributeByName(new QName(ID));
+		Attribute id = element.getAttributeByName(ID_ATTR);
 		if (id != null) {
 			String uri = id.getValue();
 			// remember the schema for later references
@@ -1532,6 +1538,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 		QName name = se.getName();
 		addFirst(fs);
+		Attribute id = se.getAttributeByName(ID_ATTR);
+		if (id != null) fs.setId(id.getValue());
+        
 		while (true) {
 			XMLEvent ee = stream.nextEvent();
 			if (foundEndTag(ee, name)) {
