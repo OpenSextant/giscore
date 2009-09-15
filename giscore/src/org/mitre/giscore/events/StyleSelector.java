@@ -10,23 +10,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @author Jason Mathews, MITRE Corp.
  * Date: Jul 9, 2009 11:48:04 AM
  */
-public abstract class StyleSelector implements IGISObject {
-
-	private String id;
-
-    /**
-     * @return the id to use to distinguish this style from another
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * @param id the id to set
-     */
-    public void setId(String id) {
-        this.id = id;
-    }
+public abstract class StyleSelector extends AbstractObject {	
 
     /* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)

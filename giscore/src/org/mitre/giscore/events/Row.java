@@ -39,7 +39,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * 
  * @author DRAND
  */
-public class Row implements IGISObject, IDataSerializable {
+public class Row extends AbstractObject implements IDataSerializable {
 	protected URI schema;
 	protected final Map<SimpleField, Object> extendedData = new LinkedHashMap<SimpleField, Object>();
 
@@ -203,6 +203,8 @@ public class Row implements IGISObject, IDataSerializable {
 	public String toString() {
 		StringBuilder b = new StringBuilder(80);
 		b.append(getClass().getSimpleName());
+        if (getId() != null)
+            b.append(" id=").append(getId()).append('\n');
 		b.append(" data=\n");
         for(Map.Entry<SimpleField, Object> entry : extendedData.entrySet()) {
         	SimpleField field = entry.getKey();
