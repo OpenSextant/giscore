@@ -1091,7 +1091,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     }
 
     /**
-     * Get the kml compliant color translation
+     * Get the KML compliant color translation
      *
      * @param tag   String tag color element
      * @param color the Color of the tag to be written
@@ -1100,11 +1100,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     protected void handleColor(String tag, Color color)
             throws XMLStreamException {
         if (color != null) {
-            StringBuilder sb = new StringBuilder(8);
-            Formatter formatter = new Formatter(sb, Locale.US);
-            formatter.format("%02x%02x%02x%02x", color.getAlpha(), color
-                    .getBlue(), color.getGreen(), color.getRed());
-            handleSimpleElement(tag, sb.toString());
+            handleSimpleElement(tag, String.format("%02x%02x%02x%02x",
+                    color.getAlpha(), color.getBlue(),
+                    color.getGreen(), color.getRed()));
         }
     }
 
