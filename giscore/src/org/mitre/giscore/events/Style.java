@@ -327,9 +327,9 @@ public class Style extends StyleSelector {
 	/**
 	 * Set the poly style
 	 * 
-	 * @param color
-	 * @param fill
-	 * @param outline
+	 * @param color Polygon color
+	 * @param fill Specifies whether to fill the polygon
+	 * @param outline Specifies whether to outline the polygon. Polygon outlines use the current LineStyle. 
 	 */
 	public void setPolyStyle(Color color, boolean fill,
 			boolean outline) {
