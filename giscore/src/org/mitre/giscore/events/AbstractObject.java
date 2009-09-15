@@ -22,10 +22,15 @@ public abstract class AbstractObject implements IGISObject {
     }
 
     /**
-     * @param id the id to set, if blank or empty string then null is assigned
+     * @param id the id to set, if blank or empty string then null is assigned.
+     * Whitespace is stripped from start and end of the string if present.
      */
     public void setId(String id) {
-        this.id = StringUtils.isBlank(id) ? null : id;
+        if (id != null) {
+            id = id.trim();
+            if (id.length() == 0) id = null;
+        }
+        this.id = id;
     }
     
 }

@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.SimpleField.Type;
 
@@ -66,7 +67,12 @@ public class Schema implements IGISObject {
 			// Impossible
 		}
 	}
-	
+
+    /**
+     *
+     * @param urn
+     * @throws IllegalArgumentException if urn is null
+     */
 	public Schema(URI urn) {
 		this();
 		if (urn == null) {
@@ -77,14 +83,15 @@ public class Schema implements IGISObject {
 	}
 	
 	/**
-	 * @return the name
+	 * @return the name, never null
 	 */
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * @param name the name to set
+	 * @param name the name to set, non-empty string (never null)
+     * @throws IllegalArgumentException if name is null or empty string
 	 */
 	public void setName(String name) {
 		if (name == null || name.trim().length() == 0) {
@@ -95,7 +102,7 @@ public class Schema implements IGISObject {
 	}
 
 	/**
-	 * @return the id
+	 * @return the id, never null
 	 */
 	public URI getId() {
 		return id;
@@ -103,6 +110,7 @@ public class Schema implements IGISObject {
 
 	/**
 	 * @param id the id to set
+     * @throws IllegalArgumentException if id is null 
 	 */
 	public void setId(URI id) {
 		if (id == null) {
@@ -129,6 +137,10 @@ public class Schema implements IGISObject {
     }
 
     public void setParent(String parent) {
+        if (parent != null) {
+            parent = parent.trim();
+            if (parent.length() == 0) parent = null;
+        }
         this.parent = parent;
     }
 
@@ -216,7 +228,7 @@ public class Schema implements IGISObject {
 	}
 	
 	/**
-	 * @param geometry
+	 * @param type
 	 * @return
 	 */
 	private SimpleField getFieldOfType(Type type) {
