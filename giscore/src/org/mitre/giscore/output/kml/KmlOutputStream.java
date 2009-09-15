@@ -74,10 +74,10 @@ import org.slf4j.LoggerFactory;
  * Notes/Limitations:<br/>
  *  -Output does NOT support tessellate attributes for all geometries (only Line)<br/>
  *  -A few tags are not yet supported on features so are omitted from output:
- *   atom:author, atom:link, address, xal:AddressDetails,
+ *   atom:author, atom:link, address, xal:AddressDetails, ListStyle,
  *   Metadata, open, phoneNumber, Region, Snippet, snippet, visibility.
  * -Warns if shared styles appear in Folders. According to OGC KML specification
- *  shared styles should only appear in Documents.
+ *  shared styles shall only appear within a Document [OGC 07-147r2 section 6.4].
  *
  * @author DRAND
  * @author J.Mathews
@@ -1067,11 +1067,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         writer.writeStartElement(ICON_STYLE);
         handleColor(COLOR, style.getIconColor());
         handleSimpleElement(SCALE, Double.toString(style.getIconScale()));
-        if (style.getIconUrl() != null) {
+        String iconUrl = style.getIconUrl();
+        if (iconUrl != null) {
             writer.writeStartElement(ICON);
-            if (style.getIconUrl() != null)
-                handleSimpleElement(HREF, style.getIconUrl());
+            handleSimpleElement(HREF, iconUrl);
             writer.writeEndElement();
+        } else {
+            writer.writeEmptyElement(ICON);
         }
         /*
         // hotSpot optional. skip it
