@@ -19,17 +19,16 @@
 package org.mitre.giscore.test.output;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
-import org.mitre.giscore.events.AltitudeModeEnumType;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.MultiLine;
@@ -39,37 +38,49 @@ import org.mitre.giscore.geometry.MultiPolygons;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.output.shapefile.SingleShapefileOutputHandler;
+import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.utils.ObjectBuffer;
+import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.DocumentType;
 
 public class TestShapefileOutput {
-//	@Test public void testWriteReferencePointOutput() throws Exception {
-//		FileOutputStream zip = new FileOutputStream("c:/temp/shptest/reference.zip");
-//		ZipOutputStream zos = new ZipOutputStream(zip);
-//		IGISOutputStream shpos = GISFactory.getOutputStream(DocumentType.Shapefile, zos, new File("c:/temp/shptest/buf/"));
-//		Schema schema = new Schema(new URI("urn:test"));
-//		SimpleField id = new SimpleField("testid");
-//		id.setLength(10);
-//		schema.put(id);
-//		DocumentStart ds = new DocumentStart(DocumentType.Shapefile);
-//		shpos.write(ds);
-//		ContainerStart cs = new ContainerStart("Folder");
-//		cs.setName("aaa");
-//		shpos.write(cs);
-//		shpos.write(schema);
-//		for(int i = 0; i < 5; i++) {
-//			Feature f = new Feature();
-//			f.putData(id, "id " + i);
-//			f.setSchema(schema.getId());
-//			double lat = 40.0 + (5.0 * RandomUtils.nextDouble());
-//			double lon = 40.0 + (5.0 * RandomUtils.nextDouble());
-//			Point point = new Point(lat, lon);
-//			f.setGeometry(point);
-//			shpos.write(f);
-//		}
-//		shpos.close();
-//		zos.flush();
-//		zos.close();		
-//	}
+
+    private static final File shapeOutputDir = new File("testOutput/shptest");
+
+    static {
+        shapeOutputDir.mkdirs();
+    }
+
+    @Test public void testWriteReferencePointOutput() throws Exception {
+		FileOutputStream zip = new FileOutputStream("testOutput/shptest/reference.zip");
+		ZipOutputStream zos = new ZipOutputStream(zip);
+        File outDir = new File("testOutput/shptest/buf");
+        outDir.mkdirs();
+        IGISOutputStream shpos = GISFactory.getOutputStream(DocumentType.Shapefile, zos, outDir);
+		Schema schema = new Schema(new URI("urn:test"));
+		SimpleField id = new SimpleField("testid");
+		id.setLength(10);
+		schema.put(id);
+		DocumentStart ds = new DocumentStart(DocumentType.Shapefile);
+		shpos.write(ds);
+		ContainerStart cs = new ContainerStart("Folder");
+		cs.setName("aaa");
+		shpos.write(cs);
+		shpos.write(schema);
+		for(int i = 0; i < 5; i++) {
+			Feature f = new Feature();
+			f.putData(id, "id " + i);
+			f.setSchema(schema.getId());
+			double lat = 40.0 + (5.0 * RandomUtils.nextDouble());
+			double lon = 40.0 + (5.0 * RandomUtils.nextDouble());
+			Point point = new Point(lat, lon);
+			f.setGeometry(point);
+			shpos.write(f);
+		}
+		shpos.close();
+		zos.flush();
+		zos.close();		
+	}
 	
 	@Test public void testPointOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
@@ -86,8 +97,8 @@ public class TestShapefileOutput {
 			buffer.write(f);
 		}
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "points", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "points", null);
 		soh.process();
 	}
 	
@@ -108,8 +119,8 @@ public class TestShapefileOutput {
 		f.setGeometry(new MultiPoint(pts));
 		buffer.write(f);
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "multipoint", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "multipoint", null);
 		soh.process();
 	}
 	
@@ -134,8 +145,8 @@ public class TestShapefileOutput {
 			buffer.write(f);
 		}
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "lines", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "lines", null);
 		soh.process();
 	}
 	
@@ -163,8 +174,8 @@ public class TestShapefileOutput {
 		f.setGeometry(mline);
 		buffer.write(f);
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "multilines", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "multilines", null);
 		soh.process();
 	}	
 	
@@ -193,8 +204,8 @@ public class TestShapefileOutput {
 			buffer.write(f);
 		}
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "rings", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "rings", null);
 		soh.process();
 	}
 	
@@ -223,8 +234,8 @@ public class TestShapefileOutput {
 			buffer.write(f);
 		}
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "ringz", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "ringz", null);
 		soh.process();
 	}
 	
@@ -261,8 +272,8 @@ public class TestShapefileOutput {
 			buffer.write(f);
 		}
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "polys", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "polys", null);
 		soh.process();
 	}
 	
@@ -299,8 +310,8 @@ public class TestShapefileOutput {
 			buffer.write(f);
 		}
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "polyz", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "polyz", null);
 		soh.process();
 	}	
 	
@@ -331,8 +342,8 @@ public class TestShapefileOutput {
 		f.setGeometry(mring);
 		buffer.write(f);
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "multirings", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "multirings", null);
 		soh.process();
 	}
 		
@@ -362,8 +373,8 @@ public class TestShapefileOutput {
 		f.setGeometry(mring);
 		buffer.write(f);
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "multiringz", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "multiringz", null);
 		soh.process();
 	}
 	
@@ -405,8 +416,8 @@ public class TestShapefileOutput {
 		f.setGeometry(mp);
 		buffer.write(f);
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "multipolys", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "multipolys", null);
 		soh.process();
 	}
 	
@@ -447,8 +458,8 @@ public class TestShapefileOutput {
 		f.setGeometry(mp);
 		buffer.write(f);
 		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer, 
-					new File("c:/temp/shptest/"), "multipolyz", null);
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "multipolyz", null);
 		soh.process();
 	}	
 
