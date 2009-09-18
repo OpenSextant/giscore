@@ -181,7 +181,7 @@ public class GISFactory {
 		if (type == null) {
 			throw new IllegalArgumentException("type should never be null");
 		}
-		if (outputStream == null) {
+		if (outputStream == null && !DocumentType.Shapefile.equals(type)) {
 			throw new IllegalArgumentException(
 					"outputStream should never be null");
 		}
