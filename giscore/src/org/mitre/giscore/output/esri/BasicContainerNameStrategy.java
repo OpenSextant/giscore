@@ -30,7 +30,7 @@ public class BasicContainerNameStrategy implements
             setname.append(key.getGeoclass().getSimpleName());
         }
         String datasetname = setname.toString();
-        datasetname = datasetname.replaceAll("\\s", "_");
+        datasetname = datasetname.replaceAll("\\s+", "_");
 
         return datasetname;
     }
