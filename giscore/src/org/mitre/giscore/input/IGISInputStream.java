@@ -19,8 +19,10 @@
 package org.mitre.giscore.input;
 
 import java.io.IOException;
+import java.util.Iterator;
 
 import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.Schema;
 
 /**
  * Read gis objects from a source. The objects can be thought of as occupying
@@ -39,6 +41,17 @@ public interface IGISInputStream {
 	 * @throws IOException if an I/O error occurs
 	 */
 	IGISObject read() throws IOException;
+	
+	/**
+	 * Search for and return an iterator on the schema within the given data 
+	 * store. 
+	 * 
+	 * N.B. At this time this may be unimplemented for some input streams.
+	 * 
+	 * @return an iterator over the schemata, never <code>null</code>
+	 * @throws IOException 
+	 */
+	Iterator<Schema> enumerateSchemata() throws IOException;
 	
 	/**
 	 * Close the input stream, freeing any resources held.

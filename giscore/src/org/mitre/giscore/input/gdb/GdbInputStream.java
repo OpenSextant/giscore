@@ -26,7 +26,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -54,6 +56,7 @@ import org.slf4j.LoggerFactory;
 
 import com.esri.arcgis.datasourcesGDB.AccessWorkspaceFactory;
 import com.esri.arcgis.datasourcesGDB.FileGDBWorkspaceFactory;
+import com.esri.arcgis.datasourcesGDB.SdeWorkspaceFactory;
 import com.esri.arcgis.datasourcesfile.ShapefileWorkspaceFactory;
 import com.esri.arcgis.geodatabase.FeatureClass;
 import com.esri.arcgis.geodatabase.IDataset;
@@ -75,6 +78,7 @@ import com.esri.arcgis.geometry.Polyline;
 import com.esri.arcgis.geometry.Ring;
 import com.esri.arcgis.geometry.esriGeometryType;
 import com.esri.arcgis.interop.AutomationException;
+import com.esri.arcgis.system.PropertySet;
 
 /**
  * Opens the GDB or shapefile to return the contained information. The
@@ -218,6 +222,65 @@ public class GdbInputStream extends GISInputStreamBase {
 		}
 		initialize(type, file, accepter);
 	}
+	
+	/**
+	 * Ctor
+	 * 
+	 * <blockquote> <em>From the ESRI javadoc</em>
+	 * <p>
+	 * List of acceptable connection property names and a brief description of
+	 * each:
+	 * <ul>
+	 * <li>"SERVER" – SDE server name you are connecting to.
+	 * <li>"INSTANCE" – Instance you are connection to.
+	 * <li>"DATABASE" – Database connected to.
+	 * <li>"USER" – Connected user.
+	 * <li>"PASSWORD" – Connected password.
+	 * <li>"AUTHENTICATION_MODE" – Credential authentication mode of the
+	 * connection. Acceptable values are "OSA" and "DBMS".
+	 * <li>"VERSION" – Transactional version to connect to. Acceptable value is
+	 * a string that represents a transaction version name.
+	 * <li>"HISTORICAL_NAME" – Historical version to connect to. Acceptable
+	 * value is a string type that represents a historical marker name.
+	 * <li>"HISTORICAL_TIMESTAMP" – Moment in history to establish an historical
+	 * version connection. Acceptable value is a date time that represents a
+	 * moment timestamp.
+	 * </ul>
+	 * Notes:
+	 * <p>
+	 * The "DATABASE" property is optional and is required for ArcSDE instances
+	 * that manage multiple databases (for example, SQL Server).
+	 * <p>
+	 * If “AUTHENTICATION_MODE” is “OSA” then “USER” and “PASSWORD” are not
+	 * required. “OSA” represents operating system authentication and uses the
+	 * operating system credentials to establish a connection with the database.
+	 * <p>
+	 * Since the workspace connection can only represent one version only 1 of
+	 * the 3 version properties (“VERSION” or “HISTORICAL_NAME” or
+	 * “HISTORICAL_TIMESTAMP”) should be used. </blockquote>
+	 * @param properties
+	 * @param accepter
+	 * @throws IOException
+	 */
+	public GdbInputStream(Properties properties, IAcceptSchema accepter) throws IOException {
+		if (properties == null) {
+			throw new IllegalArgumentException(
+					"properties should never be null");
+		}
+		factory = new SdeWorkspaceFactory();
+		
+		this.accepter = accepter;
+
+		PropertySet pset = new PropertySet();
+		for(Object key : properties.keySet()) {
+			String keystr = (String) key;
+			pset.setProperty(keystr, properties.getProperty(keystr));
+		}
+		
+		workspace = factory.open(pset, 0);
+
+		datasetenum = workspace.getDatasets(esriDatasetType.esriDTFeatureClass);
+	}
 
 	/**
 	 * Initialize the input stream
@@ -278,10 +341,10 @@ public class GdbInputStream extends GISInputStreamBase {
 					return read();
 				} else {
 					FeatureClass fclass = new FeatureClass(currentDataset);
-					QueryFilter filter = new QueryFilter();
-					cursor = fclass.search(filter, true);
 					Schema s = makeSchema(fclass);
 					if (accepter == null || accepter.accept(s)) {
+						QueryFilter filter = new QueryFilter();
+						cursor = fclass.search(filter, true);
 						return s;
 					} else {
 						currentDataset = null;
@@ -300,10 +363,54 @@ public class GdbInputStream extends GISInputStreamBase {
 				}
 			}
 		} catch (Exception e) {
-			final IOException e2 = new IOException("Problem reading data from database");
-			e2.initCause(e);
-			throw e2;
+			logger.error("Problem reading data from database - skipping to next dataset", e);
+			currentDataset = null;
+			currentSchema = null;
+			cursor = null;
+			return read();
 		}
+	}
+	
+	@Override
+	public Iterator<Schema> enumerateSchemata() throws IOException {
+		final IEnumDataset dsenum = workspace.getDatasets(esriDatasetType.esriDTFeatureClass);
+		return new Iterator<Schema>() {
+			private IDataset current = null;
+			
+			@Override
+			public boolean hasNext() {
+				if (current == null) {
+					try {
+						current = dsenum.next();
+					} catch (Exception e) {
+						logger.error("Problem in schema iterator", e);
+					}
+				}
+				return current != null;
+			}
+
+			@Override
+			public Schema next() {
+				if (hasNext()) {
+					try {
+						FeatureClass fclass = new FeatureClass(current);
+						Schema rval = makeSchema(fclass);
+						current = null;
+						return rval;
+					} catch (Exception e) {
+						logger.error("Problem in schema iterator", e);
+						return null;
+					}
+				} else {
+					return null;
+				}
+			}
+
+			@Override
+			public void remove() {
+				throw new UnsupportedOperationException("May not remove datasets via this interface");
+			}
+		};
 	}
 
 	/**
@@ -438,44 +545,33 @@ public class GdbInputStream extends GISInputStreamBase {
 	 */
 	private Geometry makePolygon(com.esri.arcgis.geometry.Polygon poly)
 			throws IOException, AutomationException {
-		com.esri.arcgis.geometry.GeometryBag bag = (com.esri.arcgis.geometry.GeometryBag) poly
-				.getOutermostComponentBag();
-		if (bag.getGeometryCount() == 1) {
-			Ring gouter = (Ring) bag.getGeometry(0);
-			return makeSimplePoly(poly, gouter);
-		} else if (bag.getGeometryCount() == 0) {
-			throw new IllegalStateException(
-					"Poly must have at least one outer ring");
-		} else {
-			List<Polygon> polyList = new ArrayList<Polygon>();
-			for (int i = 0; i < bag.getGeometryCount(); i++) {
-				Ring gouter = (Ring) bag.getGeometry(i);
-				polyList.add(makeSimplePoly(poly, gouter));
+		com.esri.arcgis.geometry.GeometryBag bag = 
+			(com.esri.arcgis.geometry.GeometryBag) poly.getExteriorRingBag();
+		List<Polygon> polyList = new ArrayList<Polygon>();
+		for(int i = 0; i < bag.getGeometryCount(); i++) {
+			Ring gouter = (Ring) bag.getGeometry(i);
+			List<LinearRing> inners = null;
+			com.esri.arcgis.geometry.GeometryBag ibag = (com.esri.arcgis.geometry.GeometryBag) poly
+					.getInteriorRingBag(gouter);
+			for (int j = 0; j < ibag.getGeometryCount(); j++) {
+				Ring ginner = (Ring) ibag.getGeometry(j);
+				if (inners == null) inners = new ArrayList<LinearRing>();
+				inners.add(makeRing(ginner));
 			}
+			Polygon p = null;
+			if (inners == null) {
+				p = new Polygon(makeRing(gouter));
+			} else {
+				p = new Polygon(makeRing(gouter), inners);
+			}
+			polyList.add(p);
+		}
+		
+		if (polyList.size() == 1) {
+			return polyList.get(0);
+		} else {
 			return new MultiPolygons(polyList);
 		}
-	}
-
-	/**
-	 * Make a simple poly with a single outer ring
-	 * 
-	 * @param poly
-	 * @param outerRing
-	 * @return
-	 * @throws IOException
-	 * @throws AutomationException
-	 */
-	private Polygon makeSimplePoly(com.esri.arcgis.geometry.Polygon poly,
-			Ring outerRing) throws IOException, AutomationException {
-		LinearRing outer = makeRing(outerRing);
-		List<LinearRing> inners = new ArrayList<LinearRing>();
-		com.esri.arcgis.geometry.GeometryBag ibag = (com.esri.arcgis.geometry.GeometryBag) poly
-				.getInteriorRingBag(outerRing);
-		for (int i = 0; i < ibag.getGeometryCount(); i++) {
-			Ring ginner = (Ring) ibag.getGeometry(i);
-			inners.add(makeRing(ginner));
-		}
-		return new Polygon(outer, inners);
 	}
 
 	/**

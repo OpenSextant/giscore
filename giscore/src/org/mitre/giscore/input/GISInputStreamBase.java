@@ -18,9 +18,12 @@
  ***************************************************************************************/
 package org.mitre.giscore.input;
 
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.Schema;
 
 /**
  * Base class that handles the mark and reset behavior.
@@ -65,5 +68,10 @@ public abstract class GISInputStreamBase implements IGISInputStream {
 	 */
 	protected boolean hasSaved() {
 		return !buffered.isEmpty();
+	}
+
+	@Override
+	public Iterator<Schema> enumerateSchemata() throws IOException {
+		throw new UnsupportedOperationException();
 	}
 }

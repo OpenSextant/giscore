@@ -37,6 +37,8 @@ public enum DocumentType {
 	PersonalGDB(true,false),
 	/* File GDB output, an ESRI format */
 	FileGDB(true,false),
+	/* SDE - an ESRI enterprise geodatabase */
+	SDE(false,false),
 	/* An xml interchange format for ESRI Geodatabase data */
 	XmlGDB(false,false),
 	/* Delimiter separated values, only contains the data from the fields, no geometry */
