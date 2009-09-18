@@ -125,14 +125,17 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
      *                              <code>null</code> then uses BasicContainerNameStrategy.
      * @param mapper				point to shape mapper
      * @throws IOException if an IO error occurs
-     * @exception ClassCastException if outputStream is not a ZipOutputStream instance nor null  
+     * @throws IllegalArgumentException if outputStream is not a ZipOutputStream instance nor null  
      */
     public ShapefileOutputStream(OutputStream stream, File path,
                            IContainerNameStrategy containerNameStrategy,
                            PointShapeMapper mapper) {
-    	if (!(stream instanceof ZipOutputStream)) {
-    		throw new IllegalArgumentException("stream must be a zip output stream");
+    	if (stream != null) {
+            if (!(stream instanceof ZipOutputStream))
+    		    throw new IllegalArgumentException("stream must be a zip output stream");
+            outputStream = (ZipOutputStream) stream;
     	}
+        else outputStream = null;
         if (path == null || path.getParentFile() == null || !path.getParentFile().exists()) {
             throw new IllegalArgumentException(
                     "path should never be null, its parent should never be null and the parent must exist");
@@ -143,7 +146,6 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
             this.containerNameStrategy = containerNameStrategy;
         }    	
         
-        outputStream = (ZipOutputStream) stream;
         outputPath = path;
         this.mapper = mapper != null ? mapper : new PointShapeMapper();
     }
