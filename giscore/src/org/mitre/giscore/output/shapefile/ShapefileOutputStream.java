@@ -56,7 +56,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Output stream for shapefile creation. The basic output routines are lifted
+ * Output stream for Shape file creation. The basic output routines are lifted
  * from the transfusion mediate package.
  * 
  * @author DRAND
@@ -69,69 +69,67 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
 	 * The feature sorter takes care of the details of storing features for
 	 * later retrieval by schema.
 	 */
-	private FeatureSorter sorter = new FeatureSorter();
+	private final FeatureSorter sorter = new FeatureSorter();
 	
 	/**
 	 * Tracks the path - useful for naming collections
 	 */
-	private Stack<String> path = new Stack<String>();
+	private final Stack<String> path = new Stack<String>();
 	
 	/**
 	 * The first time we find a particular feature key, we store away the 
 	 * path and geometry type as a name. Not perfect, but at least it will
 	 * be somewhat meaningful.
 	 */
-	private Map<FeatureKey, String> datasets = new HashMap<FeatureKey, String>();
+	private final Map<FeatureKey, String> datasets = new HashMap<FeatureKey, String>();
 	
 	/**
 	 * Style id to style map
 	 */
-	private Map<String, Style> styles = new HashMap<String, Style>();
+	private final Map<String, Style> styles = new HashMap<String, Style>();
 	
 	/**
 	 * Style id to specific style. This info is inferred from style map
 	 * elements.
 	 */
-	private Map<String, String> styleMappings = new HashMap<String, String>();
+	private final Map<String, String> styleMappings = new HashMap<String, String>();
 
 	/**
 	 * Container naming strategy, never null after ctor
 	 */
-	private IContainerNameStrategy containerNameStrategy;
+	private final IContainerNameStrategy containerNameStrategy;
 
 	/**
 	 * Stream to hold output data
 	 */
-	private ZipOutputStream outputStream;
+	private final ZipOutputStream outputStream;
 
 	/**
 	 * Place to create the output files. The parent of this must exist.
 	 */
-	private File outputPath;
+	private final File outputPath;
 
 	/**
 	 * Maps style icon references to esri shape ids
 	 */
-	private PointShapeMapper mapper = new PointShapeMapper();
+	private final PointShapeMapper mapper;
 	
     /**
      * Ctor
      *
-     * @param stream                the output stream to write the resulting GDB into, never
-     *                              <code>null</code>.
+     * @param stream                the output stream to write the resulting GDB into, if
+     *                              <code>null</code> then shape files written to directory only.
      * @param path                  the directory and file that should hold the file gdb, never
      *                              <code>null</code>.
      * @param containerNameStrategy a name strategy to override the default, if
      *                              <code>null</code> then uses BasicContainerNameStrategy.
      * @param mapper				point to shape mapper
      * @throws IOException if an IO error occurs
+     * @exception ClassCastException if outputStream is not a ZipOutputStream instance nor null  
      */
     public ShapefileOutputStream(OutputStream stream, File path,
                            IContainerNameStrategy containerNameStrategy,
                            PointShapeMapper mapper) {
-    	if (stream == null) {
-			throw new IllegalArgumentException("stream should never be null");
-		}
     	if (!(stream instanceof ZipOutputStream)) {
     		throw new IllegalArgumentException("stream must be a zip output stream");
     	}
@@ -147,7 +145,7 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
         
         outputStream = (ZipOutputStream) stream;
         outputPath = path;
-        if (mapper != null) this.mapper = mapper;
+        this.mapper = mapper != null ? mapper : new PointShapeMapper();
     }
 	
 	/*
@@ -184,7 +182,8 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
 			}
 		}
 		sorter.cleanup();
-		ZipUtils.outputZipComponents(outputPath.getName(), outputPath, outputStream);
+        if (outputStream != null)
+		    ZipUtils.outputZipComponents(outputPath.getName(), outputPath, outputStream);
 	}
 
 	/* (non-Javadoc)
@@ -252,6 +251,5 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
 			styleMappings.put(styleMap.getId(), id.substring(1));
 		}
 	}
-
 
 }
