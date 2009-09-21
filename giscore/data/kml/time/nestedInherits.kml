@@ -6,11 +6,16 @@ Timestamps on nested Features.
 Child placemarks in containers may "inherit" the
 time interval of its parent containers.
 
+As of Google Earth 5.0 the following rule applied:
 In order for a feature to be visible, all of its ancestors must be visible
 and that feature must be visible given visibility flags and temporal
 conditions up the chain to top-most feature.
 
-Features with no time properties basically inherit the time of its ancestors
+As of Google Earth 5.1 the following rule applies:
+The value of time elements shall be inherited by all Feature members of
+a hierarchy unless overruled by the presence of such elements locally.
+
+Features with no time properties inherit the time of its ancestors
 if they have time constraints.
 
 Example shows how temporal visibility is determined
@@ -22,10 +27,14 @@ in nested features.
        - placemark2 *[inherits time from folder1]
    - end folder2
    - placemark3 *[inherits time from folder1]
-   - placemark4  [T01:00 - 03:00] [effective visibility @ T01:00 - 02:00]
-   - placemark5  [T02:01 - 03:00] [visible when both parent and feature are visible]
+   - placemark4 [T01:00 - 03:00] [**GE 5.0: effective visibility @ T01:00 - 02:00]
+   - placemark5 [T02:01 - 03:00] [**GE 5.0: visible when both parent and feature are visible]
  end folder1
  placemark6 [T02:00 - 03:00]
+
+** As of Google Earth 5.1 the local times of features define the time that
+   feature is visible. Prior to Google Earth 5.1 the visibility of features
+   was affected by the time of its ancestors.
 
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
@@ -83,10 +92,13 @@ in nested features.
                 </Point>
             </Placemark>
             <!--
- NOTE placemark 4 extends beyond the lifetime of its parent folder
- so it is not visible after 02:00Z because its parent
+ NOTE prior to Google Earth 5.1 placemark 4 extends beyond the lifetime of its
+ parent folder so it is not visible after 02:00Z because its parent
  is not visible after that time even though the timeSpan of the
  placemark is until 03:00Z which is the latest time in the document.
+
+ Google Earth 5.1 allow features with local time override any time of its
+ ancestors.
 -->
             <Placemark>
                 <name>4</name>
@@ -109,9 +121,9 @@ in nested features.
             <Placemark>
                 <name>5</name>
                 <!--
-NOTE: placemark 5 time interval exists outside range of its parent folder,
-however, placemark 5 appears when both its parent is visible and
-the placemark is visible meaning the start time is 2pm or earlier
+NOTE: prior to Google Earth 5.1 placemark 5 time interval exists outside range
+of its parent folder, however, placemark 5 appears when both its parent is
+visible and the placemark is visible meaning the start time is 2pm or earlier
 and the end time is after 2pm.
 -->
                 <TimeSpan>
