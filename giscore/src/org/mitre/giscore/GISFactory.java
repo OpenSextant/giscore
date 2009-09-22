@@ -242,7 +242,41 @@ public class GISFactory {
 	}
 	
 	/**
-	 * Ctor for creating an enterprise GDB output stream
+	 * Create an enterprise GDB output stream
+	 * 
+	 * <blockquote> <em>From the ESRI javadoc</em>
+	 * <p>
+	 * List of acceptable connection property names and a brief description of
+	 * each:
+	 * <table>
+	 * <tr><th align="left">SERVER</th><td>SDE server name you are connecting to.</td></tr>
+	 * <tr><th align="left">INSTANCE</th><td>Instance you are connection to.</td></tr>
+	 * <tr><th align="left">DATABASE</th><td>Database connected to.</td></tr>
+	 * <tr><th align="left">USER</th><td>Connected user.</td></tr>
+	 * <tr><th align="left">PASSWORD</th><td>Connected password.</td></tr>
+	 * <tr><th align="left">AUTHENTICATION_MODE</th><td>Credential authentication mode of the
+	 * connection. Acceptable values are "OSA" and "DBMS".</td></tr>
+	 * <tr><th align="left">VERSION</th><td>Transactional version to connect to. Acceptable value is
+	 * a string that represents a transaction version name.</td></tr>
+	 * <tr><th align="left">HISTORICAL_NAME</th><td>Historical version to connect to. Acceptable
+	 * value is a string type that represents a historical marker name.</td></tr>
+	 * <tr><th align="left">HISTORICAL_TIMESTAMP</th><td>Moment in history to establish an historical
+	 * version connection. Acceptable value is a date time that represents a
+	 * moment timestamp.</td></tr>
+	 * </table>
+	 * Notes:
+	 * <p>
+	 * The <Q>DATABASE</Q> property is optional and is required for ArcSDE instances
+	 * that manage multiple databases (for example, SQL Server).
+	 * <p>
+	 * If <Q>AUTHENTICATION_MODE</Q> is <Q>OSA</Q> then <Q>USER</Q> and <Q>PASSWORD</Q> are not
+	 * required. <Q>OSA</Q> represents operating system authentication and uses the
+	 * operating system credentials to establish a connection with the database.
+	 * <p>
+	 * Since the workspace connection can only represent one version only 1 of
+	 * the 3 version properties (<Q>VERSION</Q> or <Q>HISTORICAL_NAME</Q> or
+	 * <Q>HISTORICAL_TIMESTAMP</Q>) should be used. </blockquote>
+	 * 
 	 * @param properties
 	 * @param strategy
 	 * @return
@@ -256,7 +290,7 @@ public class GISFactory {
 	}
 	
 	/**
-	 * Ctor for creating an enterprise GDB input stream
+	 * Create an enterprise GDB input stream
 	 * 
 	 * <blockquote> <em>From the ESRI javadoc</em>
 	 * <p>

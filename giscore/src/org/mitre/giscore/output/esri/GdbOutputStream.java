@@ -21,11 +21,9 @@ package org.mitre.giscore.output.esri;
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.UnknownHostException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,7 +32,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.TimeZone;
-import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
@@ -347,7 +344,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			set.setProperty(keystr, properties.getProperty(keystr));
 		}
 		
-		// workspace = factory.open(set, 0);
+		workspace = new Workspace(factory.open(set, 0));
 	}
 
 	/*
