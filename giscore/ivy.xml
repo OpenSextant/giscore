@@ -23,7 +23,7 @@
 		<dependency org="org.slf4j" name="slf4j-api" rev="1.5.6"/>
 		<dependency org="stax" name="stax-api-osgi" rev="1.0.1"/>
 		<!-- This dependency will break in OSGi land. -->
-		<dependency org="com.esri.arcgis" name="arcobjects" rev="9.3"/>
+		<dependency org="com.esri.arcgis" name="arcobjects" rev="9.3.0.A"/>
 		<!-- junit is only needed in the test configuration-->
 		<dependency org="junit" name="junit" rev="4.5" conf="test->default"/>
 
