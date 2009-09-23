@@ -545,29 +545,43 @@ public class GdbInputStream extends GISInputStreamBase {
 	 */
 	private Geometry makePolygon(com.esri.arcgis.geometry.Polygon poly)
 			throws IOException, AutomationException {
-		com.esri.arcgis.geometry.GeometryBag bag = 
-			(com.esri.arcgis.geometry.GeometryBag) poly.getExteriorRingBag();
 		List<Polygon> polyList = new ArrayList<Polygon>();
-		for(int i = 0; i < bag.getGeometryCount(); i++) {
-			Ring gouter = (Ring) bag.getGeometry(i);
-			List<LinearRing> inners = null;
-			com.esri.arcgis.geometry.GeometryBag ibag = (com.esri.arcgis.geometry.GeometryBag) poly
-					.getInteriorRingBag(gouter);
-			for (int j = 0; j < ibag.getGeometryCount(); j++) {
-				Ring ginner = (Ring) ibag.getGeometry(j);
-				if (inners == null) inners = new ArrayList<LinearRing>();
-				inners.add(makeRing(ginner));
+		if (poly.getExteriorRingCount() > 0) {
+			com.esri.arcgis.geometry.GeometryBag bag = 
+				(com.esri.arcgis.geometry.GeometryBag) poly.getExteriorRingBag();
+			for(int i = 0; i < bag.getGeometryCount(); i++) {
+				Ring gouter = (Ring) bag.getGeometry(i);
+				List<LinearRing> inners = null;
+				com.esri.arcgis.geometry.GeometryBag ibag = (com.esri.arcgis.geometry.GeometryBag) poly
+						.getInteriorRingBag(gouter);
+				for (int j = 0; j < ibag.getGeometryCount(); j++) {
+					Ring ginner = (Ring) ibag.getGeometry(j);
+					if (inners == null) inners = new ArrayList<LinearRing>();
+					inners.add(makeRing(ginner));
+				}
+				Polygon p = null;
+				if (inners == null) {
+					p = new Polygon(makeRing(gouter));
+				} else {
+					p = new Polygon(makeRing(gouter), inners);
+				}
+				polyList.add(p);
 			}
-			Polygon p = null;
-			if (inners == null) {
-				p = new Polygon(makeRing(gouter));
-			} else {
-				p = new Polygon(makeRing(gouter), inners);
+		} else if (poly.getGeometryCount() > 0) {
+			for(int i = 0; i < poly.getGeometryCount(); i++) {
+				IGeometry geo = poly.getGeometry(i);
+				if (geo instanceof Ring) {
+					polyList.add(new Polygon(makeRing((Ring) geo)));
+				} else {
+					logger.error("Found an unexpected geometry type: " + 
+							geo.getGeometryType() + " skipping...");
+				}
 			}
-			polyList.add(p);
 		}
 		
-		if (polyList.size() == 1) {
+		if (polyList.size() == 0) {
+			return null;
+		} else if (polyList.size() == 1) {
 			return polyList.get(0);
 		} else {
 			return new MultiPolygons(polyList);
