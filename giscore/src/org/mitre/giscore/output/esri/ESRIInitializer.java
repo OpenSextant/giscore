@@ -18,18 +18,18 @@
  ***************************************************************************************/
 package org.mitre.giscore.output.esri;
 
+import java.io.File;
+import java.io.IOException;
+
+import org.mitre.javautil.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.esri.arcgis.interop.AutomationException;
 import com.esri.arcgis.system.AoInitialize;
 import com.esri.arcgis.system.EngineInitializer;
 import com.esri.arcgis.system.esriLicenseProductCode;
 import com.esri.arcgis.system.esriLicenseStatus;
-
-import java.io.IOException;
-
-import org.mitre.javautil.Pair;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Encapsulate initializing the ESRI environment
@@ -91,7 +91,18 @@ public class ESRIInitializer {
 			try {
 				// We can't use the ESRIInitializer because esri shuts down the
 				// JVM if the libraries can't be found.
-				System.loadLibrary("ntvinv");
+				String arcHome = System.getenv("ARCGISHOME");
+				if(arcHome == null || arcHome.length() < 1) {
+					throw new UnsatisfiedLinkError();
+				}
+				logger.debug("ARCGISHOME found at " + arcHome);
+				String libName = System.mapLibraryName("ntvinv");
+				String parent = arcHome + "bin";
+				File f = new File(parent, libName);
+				if(!f.exists() || !f.isFile()) {
+					throw new UnsatisfiedLinkError();
+				}
+				logger.debug("Test DLL found at " + f.getAbsolutePath());
 			} catch(UnsatisfiedLinkError e) {
 				logger.warn("Could not initialize ESRI libraries, ArcGIS output formats will not work.", e);
 				throw e;
