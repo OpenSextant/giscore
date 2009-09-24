@@ -36,6 +36,10 @@ import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
 public class TestShapefileInput {
 	public static File shpdir = new File("data/shape");
 	
+	@Test public void testErrorcase1() throws Exception {
+		doTest("Point File Test_Point File Test");
+	}
+	
 	@Test public void testLines() throws Exception {
 		doTest("lines");
 	}

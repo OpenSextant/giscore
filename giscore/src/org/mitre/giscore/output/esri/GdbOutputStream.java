@@ -78,6 +78,7 @@ import com.esri.arcgis.geodatabase.IFeatureCursor;
 import com.esri.arcgis.geodatabase.IFeatureWorkspace;
 import com.esri.arcgis.geodatabase.IFeatureWorkspaceProxy;
 import com.esri.arcgis.geodatabase.IField;
+import com.esri.arcgis.geodatabase.IFieldError;
 import com.esri.arcgis.geodatabase.IFields;
 import com.esri.arcgis.geodatabase.IWorkspaceFactory;
 import com.esri.arcgis.geodatabase.IWorkspaceName;
@@ -690,6 +691,13 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		checker.validate(fields, errors, fixedFields);
 
 		if (errors[0] != null) {
+			IFieldError err = errors[0].next();
+			logger.error("Schema fields: " + schema.getKeys());
+			while(err != null) {
+				logger.error("Field problem for field index " + err.getFieldIndex()
+						+ " error " + err.getFieldError());
+				err = errors[0].next();
+			}
 			throw new RuntimeException(
 					"There are one or more invalid field names for data set "
 							+ dsname);
