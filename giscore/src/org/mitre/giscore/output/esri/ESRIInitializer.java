@@ -26,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.esri.arcgis.interop.AutomationException;
+import com.esri.arcgis.interop.NativeLoader;
 import com.esri.arcgis.system.AoInitialize;
 import com.esri.arcgis.system.EngineInitializer;
 import com.esri.arcgis.system.esriLicenseProductCode;
@@ -38,6 +39,8 @@ import com.esri.arcgis.system.esriLicenseStatus;
  *
  */
 public class ESRIInitializer {
+	private static final String TEST_DLL = "ntvinv";
+
 	private static Logger logger = LoggerFactory.getLogger(ESRIInitializer.class);
 	
 	private static ESRIInitializer esri = null;
@@ -96,13 +99,17 @@ public class ESRIInitializer {
 					throw new UnsatisfiedLinkError();
 				}
 				logger.debug("ARCGISHOME found at " + arcHome);
-				String libName = System.mapLibraryName("ntvinv");
+				String libName = System.mapLibraryName(TEST_DLL);
 				String parent = arcHome + "bin";
 				File f = new File(parent, libName);
 				if(!f.exists() || !f.isFile()) {
 					throw new UnsatisfiedLinkError();
 				}
 				logger.debug("Test DLL found at " + f.getAbsolutePath());
+
+				// This should only be attempted with version 9.3.0.B or with
+				//  a version that has a patched loader.
+				NativeLoader.loadLibrary(TEST_DLL);
 			} catch(UnsatisfiedLinkError e) {
 				logger.warn("Could not initialize ESRI libraries, ArcGIS output formats will not work.", e);
 				throw e;
