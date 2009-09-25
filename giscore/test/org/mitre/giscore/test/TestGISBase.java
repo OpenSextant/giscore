@@ -1,5 +1,5 @@
 /****************************************************************************************
- *  TestXmlGdbBase.java
+ *  TestGISBase.java
  *
  *  Created: Feb 10, 2009
  *
@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Assert;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Schema;
@@ -317,6 +318,28 @@ public class TestGISBase {
 
         return feats;
     }
+
+	protected static Point getRandomPoint(double radius) {
+		double lat = 40.0 + (radius * RandomUtils.nextDouble());
+		double lon = 40.0 + (radius * RandomUtils.nextDouble());
+		return new Point(lat, lon);
+	}
+
+	protected static Point getRandomPoint() {
+		double lat = 40.0 + (5.0 * RandomUtils.nextDouble());
+		double lon = 40.0 + (5.0 * RandomUtils.nextDouble());
+		return new Point(lat, lon);
+	}
+
+	protected static Point getRingPoint(Point cp, int n, int total, double size, double min) {
+		double lat = cp.getCenter().getLatitude().inDegrees();
+		double lon = cp.getCenter().getLongitude().inDegrees();
+		double theta = Math.toRadians(360.0 * n / total);
+		double magnitude = min + RandomUtils.nextDouble() * size;
+		double dy = magnitude * Math.sin(theta);
+		double dx = magnitude * Math.cos(theta);
+		return new Point(lat + dy, lon + dx);
+	}
 
     private static Feature addFeature(Geometry g) {
         Feature f = new Feature();
