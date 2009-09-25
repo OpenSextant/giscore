@@ -100,9 +100,11 @@ public class SimpleField implements IDataSerializable {
 		
 		/**
 		 * @return <code>true</code> if this type is compatible with KML schemata
+		 * (string, int, uint, short, ushort, float, double, bool).
+		 * @see http://code.google.com/apis/kml/documentation/kmlreference.html#schema
 		 */
 		public boolean isKmlCompatible() {
-			return !(isGeometry() || DATE.equals(this));
+			return !(isGeometry() || OID.equals(this) || DATE.equals(this));
 		}
 
 		/**
