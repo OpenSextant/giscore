@@ -18,32 +18,32 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.output;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.zip.ZipOutputStream;
-import java.util.zip.ZipEntry;
-
-import static junit.framework.Assert.*;
-
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.fail;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.events.*;
+import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.ContainerStart;
+import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.IGISInputStream;
-import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.input.kml.IKml;
+import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.XmlOutputStreamBase;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.test.TestGISBase;
-import org.apache.commons.io.IOUtils;
 
 import javax.xml.stream.XMLStreamException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Date;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+import java.net.URI;
 
 /**
  * Test the output stream
@@ -73,6 +73,103 @@ public class TestKmlOutputStream extends TestGISBase {
 	@Test
 	public void testCase3() throws Exception {
 		doTest(getStream("schema_example.kml"));
+	}
+
+	@Test
+	public void testRingOutput() throws Exception {
+		File file = createTemp("testRingz", ".kml");
+		OutputStream fs = null;
+		try {
+			fs = new FileOutputStream(file);
+			IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fs);
+			os.write(new DocumentStart(DocumentType.KML));
+			os.write(new ContainerStart(IKml.DOCUMENT));
+			//Feature firstFeature = null;
+			for (int i = 0; i < 5; i++) {
+				Point cp = getRandomPoint();
+				Feature f = new Feature();
+				//if (firstFeature == null) firstFeature = f;
+				List<Point> pts = new ArrayList<Point>();
+				pts.add(getRingPoint(cp, 0, 5, .3, .4));
+				pts.add(getRingPoint(cp, 1, 5, .3, .4));
+				pts.add(getRingPoint(cp, 2, 5, .3, .4));
+				pts.add(getRingPoint(cp, 3, 5, .3, .4));
+				pts.add(getRingPoint(cp, 4, 5, .3, .4));
+				pts.add(pts.get(0));
+				LinearRing ring = new LinearRing(pts);
+				f.setGeometry(ring);
+				os.write(f);
+			}
+			os.close();
+
+			/*
+			KmlReader reader = new KmlReader(file);
+            List<IGISObject> objs = reader.readAll();
+            // imported features should be DocumentStart, Container, followed by Features
+            assertEquals(8, objs.size());
+            checkApproximatelyEquals(firstFeature, objs.get(2));
+            */
+		} finally {
+			IOUtils.closeQuietly(fs);
+			if (autoDelete && file.exists()) file.delete();
+		}
+	}
+
+	@Test
+	public void testPolyOutput() throws Exception {
+		File file = createTemp("testPolys", ".kml");
+		OutputStream fs = null;
+		try {
+			fs = new FileOutputStream(file);
+			IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fs);
+			os.write(new DocumentStart(DocumentType.KML));
+			os.write(new ContainerStart(IKml.DOCUMENT));
+			Schema schema = new Schema();
+			SimpleField id = new SimpleField("testid");
+			id.setLength(10);
+			schema.put(id);
+			SimpleField date = new SimpleField("today", SimpleField.Type.STRING);
+			schema.put(date);
+			os.write(schema);
+			Feature firstFeature = null;
+			for (int i = 0; i < 5; i++) {
+				Point cp = getRandomPoint(25.0); // Center of outer poly
+				Feature f = new Feature();
+				if (firstFeature == null) firstFeature = f;
+				f.putData(id, "id " + i);
+				f.putData(date, new Date().toString());
+				f.setSchema(schema.getId());
+				List<Point> pts = new ArrayList<Point>();
+				for (int k = 0; k < 5; k++) {
+					pts.add(getRingPoint(cp, k, 5, 1.0, 2.0));
+				}
+				pts.add(pts.get(0));
+				LinearRing outerRing = new LinearRing(pts);
+				List<LinearRing> innerRings = new ArrayList<LinearRing>();
+				for (int j = 0; j < 4; j++) {
+					pts = new ArrayList<Point>();
+					Point ircp = getRingPoint(cp, j, 4, .5, 1.0);
+					for (int k = 0; k < 5; k++) {
+						pts.add(getRingPoint(ircp, k, 5, .24, .2));
+					}
+					pts.add(pts.get(0));
+					innerRings.add(new LinearRing(pts));
+				}
+				Polygon p = new Polygon(outerRing, innerRings);
+				f.setGeometry(p);
+				os.write(f);
+			}
+			os.close();
+
+			KmlReader reader = new KmlReader(file);
+            List<IGISObject> objs = reader.readAll();
+            // imported features should be DocumentStart, Container, Schema, followed by Features
+            assertEquals(9, objs.size());
+            checkApproximatelyEquals(firstFeature, objs.get(3));
+		} finally {
+			IOUtils.closeQuietly(fs);
+			if (autoDelete && file.exists()) file.delete();
+		}
 	}
 
     @Test
@@ -149,8 +246,8 @@ public class TestKmlOutputStream extends TestGISBase {
 	 * For most objects they need to be exactly the same, but for some we can 
 	 * approximate equality
 	 * 
-	 * @param source
-	 * @param test
+	 * @param source expected feature object
+	 * @param test actual feature object
 	 */
 	public static void checkApproximatelyEquals(IGISObject source, IGISObject test) {
 		if (source instanceof Feature && test instanceof Feature) {
@@ -160,8 +257,8 @@ public class TestKmlOutputStream extends TestGISBase {
 			boolean ae = sf.approximatelyEquals(tf);
 			
 			if (! ae) {		
-				System.err.println("Source: " + source);
-				System.err.println("Test: " + test);
+				System.err.println("Expected: " + source);
+				System.err.println("Actual: " + test);
 				fail("Found unequal objects");
 			}
 		} else {
