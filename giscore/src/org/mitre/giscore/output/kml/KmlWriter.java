@@ -35,8 +35,8 @@ import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 
 /**
- * Wrapper to KmlOutputStream for handling the common steps needed to create
- * basic KML or KMZ files.
+ * Wrapper to <code>KmlOutputStream</code> for handling the common steps needed
+ * to create basic KML or KMZ files.
  * <p/>
  * Handles the following tasks:
  *
@@ -49,7 +49,8 @@ import java.net.URISyntaxException;
  *    overlay images, icons, etc.
  * </ul>
  * 
- * Complements the KmlReader class. Advanced KML support should use the <code>KmlOutputStream</code> class directly.
+ * Complements the KmlReader class. Advanced KML support with more direct access may require
+ * using the <code>KmlOutputStream</code> or <code>KmzOutputStream</code> classes directly.
  * 
  * @author Jason Mathews, MITRE Corp.
  * Created: Mar 13, 2009 10:06:17 AM
