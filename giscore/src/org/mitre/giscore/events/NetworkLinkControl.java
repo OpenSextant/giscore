@@ -120,7 +120,7 @@ public class NetworkLinkControl implements IGISObject {
 	}
 
 	public void setExpires(Date expires) {
-		this.expires = expires;
+        this.expires = expires == null ? null : (Date)expires.clone();
 	}
 
 	public String getTargetHref() {

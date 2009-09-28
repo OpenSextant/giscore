@@ -100,7 +100,7 @@ public abstract class Common extends Row {
 	 *            the startTime to set
 	 */
 	public void setStartTime(Date startTime) {
-		this.startTime = startTime;
+		this.startTime = startTime == null ? null : (Date)startTime.clone();
 	}
 
 	/**
@@ -115,7 +115,7 @@ public abstract class Common extends Row {
 	 *            the endTime to set
 	 */
 	public void setEndTime(Date endTime) {
-		this.endTime = endTime;
+        this.endTime = endTime == null ? null : (Date)endTime.clone();
 	}
 
 	public TaggedMap getViewGroup() {
