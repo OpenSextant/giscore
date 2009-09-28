@@ -32,8 +32,6 @@ import java.net.URISyntaxException;
  *  <li> Invalid TimeSpan if begin later than end value
  *  <li> End container with no matching start container
  *  <li> Starting container tag with no matching end container
- *  <li> Feature begin time earilier than that of one of its ancestors
- *  <li> Feature end time later than that of one of its ancestors
  * </ul>
  * 
  * This tool helps to uncover issues in reading and writing target KML files.
@@ -296,23 +294,16 @@ public class KmlMetaDump implements IKml {
             Date endTime = cs.getEndTime();
             if (startTime != null || endTime != null) {
                 //
-                // Note nested times in KML is undocumented in Google and OGC documentation.
-                // Following is from direct observation of Google Earth client.
+                // Features override TimePrimitives if defined in ancestor containers.
+                // Features without time inherit time from their ancestors.
                 //
-                // Container time inheritance is aggregated with simple approach:
-                // compare against previous container start/end dates and select
-                // the largest interval that contains the feature's time range and
-                // that of its ancestors. Complete interpretation would be a test
-                // if the intervals are intersecting or disjoint:
+                // "Feature elements shall be inherited by all Feature members of a hierarchy: atom:author, atom:link, Region,
+                // and [TimePrimitive], unless overruled by the presence of such elements locally. Thus it is not necessary
+                // for a child Feature to carry any of these elements where their local value is the same as that of its
+                // parent Feature. Inheritance of these elements continues to any depth of nesting, but if overruled by
+                // a local declaration, then the new value is inherited by all its children in turn.
                 //
-                // 1) if intervals are intersecting then the effective interval for
-                // the inner feature would be the intersecting interval,
-                //
-                // 2) disjoint intervals would use the largest interval that
-                // contains it and its ancestors.
-                //
-                // For simplicity sake we're being safe and using the largest
-                // interval and being inclusive rather than exclusive.
+                // Source: OGC KML Best Practices document OGC 07-113r1
                 //
                 inheritsTime = true;
                 if (verbose) System.out.println(cs.getType() + " container has time");
@@ -323,20 +314,16 @@ public class KmlMetaDump implements IKml {
                         addTag(":Invalid time range: start > end");
                         if (verbose) System.out.println(" Error: Invalid time range: start > end\n");
                     }
-                    // take earlier start date in interval of feature and all of its ancestors
-                    if (containerStartDate == null || startTime.compareTo(containerStartDate) < 0) {
-                        // log.debug("use container start date");
-                        containerStartDate = startTime;
-                        // TODO: if startTime > containerEndDate then ??
-                    } else if (verbose) System.out.println(" container start date is later than its parent container");
+                    if (containerStartDate != null && verbose) System.out.println(" Overriding parent container start date");
+                    // override any previous start date
+                    containerStartDate = startTime;
+                    // log.debug("use container start date");
                 }
                 if (endTime != null) {
-                    // take later end date in interval of feature and all of its ancestors
-                    if (containerEndDate == null || endTime.compareTo(containerEndDate) > 0) {
-                        // log.debug("use container end date");
-                        containerEndDate = endTime;
-                        // TODO: if endTime < containerStartDate then ??
-                    } else if (verbose) System.out.println(" container end date is earlier than its parent container");
+                    if (containerEndDate != null && verbose) System.out.println(" Overriding parent container end date");
+                    // override any previous end date
+                    // log.debug("use container end date");
+                    containerEndDate = endTime;
                 }
             }
         } else if (cl == ContainerEnd.class) {
@@ -363,31 +350,18 @@ public class KmlMetaDump implements IKml {
             }
 
             if (inheritsTime) {
-                // reset and recompute starting at outer-most container and aggregate
-                // times of inner containers to compute intersecting time interval.
+                // reset times with last start/end times in the hierachy if any is present
                 inheritsTime = false;
                 containerStartDate = null;
                 containerEndDate = null;
                 for (ContainerStart cs : containers) {
                     Date startDate = cs.getStartTime();
                     Date endDate = cs.getEndTime();
-                    if (startDate != null) {
-                        // take earlier start date in interval of feature and all of its ancestors
-                        if (containerStartDate == null || startDate.compareTo(containerStartDate) < 0) {
-                            //log.debug(i + "-use container start date");
-                            containerStartDate = startDate;
-                            // TODO: if startDate > containerEndDate then ??
-                        } // else log.debug(i + "-container start date is earlier than its parent container");
+                    if (startDate != null || endDate != null) {
+                        containerStartDate = startDate;
+                        containerEndDate = endDate;
                     }
-                    if (endDate != null) {
-                        // take later end date in interval of feature and all of its ancestors
-                        if (containerEndDate == null || endDate.compareTo(containerEndDate) > 0) {
-                            //log.debug(i + "-use container end date");
-                            containerEndDate = endDate;
-                            // TODO: if endDate < containerStartDate then ??
-                        } // else log.debug(i + "-container end date is later than its parent container");
-                    }
-                } // for each time
+                } // for each container
                 if (containerStartDate != null || containerEndDate != null) {
                     // log.info("Container has inheritable time");
                     inheritsTime = true;
@@ -472,7 +446,6 @@ public class KmlMetaDump implements IKml {
 			} else {
 				// otherwise timespan used with start and/or end dates
 				addTag(TIME_SPAN);
-
 				if (startTime != null && endTime != null && startTime.compareTo(endTime) > 0) {
 					// assertion: the begin value is earlier than the end value.
 					// if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
@@ -480,17 +453,9 @@ public class KmlMetaDump implements IKml {
 					if (verbose) System.out.println(" Error: Invalid time range: start > end\n");
 				}
 			}
-			if (containerStartDate != null && startTime != null && containerStartDate.compareTo(startTime) > 0)
-				addTag(":Feature begin time earilier than that of one of its ancestors");
-			if (containerEndDate != null && endTime != null && containerEndDate.compareTo(endTime) < 0)
-				addTag(":Feature end time later than that of one of its ancestors");
 		} else if (containerStartDate != null || containerEndDate != null) {
             /*
-                In order for a feature to be visible, all of its ancestors must be
-                visible and that feature must be visible given visibility flags and
-                temporal conditions up the chain to top-most feature.
-
-                Features with no time properties basically inherit the time
+                Features with no time properties inherit the time
                 of its ancestors if they have time constraints.
             */
 			addTag(":Feature inherits container time");
