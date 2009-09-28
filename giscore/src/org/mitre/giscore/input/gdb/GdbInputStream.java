@@ -605,7 +605,7 @@ public class GdbInputStream extends GISInputStreamBase {
 	private Schema makeSchema(FeatureClass fclass)
 			throws AutomationException, URISyntaxException, IOException {
 		String sname = fclass.getAliasName();
-		sname = sname.replace('_', '-');
+		sname = sname.replace(' ', '_');
 		currentSchemaURI = new URI("urn:" + sname);
 		currentSchema = new Schema(currentSchemaURI);
 		currentSchema.setName(fclass.getAliasName());
