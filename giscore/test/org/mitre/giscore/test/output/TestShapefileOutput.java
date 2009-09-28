@@ -52,7 +52,7 @@ public class TestShapefileOutput {
     }
 
     @Test public void testWriteReferencePointOutput() throws Exception {
-		FileOutputStream zip = new FileOutputStream("testOutput/shptest/reference.zip");
+		FileOutputStream zip = new FileOutputStream(new File(shapeOutputDir, "reference.zip"));
 		ZipOutputStream zos = new ZipOutputStream(zip);
         File outDir = new File("testOutput/shptest/buf");
         outDir.mkdirs();
@@ -81,7 +81,7 @@ public class TestShapefileOutput {
 		zos.flush();
 		zos.close();		
 	}
-	
+
 	@Test public void testPointOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -199,7 +199,8 @@ public class TestShapefileOutput {
 			pts.add(getRingPoint(cp, 2, 5, .3, .4));
 			pts.add(getRingPoint(cp, 3, 5, .3, .4));
 			pts.add(getRingPoint(cp, 4, 5, .3, .4));
-			LinearRing ring = new LinearRing(pts);
+            pts.add(pts.get(0)); // should start and end with the same point
+			LinearRing ring = new LinearRing(pts, true);
 			f.setGeometry(ring);
 			buffer.write(f);
 		}
@@ -229,7 +230,9 @@ public class TestShapefileOutput {
 			pts.add(getRingPointZ(cp, 2, 5, .3, .4));
 			pts.add(getRingPointZ(cp, 3, 5, .3, .4));
 			pts.add(getRingPointZ(cp, 4, 5, .3, .4));
-			LinearRing ring = new LinearRing(pts);
+            pts.add(pts.get(0)); // should start and end with the same point
+			// First (outer) ring should be in clockwise point order
+			LinearRing ring = new LinearRing(pts, true);
 			f.setGeometry(ring);
 			buffer.write(f);
 		}
@@ -257,17 +260,20 @@ public class TestShapefileOutput {
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPoint(cp, k, 5, 1.0, 2.0));
 			}
-			LinearRing outerRing = new LinearRing(pts);
+            pts.add(pts.get(0)); // should start and end with the same point
+			// First (outer) ring should be in clockwise point order
+			LinearRing outerRing = new LinearRing(pts, true);
 			List<LinearRing> innerRings = new ArrayList<LinearRing>();
 			for(int j = 0; j < 4; j++) {
 				pts = new ArrayList<Point>();
 				Point ircp = getRingPoint(cp, j, 4, .5, 1.0);
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPoint(ircp, k, 5, .24, .2));
-				}	
-				innerRings.add(new LinearRing(pts));
+				}
+                pts.add(pts.get(0)); // should start and end with the same point
+				innerRings.add(new LinearRing(pts, true));
 			}
-			Polygon p = new Polygon(outerRing, innerRings);
+			Polygon p = new Polygon(outerRing, innerRings, true);
 			f.setGeometry(p);
 			buffer.write(f);
 		}
@@ -295,6 +301,8 @@ public class TestShapefileOutput {
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPointZ(cp, k, 5, 1.0, 2.0));
 			}
+            pts.add(pts.get(0)); // should start and end with the same point
+			// First (outer) ring should be in clockwise point order
 			LinearRing outerRing = new LinearRing(pts);
 			List<LinearRing> innerRings = new ArrayList<LinearRing>();
 			for(int j = 0; j < 4; j++) {
@@ -302,7 +310,8 @@ public class TestShapefileOutput {
 				Point ircp = getRingPointZ(cp, j, 4, .5, 1.0);
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPointZ(ircp, k, 5, .24, .2));
-				}	
+				}
+                pts.add(pts.get(0)); // should start and end with the same point
 				innerRings.add(new LinearRing(pts));
 			}
 			Polygon p = new Polygon(outerRing, innerRings);
@@ -329,12 +338,14 @@ public class TestShapefileOutput {
 		f.putData(date, new Date());
 		f.setSchema(schema.getId());
 		List<LinearRing> rings = new ArrayList<LinearRing>();
+		// First (outer) ring should be in clockwise point order
 		for(int i = 0; i < 5; i++) {
 			Point cp = getRandomPoint(25.0); // Center of outer poly
 			List<Point> pts = new ArrayList<Point>();
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPoint(cp, k, 5, .2, .5));
 			}
+            pts.add(pts.get(0)); // should start and end with the same point
 			LinearRing outerRing = new LinearRing(pts);
 			rings.add(outerRing);
 		}
@@ -366,6 +377,7 @@ public class TestShapefileOutput {
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPointZ(cp, k, 5, 1.0, 2.0));
 			}
+            pts.add(pts.get(0)); // should start and end with the same point
 			LinearRing outerRing = new LinearRing(pts);
 			rings.add(outerRing);
 		}
@@ -395,9 +407,11 @@ public class TestShapefileOutput {
 			Point cp = getRandomPoint(25.0); // Center of outer poly
 			List<Point> pts = new ArrayList<Point>();
 			int sides = RandomUtils.nextInt(4) + 4;
+			// First (outer) ring should be in clockwise point order
 			for(int k = 0; k < sides; k++) {
 				pts.add(getRingPoint(cp, k, sides, 1.0, 2.0));
 			}
+            pts.add(pts.get(0)); // should start and end with the same point
 			LinearRing outerRing = new LinearRing(pts);
 			List<LinearRing> innerRings = new ArrayList<LinearRing>();
 			int inners = RandomUtils.nextInt(4) + 1;
@@ -406,7 +420,8 @@ public class TestShapefileOutput {
 				Point ircp = getRingPoint(cp, j, inners, .5, 1.0);
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPoint(ircp, k, 5, .24, .2));
-				}	
+				}
+                pts.add(pts.get(0)); // should start and end with the same point
 				innerRings.add(new LinearRing(pts));
 			}
 			Polygon p = new Polygon(outerRing, innerRings);
@@ -441,6 +456,7 @@ public class TestShapefileOutput {
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPointZ(cp, k, 5, 2, 1.5));
 			}
+            pts.add(pts.get(0)); // should start and end with the same point
 			LinearRing outerRing = new LinearRing(pts);
 			List<LinearRing> innerRings = new ArrayList<LinearRing>();
 			for(int j = 0; j < 4; j++) {
@@ -448,7 +464,8 @@ public class TestShapefileOutput {
 				Point ircp = getRingPointZ(cp, j, 4, .5, 1.0);
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPointZ(ircp, k, 5, .24, .2));
-				}	
+				}
+                pts.add(pts.get(0)); // should start and end with the same point
 				innerRings.add(new LinearRing(pts));
 			}
 			Polygon p = new Polygon(outerRing, innerRings);
@@ -488,14 +505,13 @@ public class TestShapefileOutput {
 	private Point getRandomPoint(double radius) {
 		double lat = 40.0 + (radius * RandomUtils.nextDouble());
 		double lon = 40.0 + (radius * RandomUtils.nextDouble());
-		Point point = new Point(lat, lon);
-		return point;
+		return new Point(lat, lon);
 	}
 	
 	private Point getRandomPoint() {
 		double lat = 40.0 + (5.0 * RandomUtils.nextDouble());
 		double lon = 40.0 + (5.0 * RandomUtils.nextDouble());
-		Point point = new Point(lat, lon);
-		return point;
+        return new Point(lat, lon);
 	}
+
 }
