@@ -113,7 +113,7 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
 	 * Maps style icon references to esri shape ids
 	 */
 	private final PointShapeMapper mapper;
-	
+
     /**
      * Ctor
      *
@@ -124,7 +124,6 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
      * @param containerNameStrategy a name strategy to override the default, if
      *                              <code>null</code> then uses BasicContainerNameStrategy.
      * @param mapper				point to shape mapper
-     * @throws IOException if an IO error occurs
      * @throws IllegalArgumentException if outputStream is not a ZipOutputStream instance nor null  
      */
     public ShapefileOutputStream(OutputStream stream, File path,

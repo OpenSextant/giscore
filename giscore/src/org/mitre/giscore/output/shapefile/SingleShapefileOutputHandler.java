@@ -296,8 +296,6 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * information and check for consistent geometry usage. After all the
 	 * features are written we reopen the shapefile to output the header.
 	 * 
-	 * @param shpbos
-	 * @param shxbos
 	 * @throws IOException
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
@@ -694,7 +692,6 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Output part count for the given geometry
 	 * 
-	 * @param bos
 	 * @param geom
 	 * @throws IOException
 	 */
@@ -888,7 +885,6 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Put out the elevation value
 	 * 
-	 * @param boS
 	 * @param pt
 	 * @throws IOException
 	 */
