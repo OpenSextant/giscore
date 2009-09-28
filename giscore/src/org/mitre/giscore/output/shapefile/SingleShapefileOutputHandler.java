@@ -58,6 +58,7 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DBounds;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Coordinate the output of a single buffer for writing the four shapefile
@@ -208,16 +209,22 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			InstantiationException, IllegalAccessException, XMLStreamException {
 		// Write prj
 		FileOutputStream prjos = new FileOutputStream(prjFile);
-		prjos.write(WGS84prj.getBytes("US-ASCII"));
-		prjos.close();
+        try {
+		    prjos.write(WGS84prj.getBytes("US-ASCII"));
+        } finally {
+		    prjos.close();
+        }
 		// Write shp and shx
 		outputFeatures();
 		// Write dbf
 		FileOutputStream dbfos = new FileOutputStream(dbfFile);
-		buffer.resetReadIndex();
-		DbfOutputStream dbf = new DbfOutputStream(dbfos, schema, buffer);
-		dbf.close();
-		dbfos.close();
+        try {
+		    buffer.resetReadIndex();
+		    DbfOutputStream dbf = new DbfOutputStream(dbfos, schema, buffer);
+		    dbf.close();
+        } finally {
+		    dbfos.close();
+        }
 		// Write shm
 		writeShm();
 	}
@@ -236,47 +243,52 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			return;
 
 		OutputStream stream = new FileOutputStream(shmFile);
-		XMLOutputFactory factory = XMLOutputFactory.newInstance();
-		XMLStreamWriter writer = factory.createXMLStreamWriter(stream);
-		writer.writeStartDocument();
-		writer.writeStartElement("org.mitre.forensics.util.BaseLayerMetaData");
-		writer.writeStartElement("renderer__info");
+        try {
+            XMLOutputFactory factory = XMLOutputFactory.newInstance();
+            XMLStreamWriter writer = factory.createXMLStreamWriter(stream);
+            writer.writeStartDocument();
+            writer.writeStartElement("org.mitre.forensics.util.BaseLayerMetaData");
+            writer.writeStartElement("renderer__info");
 
-		writer.writeStartElement("symbol__class");
-		writer.writeCharacters("point");
-		writer.writeEndElement();
+            writer.writeStartElement("symbol__class");
+            writer.writeCharacters("point");
+            writer.writeEndElement();
 
-		writer.writeStartElement("symbol__type");
-		writer.writeCharacters(Short.toString(mapper.getMarker(new URL(style
-				.getIconUrl()))));
-		writer.writeEndElement();
+            writer.writeStartElement("symbol__type");
+            writer.writeCharacters(Short.toString(mapper.getMarker(new URL(style
+                    .getIconUrl()))));
+            writer.writeEndElement();
 
-		if (style.getIconColor() != null) {
-			writer.writeStartElement("symbol__color");
-			StringBuilder sb = new StringBuilder(8);
-			Formatter formatter = new Formatter(sb, Locale.US);
-			Color color = style.getIconColor();
-			formatter.format("0x%02x%02x%02x%02x", color.getAlpha(), color
-					.getBlue(), color.getGreen(), color.getRed());
-			writer.writeCharacters(sb.toString());
-			writer.writeEndElement();
-		}
+            if (style.getIconColor() != null) {
+                writer.writeStartElement("symbol__color");
+                StringBuilder sb = new StringBuilder(8);
+                Formatter formatter = new Formatter(sb, Locale.US);
+                Color color = style.getIconColor();
+                formatter.format("0x%02x%02x%02x%02x", color.getAlpha(), color
+                        .getBlue(), color.getGreen(), color.getRed());
+                writer.writeCharacters(sb.toString());
+                writer.writeEndElement();
+            }
 
-		writer.writeStartElement("has__labelling");
-		writer.writeCharacters("false");
-		writer.writeEndElement();
+            writer.writeStartElement("has__labelling");
+            writer.writeCharacters("false");
+            writer.writeEndElement();
 
-		writer.writeStartElement("point__size");
-		int size = (int) (style.getIconScale() * 15.0);
-		writer.writeCharacters(Integer.toString(size));
-		writer.writeEndElement();
+            writer.writeStartElement("point__size");
+            int size = (int) (style.getIconScale() * 15.0);
+            writer.writeCharacters(Integer.toString(size));
+            writer.writeEndElement();
 
-		writer.writeStartElement("outer-class");
-		writer.writeAttribute("reference", "../..");
-		writer.writeEndElement();
+            writer.writeStartElement("outer-class");
+            writer.writeAttribute("reference", "../..");
+            writer.writeEndElement();
 
-		writer.writeEndElement();
-		writer.writeEndDocument();
+            writer.writeEndElement();
+            writer.writeEndDocument();
+            writer.close();
+        } finally {
+            IOUtils.closeQuietly(stream);
+        }
 	}
 
 	/**
