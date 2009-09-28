@@ -96,14 +96,15 @@ public class ESRIInitializer {
 				// JVM if the libraries can't be found.
 				String arcHome = System.getenv("ARCGISHOME");
 				if(arcHome == null || arcHome.length() < 1) {
-					throw new UnsatisfiedLinkError();
+					throw new UnsatisfiedLinkError("ArcGIS home (ARCGISHOME) not defined.");
 				}
 				logger.debug("ARCGISHOME found at " + arcHome);
 				String libName = System.mapLibraryName(TEST_DLL);
 				String parent = arcHome + "bin";
 				File f = new File(parent, libName);
 				if(!f.exists() || !f.isFile()) {
-					throw new UnsatisfiedLinkError();
+					throw new UnsatisfiedLinkError("Sample library '" + 
+							f.getAbsolutePath() + "' not found");
 				}
 				logger.debug("Test DLL found at " + f.getAbsolutePath());
 
