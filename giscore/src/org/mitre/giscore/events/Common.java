@@ -92,6 +92,7 @@ public abstract class Common extends Row {
 	 * @return the startTime
 	 */
 	public Date getStartTime() {
+        // note this exposes the internal representation by returning reference to mutable object
 		return startTime;
 	}
 
@@ -107,6 +108,7 @@ public abstract class Common extends Row {
 	 * @return the endTime
 	 */
 	public Date getEndTime() {
+        // note this exposes the internal representation by returning reference to mutable object
 		return endTime;
 	}
 
