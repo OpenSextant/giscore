@@ -154,9 +154,6 @@ public class SimpleField implements IDataSerializable {
 	 */
 	public SimpleField(String name, Type type) {
 		this(name);
-		if (type == null) {
-			throw new IllegalArgumentException("type should never be null");
-		}
 		setType(type);
 	}
 
@@ -168,7 +165,7 @@ public class SimpleField implements IDataSerializable {
 	}
 
 	/**
-	 * @return the type
+	 * @return the type, never null
 	 */
 	public Type getType() {
 		return type;
@@ -177,15 +174,19 @@ public class SimpleField implements IDataSerializable {
 	/**
 	 * @param type
 	 *            the type to set
+     * @throws IllegalArgumentException if <code>type</code> is null
 	 */
 	public void setType(Type type) {
+        if (type == null) {
+			throw new IllegalArgumentException("type should never be null");
+		}
 		this.type = type;
 		setLength(type.getDefaultLength());
 		setPrecision(type.getDefaultPrecision());
 	}
 
 	/**
-	 * @return the name
+	 * @return the name, never null
 	 */
 	public String getName() {
 		return name;
@@ -194,6 +195,7 @@ public class SimpleField implements IDataSerializable {
 	/**
 	 * @param name
 	 *            the name to set
+     * @throws IllegalArgumentException if <code>name</code> is null 
 	 */
 	public void setName(String name) {
 		if (name == null) {
