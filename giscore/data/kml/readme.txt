@@ -3,7 +3,7 @@ URL: http://kml-samples.googlecode.com/svn/trunk/interactive/index.html
 These KML files have been modified to validate against appropriate KML schema.
 
 Other examples have been added to this collection to cover nearly all possible
-features of KML as a validation test suite including those from older versions
+features of KML 2.2 as a validation test suite including those from older versions
 of KML (KML 2.0, KML 2.1) with deleted and deprecated features.
 
 e.g. http://kml-samples.googlecode.com/svn/trunk/kml/kmz/simple/big.kmz
@@ -15,8 +15,6 @@ See also http://kml-samples.googlecode.com/svn/trunk/morekml/
 
 Summary of tags and properties used in KML collection
 
-	Feature begin time earilier than start of one of its ancestors
-	Feature end time later than start of one of its ancestors
 	Feature inherits container time
 	Feature uses inline Style
 	Feature uses inline StyleMap
@@ -1119,8 +1117,6 @@ data\kml\time\dates.kml
 
 data\kml\time\multiNestedInherits.kml
 
-	Feature begin time earilier than start of one of its ancestors
-	Feature end time later than start of one of its ancestors
 	Feature uses inline Style
 	IconStyle            2
 	Placemark            2
@@ -1131,8 +1127,6 @@ data\kml\time\multiNestedInherits.kml
 
 data\kml\time\multiNestedInheritsUnboundedSpans.kml
 
-	Feature begin time earilier than start of one of its ancestors
-	Feature end time later than start of one of its ancestors
 	Feature uses inline Style
 	--
 	IconStyle            2
@@ -1144,7 +1138,6 @@ data\kml\time\multiNestedInheritsUnboundedSpans.kml
 
 data\kml\time\nestedInherits.kml
 
-	Feature end time later than start of one of its ancestors
 	Feature inherits container time
 	Feature uses inline Style
 	--
@@ -1159,8 +1152,6 @@ data\kml\time\nestedInherits.kml
 
 data\kml\time\time-inherit2.kml
 
-	Feature begin time earilier than start of one of its ancestors
-	Feature end time later than start of one of its ancestors
 	Feature inherits container time
 	--
 	Document             1
