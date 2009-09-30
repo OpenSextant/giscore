@@ -181,7 +181,7 @@ public class SimpleField implements IDataSerializable {
 			throw new IllegalArgumentException("type should never be null");
 		}
 		this.type = type;
-		setLength(type.getDefaultLength());
+		// setLength(type.getDefaultLength()); already returns default Length in getLength()
 		setPrecision(type.getDefaultPrecision());
 	}
 
