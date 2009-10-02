@@ -28,20 +28,20 @@ import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.MultiLine;
-import org.mitre.giscore.geometry.MultiLinearRings;
-import org.mitre.giscore.geometry.MultiPoint;
-import org.mitre.giscore.geometry.MultiPolygons;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.output.shapefile.SingleShapefileOutputHandler;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
+import org.mitre.itf.geodesy.Geodetic3DPoint;
+import org.mitre.itf.geodesy.Longitude;
+import org.mitre.itf.geodesy.Angle;
+import org.mitre.itf.geodesy.Latitude;
+import static junit.framework.Assert.assertEquals;
 
 public class TestShapefileOutput {
 
@@ -54,9 +54,9 @@ public class TestShapefileOutput {
     @Test public void testWriteReferencePointOutput() throws Exception {
 		FileOutputStream zip = new FileOutputStream(new File(shapeOutputDir, "reference.zip"));
 		ZipOutputStream zos = new ZipOutputStream(zip);
-        File outDir = new File("testOutput/shptest/buf");
-        outDir.mkdirs();
-        IGISOutputStream shpos = GISFactory.getOutputStream(DocumentType.Shapefile, zos, outDir);
+		File outDir = new File("testOutput/shptest/buf");
+		outDir.mkdirs();
+		IGISOutputStream shpos = GISFactory.getOutputStream(DocumentType.Shapefile, zos, outDir);
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
 		id.setLength(10);
@@ -88,17 +88,53 @@ public class TestShapefileOutput {
 		id.setLength(10);
 		schema.put(id);
 		ObjectBuffer buffer = new ObjectBuffer();
+		List<Point> pts = new ArrayList<Point>(5);
 		for(int i = 0; i < 5; i++) {
 			Feature f = new Feature();
 			f.putData(id, "id " + i);
 			f.setSchema(schema.getId());
 			Point point = getRandomPoint();
+			pts.add(point);
 			f.setGeometry(point);
 			buffer.write(f);
 		}
 		SingleShapefileOutputHandler soh =
 			new SingleShapefileOutputHandler(schema, null, buffer,
                     shapeOutputDir, "points", null);
+		soh.process();
+
+		// now read shape file back in and test against what we wrote
+		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shapeOutputDir, "points");
+		IGISObject ob = handler.read();
+		assertTrue(ob instanceof Schema);
+		int count = 0;
+		while((ob = handler.read()) != null) {
+			assertTrue(ob instanceof Feature);
+			Feature f = (Feature)ob;
+			Geometry geom = f.getGeometry();
+			assertEquals(pts.get(count), geom);
+			count++;
+		}
+		assertEquals(5, count);
+	}
+
+    @Test public void testPointzOutput() throws Exception {
+		Schema schema = new Schema(new URI("urn:test"));
+		SimpleField id = new SimpleField("testid");
+		id.setLength(10);
+		schema.put(id);
+		ObjectBuffer buffer = new ObjectBuffer();
+		for(int i = 0; i < 5; i++) {
+			Feature f = new Feature();
+			f.putData(id, "id " + i);
+			f.setSchema(schema.getId());
+			Point point = getRandomPointZ();
+			f.setGeometry(point);
+			buffer.write(f);
+		}
+		SingleShapefileOutputHandler soh =
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "pointz", null);
 		soh.process();
 	}
 	
@@ -194,13 +230,14 @@ public class TestShapefileOutput {
 			f.putData(date, new Date());
 			f.setSchema(schema.getId());
 			List<Point> pts = new ArrayList<Point>();
-			pts.add(getRingPoint(cp, 0, 5, .3, .4));
-			pts.add(getRingPoint(cp, 1, 5, .3, .4));
-			pts.add(getRingPoint(cp, 2, 5, .3, .4));
-			pts.add(getRingPoint(cp, 3, 5, .3, .4));
 			pts.add(getRingPoint(cp, 4, 5, .3, .4));
-            pts.add(pts.get(0)); // should start and end with the same point
+			pts.add(getRingPoint(cp, 3, 5, .3, .4));
+			pts.add(getRingPoint(cp, 2, 5, .3, .4));
+			pts.add(getRingPoint(cp, 1, 5, .3, .4));
+			pts.add(getRingPoint(cp, 0, 5, .3, .4));
+			pts.add(pts.get(0)); // should start and end with the same point
 			LinearRing ring = new LinearRing(pts, true);
+			if (!ring.clockwise()) System.err.println("rings must be in clockwise point order");
 			f.setGeometry(ring);
 			buffer.write(f);
 		}
@@ -225,14 +262,15 @@ public class TestShapefileOutput {
 			f.putData(date, new Date());
 			f.setSchema(schema.getId());
 			List<Point> pts = new ArrayList<Point>();
-			pts.add(getRingPointZ(cp, 0, 5, .3, .4));
-			pts.add(getRingPointZ(cp, 1, 5, .3, .4));
-			pts.add(getRingPointZ(cp, 2, 5, .3, .4));
-			pts.add(getRingPointZ(cp, 3, 5, .3, .4));
 			pts.add(getRingPointZ(cp, 4, 5, .3, .4));
-            pts.add(pts.get(0)); // should start and end with the same point
+			pts.add(getRingPointZ(cp, 3, 5, .3, .4));
+			pts.add(getRingPointZ(cp, 2, 5, .3, .4));
+			pts.add(getRingPointZ(cp, 1, 5, .3, .4));
+			pts.add(getRingPointZ(cp, 0, 5, .3, .4));
+			pts.add(pts.get(0)); // should start and end with the same point
 			// First (outer) ring should be in clockwise point order
 			LinearRing ring = new LinearRing(pts, true);
+			if (!ring.clockwise()) System.err.println("rings must be in clockwise point order");
 			f.setGeometry(ring);
 			buffer.write(f);
 		}
@@ -258,11 +296,11 @@ public class TestShapefileOutput {
 			f.setSchema(schema.getId());
 			List<Point> pts = new ArrayList<Point>();
 			for(int k = 0; k < 5; k++) {
-				pts.add(getRingPoint(cp, k, 5, 1.0, 2.0));
+				pts.add(getRingPoint(cp, 4 - k, 5, 1.0, 2.0));
 			}
-            pts.add(pts.get(0)); // should start and end with the same point
-			// First (outer) ring should be in clockwise point order
+			pts.add(pts.get(0)); // should start and end with the same point
 			LinearRing outerRing = new LinearRing(pts, true);
+			if (!outerRing.clockwise()) System.err.println("First (outer) ring should be in clockwise point order");
 			List<LinearRing> innerRings = new ArrayList<LinearRing>();
 			for(int j = 0; j < 4; j++) {
 				pts = new ArrayList<Point>();
@@ -270,10 +308,10 @@ public class TestShapefileOutput {
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPoint(ircp, k, 5, .24, .2));
 				}
-                pts.add(pts.get(0)); // should start and end with the same point
+				pts.add(pts.get(0)); // should start and end with the same point
 				innerRings.add(new LinearRing(pts, true));
 			}
-			Polygon p = new Polygon(outerRing, innerRings, true);
+			Polygon p = new Polygon(outerRing, innerRings);
 			f.setGeometry(p);
 			buffer.write(f);
 		}
@@ -301,9 +339,9 @@ public class TestShapefileOutput {
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPointZ(cp, k, 5, 1.0, 2.0));
 			}
-            pts.add(pts.get(0)); // should start and end with the same point
+			pts.add(pts.get(0)); // should start and end with the same point
 			// First (outer) ring should be in clockwise point order
-			LinearRing outerRing = new LinearRing(pts);
+			LinearRing outerRing = new LinearRing(pts, true);
 			List<LinearRing> innerRings = new ArrayList<LinearRing>();
 			for(int j = 0; j < 4; j++) {
 				pts = new ArrayList<Point>();
@@ -311,8 +349,8 @@ public class TestShapefileOutput {
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPointZ(ircp, k, 5, .24, .2));
 				}
-                pts.add(pts.get(0)); // should start and end with the same point
-				innerRings.add(new LinearRing(pts));
+				pts.add(pts.get(0)); // should start and end with the same point
+				innerRings.add(new LinearRing(pts, true));
 			}
 			Polygon p = new Polygon(outerRing, innerRings);
 			f.setGeometry(p);
@@ -338,18 +376,18 @@ public class TestShapefileOutput {
 		f.putData(date, new Date());
 		f.setSchema(schema.getId());
 		List<LinearRing> rings = new ArrayList<LinearRing>();
-		// First (outer) ring should be in clockwise point order
 		for(int i = 0; i < 5; i++) {
 			Point cp = getRandomPoint(25.0); // Center of outer poly
 			List<Point> pts = new ArrayList<Point>();
+			// rings must be in clockwise point order
 			for(int k = 0; k < 5; k++) {
-				pts.add(getRingPoint(cp, k, 5, .2, .5));
+				pts.add(getRingPoint(cp, 4 - k, 5, .2, .5));
 			}
-            pts.add(pts.get(0)); // should start and end with the same point
-			LinearRing outerRing = new LinearRing(pts);
+			pts.add(pts.get(0)); // must start and end with the same point
+			LinearRing outerRing = new LinearRing(pts, true);
 			rings.add(outerRing);
 		}
-		MultiLinearRings mring = new MultiLinearRings(rings);
+		MultiLinearRings mring = new MultiLinearRings(rings, true);
 		f.setGeometry(mring);
 		buffer.write(f);
 		SingleShapefileOutputHandler soh =
@@ -374,14 +412,15 @@ public class TestShapefileOutput {
 		for(int i = 0; i < 5; i++) {
 			Point cp = getRandomPoint(25.0); // Center of outer poly
 			List<Point> pts = new ArrayList<Point>();
+			// rings must be in clockwise point order
 			for(int k = 0; k < 5; k++) {
-				pts.add(getRingPointZ(cp, k, 5, 1.0, 2.0));
+				pts.add(getRingPointZ(cp, 4 - k, 5, 1.0, 2.0));
 			}
-            pts.add(pts.get(0)); // should start and end with the same point
-			LinearRing outerRing = new LinearRing(pts);
+			pts.add(pts.get(0)); // should start and end with the same point
+			LinearRing outerRing = new LinearRing(pts, true);
 			rings.add(outerRing);
 		}
-		MultiLinearRings mring = new MultiLinearRings(rings);
+		MultiLinearRings mring = new MultiLinearRings(rings, true);
 		f.setGeometry(mring);
 		buffer.write(f);
 		SingleShapefileOutputHandler soh =
@@ -411,8 +450,8 @@ public class TestShapefileOutput {
 			for(int k = 0; k < sides; k++) {
 				pts.add(getRingPoint(cp, k, sides, 1.0, 2.0));
 			}
-            pts.add(pts.get(0)); // should start and end with the same point
-			LinearRing outerRing = new LinearRing(pts);
+			pts.add(pts.get(0)); // should start and end with the same point
+			LinearRing outerRing = new LinearRing(pts, true);
 			List<LinearRing> innerRings = new ArrayList<LinearRing>();
 			int inners = RandomUtils.nextInt(4) + 1;
 			for(int j = 0; j < inners; j++) {
@@ -421,8 +460,8 @@ public class TestShapefileOutput {
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPoint(ircp, k, 5, .24, .2));
 				}
-                pts.add(pts.get(0)); // should start and end with the same point
-				innerRings.add(new LinearRing(pts));
+				pts.add(pts.get(0)); // should start and end with the same point
+				innerRings.add(new LinearRing(pts, true));
 			}
 			Polygon p = new Polygon(outerRing, innerRings);
 			polys.add(p);
@@ -456,8 +495,8 @@ public class TestShapefileOutput {
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPointZ(cp, k, 5, 2, 1.5));
 			}
-            pts.add(pts.get(0)); // should start and end with the same point
-			LinearRing outerRing = new LinearRing(pts);
+			pts.add(pts.get(0)); // should start and end with the same point
+			LinearRing outerRing = new LinearRing(pts, true);
 			List<LinearRing> innerRings = new ArrayList<LinearRing>();
 			for(int j = 0; j < 4; j++) {
 				pts = new ArrayList<Point>();
@@ -465,8 +504,8 @@ public class TestShapefileOutput {
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPointZ(ircp, k, 5, .24, .2));
 				}
-                pts.add(pts.get(0)); // should start and end with the same point
-				innerRings.add(new LinearRing(pts));
+				pts.add(pts.get(0)); // should start and end with the same point
+				innerRings.add(new LinearRing(pts, true));
 			}
 			Polygon p = new Polygon(outerRing, innerRings);
 			polys.add(p);
@@ -511,7 +550,15 @@ public class TestShapefileOutput {
 	private Point getRandomPoint() {
 		double lat = 40.0 + (5.0 * RandomUtils.nextDouble());
 		double lon = 40.0 + (5.0 * RandomUtils.nextDouble());
-        return new Point(lat, lon);
+		return new Point(lat, lon);
 	}
 
+	private Point getRandomPointZ() {
+		double lat = 40.0 + (5.0 * RandomUtils.nextDouble());
+		double lon = 40.0 + (5.0 * RandomUtils.nextDouble());
+		double elt = RandomUtils.nextInt(200);
+		return new Point(new Geodetic3DPoint(new Longitude(lon, Angle.DEGREES),
+			new Latitude(lat, Angle.DEGREES), elt));
+	}
+    
 }
