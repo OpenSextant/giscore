@@ -77,28 +77,42 @@ public class TestKmlOutputStream extends TestGISBase {
 
 	@Test
 	public void testRingOutput() throws Exception {
-		File file = createTemp("testRingz", ".kml");
+		File file = createTemp("testRings", ".kml");
 		OutputStream fs = null;
 		try {
 			fs = new FileOutputStream(file);
 			IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fs);
 			os.write(new DocumentStart(DocumentType.KML));
-			os.write(new ContainerStart(IKml.DOCUMENT));
+			os.write(new ContainerStart(IKml.FOLDER));
 			//Feature firstFeature = null;
 			for (int i = 0; i < 5; i++) {
 				Point cp = getRandomPoint();
 				Feature f = new Feature();
+                ContainerStart cs = new ContainerStart(IKml.DOCUMENT);
+                cs.setName(Integer.toString(i));
+                os.write(cs);
 				//if (firstFeature == null) firstFeature = f;
 				List<Point> pts = new ArrayList<Point>();
-				pts.add(getRingPoint(cp, 0, 5, .3, .4));
-				pts.add(getRingPoint(cp, 1, 5, .3, .4));
-				pts.add(getRingPoint(cp, 2, 5, .3, .4));
-				pts.add(getRingPoint(cp, 3, 5, .3, .4));
 				pts.add(getRingPoint(cp, 4, 5, .3, .4));
+				pts.add(getRingPoint(cp, 3, 5, .3, .4));
+				pts.add(getRingPoint(cp, 2, 5, .3, .4));
+				pts.add(getRingPoint(cp, 1, 5, .3, .4));
+				pts.add(getRingPoint(cp, 0, 5, .3, .4));
 				pts.add(pts.get(0));
-				LinearRing ring = new LinearRing(pts);
+				LinearRing ring = new LinearRing(pts, true);
+				if (!ring.clockwise()) System.err.println("rings should be in clockwise point order");
 				f.setGeometry(ring);
 				os.write(f);
+				// first and last points same: don't need to output it twice
+				final int npoints = pts.size() - 1;
+				for (int k = 0; k < npoints; k++) {
+					Point pt = pts.get(k);
+					f = new Feature();
+					f.setName(Integer.toString(k));
+					f.setGeometry(pt);
+					os.write(f);
+				}
+				os.write(new ContainerEnd());
 			}
 			os.close();
 
@@ -143,7 +157,7 @@ public class TestKmlOutputStream extends TestGISBase {
 				for (int k = 0; k < 5; k++) {
 					pts.add(getRingPoint(cp, k, 5, 1.0, 2.0));
 				}
-				pts.add(pts.get(0));
+				pts.add(pts.get(0)); // should start and end with the same point
 				LinearRing outerRing = new LinearRing(pts);
 				List<LinearRing> innerRings = new ArrayList<LinearRing>();
 				for (int j = 0; j < 4; j++) {
@@ -257,8 +271,8 @@ public class TestKmlOutputStream extends TestGISBase {
 			boolean ae = sf.approximatelyEquals(tf);
 			
 			if (! ae) {		
-				System.err.println("Expected: " + source);
-				System.err.println("Actual: " + test);
+				System.out.println("Expected: " + source);
+				System.out.println("Actual: " + test);
 				fail("Found unequal objects");
 			}
 		} else {
@@ -267,6 +281,7 @@ public class TestKmlOutputStream extends TestGISBase {
 	}
 
     private InputStream getStream(String filename) throws FileNotFoundException {
+        System.out.println("Test " + filename);
         File file = new File("test/org/mitre/giscore/test/input/" + filename);
         if (file.exists()) return new FileInputStream(file);
         System.out.println("File does not exist: " + file);
