@@ -235,7 +235,7 @@ public class SimpleField implements IDataSerializable {
 	}
 	
 	/**
-	 * @return the length
+	 * @return the length, never null
 	 */
 	public Integer getLength() {
 		if (length != null)
