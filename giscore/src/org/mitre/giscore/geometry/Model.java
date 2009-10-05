@@ -6,10 +6,7 @@ import java.util.List;
 
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.AltitudeModeEnumType;
-import org.mitre.itf.geodesy.Geodetic2DPoint;
-import org.mitre.itf.geodesy.Geodetic3DPoint;
-import org.mitre.itf.geodesy.Geodetic3DBounds;
-import org.mitre.itf.geodesy.Geodetic2DBounds;
+import org.mitre.itf.geodesy.*;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -48,10 +45,10 @@ public class Model extends Geometry {
         if (gp != null) {
             if (gp instanceof Geodetic3DPoint) {
                 is3D = true;
-                bbox = new Geodetic3DBounds((Geodetic3DPoint) gp);
+                bbox = new UnmodifiableGeodetic3DBounds((Geodetic3DPoint) gp);
             } else {
                 is3D = false;
-                bbox = new Geodetic2DBounds(gp);
+                bbox = new UnmodifiableGeodetic2DBounds(gp);
             }
         } else {
             bbox = null;
