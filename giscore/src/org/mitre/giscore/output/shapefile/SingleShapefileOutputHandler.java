@@ -127,7 +127,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Shp file binary stream
 	 */
-	private BinaryOutputStream bos = null;
+	private BinaryOutputStream bos;
 
 	/**
 	 * The mapper, which maps from urls used in the style to integer values used
@@ -343,6 +343,9 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				}
 				if (bbox == null) {
 					bbox = geo.getBoundingBox(); // 3d or not depending on the
+					// must make copy of the bounding box
+					bbox = bbox instanceof Geodetic3DBounds ? new Geodetic3DBounds((Geodetic3DBounds)bbox)
+							: new Geodetic2DBounds(bbox); 
 					// geo
 				} else {
 					bbox.include(geo.getBoundingBox());
