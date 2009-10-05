@@ -155,7 +155,7 @@ public class Point extends GeometryBase {
 	 * @return true if specified Point is equal in value to this Point.
 	 */
 	public boolean equals(Point that) {
-		return pt != null && this.pt.equals(that.pt);
+		return pt == null ? that != null && that.pt == null : this.pt.equals(that.pt);
 	}
 
 	/**
