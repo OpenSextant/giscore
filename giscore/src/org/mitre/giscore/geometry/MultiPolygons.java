@@ -27,6 +27,8 @@ import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic3DBounds;
+import org.mitre.itf.geodesy.UnmodifiableGeodetic3DBounds;
+import org.mitre.itf.geodesy.UnmodifiableGeodetic2DBounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -120,6 +122,9 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
                 else bbox.include(bbox2);
             }
         }
+		// make bbox unmodifiable
+		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds)bbox)
+				: new UnmodifiableGeodetic2DBounds(bbox);
         this.polygonList = polygonList;
 	}
 

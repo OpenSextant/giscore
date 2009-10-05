@@ -25,10 +25,7 @@ import java.util.List;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
-import org.mitre.itf.geodesy.Geodetic2DBounds;
-import org.mitre.itf.geodesy.Geodetic2DPoint;
-import org.mitre.itf.geodesy.Geodetic3DBounds;
-import org.mitre.itf.geodesy.Geodetic3DPoint;
+import org.mitre.itf.geodesy.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -72,7 +69,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
      * @return Iterator over Geodetic2DPoint point objects
      */
     public Iterator<Point> iterator() {
-        return  Collections.unmodifiableList(pointList).iterator();
+        return Collections.unmodifiableList(pointList).iterator();
     }
 
 	/**
@@ -83,7 +80,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
 	 * @return Collection of the point objects.
 	 */
 	public List<Point> getPoints() {
-		return  Collections.unmodifiableList(pointList);
+		return Collections.unmodifiableList(pointList);
 	}
 
     // This method will check that this LinearRing is closed and non-self-intersecting.
@@ -175,6 +172,9 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
                     (lonRad1 == -Math.PI || lonRad2 == -Math.PI)) idlWrap = true;
             gp1 = gp2;
         }
+		// make bbox unmodifiable
+		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds)bbox)
+				: new UnmodifiableGeodetic2DBounds(bbox); 
         pointList = pts;
     }
 
@@ -366,7 +366,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
      * @return String containing Geometry Object type, bounding coordintates, and number of parts
      */
     public String toString() {
-        return "LinearRing within " + bbox + " consists of " + pointList.size() + " Points";
+        return "LinearRing within " + bbox + " consists of " + (pointList == null ? 0 : pointList.size()) + " Points";
     }
     
     public void accept(IStreamVisitor visitor) {

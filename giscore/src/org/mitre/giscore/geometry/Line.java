@@ -25,10 +25,7 @@ import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
-import org.mitre.itf.geodesy.Geodetic2DBounds;
-import org.mitre.itf.geodesy.Geodetic2DPoint;
-import org.mitre.itf.geodesy.Geodetic3DBounds;
-import org.mitre.itf.geodesy.Geodetic3DPoint;
+import org.mitre.itf.geodesy.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -131,6 +128,9 @@ public class Line extends GeometryBase implements Iterable<Point> {
                     (lonRad1 == -Math.PI || lonRad2 == -Math.PI)) idlWrap = true;
             gp1 = gp2;
         }
+		// make bbox unmodifiable
+		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds)bbox)
+				: new UnmodifiableGeodetic2DBounds(bbox);
         pointList = pts;
 	}
 

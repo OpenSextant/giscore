@@ -23,14 +23,7 @@ import java.util.List;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
-import org.mitre.itf.geodesy.Angle;
-import org.mitre.itf.geodesy.GeoPoint;
-import org.mitre.itf.geodesy.Geodetic2DBounds;
-import org.mitre.itf.geodesy.Geodetic2DPoint;
-import org.mitre.itf.geodesy.Geodetic3DBounds;
-import org.mitre.itf.geodesy.Geodetic3DPoint;
-import org.mitre.itf.geodesy.Latitude;
-import org.mitre.itf.geodesy.Longitude;
+import org.mitre.itf.geodesy.*;
 
 /**
  * The Point class represents a single Geodetic point (Geodetic2DPoint or
@@ -105,10 +98,10 @@ public class Point extends GeometryBase {
 			throw new IllegalArgumentException("Point must not be null");
 		if (gp instanceof Geodetic3DPoint) {
 			is3D = true;
-			bbox = new Geodetic3DBounds((Geodetic3DPoint) gp);
+			bbox = new UnmodifiableGeodetic3DBounds((Geodetic3DPoint) gp);
 		} else if (gp instanceof Geodetic2DPoint) {
 			is3D = false;
-			bbox = new Geodetic2DBounds((Geodetic2DPoint) gp);
+			bbox = new UnmodifiableGeodetic2DBounds((Geodetic2DPoint) gp);
 		} else
 			throw new IllegalArgumentException("Point must be in Geodetic form");
 		pt = (Geodetic2DPoint) gp;
