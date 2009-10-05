@@ -27,6 +27,8 @@ import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.*;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 
 /**
  * The Geometry abstract class is the basis for all geometric objects in the
@@ -144,6 +146,30 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 *         and number of parts.
 	 */
 	public abstract String toString();
+
+	/**
+	 * This method using reflection to determine whether two Geometries are equal.
+	 *
+	 * @param obj
+	 *            Geometry to compare against this one.
+	 * @return true if specified Geometry is equal in value to this Geometry.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		return EqualsBuilder.reflectionEquals(this, obj);
+	}
+
+	/**
+	 * This method returns a hash code for this Geometry object
+	 * using reflection to compute aggregate hashCode of its
+	 * non-static and non-transient fields and those of it superclasses. 
+	 *
+	 * @return a hash code value for this object.
+	 */
+	@Override
+	public int hashCode() {
+		return HashCodeBuilder.reflectionHashCode(this);
+	}
 
 	/*
 	 * (non-Javadoc)
