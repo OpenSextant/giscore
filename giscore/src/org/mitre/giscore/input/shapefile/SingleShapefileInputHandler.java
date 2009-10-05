@@ -82,12 +82,12 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	/**
 	 * Schema, derived from the read dbf file
 	 */
-	private Schema schema = null;
+	private Schema schema;
 
 	/**
 	 * Style derived from the shm file if present
 	 */
-	private Style style = null;
+	private Style style;
 
 	/*
 	 * Files that hold the essential information for the shapefile.
@@ -114,7 +114,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 
 	public SingleShapefileInputHandler(File inputDirectory, String shapefilename)
 			throws URISyntaxException, IOException {
-		if (inputDirectory == null || inputDirectory.exists() == false) {
+		if (inputDirectory == null || !inputDirectory.exists()) {
 			throw new IllegalArgumentException(
 					"Input directory must exist and be non-null");
 		}
@@ -129,11 +129,11 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 		shpFile = new File(inputDirectory, shapefilename + ".shp");
 		prjFile = new File(inputDirectory, shapefilename + ".prj");
 
-		if (dbfFile.exists() == false) {
+		if (!dbfFile.exists()) {
 			throw new IllegalArgumentException(
 					"DBF file missing for shapefile " + shapefilename);
 		}
-		if (shpFile.exists() == false) {
+		if (!shpFile.exists()) {
 			throw new IllegalArgumentException(
 					"SHP file missing for shapefile " + shapefilename);
 		}
@@ -163,7 +163,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	 * Check contents of the prj file to
 	 * 
 	 * @param prjFile
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs 
 	 * @throws UnsupportedEncodingException 
 	 */
 	private void checkPrj(File prjFile) throws IOException {
@@ -191,17 +191,22 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 		}
 	}
 
+	/**
+	 * Closes this input stream and releases any system resources 
+     * associated with the stream.
+	 * @throws RuntimeException if an I/O error occurs  
+	 */
 	public void close() {
 		if (stream != null)
 			try {
 				stream.close();
 			} catch (IOException e) {
-				throw new RuntimeException("Problem closing shp stream");
+				throw new RuntimeException("Problem closing shp stream", e);
 			}
-		if (dbf != null)
+		if (dbf != null) {
 			dbf.close();
-
-		dbf = null;
+			dbf = null;
+		}
 		stream = null;
 	}
 
@@ -217,7 +222,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	 * Read the next feature from the shapefile. A shapefile will contain a 
 	 * uniform set of geometry features. 
 	 * @return the next feature or <code>null</code> if we are done.
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs 
 	 */
     private IGISObject readNext() throws IOException {
     	Feature f = (Feature) dbf.read();
@@ -275,8 +280,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 
 	/**
 	 * Read the header from the stream
-	 * @param stream
-	 * @throws IOException 
+	 * @throws IOException
 	 * @throws IllegalArgumentException 
 	 */
 	private void readHeader() throws IllegalArgumentException, IOException {
@@ -370,8 +374,8 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         double[] x = new double[nPoints];
         double[] y = new double[nPoints];
         for (int i = 0; i < nPoints; i++) {
-            x[i] = stream.readDouble(ByteOrder.LITTLE_ENDIAN);
-            y[i] = stream.readDouble(ByteOrder.LITTLE_ENDIAN);
+            x[i] = stream.readDouble(ByteOrder.LITTLE_ENDIAN); // Longitude
+            y[i] = stream.readDouble(ByteOrder.LITTLE_ENDIAN); // Latitude
         }
         // If 3D, read the Z bounds + values and skip over rest of record (M bounds and values)
         if (is3D) {
