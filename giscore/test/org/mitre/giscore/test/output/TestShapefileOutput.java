@@ -36,6 +36,7 @@ import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.test.TestGISBase;
 import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
 import org.mitre.itf.geodesy.Longitude;
@@ -43,7 +44,7 @@ import org.mitre.itf.geodesy.Angle;
 import org.mitre.itf.geodesy.Latitude;
 import static junit.framework.Assert.assertEquals;
 
-public class TestShapefileOutput {
+public class TestShapefileOutput extends TestGISBase {
 
     private static final File shapeOutputDir = new File("testOutput/shptest");
 
@@ -95,6 +96,8 @@ public class TestShapefileOutput {
 			f.setSchema(schema.getId());
 			Point point = getRandomPoint();
 			pts.add(point);
+			//System.out.format("Point-%d: %f %f%n", i, point.getCenter().getLongitude().inDegrees(),
+					//point.getCenter().getLatitude().inDegrees()); // debug
 			f.setGeometry(point);
 			buffer.write(f);
 		}
@@ -200,7 +203,7 @@ public class TestShapefileOutput {
 		f.setSchema(schema.getId());
 		List<Line> lines = new ArrayList<Line>();
 		for(int i = 0; i < 5; i++) {
-			List<Point> pts = new ArrayList<Point>();
+			List<Point> pts = new ArrayList<Point>(2);
 			pts.add(getRandomPoint());
 			pts.add(getRandomPoint());
 			Line line = new Line(pts);
@@ -223,28 +226,68 @@ public class TestShapefileOutput {
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
 		ObjectBuffer buffer = new ObjectBuffer();
+		List<LinearRing> rings = new ArrayList<LinearRing>(5);
 		for(int i = 0; i < 5; i++) {
 			Point cp = getRandomPoint();
 			Feature f = new Feature();
 			f.putData(id, "id " + i);
 			f.putData(date, new Date());
 			f.setSchema(schema.getId());
-			List<Point> pts = new ArrayList<Point>();
+			List<Point> pts = new ArrayList<Point>(5);
 			pts.add(getRingPoint(cp, 4, 5, .3, .4));
 			pts.add(getRingPoint(cp, 3, 5, .3, .4));
 			pts.add(getRingPoint(cp, 2, 5, .3, .4));
 			pts.add(getRingPoint(cp, 1, 5, .3, .4));
 			pts.add(getRingPoint(cp, 0, 5, .3, .4));
 			pts.add(pts.get(0)); // should start and end with the same point
+
 			LinearRing ring = new LinearRing(pts, true);
-			if (!ring.clockwise()) System.err.println("rings must be in clockwise point order");
+			/*
+			//debug
+            System.out.println("\nRing-" + i +" " + ring + " " + Integer.toHexString(ring.hashCode()));
+            for (Point pt : pts) System.out.format("%f %f%n", pt.getCenter().getLongitude().inDegrees(), pt.getCenter().getLatitude().inDegrees());
+			// end debug
+			*/
+			if (!ring.clockwise()) System.out.println("rings must be in clockwise point order");
 			f.setGeometry(ring);
+			rings.add(ring);
 			buffer.write(f);
 		}
+
 		SingleShapefileOutputHandler soh =
 			new SingleShapefileOutputHandler(schema, null, buffer,
                     shapeOutputDir, "rings", null);
 		soh.process();
+
+		// now read shape file back in and test against what we wrote
+		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shapeOutputDir, "rings");
+		IGISObject ob = handler.read();
+		assertTrue(ob instanceof Schema);
+
+		int count = 0;
+		while((ob = handler.read()) != null) {
+			assertTrue(ob instanceof Feature);
+			Feature f = (Feature)ob;
+			Geometry geom = f.getGeometry();
+			// reader turns ring into MultiPolygons with single Polygon having single outer ring
+			//System.out.println("Import ring-" + count);
+			LinearRing expring = rings.get(count);
+			if (geom instanceof MultiPolygons) {
+				LinearRing ring = ((MultiPolygons) (geom)).getPolygons().iterator().next().getOuterRing();
+				if (!ring.clockwise()) System.out.println("imported rings must be in clockwise point order");
+				/*
+				for (Point pt : ring) {
+					System.out.format("%f %f%n", pt.getCenter().getLongitude().inDegrees(), pt.getCenter().getLatitude().inDegrees());
+				}
+				System.out.println("Expected=" + expring + " " + Integer.toHexString(expring.hashCode()));
+				System.out.println("  Actual=" + ring + " " + Integer.toHexString(ring.hashCode()));
+				*/
+				assertEquals(expring, ring);
+			}
+			else assertEquals(expring, geom);
+			count++;
+		}
+		assertEquals(rings.size(), count);
 	}
 	
 	@Test public void testRingZOutput() throws Exception {
@@ -362,7 +405,6 @@ public class TestShapefileOutput {
 		soh.process();
 	}	
 	
-	
 	@Test public void testMultiRingOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -475,7 +517,6 @@ public class TestShapefileOutput {
 		soh.process();
 	}
 	
-	
 	@Test public void testMultiPolyZOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -529,28 +570,6 @@ public class TestShapefileOutput {
 		Point pt = new Point(lat + dy, lon + dx, true);
 		pt.setAltitudeMode(AltitudeModeEnumType.absolute);
 		return pt;
-	}
-
-	private Point getRingPoint(Point cp, int n, int total, double size, double min) {
-		double lat = cp.getCenter().getLatitude().inDegrees();
-		double lon = cp.getCenter().getLongitude().inDegrees();
-		double theta = Math.toRadians(360.0 * n / total);
-		double magnitude = min + RandomUtils.nextDouble() * size;
-		double dy = magnitude * Math.sin(theta);
-		double dx = magnitude * Math.cos(theta);
-		return new Point(lat + dy, lon + dx);
-	}
-	
-	private Point getRandomPoint(double radius) {
-		double lat = 40.0 + (radius * RandomUtils.nextDouble());
-		double lon = 40.0 + (radius * RandomUtils.nextDouble());
-		return new Point(lat, lon);
-	}
-	
-	private Point getRandomPoint() {
-		double lat = 40.0 + (5.0 * RandomUtils.nextDouble());
-		double lon = 40.0 + (5.0 * RandomUtils.nextDouble());
-		return new Point(lat, lon);
 	}
 
 	private Point getRandomPointZ() {
