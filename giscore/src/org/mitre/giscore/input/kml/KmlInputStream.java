@@ -123,7 +123,9 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Allow timestamps to omit seconds field. Strict XML schema validation requires seconds field
  * in the dateTime (YYYY-MM-DDThh:mm:ssZ) format but Google Earth is lax in its rules.
- * Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC. 
+ * Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC.
+ * <p>
+ * gx:altitudeMode isn't handled on Geometries so altitudes may be wrong
  *
  * @author DRAND
  * @author J.Mathews
@@ -143,6 +145,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private static final Set<String> ms_geometries = new HashSet<String>();
 	private Map<String, String> schemaAliases;
 	private Map<String, Schema> schemata = new HashMap<String, Schema>();
+
+	// stores current altitudeMode value for last geometry parsed 
+	private transient String altitudeMode;
 
 	private static final List<SimpleDateFormat> ms_dateFormats = new ArrayList<SimpleDateFormat>(6);
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
@@ -1768,63 +1773,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	@SuppressWarnings("unchecked")
 	private Geometry handleGeometry(StartElement sl) throws XMLStreamException {
 		QName name = sl.getName();
-		String localname = name.getLocalPart();
+		String localname = name.getLocalPart();		
+		// note: gx:altitudeMode may be found within geometry elements but doesn't appear to affect parsing
 		if (localname.equals(POINT)) {
 			return parseCoordinate(name);
-		} else if (localname.equals(LINE_STRING)) {
-			List<Point> coords = parseCoordinates(name);
-            if (coords.size() == 1) {
-                Point pt = coords.get(0); 
-                log.warn("line with single coordinate converted to point: " + pt);
-                return pt;
-            }
-			else return new Line(coords);
-		} else if (localname.equals(LINEAR_RING)) {
-			List<Point> coords = parseCoordinates(name);
-            if (coords.size() == 1) {
-                Point pt = coords.get(0);
-                log.warn("ring with single coordinate converted to point: " + pt);
-                return pt;
-            } else if (coords.size() != 0 && coords.size() < 4) {
-                log.warn("ring with " + coords.size()+ " coordinates converted to line: " + coords);
-                return new Line(coords);
-            }
-			else return new LinearRing(coords);
-		} else if (localname.equals(POLYGON)) {
-			// Contains two linear rings
-			LinearRing outer = null;
-			List<LinearRing> inners = new ArrayList<LinearRing>();
-			while (true) {
-				XMLEvent event = stream.nextEvent();
-				if (foundEndTag(event, name)) {
-					break;
-				}
-				if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
-					StartElement se = event.asStartElement();
-					QName qname = se.getName();
-					String sename = qname.getLocalPart();
-					if (sename.equals(OUTER_BOUNDARY_IS)) {
-						List<Point> coords = parseCoordinates(qname);
-                        if (coords.size() == 1) {
-                            Point pt = coords.get(0);
-                            log.warn("polygon with single coordinate converted to point: " + pt);
-                            return pt;
-                        } else if (coords.size() != 0 && coords.size() < 4) {
-                            log.warn("polygon with " + coords.size()+ " coordinates converted to line: " + coords);
-                            return new Line(coords);
-                        }
-						outer = new LinearRing(coords);
-					} else if (sename.equals(INNER_BOUNDARY_IS)) {
-						List<Point> coords = parseCoordinates(qname);
-						inners.add(new LinearRing(coords));
-					}
-				}
-			}
-			if (outer == null) {
-				throw new IllegalStateException("Bad poly found, no outer ring");
-			}
-
-			return new Polygon(outer, inners);
 		} else if (localname.equals(MULTI_GEOMETRY)) {
 			List<Geometry> geometries = new ArrayList<Geometry>();
 			while (true) {
@@ -1889,11 +1841,80 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				}                        
             }
             return model;
+		} else {
+			// otherwise try LineString, LinearRing, Polygon
+			altitudeMode = null; // reset altitudeMode for next geometry
+			GeometryBase geom = getGeometryBase(name, localname);
+			if (geom != null && altitudeMode != null) {
+				geom.setAltitudeMode(altitudeMode);
+			}
+			return geom;
 		}
-		return null; // Default
 	}
 
-    private Geodetic2DPoint parseLocation(QName qname) throws XMLStreamException {
+	private GeometryBase getGeometryBase(QName name, String localname) throws XMLStreamException {
+		if (localname.equals(LINE_STRING)) {
+			List<Point> coords = parseCoordinates(name);
+            if (coords.size() == 1) {
+                Point pt = coords.get(0);
+                log.warn("line with single coordinate converted to point: " + pt);
+                return pt;
+            }
+			else return new Line(coords);
+		} else if (localname.equals(LINEAR_RING)) {
+			List<Point> coords = parseCoordinates(name);
+            if (coords.size() == 1) {
+                Point pt = coords.get(0);
+                log.warn("ring with single coordinate converted to point: " + pt);
+                return pt;
+            } else if (coords.size() != 0 && coords.size() < 4) {
+                log.warn("ring with " + coords.size()+ " coordinates converted to line: " + coords);
+                return new Line(coords);
+            }
+			else return new LinearRing(coords);
+		} else if (localname.equals(POLYGON)) {
+			// Contains two linear rings
+			LinearRing outer = null;
+			List<LinearRing> inners = new ArrayList<LinearRing>();
+			while (true) {
+				XMLEvent event = stream.nextEvent();
+				if (foundEndTag(event, name)) {
+					break;
+				}
+				if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
+					StartElement se = event.asStartElement();
+					QName qname = se.getName();
+					String sename = qname.getLocalPart();
+					if (sename.equals(OUTER_BOUNDARY_IS)) {
+						List<Point> coords = parseCoordinates(qname);
+                        if (coords.size() == 1) {
+                            Point pt = coords.get(0);
+                            log.warn("polygon with single coordinate converted to point: " + pt);
+                            return pt;
+                        } else if (coords.size() != 0 && coords.size() < 4) {
+                            log.warn("polygon with " + coords.size()+ " coordinates converted to line: " + coords);
+                            return new Line(coords);
+                        }
+						outer = new LinearRing(coords);
+					} else if (sename.equals(INNER_BOUNDARY_IS)) {
+						List<Point> coords = parseCoordinates(qname);
+						inners.add(new LinearRing(coords));
+					} else if (sename.equals(ALTITUDE_MODE)) {
+						altitudeMode = getNonEmptyElementText(); 
+					}
+				}
+			}
+			if (outer == null) {
+				throw new IllegalStateException("Bad poly found, no outer ring");
+			}
+
+			return new Polygon(outer, inners);
+		}
+		
+		return null;
+	}
+
+	private Geodetic2DPoint parseLocation(QName qname) throws XMLStreamException {
         Latitude latitude = null;
         Longitude longitude = null;
         Double altitude = null;
@@ -1958,12 +1979,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (foundEndTag(event, name)) {
 				break;
 			}
-			if (event.getEventType() == XMLStreamReader.START_ELEMENT &&
-					COORDINATES.equals(event.asStartElement().getName().getLocalPart())) {
-				String text = getNonEmptyElementText();
-				if (text != null) rval = parseCoord(text);
-				skipNextElement(stream, name);
-				break;
+			// TODO: gx:altitudeMode isn't handled
+			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
+				String localPart = event.asStartElement().getName().getLocalPart();
+				if (COORDINATES.equals(localPart)) {
+					String text = getNonEmptyElementText();
+					if (text != null) rval = parseCoord(text);
+					skipNextElement(stream, name);
+					break;
+				}
+				else if (ALTITUDE_MODE.equals(localPart)) {
+					altitudeMode = getNonEmptyElementText();
+				}
 			}
 		}
 		if (rval == null) rval = Collections.emptyList();
@@ -1982,22 +2009,30 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 */
 	private Point parseCoordinate(QName name) throws XMLStreamException {
 		Point rval = null;
+		String altitudeMode = null;
 		while (true) {
 			XMLEvent event = stream.nextEvent();
 			if (foundEndTag(event, name)) {
 				break;
 			}
-			if (event.getEventType() == XMLStreamReader.START_ELEMENT &&
-					COORDINATES.equals(event.asStartElement().getName().getLocalPart())) {
-				String text = getNonEmptyElementText();
-				// allow sloppy KML with whitespace appearing before/after
-				// lat and lon values; e.g. <coordinates>-121.9921875, 37.265625</coordinates>
-				// http://kml-samples.googlecode.com/svn/trunk/kml/ListStyle/radio-folder-vis.kml
-				if (text != null) rval = parsePointCoord(text);
-				skipNextElement(stream, name);
-				break;
+			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
+				String localPart = event.asStartElement().getName().getLocalPart();
+				if (COORDINATES.equals(localPart)) {
+					String text = getNonEmptyElementText();
+					// allow sloppy KML with whitespace appearing before/after
+					// lat and lon values; e.g. <coordinates>-121.9921875, 37.265625</coordinates>
+					// http://kml-samples.googlecode.com/svn/trunk/kml/ListStyle/radio-folder-vis.kml
+					if (text != null) rval = parsePointCoord(text);
+					skipNextElement(stream, name);
+					break;
+				}
+				 else if (ALTITUDE_MODE.equals(localPart)) {
+					altitudeMode = getNonEmptyElementText();					
+				}
 			}
 		}
+		if (rval != null && altitudeMode != null)
+			rval.setAltitudeMode(altitudeMode);
 		return rval;
 	}
 
