@@ -1688,7 +1688,15 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			}
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 				StartElement se = event.asStartElement();
-				String sename = se.getName().getLocalPart();
+				QName name = se.getName();
+				// ignore extension elements. don't know how to parse inside them yet
+				// e.g. http://www.google.com/kml/ext/2.2
+				String ns = name.getNamespaceURI();
+				if (ns != null && ns.startsWith("http://www.google.com/kml/ext/")) {
+					skipNextElement(stream, name);
+					continue;
+				}
+				String sename = name.getLocalPart();
 				String value = getNonEmptyElementText();
                 // ignore empty elements; e.g. <Icon><href /></Icon>
                 if (value != null)
