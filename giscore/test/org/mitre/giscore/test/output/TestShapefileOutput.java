@@ -20,7 +20,9 @@ package org.mitre.giscore.test.output;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -106,32 +108,22 @@ public class TestShapefileOutput extends TestGISBase {
                     shapeOutputDir, "points", null);
 		soh.process();
 
-		// now read shape file back in and test against what we wrote
-		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shapeOutputDir, "points");
-		IGISObject ob = handler.read();
-		assertTrue(ob instanceof Schema);
-		int count = 0;
-		while((ob = handler.read()) != null) {
-			assertTrue(ob instanceof Feature);
-			Feature f = (Feature)ob;
-			Geometry geom = f.getGeometry();
-			assertEquals(pts.get(count), geom);
-			count++;
-		}
-		assertEquals(5, count);
+		verifyGeometry(pts, "points");		
 	}
 
-    @Test public void testPointzOutput() throws Exception {
+	@Test public void testPointzOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
 		id.setLength(10);
 		schema.put(id);
 		ObjectBuffer buffer = new ObjectBuffer();
+		List<Point> pts = new ArrayList<Point>(5);
 		for(int i = 0; i < 5; i++) {
 			Feature f = new Feature();
 			f.putData(id, "id " + i);
 			f.setSchema(schema.getId());
 			Point point = getRandomPointZ();
+			pts.add(point);
 			f.setGeometry(point);
 			buffer.write(f);
 		}
@@ -139,6 +131,10 @@ public class TestShapefileOutput extends TestGISBase {
 			new SingleShapefileOutputHandler(schema, null, buffer,
                     shapeOutputDir, "pointz", null);
 		soh.process();
+
+		// verifyGeometry(pts, "pointz");
+		// java.io.IOException: Shapefile contains badly formatted record
+		// at org.mitre.giscore.input.shapefile.SingleShapefileInputHandler.getGeometry(SingleShapefileInputHandler.java:248)
 	}
 	
 	@Test public void testMultiPointOutput() throws Exception {
@@ -150,7 +146,7 @@ public class TestShapefileOutput extends TestGISBase {
 		Feature f = new Feature();
 		f.putData(id, "id multipoint");
 		f.setSchema(schema.getId());
-		List<Point> pts = new ArrayList<Point>();
+		List<Point> pts = new ArrayList<Point>(5);
 		for(int i = 0; i < 5; i++) {
 			Point point = getRandomPoint();
 			pts.add(point);
@@ -171,22 +167,59 @@ public class TestShapefileOutput extends TestGISBase {
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
 		ObjectBuffer buffer = new ObjectBuffer();
+		List<Line> lines = new ArrayList<Line>(5);
 		for(int i = 0; i < 5; i++) {
 			Feature f = new Feature();
 			f.putData(id, "id " + i);
 			f.putData(date, new Date());
 			f.setSchema(schema.getId());
-			List<Point> pts = new ArrayList<Point>();
+			List<Point> pts = new ArrayList<Point>(2);
 			pts.add(getRandomPoint());
 			pts.add(getRandomPoint());
 			Line line = new Line(pts);
 			f.setGeometry(line);
+			lines.add(line);
 			buffer.write(f);
 		}
 		SingleShapefileOutputHandler soh =
 			new SingleShapefileOutputHandler(schema, null, buffer,
                     shapeOutputDir, "lines", null);
 		soh.process();
+
+		verifyGeometry(lines, "lines");
+	}
+
+	@Test public void testLinezOutput() throws Exception {
+		System.out.println("Test linez");
+		Schema schema = new Schema(new URI("urn:test"));
+		SimpleField id = new SimpleField("testid");
+		id.setLength(10);
+		schema.put(id);
+		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
+		schema.put(date);
+		ObjectBuffer buffer = new ObjectBuffer();
+		List<Line> lines = new ArrayList<Line>(5);
+		for(int i = 0; i < 5; i++) {
+			Feature f = new Feature();
+			f.putData(id, "id " + i);
+			f.putData(date, new Date());
+			f.setSchema(schema.getId());
+			List<Point> pts = new ArrayList<Point>(2);
+			pts.add(getRandomPointZ());
+			pts.add(getRandomPointZ());
+			Line line = new Line(pts);
+			f.setGeometry(line);
+			lines.add(line);
+			buffer.write(f);
+		}
+		SingleShapefileOutputHandler soh =
+			new SingleShapefileOutputHandler(schema, null, buffer,
+                    shapeOutputDir, "linez", null);
+		soh.process();
+
+		// verifyGeometry(lines, "linez");
+		// java.io.IOException: Shapefile contains record with unexpected shape type 1078346337, expecting 13
+		// 	at org.mitre.giscore.input.shapefile.SingleShapefileInputHandler.getGeometry(SingleShapefileInputHandler.java:253)
 	}
 	
 	@Test public void testMultiLineOutput() throws Exception {
@@ -201,7 +234,7 @@ public class TestShapefileOutput extends TestGISBase {
 		f.putData(id, "id multiline");
 		f.putData(date, new Date());
 		f.setSchema(schema.getId());
-		List<Line> lines = new ArrayList<Line>();
+		List<Line> lines = new ArrayList<Line>(5);
 		for(int i = 0; i < 5; i++) {
 			List<Point> pts = new ArrayList<Point>(2);
 			pts.add(getRandomPoint());
@@ -233,7 +266,7 @@ public class TestShapefileOutput extends TestGISBase {
 			f.putData(id, "id " + i);
 			f.putData(date, new Date());
 			f.setSchema(schema.getId());
-			List<Point> pts = new ArrayList<Point>(5);
+			List<Point> pts = new ArrayList<Point>(6);
 			pts.add(getRingPoint(cp, 4, 5, .3, .4));
 			pts.add(getRingPoint(cp, 3, 5, .3, .4));
 			pts.add(getRingPoint(cp, 2, 5, .3, .4));
@@ -260,34 +293,7 @@ public class TestShapefileOutput extends TestGISBase {
 		soh.process();
 
 		// now read shape file back in and test against what we wrote
-		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shapeOutputDir, "rings");
-		IGISObject ob = handler.read();
-		assertTrue(ob instanceof Schema);
-
-		int count = 0;
-		while((ob = handler.read()) != null) {
-			assertTrue(ob instanceof Feature);
-			Feature f = (Feature)ob;
-			Geometry geom = f.getGeometry();
-			// reader turns ring into MultiPolygons with single Polygon having single outer ring
-			//System.out.println("Import ring-" + count);
-			LinearRing expring = rings.get(count);
-			if (geom instanceof MultiPolygons) {
-				LinearRing ring = ((MultiPolygons) (geom)).getPolygons().iterator().next().getOuterRing();
-				if (!ring.clockwise()) System.out.println("imported rings must be in clockwise point order");
-				/*
-				for (Point pt : ring) {
-					System.out.format("%f %f%n", pt.getCenter().getLongitude().inDegrees(), pt.getCenter().getLatitude().inDegrees());
-				}
-				System.out.println("Expected=" + expring + " " + Integer.toHexString(expring.hashCode()));
-				System.out.println("  Actual=" + ring + " " + Integer.toHexString(ring.hashCode()));
-				*/
-				assertEquals(expring, ring);
-			}
-			else assertEquals(expring, geom);
-			count++;
-		}
-		assertEquals(rings.size(), count);
+		verifyGeometry(rings, "rings");
 	}
 	
 	@Test public void testRingZOutput() throws Exception {
@@ -304,7 +310,7 @@ public class TestShapefileOutput extends TestGISBase {
 			f.putData(id, "id " + i);
 			f.putData(date, new Date());
 			f.setSchema(schema.getId());
-			List<Point> pts = new ArrayList<Point>();
+			List<Point> pts = new ArrayList<Point>(6);
 			pts.add(getRingPointZ(cp, 4, 5, .3, .4));
 			pts.add(getRingPointZ(cp, 3, 5, .3, .4));
 			pts.add(getRingPointZ(cp, 2, 5, .3, .4));
@@ -337,16 +343,16 @@ public class TestShapefileOutput extends TestGISBase {
 			f.putData(id, "id " + i);
 			f.putData(date, new Date());
 			f.setSchema(schema.getId());
-			List<Point> pts = new ArrayList<Point>();
+			List<Point> pts = new ArrayList<Point>(6);
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPoint(cp, 4 - k, 5, 1.0, 2.0));
 			}
 			pts.add(pts.get(0)); // should start and end with the same point
 			LinearRing outerRing = new LinearRing(pts, true);
 			if (!outerRing.clockwise()) System.err.println("First (outer) ring should be in clockwise point order");
-			List<LinearRing> innerRings = new ArrayList<LinearRing>();
+			List<LinearRing> innerRings = new ArrayList<LinearRing>(4);
 			for(int j = 0; j < 4; j++) {
-				pts = new ArrayList<Point>();
+				pts = new ArrayList<Point>(6);
 				Point ircp = getRingPoint(cp, j, 4, .5, 1.0);
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPoint(ircp, k, 5, .24, .2));
@@ -378,16 +384,16 @@ public class TestShapefileOutput extends TestGISBase {
 			f.putData(id, "id polyz " + i);
 			f.putData(date, new Date());
 			f.setSchema(schema.getId());
-			List<Point> pts = new ArrayList<Point>();
+			List<Point> pts = new ArrayList<Point>(6);
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPointZ(cp, k, 5, 1.0, 2.0));
 			}
 			pts.add(pts.get(0)); // should start and end with the same point
 			// First (outer) ring should be in clockwise point order
 			LinearRing outerRing = new LinearRing(pts, true);
-			List<LinearRing> innerRings = new ArrayList<LinearRing>();
+			List<LinearRing> innerRings = new ArrayList<LinearRing>(4);
 			for(int j = 0; j < 4; j++) {
-				pts = new ArrayList<Point>();
+				pts = new ArrayList<Point>(6);
 				Point ircp = getRingPointZ(cp, j, 4, .5, 1.0);
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPointZ(ircp, k, 5, .24, .2));
@@ -417,10 +423,10 @@ public class TestShapefileOutput extends TestGISBase {
 		f.putData(id, "id multiring");
 		f.putData(date, new Date());
 		f.setSchema(schema.getId());
-		List<LinearRing> rings = new ArrayList<LinearRing>();
+		List<LinearRing> rings = new ArrayList<LinearRing>(5);
 		for(int i = 0; i < 5; i++) {
 			Point cp = getRandomPoint(25.0); // Center of outer poly
-			List<Point> pts = new ArrayList<Point>();
+			List<Point> pts = new ArrayList<Point>(6);
 			// rings must be in clockwise point order
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPoint(cp, 4 - k, 5, .2, .5));
@@ -450,10 +456,10 @@ public class TestShapefileOutput extends TestGISBase {
 		f.putData(id, "id multiringz");
 		f.putData(date, new Date());
 		f.setSchema(schema.getId());
-		List<LinearRing> rings = new ArrayList<LinearRing>();
+		List<LinearRing> rings = new ArrayList<LinearRing>(5);
 		for(int i = 0; i < 5; i++) {
 			Point cp = getRandomPoint(25.0); // Center of outer poly
-			List<Point> pts = new ArrayList<Point>();
+			List<Point> pts = new ArrayList<Point>(6);
 			// rings must be in clockwise point order
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPointZ(cp, 4 - k, 5, 1.0, 2.0));
@@ -483,21 +489,21 @@ public class TestShapefileOutput extends TestGISBase {
 		f.putData(id, "id multipoly");
 		f.putData(date, new Date());
 		f.setSchema(schema.getId());
-		List<Polygon> polys = new ArrayList<Polygon>();
+		List<Polygon> polys = new ArrayList<Polygon>(4);
 		for(int i = 0; i < 4; i++) {
 			Point cp = getRandomPoint(25.0); // Center of outer poly
-			List<Point> pts = new ArrayList<Point>();
 			int sides = RandomUtils.nextInt(4) + 4;
+			List<Point> pts = new ArrayList<Point>(sides + 1);
 			// First (outer) ring should be in clockwise point order
 			for(int k = 0; k < sides; k++) {
 				pts.add(getRingPoint(cp, k, sides, 1.0, 2.0));
 			}
 			pts.add(pts.get(0)); // should start and end with the same point
 			LinearRing outerRing = new LinearRing(pts, true);
-			List<LinearRing> innerRings = new ArrayList<LinearRing>();
 			int inners = RandomUtils.nextInt(4) + 1;
+			List<LinearRing> innerRings = new ArrayList<LinearRing>(inners);
 			for(int j = 0; j < inners; j++) {
-				pts = new ArrayList<Point>();
+				pts = new ArrayList<Point>(6);
 				Point ircp = getRingPoint(cp, j, inners, .5, 1.0);
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPoint(ircp, k, 5, .24, .2));
@@ -529,18 +535,18 @@ public class TestShapefileOutput extends TestGISBase {
 		f.putData(id, "id multipolyz");
 		f.putData(date, new Date());
 		f.setSchema(schema.getId());
-		List<Polygon> polys = new ArrayList<Polygon>();
+		List<Polygon> polys = new ArrayList<Polygon>(5);
 		for(int i = 0; i < 5; i++) {
 			Point cp = getRandomPoint(25.0); // Center of outer poly
-			List<Point> pts = new ArrayList<Point>();
+			List<Point> pts = new ArrayList<Point>(6);
 			for(int k = 0; k < 5; k++) {
 				pts.add(getRingPointZ(cp, k, 5, 2, 1.5));
 			}
 			pts.add(pts.get(0)); // should start and end with the same point
 			LinearRing outerRing = new LinearRing(pts, true);
-			List<LinearRing> innerRings = new ArrayList<LinearRing>();
+			List<LinearRing> innerRings = new ArrayList<LinearRing>(4);
 			for(int j = 0; j < 4; j++) {
-				pts = new ArrayList<Point>();
+				pts = new ArrayList<Point>(6);
 				Point ircp = getRingPointZ(cp, j, 4, .5, 1.0);
 				for(int k = 0; k < 5; k++) {
 					pts.add(getRingPointZ(ircp, k, 5, .24, .2));
@@ -578,6 +584,54 @@ public class TestShapefileOutput extends TestGISBase {
 		double elt = RandomUtils.nextInt(200);
 		return new Point(new Geodetic3DPoint(new Longitude(lon, Angle.DEGREES),
 			new Latitude(lat, Angle.DEGREES), elt));
+	}
+
+	private void verifyGeometry(List<? extends Geometry> geometries, String file) throws IOException, URISyntaxException {
+		// now read shape file back in and test against what we wrote
+		System.out.println("Verify " + file);
+		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shapeOutputDir, file);
+		try {
+			IGISObject ob = handler.read();
+			assertTrue(ob instanceof Schema);
+			int count = 0;
+			while((ob = handler.read()) != null) {
+				assertTrue(ob instanceof Feature);
+				Feature f = (Feature)ob;
+				Geometry geom = f.getGeometry();
+				Geometry expectedGeom = geometries.get(count);
+				// flatten geometry
+				if (geom instanceof MultiLine) {
+					MultiLine ml = (MultiLine)geom;
+					if (ml.getNumParts() == 1) geom = ml.getPart(0);
+				}
+				else if (geom instanceof MultiPolygons) {
+					MultiPolygons mp = (MultiPolygons)geom;
+					if (mp.getNumParts() == 1) {
+						Polygon poly = (Polygon)mp.getPart(0);
+						// reader turns rings into MultiPolygons with single Polygon having single outer ring
+						if (expectedGeom instanceof LinearRing) {
+							LinearRing ring = poly.getOuterRing();
+							/*
+							for (Point pt : ring) {
+								System.out.format("%f %f%n", pt.getCenter().getLongitude().inDegrees(),
+								 	pt.getCenter().getLatitude().inDegrees());
+							}
+							*/
+							if (!ring.clockwise()) System.out.println("imported rings must be in clockwise point order");
+							geom = ring;
+						}
+						else
+							geom = poly;
+					}
+				}
+				assertEquals(expectedGeom, geom);
+				count++;
+			}
+			System.out.println("count=" + count);			
+			assertEquals(geometries.size(), count);
+		} finally {
+			handler.close();
+		}
 	}
     
 }
