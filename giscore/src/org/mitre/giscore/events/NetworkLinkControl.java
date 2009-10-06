@@ -116,6 +116,7 @@ public class NetworkLinkControl implements IGISObject {
 	}
 
 	public Date getExpires() {
+		// Note: this exposes internal representation by returning reference to mutable object
 		return expires;
 	}
 
