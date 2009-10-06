@@ -237,10 +237,20 @@ public class KmlWriter implements IGISOutputStream {
 
     /**
      * Close this KmlWriter and free any resources associated with the
-     * writer.
+     * writer inlcuding underlying stream.
      */
     public void close() {
-        // If we have any waiting element (waiting != null) then
+		close(true);
+    }
+
+	/**
+     * Close this KmlWriter and free any resources associated with the
+     * writer.
+	 * @param closeStream  Flag to close the underlying stream. If false then
+	 * underlying stream is left open otherwise closed along with other resources. 
+	 */
+    public void close(boolean closeStream) {
+		// If we have any waiting element (waiting != null) then
         // we have a ContainerStart with no matching ContainerEnd so ignore it
 		if (kos != null)
 			try {
@@ -248,7 +258,7 @@ public class KmlWriter implements IGISOutputStream {
 			} catch (IOException e) {
 				log.warn("Failed to close writer", e);
 			}
-        // if we're writing zipStream then need to close the entry before closing the underlying stream 
+        // if we're writing zipStream then need to close the entry before closing the underlying stream
         if (zoS != null) {
             try {
                 zoS.closeEntry();
@@ -258,13 +268,13 @@ public class KmlWriter implements IGISOutputStream {
 			IOUtils.closeQuietly(zoS);
 			zoS = null;
 		}
-        if (kos != null) {
+        if (kos != null && closeStream) {
             kos.closeStream(); // close underlying closing the underlying XmlOutputStreamBase.stream
             kos = null;
         }
 
-        waiting = null;
-    }
+        waiting = null;		
+	}
 
 	/**
 	 * @param href href URI to normalize
