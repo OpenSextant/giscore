@@ -149,7 +149,6 @@ public class KmlMetaDump implements IKml {
      * @param name Name part of KML file or URL
      */
 	private void processKmlSource(KmlReader reader, File file, String name) {
-		System.out.println("Check"+file);//debug
 		KmlWriter writer = getWriter(file, name);
 		features = 0;
 		try {
