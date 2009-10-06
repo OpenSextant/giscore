@@ -149,6 +149,7 @@ public class KmlMetaDump implements IKml {
      * @param name Name part of KML file or URL
      */
 	private void processKmlSource(KmlReader reader, File file, String name) {
+		System.out.println("Check"+file);//debug
 		KmlWriter writer = getWriter(file, name);
 		features = 0;
 		try {
@@ -164,8 +165,13 @@ public class KmlMetaDump implements IKml {
 			dumpException(e);
 		} finally {
 			reader.close();
-			if (writer != null)
-				writer.close();
+			if (writer != null) {
+				// if stdout then don't close System.out stream
+				if (useStdout)
+					writer.close(false);
+				else
+					writer.close();
+			}
 		}
 		if (!containers.isEmpty())
 			addTag(":Starting container tag with no matching end container");
