@@ -142,10 +142,10 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 * @throws IOException if an I/O error occurs
 	 */
 	public IGISObject read() throws IOException {
-		return read(kis, null);
+		return read(kis, null, null);
 	}
 
-	private IGISObject read(IGISInputStream inputStream, List<URI> networkLinks) throws IOException {
+	private IGISObject read(IGISInputStream inputStream, UrlRef parent, List<URI> networkLinks) throws IOException {
 		IGISObject gisObj = inputStream.read();
 		if (gisObj == null) return null;
 
@@ -154,8 +154,10 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 			NetworkLink link = (NetworkLink) gisObj;
 			// adjust URL with httpQuery and viewFormat parameters
 			// if parent is compressed and URL is relative then rewrite URL
-			URI uri = getLinkHref(link.getLink());
+			//log.debug("link href=" + link.getLink());
+			URI uri = getLinkHref(parent, link.getLink());
 			if (uri != null) {
+				//log.debug(">link href=" + link.getLink());
 				if (!gisNetworkLinks.contains(uri)) {
 					gisNetworkLinks.add(uri);
 					if (networkLinks != null) networkLinks.add(uri);
@@ -168,7 +170,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 			TaggedMap icon = o.getIcon();
 			String href = icon != null ? getTrimmedValue(icon, HREF) : null;
 			if (href != null) {
-				URI uri = getLink(href);
+				URI uri = getLink(parent, href);
 				if (uri != null) {
 					href = uri.toString();
 					// store rewritten overlay URL back to property store
@@ -185,7 +187,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
                 // note: could also use URI.isAbsolute() to test rel vs abs URL
 				if (href != null && !absUrlPattern.matcher(href).lookingAt()) {
 					//System.out.println("XXX: Relative iconStyle href: " + href);
-					URI uri = getLink(href);
+					URI uri = getLink(parent, href);
 					if (uri != null) {
 						href = uri.toString();
 						// store rewritten overlay URL back to property store
@@ -260,7 +262,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
                     if (log.isDebugEnabled()) log.debug("Parse networkLink: " + ref);
                     try {
                         IGISObject gisObj;
-                        while ((gisObj = read(kis, networkLinks)) != null) {
+                        while ((gisObj = read(kis, ref, networkLinks)) != null) {
                             if (handler != null) {
                                 if (!handler.handleEvent(ref, gisObj)) {
                                     // clear out temp list of links to abort following networkLinks
@@ -307,7 +309,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		List<IGISObject> features = new ArrayList<IGISObject>();
         try {
 			IGISObject gisObj;
-			while ((gisObj = read(kis, null)) != null) {
+			while ((gisObj = read(kis, null, null)) != null) {
 				features.add(gisObj);
 			}
 		} finally {
@@ -358,7 +360,6 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
         boolean handleEvent(UrlRef ref, IGISObject gisObj);
     }
     
-	@Override
 	public Iterator<Schema> enumerateSchemata() throws IOException {
 		throw new UnsupportedOperationException();
 	}

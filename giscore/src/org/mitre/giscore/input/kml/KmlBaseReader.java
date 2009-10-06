@@ -89,13 +89,14 @@ public abstract class KmlBaseReader implements IKml {
 	 * Rewrites URL href if needed and returns URL as URI. Stores back href value in links
 	 * TaggedMap if modifications were made to href otherwise left unchanged. 
 	 *
-	 * @param links TaggedMap object containing href link
-	 * @return adjusted href URL as URI, null if href is missing or empty string
+	 * @param parent
+	 * @param links TaggedMap object containing href link  @return adjusted href URL as URI, null if href is missing or empty string
+	 * @return
 	 */
-	protected URI getLinkHref(TaggedMap links) {
+	protected URI getLinkHref(UrlRef parent, TaggedMap links) {
 		String href = links != null ? getTrimmedValue(links, HREF) : null;
 		if (href == null) return null;
-		URI uri = getLink(href);
+		URI uri = getLink(parent, href);
 		if (uri == null) return null;
 
 		String httpQuery = getTrimmedValue(links, HTTP_QUERY);
@@ -279,7 +280,7 @@ public abstract class KmlBaseReader implements IKml {
 		}
 	}
 
-	protected URI getLink(String href) {
+	protected URI getLink(UrlRef parent, String href) {
         // assumes href is not null nor zero length
         URI uri = null;
         try {
@@ -298,6 +299,8 @@ public abstract class KmlBaseReader implements IKml {
             } else {
                 // relative URL
                 // if compressed amd relative link then need special encoded kmz URI
+				// if parent other than baseUrl then use explicit parent
+				URL baseUrl = parent == null ? this.baseUrl : parent.getURL();
                 if (compressed) {
                     // if relative link and parent is KMZ file (compressed=true)
                     // then need to keep track of parent URL in addition
