@@ -418,9 +418,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} else {
                 //StartElement sl = ee.asStartElement();
 				//QName name = sl.getName();
-                // skip atom:link and atom:author elements
-                if ("http://www.w3.org/2005/Atom".equals(name.getNamespaceURI())) {
-                    log.debug("skip atom:" + localname);
+                // skip atom:link and atom:author elements ## http://www.w3.org/2005/Atom
+				String ns = name.getNamespaceURI();
+				if (ns != null && (ns.startsWith("http://www.w3.org/") || ns.startsWith("http://www.google.com/kml/ext/"))) {
+                    log.debug("skip:" + name);
                     skipNextElement(stream, name);
                     return true;
                 }
@@ -463,6 +464,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private void handleExtendedData(Common cs, QName name)
 			throws XMLStreamException {
 		XMLEvent next;
+		String rootNS = name.getNamespaceURI();
 		while (true) {
 			next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
@@ -473,10 +475,23 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				QName qname = se.getName();
 				String tag = qname.getLocalPart();
 				/*
-				 * TODO: Add xmlns:prefix handling
+				 * xmlns:prefix handling. skips namespaces other than parent namespace (e.g. http://www.opengis.net/kml/2.2) 
 				 */
-				if (tag.equals(DATA)) {
-					Attribute nameAttr= se.getAttributeByName(new QName(NAME));
+				if (rootNS != null && !rootNS.equals(qname.getNamespaceURI())) {
+					// ignore extended data elements other namespace other than root namespace
+					// external namespace contents in ExtendedData not supported
+					// http://code.google.com/apis/kml/documentation/extendeddata.html
+					/*
+						<ExtendedData xmlns:camp="http://campsites.com">
+						  <camp:number>14</camp:number>
+						  <camp:parkingSpaces>2</camp:parkingSpaces>
+						  <camp:tentSites>4</camp:tentSites>
+						</ExtendedData>
+					 */
+					log.debug("skip " + qname);
+                	skipNextElement(stream, qname);
+				} else if (tag.equals(DATA)) {
+					Attribute nameAttr = se.getAttributeByName(new QName(NAME));
 					if (nameAttr != null) {
 						String value = parseValue(qname);
                         if (value != null)
@@ -495,15 +510,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						}
 					}
 				}
-				// Note external namespace contents not in ExtendedData supported
-				// http://code.google.com/apis/kml/documentation/extendeddata.html
-				/*
-					<ExtendedData xmlns:camp="http://campsites.com">
-					  <camp:number>14</camp:number>
-					  <camp:parkingSpaces>2</camp:parkingSpaces>
-					  <camp:tentSites>4</camp:tentSites>
-					</ExtendedData>
-				 */
 			}
 		}
 	}
@@ -1192,6 +1198,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		String ns = name.getNamespaceURI();
 		if (ns != null && ns.startsWith("http://www.google.com/kml/ext/")) {
 			// if extension namespace then skip it (e.g. http://www.google.com/kml/ext/2.2)
+			// see http://code.google.com/apis/kml/documentation/kmlreference.html#kmlextensions
 			log.debug("SKIP: " + name);
 			try {
 				skipNextElement(stream, name);
