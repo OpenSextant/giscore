@@ -194,20 +194,21 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	/**
 	 * Closes this input stream and releases any system resources 
      * associated with the stream.
-	 * @throws RuntimeException if an I/O error occurs  
+	 * @throws RuntimeException if an I/O error occurs closing shp stream  
 	 */
 	public void close() {
-		if (stream != null)
+		if (stream != null) {
 			try {
 				stream.close();
 			} catch (IOException e) {
 				throw new RuntimeException("Problem closing shp stream", e);
 			}
+			stream = null;
+		}
 		if (dbf != null) {
 			dbf.close();
 			dbf = null;
 		}
-		stream = null;
 	}
 
 	public IGISObject read() throws IOException {
