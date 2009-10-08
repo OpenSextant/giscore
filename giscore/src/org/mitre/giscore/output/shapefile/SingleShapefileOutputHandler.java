@@ -40,7 +40,6 @@ import javax.xml.stream.XMLStreamWriter;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.Style;
-import org.mitre.giscore.geometry.Circle;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.geometry.Line;
@@ -390,11 +389,6 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			throws IOException {
 		bos.writeInt(offset, ByteOrder.BIG_ENDIAN);
 		bos.writeInt(length, ByteOrder.BIG_ENDIAN);
-	}
-
-	@Override
-	public void visit(Circle circle) {
-		throw new IllegalStateException("Cannot output a circle to a shapefile");
 	}
 
 	@Override
