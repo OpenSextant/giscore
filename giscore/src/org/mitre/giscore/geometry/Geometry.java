@@ -41,6 +41,8 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	// Instance variables are the responsibility of extending class to
 	// initialize
 	boolean is3D;
+	
+	// bbox not used for equality and hashCode tests
 	transient Geodetic2DBounds bbox;
 
 	/**

@@ -55,6 +55,7 @@ public abstract class KmlBaseReader implements IKml {
 
 	/**
 	 * names of supported viewFormat fields as of 2/19/09 in Google Earth 5.0.11337.1968 with KML 2.2
+	 * see http://code.google.com/apis/kml/documentation/kmlreference.html#link
 	 */
 	private static final List<String> viewFormatLabels = Arrays.asList(
 			"bboxEast",

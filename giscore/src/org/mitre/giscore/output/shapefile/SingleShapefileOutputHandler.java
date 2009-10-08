@@ -155,6 +155,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 *            a mapper to go from the url based icons in the Style to a
 	 *            short value for use with ESRI, must not be <code>null</code>
 	 *            if style is not <code>null</code>.
+	 * @throws IllegalArgumentException if couldn't create output directory or any
+	 * 			of the required arguments are invalid
 	 */
 	public SingleShapefileOutputHandler(Schema schema, Style style,
 			ObjectBuffer buffer, File outputDirectory, String shapefilename,
@@ -199,7 +201,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Output the data.
 	 * 
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
@@ -296,7 +298,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * information and check for consistent geometry usage. After all the
 	 * features are written we reopen the shapefile to output the header.
 	 * 
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
@@ -588,7 +590,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output point count and indices to each part in the point vector.
 	 * 
 	 * @param geom
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void putPartsVector(Geometry geom) throws IOException {
 		PointOffsetVisitor pov = new PointOffsetVisitor();
@@ -617,7 +619,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * first point into the list again.
 	 * 
 	 * @param geom
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void putPolyPointsXY(Geometry geom) throws IOException {
 		for (int j = 0; j < geom.getNumParts(); j++) {
@@ -641,7 +643,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * first point into the list again.
 	 * 
 	 * @param geom
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void putPolyPointsZ(Geometry geom) throws IOException {
 		double zmax = 0.0, zmin = 0.0;
@@ -686,7 +688,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output point count for the given geometry
 	 * 
 	 * @param geom
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void putPointCount(Geometry geom) throws IOException {
 		bos.writeInt(geom.getNumPoints(), ByteOrder.LITTLE_ENDIAN);
@@ -696,7 +698,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output part count for the given geometry
 	 * 
 	 * @param geom
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void putPartCount(Geometry geom) throws IOException {
 		bos.writeInt(geom.getNumParts(), ByteOrder.LITTLE_ENDIAN);
@@ -707,7 +709,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * 
 	 * @param points
 	 *            the points
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void putPointsXY(Collection<Point> points) throws IOException {
 		if (points != null && points.size() > 0) {
@@ -802,7 +804,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * 
 	 * @param stream
 	 * @param bbox
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void putBBox(BinaryOutputStream stream, Geodetic2DBounds bbox)
 			throws IOException {
@@ -832,7 +834,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * @param shapeType
 	 * @param is3D
 	 * @param bbox
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void putShapeHeader(BinaryOutputStream stream, int fileLen,
 			int shapeType, boolean is3D, Geodetic2DBounds bbox)
@@ -877,7 +879,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Write a single X/Y point
 	 * 
 	 * @param pt
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void putPoint(Point pt) throws IOException {
 		Geodetic2DPoint gp = pt.asGeodetic2DPoint();
@@ -889,7 +891,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Put out the elevation value
 	 * 
 	 * @param pt
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void putPointZ(Point pt) throws IOException {
 		Geodetic2DPoint gp = pt.asGeodetic2DPoint();
