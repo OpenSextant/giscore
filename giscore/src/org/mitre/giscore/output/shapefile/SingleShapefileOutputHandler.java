@@ -98,30 +98,30 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * The schema being used will never be <code>null</code>
 	 */
-	private Schema schema;
+	private final Schema schema;
 
 	/**
 	 * The optional style information
 	 */
-	private Style style = null;
+	private final Style style;
 
 	/*
 	 * Pointers to the four required files. Setup in the ctor and never modified
 	 * afterward.
 	 */
-	private File shpFile;
-	private File shxFile;
-	private File prjFile;
-	private File dbfFile;
+	private final File shpFile;
+	private final File shxFile;
+	private final File prjFile;
+	private final File dbfFile;
 	/*
 	 * Optional shm file, only used if style != null and there is an icon url.
 	 */
-	private File shmFile;
+	private final File shmFile;
 
 	/**
 	 * The buffer that holds the data to be output.
 	 */
-	private ObjectBuffer buffer;
+	private final ObjectBuffer buffer;
 
 	/**
 	 * Shp file binary stream
@@ -132,7 +132,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * The mapper, which maps from urls used in the style to integer values used
 	 * for ESRI.
 	 */
-	private PointShapeMapper mapper;
+	private final PointShapeMapper mapper;
 
 	/**
 	 * Ctor
@@ -413,6 +413,23 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * @param geo
 	 */
 	private void outputLines(Geometry geo) {
+		/*
+			A PolyLineZ consists of one or more parts. A part is a connected sequence of two or
+			more points. Parts may or may not be connected to one another. Parts may or may not
+			intersect one another.
+			PolyLineZ
+			{
+				Double[4] Box // Bounding Box
+				Integer NumParts // Number of Parts
+				Integer NumPoints // Total Number of Points
+				Integer[NumParts] Parts // Index to First Point in Part
+				Point[NumPoints] Points // Points for All Parts
+				Double[2] Z Range // Bounding Z Range
+				Double[NumPoints] Z Array // Z Values for All Points
+				Double[2] M Range // Bounding Measure Range
+				Double[NumPoints] M Array // Measures
+			}
+		 */
 		try {
 			putBBox(bos, geo.getBoundingBox());
 			putPartCount(geo);
@@ -420,6 +437,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			putPointsXY(geo.getPoints());
 			if (geo.is3D()) {
 				putPointsZ(geo.getPoints());
+				// todo: M Array // Measures ??
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -510,12 +528,29 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	@Override
 	public void visit(MultiPoint multiPoint) {
+		/*
+		A MultiPointZ represents a set of PointZs, as follows:
+		MultiPointZ
+		{
+			Double[4] Box // Bounding Box
+			Integer NumPoints // Number of Points
+			Point[NumPoints] Points // The Points in the Set
+			Double[2] Z Range // Bounding Z Range
+			Double[NumPoints] Z Array // Z Values
+			Double[2] M Range // Bounding Measure Range
+			Double[NumPoints] M Array // Measures
+		}
+		The Bounding Box is stored in the order Xmin, Ymin, Xmax, Ymax.
+		The bounding Z Range is stored in the order Zmin, Zmax. Bounding M Range is stored
+		in the order Mmin, Mmax
+		 */
 		try {
 			putBBox(bos, multiPoint.getBoundingBox());
 			putPointCount(multiPoint);
 			putPointsXY(multiPoint.getPoints());
 			if (multiPoint.is3D()) {
 				putPointsZ(multiPoint.getPoints());
+				// TODO: not outputting M Range + M Array values...
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -895,5 +930,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		} else {
 			bos.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN);
 		}
+		// measure value M not used
+		bos.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN);
 	}
 }
