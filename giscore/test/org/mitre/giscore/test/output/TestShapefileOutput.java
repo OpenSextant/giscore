@@ -18,6 +18,26 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.output;
 
+import static junit.framework.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import org.junit.Test;
+import org.apache.commons.lang.math.RandomUtils;
+
+import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.events.*;
+import org.mitre.giscore.geometry.*;
+import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
+import org.mitre.giscore.output.IGISOutputStream;
+import org.mitre.giscore.output.shapefile.SingleShapefileOutputHandler;
+import org.mitre.giscore.test.TestGISBase;
+import org.mitre.giscore.utils.ObjectBuffer;
+import org.mitre.itf.geodesy.Angle;
+import org.mitre.itf.geodesy.Geodetic3DPoint;
+import org.mitre.itf.geodesy.Latitude;
+import org.mitre.itf.geodesy.Longitude;
+
+import javax.xml.stream.XMLStreamException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -27,24 +47,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
-
-import org.apache.commons.lang.math.RandomUtils;
-import org.junit.Test;
-import static org.junit.Assert.assertTrue;
-import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.*;
-import org.mitre.giscore.output.shapefile.SingleShapefileOutputHandler;
-import org.mitre.giscore.output.IGISOutputStream;
-import org.mitre.giscore.utils.ObjectBuffer;
-import org.mitre.giscore.GISFactory;
-import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.test.TestGISBase;
-import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
-import org.mitre.itf.geodesy.Geodetic3DPoint;
-import org.mitre.itf.geodesy.Longitude;
-import org.mitre.itf.geodesy.Angle;
-import org.mitre.itf.geodesy.Latitude;
-import static junit.framework.Assert.assertEquals;
 
 public class TestShapefileOutput extends TestGISBase {
 
@@ -103,12 +105,8 @@ public class TestShapefileOutput extends TestGISBase {
 			f.setGeometry(point);
 			buffer.write(f);
 		}
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "points", null);
-		soh.process();
 
-		verifyGeometry(pts, "points");		
+		writeShapefile(schema, buffer, pts, "points");
 	}
 
 	@Test public void testPointzOutput() throws Exception {
@@ -127,16 +125,10 @@ public class TestShapefileOutput extends TestGISBase {
 			f.setGeometry(point);
 			buffer.write(f);
 		}
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "pointz", null);
-		soh.process();
 
-		// verifyGeometry(pts, "pointz");
-		// java.io.IOException: Shapefile contains badly formatted record
-		// at org.mitre.giscore.input.shapefile.SingleShapefileInputHandler.getGeometry(SingleShapefileInputHandler.java:248)
+		writeShapefile(schema, buffer, pts, "pointz");
 	}
-	
+
 	@Test public void testMultiPointOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -153,10 +145,8 @@ public class TestShapefileOutput extends TestGISBase {
 		}
 		f.setGeometry(new MultiPoint(pts));
 		buffer.write(f);
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "multipoint", null);
-		soh.process();
+
+		writeShapefile(schema, buffer, null, "multipoint");
 	}
 	
 	@Test public void testLineOutput() throws Exception {
@@ -181,12 +171,8 @@ public class TestShapefileOutput extends TestGISBase {
 			lines.add(line);
 			buffer.write(f);
 		}
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "lines", null);
-		soh.process();
 
-		verifyGeometry(lines, "lines");
+		writeShapefile(schema, buffer, lines, "lines");
 	}
 
 	@Test public void testLinezOutput() throws Exception {
@@ -212,12 +198,8 @@ public class TestShapefileOutput extends TestGISBase {
 			lines.add(line);
 			buffer.write(f);
 		}
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "linez", null);
-		soh.process();
 
-		// verifyGeometry(lines, "linez");
+		writeShapefile(schema, buffer, lines, "linez");
 		// java.io.IOException: Shapefile contains record with unexpected shape type 1078346337, expecting 13
 		// 	at org.mitre.giscore.input.shapefile.SingleShapefileInputHandler.getGeometry(SingleShapefileInputHandler.java:253)
 	}
@@ -245,10 +227,8 @@ public class TestShapefileOutput extends TestGISBase {
 		MultiLine mline = new MultiLine(lines);
 		f.setGeometry(mline);
 		buffer.write(f);
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "multilines", null);
-		soh.process();
+
+		writeShapefile(schema, buffer, null, "multilines");
 	}	
 	
 	@Test public void testRingOutput() throws Exception {
@@ -287,13 +267,8 @@ public class TestShapefileOutput extends TestGISBase {
 			buffer.write(f);
 		}
 
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "rings", null);
-		soh.process();
-
 		// now read shape file back in and test against what we wrote
-		verifyGeometry(rings, "rings");
+		writeShapefile(schema, buffer, rings, "rings");
 	}
 	
 	@Test public void testRingZOutput() throws Exception {
@@ -323,10 +298,8 @@ public class TestShapefileOutput extends TestGISBase {
 			f.setGeometry(ring);
 			buffer.write(f);
 		}
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "ringz", null);
-		soh.process();
+
+		writeShapefile(schema, buffer, null, "ringz");
 	}
 	
 	@Test public void testPolyOutput() throws Exception {
@@ -360,14 +333,12 @@ public class TestShapefileOutput extends TestGISBase {
 				pts.add(pts.get(0)); // should start and end with the same point
 				innerRings.add(new LinearRing(pts, true));
 			}
-			Polygon p = new Polygon(outerRing, innerRings);
+			Polygon p = new Polygon(outerRing, innerRings, true);
 			f.setGeometry(p);
 			buffer.write(f);
 		}
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "polys", null);
-		soh.process();
+
+		writeShapefile(schema, buffer, null, "polys");
 	}
 	
 	@Test public void testPolyZOutput() throws Exception {
@@ -405,10 +376,8 @@ public class TestShapefileOutput extends TestGISBase {
 			f.setGeometry(p);
 			buffer.write(f);
 		}
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "polyz", null);
-		soh.process();
+
+		writeShapefile(schema, buffer, null, "polyz");
 	}	
 	
 	@Test public void testMultiRingOutput() throws Exception {
@@ -438,10 +407,8 @@ public class TestShapefileOutput extends TestGISBase {
 		MultiLinearRings mring = new MultiLinearRings(rings, true);
 		f.setGeometry(mring);
 		buffer.write(f);
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "multirings", null);
-		soh.process();
+
+		writeShapefile(schema, buffer, null, "multirings");
 	}
 		
 	@Test public void testMultiRingZOutput() throws Exception {
@@ -471,10 +438,8 @@ public class TestShapefileOutput extends TestGISBase {
 		MultiLinearRings mring = new MultiLinearRings(rings, true);
 		f.setGeometry(mring);
 		buffer.write(f);
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "multiringz", null);
-		soh.process();
+
+		writeShapefile(schema, buffer, null, "multiringz");
 	}
 	
 	@Test public void testMultiPolyOutput() throws Exception {
@@ -517,10 +482,8 @@ public class TestShapefileOutput extends TestGISBase {
 		MultiPolygons mp = new MultiPolygons(polys);
 		f.setGeometry(mp);
 		buffer.write(f);
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "multipolys", null);
-		soh.process();
+
+		writeShapefile(schema, buffer, null, "multipolys");
 	}
 	
 	@Test public void testMultiPolyZOutput() throws Exception {
@@ -560,10 +523,8 @@ public class TestShapefileOutput extends TestGISBase {
 		MultiPolygons mp = new MultiPolygons(polys);
 		f.setGeometry(mp);
 		buffer.write(f);
-		SingleShapefileOutputHandler soh =
-			new SingleShapefileOutputHandler(schema, null, buffer,
-                    shapeOutputDir, "multipolyz", null);
-		soh.process();
+
+		writeShapefile(schema, buffer, null, "multipolyz");
 	}	
 
 	private Point getRingPointZ(Point cp, int n, int total, double size, double min) {
@@ -586,9 +547,17 @@ public class TestShapefileOutput extends TestGISBase {
 			new Latitude(lat, Angle.DEGREES), elt));
 	}
 
-	private void verifyGeometry(List<? extends Geometry> geometries, String file) throws IOException, URISyntaxException {
+	private void writeShapefile(Schema schema, ObjectBuffer buffer, List<? extends Geometry> geometries, String file)
+			throws IOException, URISyntaxException, XMLStreamException, ClassNotFoundException, IllegalAccessException, InstantiationException {
 		// now read shape file back in and test against what we wrote
-		System.out.println("Verify " + file);
+		System.out.println("Test " + file);
+		
+		SingleShapefileOutputHandler soh =
+		new SingleShapefileOutputHandler(schema, null, buffer,
+				shapeOutputDir, file, null);
+		soh.process();
+
+		//System.out.println("Verify " + file);
 		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shapeOutputDir, file);
 		try {
 			IGISObject ob = handler.read();
@@ -596,6 +565,7 @@ public class TestShapefileOutput extends TestGISBase {
 			int count = 0;
 			while((ob = handler.read()) != null) {
 				assertTrue(ob instanceof Feature);
+				if (geometries == null) continue;
 				Feature f = (Feature)ob;
 				Geometry geom = f.getGeometry();
 				Geometry expectedGeom = geometries.get(count);
@@ -627,11 +597,13 @@ public class TestShapefileOutput extends TestGISBase {
 				assertEquals(expectedGeom, geom);
 				count++;
 			}
-			System.out.println("count=" + count);			
-			assertEquals(geometries.size(), count);
+			if (geometries != null) {
+				System.out.println("  count=" + count);			
+				assertEquals(geometries.size(), count);
+			}
 		} finally {
 			handler.close();
 		}
 	}
-    
+
 }
