@@ -1,7 +1,5 @@
 package org.mitre.giscore.events;
 
-import org.apache.commons.lang.StringUtils;
-
 /**
  * AbstractObject is a base IGISObject that simply has a unique id field.
  * Conceptually same as the KML AbstractObjectGroup element. 
