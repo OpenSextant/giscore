@@ -26,6 +26,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
 
 /**
@@ -38,6 +39,14 @@ public class TestShapefileInput {
 	
 	@Test public void testErrorcase1() throws Exception {
 		doTest("Point File Test_Point File Test");
+	}
+
+	@Test public void testPoints() throws Exception {
+		doTest("points");
+	}
+
+	@Test public void testPointz() throws Exception {
+		doTest("pointz");
 	}
 	
 	@Test public void testLines() throws Exception {
@@ -66,10 +75,6 @@ public class TestShapefileInput {
 	
 	@Test public void testMultiringz() throws Exception {
 		doTest("multiringz");
-	}	
-
-	@Test public void testPoints() throws Exception {
-		doTest("points");
 	}
 
 	@Test public void testPolys() throws Exception {
@@ -79,22 +84,30 @@ public class TestShapefileInput {
 	@Test public void testPolyz() throws Exception {
 		doTest("polyz");
 	}
-
+   
 	@Test public void testRings() throws Exception {
 		doTest("rings");
 	}
-	
+
 	@Test public void testRingz() throws Exception {
 		doTest("ringz");
 	}
-	
+
 	private void doTest(String file) throws URISyntaxException, IOException {
+		System.out.println("Test " + file);
 		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shpdir, file);
-		IGISObject ob = handler.read();
-		assertTrue(ob instanceof Schema);
-		int count = 0;
-		while((ob = handler.read()) != null) {
-			count++;
+		try {
+			IGISObject ob = handler.read();
+			assertTrue(ob instanceof Schema);
+			int count = 0;
+			while((ob = handler.read()) != null) {
+				assertTrue(ob instanceof Feature);
+				count++;
+			}
+			assertTrue(count > 0);
+			System.out.println(" count=" + count);
+		} finally {
+			handler.close();
 		}
 	}
 }
