@@ -199,6 +199,7 @@ public class GroundOverlay extends Overlay {
      * Set altitudeMode
 	 * @param altitudeMode
 	 *            the altitudeMode to set ([clampToGround], relativeToGround, absolute)
+	 * 				also including gx:extensions (clampToSeaFloor, relativeToSeaFloor)
      *              If altitudeMode value is invalid, null or empty string then null
      *              is assigned and default value is assumed.
 	 */    

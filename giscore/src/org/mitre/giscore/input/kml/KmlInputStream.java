@@ -1596,6 +1596,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 									((GroundOverlay) fs).setAltitude(new Double(text));
 								}
 							} else if (ALTITUDE_MODE.equals(localname)) {
+								// note: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
 								((GroundOverlay) fs).setAltitudeMode(
                                         getNonEmptyElementText());
 							}
@@ -1979,7 +1980,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (foundEndTag(event, name)) {
 				break;
 			}
-			// TODO: gx:altitudeMode isn't handled
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 				String localPart = event.asStartElement().getName().getLocalPart();
 				if (COORDINATES.equals(localPart)) {
@@ -1989,6 +1989,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					break;
 				}
 				else if (ALTITUDE_MODE.equals(localPart)) {
+					// note: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
 					altitudeMode = getNonEmptyElementText();
 				}
 			}
@@ -2027,6 +2028,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					break;
 				}
 				 else if (ALTITUDE_MODE.equals(localPart)) {
+					// note: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
 					altitudeMode = getNonEmptyElementText();					
 				}
 			}
