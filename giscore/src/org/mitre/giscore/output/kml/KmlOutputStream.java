@@ -218,8 +218,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				handleTaggedElement(TILT, viewGroup);
 				handleTaggedElement(RANGE, viewGroup);
 				// if altitudeMode is invalid then it will be omitted
-				handleNonNullSimpleElement(ALTITUDE_MODE,
-						AltitudeModeEnumType.getNormalizedMode(viewGroup.get(ALTITUDE_MODE)));
+				AltitudeModeEnumType altMode = AltitudeModeEnumType.getNormalizedMode(viewGroup.get(ALTITUDE_MODE));
+				handleAltitudeMode(altMode);
 				writer.writeEndElement();
 			} catch (XMLStreamException e) {
 				throw new RuntimeException(e);
@@ -438,7 +438,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (overlay instanceof GroundOverlay) {
             GroundOverlay go = (GroundOverlay) overlay;
             handleNonNullSimpleElement(ALTITUDE, go.getAltitude());
-            handleNonNullSimpleElement(ALTITUDE_MODE, go.getAltitudeMode());
+			// if null or default clampToGround then ignore
+			handleAltitudeMode(go.getAltitudeMode());
             // postpone writing out LAT_LON_BOX element until there is a child element
             Queue<String> waitingList = new java.util.LinkedList<String>();
             waitingList.add(LAT_LON_BOX);
@@ -795,10 +796,25 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             handleSimpleElement(EXTRUDE, extrude ? "1" : "0");
         if (tessellate != null && !(geom instanceof Point))
             handleSimpleElement(TESSELLATE, tessellate ? "1" : "0");
-        handleNonNullSimpleElement(ALTITUDE_MODE, geom.getAltitudeMode());
+		handleAltitudeMode(geom.getAltitudeMode());
     }
 
-    /**
+	private void handleAltitudeMode(AltitudeModeEnumType altitudeMode) throws XMLStreamException {
+		// if null or default clampToGround then ignore
+		// if gx:AltitudeMode extension (clampToSeaFloor, relativeToSeaFloor) then output a comment for now
+		// TODO: would need to add gx namespace to the element or the outer kml element
+		if (altitudeMode != null) {
+			if (altitudeMode == AltitudeModeEnumType.relativeToGround || altitudeMode == AltitudeModeEnumType.absolute) {
+				handleSimpleElement(ALTITUDE_MODE, altitudeMode);
+			} else if (altitudeMode == AltitudeModeEnumType.clampToSeaFloor || altitudeMode == AltitudeModeEnumType.relativeToSeaFloor) {
+				log.warn("gx:altitudeMode values not supported in KML output: " + altitudeMode);
+				writer.writeComment("gx:altitudeMode>" + altitudeMode + "</gx:altitudeMode");
+        		writer.writeCharacters("\n");
+			}
+		}
+	}
+
+	/**
      * output the coordinates. The coordinates are output as lon,lat[,altitude]
      * and are separated by spaces
      *
