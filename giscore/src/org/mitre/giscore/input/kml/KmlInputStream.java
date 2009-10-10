@@ -101,10 +101,12 @@ import org.slf4j.LoggerFactory;
  * <p> 
  * Unsupported tags include the following:
  *  atom:author, atom:link, address, xal:AddressDetails, Metadata,
- *  open, phoneNumber, Region, Snippet, snippet.
- *  gx extensions (e.g. Tour, Playlist, etc.)
-  * <p>
+ *  open, phoneNumber, Region, Snippet, snippet. <br>
  * These tags are consumed but discarded.
+ * <p>
+ * gx extensions (e.g. Tour, Playlist, etc.) are ignored, however, gx:altitudeMode
+ * is stored as a value of the altitudeMode in LookAt, Camera, Geometry, or
+ * GroundOverlay,
  * <p> 
  * StyleMaps with inline Styles or nested StyleMaps are not supported.
  * StyleMaps must specify styleUrl.
@@ -124,8 +126,6 @@ import org.slf4j.LoggerFactory;
  * Allow timestamps to omit seconds field. Strict XML schema validation requires seconds field
  * in the dateTime (YYYY-MM-DDThh:mm:ssZ) format but Google Earth is lax in its rules.
  * Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC.
- * <p>
- * gx:altitudeMode isn't handled on Geometries so altitudes may be wrong
  *
  * @author DRAND
  * @author J.Mathews
