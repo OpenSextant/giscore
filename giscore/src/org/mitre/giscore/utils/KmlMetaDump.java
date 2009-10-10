@@ -572,11 +572,21 @@ public class KmlMetaDump implements IKml {
         }
 		
 		if (app.dumpCount > 1 && !app.totals.isEmpty()) {
-			System.out.println("Summary: count=" + app.dumpCount + "\n");
+			System.out.println("Summary: " + app.dumpCount + " KML resources\n");
+			boolean metaProp = false;
 			for (String tag : app.totals) {
-				// message/warnings start with : prefix, otherwise show key + count
-				
-				if (tag.startsWith(":")) tag = tag.substring(1);
+				// message/warnings start with : prefix, otherwise show key + count			
+				if (tag.startsWith(":")) {
+					tag = tag.substring(1);
+					metaProp = true;
+				} else {
+					if (metaProp) {
+						// if last property was a message/warnings then
+						// print new line to separate the two groups of items
+						System.out.println();
+						metaProp = false;
+					}
+				}
 				System.out.println("\t" + tag);
 			}
 		}
