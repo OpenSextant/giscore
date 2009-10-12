@@ -355,19 +355,13 @@ public class SimpleField implements IDataSerializable {
 	}
 
 	/*
-	 * Simple hash of the name and type fields
+	 * Simple hash of the name field which is used as single key to lookup these object in Hash maps
 	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
-		int rc = name != null ? name.hashCode() : 0;
-		if (type != null) {
-			if (rc != 0)
-				rc *= 37; // hash multipler
-			rc += type.hashCode();
-		}
-		return rc;
+		return name != null ? name.hashCode() : 0;
 	}
 
 	/*
