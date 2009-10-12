@@ -134,15 +134,12 @@ public class SimpleField implements IDataSerializable {
 	transient Integer index;
 	
 	/**
-	 * Ctor - for a simple default field type
-	 * @param name
+	 * Constructor for a simple default field type (String).
+	 * @param name Proper name of this field. Must be a non-null/non-empty string
+	 * and unique if used in a Schema.
 	 */
 	public SimpleField(String name) {
-		if (name == null || name.trim().length() == 0) {
-			throw new IllegalArgumentException(
-					"name should never be null or empty");
-		}
-		this.name = name;
+		setName(name);
 		displayName = name;
 		type = Type.STRING;
 	}
@@ -158,14 +155,15 @@ public class SimpleField implements IDataSerializable {
 	}
 
 	/**
-	 * No args ctor
+	 * No args ctor use for serialization. Caller must set name and type fields,
+	 * which are required non-null fields.
 	 */
 	public SimpleField() {
 
 	}
 
 	/**
-	 * @return the type, never null
+	 * @return the type never null
 	 */
 	public Type getType() {
 		return type;
@@ -198,9 +196,13 @@ public class SimpleField implements IDataSerializable {
      * @throws IllegalArgumentException if <code>name</code> is null 
 	 */
 	public void setName(String name) {
+		if (name != null) {
+			name = name.trim(); // normalize name (strip whitespace)
+			if (name.length() == 0) name = null;
+		}
 		if (name == null) {
 			throw new IllegalArgumentException(
-					"name should never be null");
+					"name should never be null or empty");
 		}
 		this.name = name;
 	}
@@ -353,13 +355,19 @@ public class SimpleField implements IDataSerializable {
 	}
 
 	/*
-	 * (non-Javadoc)
+	 * Simple hash of the name and type fields
 	 * 
 	 * @see java.lang.Object#hashCode()
 	 */
 	@Override
 	public int hashCode() {
-		return name != null ? name.hashCode() : 0;
+		int rc = name != null ? name.hashCode() : 0;
+		if (type != null) {
+			if (rc != 0)
+				rc *= 37; // hash multipler
+			rc += type.hashCode();
+		}
+		return rc;
 	}
 
 	/*
