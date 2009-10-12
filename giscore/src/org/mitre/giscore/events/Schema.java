@@ -150,7 +150,7 @@ public class Schema implements IGISObject {
 	 * @param field the field, never <code>null</code>
 	 */
 	public void put(String name, SimpleField field) {
-		if (name == null || name.trim().length() == 0) {
+		if (StringUtils.isEmpty(name)) {
 			throw new IllegalArgumentException(
 					"name should never be null or empty");
 		}
@@ -159,6 +159,20 @@ public class Schema implements IGISObject {
 					"field should never be null");
 		}
 		fields.put(name, field);
+	}
+
+	/**
+	 * Removes named field from the schema
+	 * @param name the name of the field, never <code>null</code> or empty
+	 * @return the previous value associated with <tt>name</tt>, or
+     *         <tt>null</tt> if there was no mapping for <tt>name</tt>. 
+	 */
+	public SimpleField remove(String name) {
+		if (StringUtils.isEmpty(name)) {
+			throw new IllegalArgumentException(
+					"name should never be null or empty");
+		}
+		return fields.remove(name);
 	}
 	
 	/**
@@ -196,6 +210,14 @@ public class Schema implements IGISObject {
 	 */
 	public Collection<String> getKeys() {
 		return Collections.unmodifiableSet(fields.keySet());
+	}
+
+	/**
+	 * @return the read-only collections of SimpleFields in this Schema,
+	 * never <code>null</code>.
+	 */
+	public Collection<SimpleField> getFields() {
+		return Collections.unmodifiableCollection(fields.values());
 	}
 	
 	/**
