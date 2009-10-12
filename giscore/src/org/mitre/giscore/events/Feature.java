@@ -105,7 +105,8 @@ public class Feature extends Common {
 	 * The approximately equals method checks all the fields for equality with
 	 * the exception of the geometry.
 	 * 
-	 * @param other
+	 * @param other Other feature to compare against
+	 * @return true if this and other are approximately equal
 	 */
 	public boolean approximatelyEquals(Feature other) {
 		EqualsBuilder eb = new EqualsBuilder();
@@ -134,7 +135,9 @@ public class Feature extends Common {
 				} else {
 					return val1.equals(val2);
 				}
-			} else if (val1 == null || val2 == null) {
+			} else if (val1 != null || val2 != null) {
+				//System.out.println("unequal name="+fieldname.getName() + " items: this=" + val1 + " " + val2);
+				// one value is null and other is non-null
 				return false;
 			}
 		}
