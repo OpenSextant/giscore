@@ -18,6 +18,8 @@
  ***************************************************************************************/
 package org.mitre.giscore.utils;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -26,7 +28,7 @@ import java.io.UnsupportedEncodingException;
  * @author DRAND
  */
 public class StringHelper {
-	private static char vowels[] = new char[] {'a', 'A', 'e', 'E', 'i', 'I', 'o', 'O', 'u', 'U'};
+	private static final char vowels[] = new char[] {'a', 'A', 'e', 'E', 'i', 'I', 'o', 'O', 'u', 'U'};
 	
 	/**
 	 * String as an ascii string. If the field name is too long, first try 
@@ -36,9 +38,8 @@ public class StringHelper {
 	 * @return a byte array with the fieldname in ascii
 	 */
 	public static byte[] esriFieldName(String fieldname) {
-		if (fieldname == null || fieldname.trim().length() == 0) {
-			throw new IllegalArgumentException(
-					"fieldname should never be null or empty");
+		if (StringUtils.isBlank(fieldname)) {
+			throw new IllegalArgumentException("fieldname should never be null or empty");
 		}
 		if (fieldname.length() > 11) {
 			StringBuilder nfieldname = new StringBuilder(11);
@@ -46,8 +47,8 @@ public class StringHelper {
 				char ch = fieldname.charAt(i);
 				boolean found = false;
 				if (i > 0) {
-					for(int j = 0; j < vowels.length; j++) {
-						if (vowels[j] == ch) {
+					for (char vowel : vowels) {
+						if (vowel == ch) {
 							found = true;
 							break;
 						}
