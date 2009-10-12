@@ -47,15 +47,15 @@ import org.mitre.giscore.utils.StringHelper;
  */
 public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 	private static final String US_ASCII = "US-ASCII";
-	private DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-	private DateFormat inputDateFormats[] = new DateFormat[] {
+	private final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+	private final DateFormat inputDateFormats[] = new DateFormat[] {
 			new SimpleDateFormat(IKml.ISO_DATE_FMT),
 			new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
 			new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
 			new SimpleDateFormat("MM/dd/yyyy hh:mm"),
 			new SimpleDateFormat("MM/dd/yyyy"),
 			new SimpleDateFormat("dd-MMM-yyyy"), dateFormat };
-	private DecimalFormat decimalFormat = new DecimalFormat(
+	private final DecimalFormat decimalFormat = new DecimalFormat(
 			"+###############0.################;-###############0.################");
 
 	/**
@@ -66,14 +66,14 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 	/**
 	 * A data holder for the rows being written.
 	 */
-	private ObjectBuffer buffer = new ObjectBuffer(2000);
+	private final ObjectBuffer buffer;
 
 	/**
 	 * The schema. The first object handled must be the schema. This value
 	 * should never be <code>null</code> after that. If a second schema arrives
 	 * an illegal state exception is thrown.
 	 */
-	private Schema schema = null;
+	private Schema schema;
 
 	/**
 	 * Track the number of records to save in the header
@@ -96,6 +96,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 					"outputStream should never be null");
 		}
 		stream = new BinaryOutputStream(outputStream);
+		this.buffer = new ObjectBuffer(2000);
 
 		// Write the xBaseFile signature (should be 0x03 for dBase III)
 		stream.writeByte(SIGNATURE);
@@ -130,7 +131,6 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 				e.printStackTrace();
 			}
 		}
-
 	}
 
 	private void writeRow(Row object) throws IOException {
@@ -342,9 +342,9 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			return (Date) data;
 		} else {
 			String dstr = data.toString();
-			for (int i = 0; i < inputDateFormats.length; i++) {
+			for (DateFormat inputDateFormat : inputDateFormats) {
 				try {
-					return inputDateFormats[i].parse(dstr);
+					return inputDateFormat.parse(dstr);
 				} catch (ParseException pe) {
 					// Continue
 				}
