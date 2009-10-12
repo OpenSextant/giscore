@@ -39,6 +39,7 @@ import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.shapefile.BinaryOutputStream;
 import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.utils.StringHelper;
+import org.apache.commons.io.IOUtils;
 
 /**
  * Output a DBF file using the gisoutputstream interface.
@@ -87,7 +88,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 	 *            the output stream
 	 * @param arguments
 	 *            the optional arguments, none are defined for this stream
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	public DbfOutputStream(OutputStream outputStream, Object[] arguments)
 			throws IOException {
@@ -140,6 +141,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 
 	public void close() throws IOException {
 		if (stream != null) {
+			try {
 			if (buffer.count() > 65535) {
 				throw new IllegalStateException(
 						"Trying to persist too many elements to DBF file, only 2^16 - 1 are allowed");
@@ -182,9 +184,10 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			} catch (IllegalAccessException e) {
 				throw new RuntimeException(e);
 			}
-
-			stream.close();
+		} finally {
+			IOUtils.closeQuietly(stream);
 			stream = null;
+		}
 		}
 	}
 
@@ -228,8 +231,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		while (row != null) {
 			stream.writeByte(' ');
 			int i = 0;
-			for (String fieldname : schema.getKeys()) {
-				SimpleField field = schema.get(fieldname);
+			for (SimpleField field : schema.getFields()) {
 				short length = (short) len[i++];
 				if (length < 0) length += 256;
 				Type ft = field.getType();
@@ -298,7 +300,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 	 *            length. This will be converted to ascii
 	 * @param length
 	 *            the field length
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void writeField(BinaryOutputStream stream, String data, int length)
 			throws IOException {
@@ -375,8 +377,9 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		}
 		byte len[] = new byte[schema.getKeys().size()];
 		int i = 0;
-		for (String fieldname : schema.getKeys()) {
+		for (SimpleField field : schema.getFields()) {
 			// Write the field name, padded with null bytes
+			String fieldname = field.getName();
 			byte name[] = new byte[11];
 			byte fn[] = StringHelper.esriFieldName(fieldname);
 			for(int k = 0; k < 11; k++) {
@@ -387,7 +390,6 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 				}
 			}
 			stream.write(name); // 0 -> 10
-			SimpleField field = schema.get(fieldname);
 			byte type;
 			int fieldlen = getFieldLength(field);
 			int fielddec = 0;
