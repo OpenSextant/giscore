@@ -281,12 +281,12 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 
 	/**
 	 * Read the header from the stream
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 * @throws IllegalArgumentException 
 	 */
 	private void readHeader() throws IllegalArgumentException, IOException {
 		shpType = getShapeTypeFromHeader();
-		Geodetic2DBounds bbox = getBoundingBoxFromHeader(is3D(shpType));
+		getBoundingBoxFromHeader(is3D(shpType));
 	}
 	
 	// Read first part of shapefile header and get shapeType if possible
