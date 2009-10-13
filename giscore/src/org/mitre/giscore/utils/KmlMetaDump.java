@@ -62,6 +62,8 @@ public class KmlMetaDump implements IKml {
 	private Date containerEndDate;
 	private final Stack<ContainerStart> containers = new Stack<ContainerStart>();
 
+	private Set<String> maximalSet;		
+
 	/**
 	 * count of number of KML resources were processed and stats were tallied
 	 * this means the number of times the tagSet keys were dumped into the totals set
@@ -467,8 +469,13 @@ public class KmlMetaDump implements IKml {
 		}
         // otherwise feature doesn't have timeStamp or timeSpans
 
-		if (f.hasExtendedData())
+		if (f.hasExtendedData()) {
 			addTag(EXTENDED_DATA);
+			if (maximalSet != null)
+				for (SimpleField sf : f.getFields()) {
+					maximalSet.add(sf.getName());
+				}
+		}
 
 		TaggedMap viewGroup = f.getViewGroup();
 		if (viewGroup != null) {
@@ -519,6 +526,7 @@ public class KmlMetaDump implements IKml {
 		System.out.println("\t\tand adds features to resulting statistics");
 		System.out.println("\t-stdout Write KML output to STDOUT instead of writing files");
  		System.out.println("\t-v Set verbose which dumps out features");
+		System.out.println("\t-x Dump full set of extended data property names");
 		System.exit(1);
 	}	
 
@@ -534,6 +542,8 @@ public class KmlMetaDump implements IKml {
 					app.setFollowLinks(true);
 				else if (arg.startsWith("-v"))
 					app.setVerbose(true);
+				else if (arg.startsWith("-x"))
+				 	app.maximalSet = new TreeSet<String>();
 				else if (arg.startsWith("-stdout"))
 					app.setUseStdout(true);
 				else usage();
@@ -575,7 +585,7 @@ public class KmlMetaDump implements IKml {
 			System.out.println("Summary: " + app.dumpCount + " KML resources\n");
 			boolean metaProp = false;
 			for (String tag : app.totals) {
-				// message/warnings start with : prefix, otherwise show key + count			
+				// message/warnings start with : prefix, otherwise show key + count
 				if (tag.startsWith(":")) {
 					tag = tag.substring(1);
 					metaProp = true;
@@ -589,6 +599,12 @@ public class KmlMetaDump implements IKml {
 				}
 				System.out.println("\t" + tag);
 			}
+		}
+		if (app.maximalSet != null && !app.maximalSet.isEmpty()) {
+				System.out.println("\nExtendedData:");
+				for (String name : app.maximalSet) {
+					System.out.println("\t" + name);
+				}
 		}
     }
 
