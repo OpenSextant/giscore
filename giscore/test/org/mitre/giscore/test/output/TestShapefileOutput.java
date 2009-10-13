@@ -565,10 +565,13 @@ public class TestShapefileOutput extends TestGISBase {
 			int count = 0;
 			while((ob = handler.read()) != null) {
 				assertTrue(ob instanceof Feature);
-				if (geometries == null) continue;
+				if (geometries == null) {
+					count++;
+					continue;
+				}
 				Feature f = (Feature)ob;
 				Geometry geom = f.getGeometry();
-				Geometry expectedGeom = geometries.get(count);
+				Geometry expectedGeom = geometries.get(count++);
 				// flatten geometry
 				if (geom instanceof MultiLine) {
 					MultiLine ml = (MultiLine)geom;
@@ -594,13 +597,12 @@ public class TestShapefileOutput extends TestGISBase {
 							geom = poly;
 					}
 				}
-				assertEquals(expectedGeom, geom);
-				count++;
+				assertEquals(expectedGeom, geom);				
 			}
-			if (geometries != null) {
-				System.out.println("  count=" + count);			
+			if (geometries != null) {							
 				assertEquals(geometries.size(), count);
 			}
+			System.out.println("  count=" + count);
 		} finally {
 			handler.close();
 		}
