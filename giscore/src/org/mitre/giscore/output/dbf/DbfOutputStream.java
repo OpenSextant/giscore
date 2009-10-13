@@ -18,7 +18,6 @@
  ***************************************************************************************/
 package org.mitre.giscore.output.dbf;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteOrder;
@@ -27,6 +26,8 @@ import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Collection;
+import java.util.ArrayList;
 
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Row;
@@ -159,7 +160,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			for (int i = 4; i <= 6; i += 2)
 				stream.write(Byte.parseByte(today.substring(i, i + 2)));
 
-			// Write record count, header length (based on number of fields),
+			// Write record count (offset 0x4), header length (based on number of fields),
 			// and
 			// record length
 			stream.writeInt(buffer.count(), ByteOrder.LITTLE_ENDIAN);
@@ -377,11 +378,13 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		}
 		byte len[] = new byte[schema.getKeys().size()];
 		int i = 0;
+		Collection<String> attrNames = new ArrayList<String>();
 		for (SimpleField field : schema.getFields()) {
 			// Write the field name, padded with null bytes
 			String fieldname = field.getName();
 			byte name[] = new byte[11];
-			byte fn[] = StringHelper.esriFieldName(fieldname);
+			byte fn[] = StringHelper.esriFieldName(fieldname, attrNames);
+			// 11-byte field for attribute. last byte expected to be 0
 			for(int k = 0; k < 11; k++) {
 				if (k < fn.length) {
 					name[k] = fn[k];
