@@ -315,10 +315,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		// of the file
 		int offset = 50;
 		try {
-			FileOutputStream shpos = new FileOutputStream(shpFile);
-			bos = new BinaryOutputStream(shpos);
-			FileOutputStream shxos = new FileOutputStream(shxFile);
-			shxbos = new BinaryOutputStream(shxos);
+			bos = new BinaryOutputStream(new FileOutputStream(shpFile));
+			shxbos = new BinaryOutputStream(new FileOutputStream(shxFile));
 
 			// Skip enough bytes to write the header later in the
 			// shp and shx files
@@ -365,12 +363,9 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			int shxlen = 50 + (recordNumber - 1) * 4;
 			putShapeHeader(shxbos, shxlen, shapeAll, is3D, bbox);
 		} finally {
-			if (shxbos != null)
-				shxbos.close();
-			if (bos != null)
-				bos.close();
+			IOUtils.closeQuietly(shxbos);
+			IOUtils.closeQuietly(bos);
 		}
-
 	}
 
 	/**
