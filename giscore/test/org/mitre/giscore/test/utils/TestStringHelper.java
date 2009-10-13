@@ -22,18 +22,28 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mitre.giscore.utils.StringHelper;
 
-
 public class TestStringHelper {
 	@Test public void testFull() throws Exception {
-		doTest("abcdefghijk", "abcdefghijk");
+		doTest("abcdefghij", "abcdefghij");
 	}
 	
 	@Test public void testRemovedVowels() throws Exception {
-		doTest("abcdefghijkl", "abcdfghjkl");
+		doTest("abcdefghijk", "abcdfghijk");
 	}
 	
 	@Test public void testTruncated() throws Exception {
-		doTest("abcdefghijklmnopqrst", "abcdfghjklm");
+		doTest("abcdefghijklmnopqrst", "abcdfghjkl");
+	}
+
+	@Test public void testShortenNames() throws Exception {
+		String[] attrNames = {
+				"Cross-Range Error", "CrssRngErr",
+				"ElevationGain", "ElvtonGain",
+				"Radial Velocity", "RdlVlocity",
+				"Radial Velocity Error", "RdlVlctyEr",};
+		for (int i = 0; i < attrNames.length; i += 2) {
+			doTest(attrNames[i], attrNames[i + 1]);
+		}
 	}
 
 	private void doTest(String input, String expected) {
