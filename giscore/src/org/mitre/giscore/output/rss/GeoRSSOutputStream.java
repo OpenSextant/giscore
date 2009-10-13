@@ -40,7 +40,7 @@ import java.text.SimpleDateFormat;
  * <p/> 
  * Notes/Limitations:
  * <p/>
- * -Handles all basic GeoRSS-simple shapes (Point, Line, Polygon, Circle, GeometryBag).<br/>
+ * -Handles all basic GeoRSS-simple shapes (Point, Line, Polygon, Circle).<br/>
  * -Current georss-Simple spec, however, does not have a native collection/multigeometry
  *  feature (though one is proposed) so for now the more complex geometries (MultiPoint,
  *  MultiLine, MultiLinearRings, MultiPolygons) simply output the first geometry in the
