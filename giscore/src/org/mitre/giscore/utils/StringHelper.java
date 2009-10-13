@@ -21,50 +21,132 @@ package org.mitre.giscore.utils;
 import org.apache.commons.lang.StringUtils;
 
 import java.io.UnsupportedEncodingException;
+import java.util.Collection;
 
 /**
  * A set of useful string utility functions
  * 
  * @author DRAND
+ * @author J.Mathews
  */
-public class StringHelper {
-	private static final char vowels[] = new char[] {'a', 'A', 'e', 'E', 'i', 'I', 'o', 'O', 'u', 'U'};
+public final class StringHelper {
+	private static final char vowelsLower[] = new char[] {'a', 'e', 'i', 'o', 'u'};
+	private static final char vowelsUpper[] = new char[] {'A', 'E', 'I', 'O', 'U'};
 	
 	/**
-	 * String as an ascii string. If the field name is too long, first try 
-	 * removing vowels (after the first character). If the remainder is 
-	 * still too long, truncate to no more than 11 characters.
+	 * String as an ascii string. If the field name is too long, first try
+	 * removing special chars such as punctuation and whitespace then
+	 * try removing vowels (after the first character). If the remainder is 
+	 * still too long, truncate to no more than 10 characters.
 	 * @param fieldname the fieldname, never <code>null</code> or empty
 	 * @return a byte array with the fieldname in ascii
 	 */
 	public static byte[] esriFieldName(String fieldname) {
+		return esriFieldName(fieldname, null);
+	}
+
+	/**
+	 * String as an ascii string. If the field name is too long, first try
+	 * removing special chars such as punctuation and whitespace then
+	 * try removing vowels (after the first character). If the remainder is
+	 * still too long, truncate to no more than 10 characters.
+	 * @param fieldname the fieldname, never <code>null</code> or empty
+	 * @param attrNames Collection of attribute names, if not null then creates
+	 * 		unique attribute names and adds those field names to the collection.
+	 * @return a byte array with the fieldname in ascii
+	 */
+	public static byte[] esriFieldName(String fieldname, Collection<String> attrNames) {
 		if (StringUtils.isBlank(fieldname)) {
 			throw new IllegalArgumentException("fieldname should never be null or empty");
 		}
-		if (fieldname.length() > 11) {
-			StringBuilder nfieldname = new StringBuilder(11);
-			for(int i = 0; i < fieldname.length(); i++) {
-				char ch = fieldname.charAt(i);
-				boolean found = false;
-				if (i > 0) {
-					for (char vowel : vowels) {
-						if (vowel == ch) {
-							found = true;
-							break;
-						}
-					}
+		// first try to remove any special chars such as punctuation and whitespace from the name
+		// note some symbols (e.g. '.', '-') work in Shape attribute names loaded from ESRI ArcCatalog
+		// but fail to load using mapbojects API so we restrict to the simple set of alpha numerics chars only
+		fieldname = fieldname.trim().replaceAll("[^A-Za-z0-9_]+", "");
+		if (fieldname.length() > 10) {
+			// quick fix 'Error' suffix -> 'Err'
+			if (fieldname.endsWith("Error")) fieldname = fieldname.substring(0, fieldname.length() - 2);
+			// first try to remove lower-case vowels from the name
+			// e.g. Cross-Range Speed Error -> CrssRngSpdErr -> CrssRngSpd
+			fieldname = extractVowels(fieldname, vowelsLower, fieldname.length());
+			if (fieldname.length() > 10) {
+				fieldname = extractDuplicates(fieldname); // e.g. CrssRngErr -> CrsRngEr
+				if (fieldname.length() > 10) {
+					// if removing lower-case vowels still doesn't make it 10-letters then
+					// final name is truncated at 10-characters
+					fieldname = extractVowels(fieldname, vowelsUpper, 10);
 				}
-				if (!found)	nfieldname.append(ch);
 			}
-			fieldname = nfieldname.toString();
 		}
-		if (fieldname.length() > 11) {
-			fieldname = fieldname.substring(0, 11);
+		else {
+			if (fieldname.length() == 0) {
+				// if fieldname entirely composed of non-alphanumeric chars then just use current timestamp
+				fieldname = Long.toHexString(System.currentTimeMillis() & 0xffffffffffL);
+			}
+		}
+		if (attrNames != null) {
+			// ensure attribute name is unique and add to mapping table, etc.
+			if (attrNames.contains(fieldname)) {
+				// duplicate. name already exists
+				// truncate symbols at end of name to add numeric suffix
+				// and keep incrementing until unique name is found
+				String baseName = fieldname;
+				int count = 1;
+				do {
+					String suffix = Integer.toString(count++);
+					fieldname = baseName.substring(0, baseName.length() - suffix.length()) + suffix;
+				} while (attrNames.contains(fieldname));
+			}
+			// else new attribute. no duplicate
+			attrNames.add(fieldname);
 		}
 		try {
 			return fieldname.getBytes("US-ASCII");
 		} catch (UnsupportedEncodingException e) {
 			throw new IllegalStateException("Why is ASCII not supported?");
+		}		
+	}
+
+	// remove duplicate chars (e.g. CrssRngSpdErr -> CrsRngSpdEr)
+	private static String extractDuplicates(String fieldname) {
+		StringBuilder sb = new StringBuilder();
+		int len = fieldname.length();
+		char lastCh = 0;
+		for(int i = 0; i < fieldname.length(); i++) {
+			char ch = fieldname.charAt(i);
+			if (i > 0 && len > 10 && lastCh == ch) {
+				len--; // remove this duplicate letter
+			} else {
+				sb.append(ch);
+				lastCh = ch;
+			}
 		}
+		return sb.toString();
+	}
+
+	// remove vowels from fieldname 
+	private static String extractVowels(String fieldname, final char[] vowels, int limit) {
+		int len = fieldname.length();
+		StringBuilder sb = new StringBuilder(limit);
+		for(int i = 0; i < fieldname.length(); i++) {
+			char ch = fieldname.charAt(i);
+			boolean found = false;
+			if (len > 10 && i > 0) {
+				for (char vowel : vowels) {
+					if (vowel == ch) {
+						found = true; // found candidate letter to remove
+						break;
+					}
+				}
+			}
+			if (!found)	{
+				sb.append(ch);
+				if (sb.length() == limit) {
+					break; // limit reached
+				}
+			}
+			else len--; // removed one letter from the field name
+		}
+		return sb.toString();
 	}
 }
