@@ -28,6 +28,8 @@ import java.util.Map;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simplified Object Output Stream that saves data object
@@ -35,6 +37,9 @@ import org.apache.commons.lang.StringUtils;
  * @author DRAND
  */
 public class SimpleObjectOutputStream {
+
+	private static final Logger log = LoggerFactory.getLogger(SimpleObjectOutputStream.class);
+	
 	private DataOutputStream stream;
 	/**
 	 * Tracks the correspondence between a generated id and the class
@@ -146,7 +151,9 @@ public class SimpleObjectOutputStream {
 			stream.writeShort(SimpleObjectInputStream.DATE);
 			writeLong(((Date) value).getTime());
 		} else {
-			throw new UnsupportedOperationException("Found unsupported type " + value.getClass());
+			log.warn("Failed to serialize unsupported type: " + value.getClass().getName());
+			//throw new UnsupportedOperationException("Found unsupported type " + value.getClass());
+			stream.writeShort(SimpleObjectInputStream.NULL);
 		}		
 	}
 	
