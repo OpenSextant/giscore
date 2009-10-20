@@ -1,50 +1,14 @@
 package org.mitre.giscore.output.shapefile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
-
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.IStreamVisitor;
-import org.mitre.giscore.events.Comment;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
 import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.GroundOverlay;
 import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.NetworkLinkControl;
-import org.mitre.giscore.events.PhotoOverlay;
-import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.ScreenOverlay;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.events.StyleMap;
-import org.mitre.giscore.geometry.Circle;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.GeometryBag;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.Model;
-import org.mitre.giscore.geometry.MultiLine;
-import org.mitre.giscore.geometry.MultiLinearRings;
-import org.mitre.giscore.geometry.MultiPoint;
-import org.mitre.giscore.geometry.MultiPolygons;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.FeatureSorter;
 import org.mitre.giscore.output.IContainerNameStrategy;
@@ -54,6 +18,16 @@ import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.utils.ZipUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
+import java.util.zip.ZipOutputStream;
 
 /**
  * Output stream for Shape file creation. The basic output routines are lifted
