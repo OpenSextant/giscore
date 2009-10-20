@@ -51,23 +51,25 @@ public class ContainerStart extends Common {
      * @throws IllegalArgumentException if type is null or empty 
      */
 	public ContainerStart(String type) {
-		if (StringUtils.isBlank(type)) {
-			throw new IllegalArgumentException("type should never be null or empty");
-		}
-		this.type = type;
+		setType(type);
 	}
 
 	/**
-	 * @return the type
+	 * @return the type, never null
 	 */
 	public String getType() {
 		return type;
 	}
 
 	/**
+	 * Set type of container (e.g. Folder, Document)
 	 * @param type the type to set
+	 * @throws IllegalArgumentException if type is null or empty
 	 */
 	public void setType(String type) {
+		if (StringUtils.isBlank(type)) {
+			throw new IllegalArgumentException("type should never be null or empty");
+		}
 		this.type = type;
 	}
 
