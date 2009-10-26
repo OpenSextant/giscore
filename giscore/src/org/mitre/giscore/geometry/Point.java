@@ -32,9 +32,6 @@ import org.mitre.itf.geodesy.*;
  * ShapeType of Point or PointZ. In Google KML files, this object corresponds to
  * a Geometry object of type Point. <p/>
  *
- * Notes/Limitations: <br/>
- * - Point does not support tessellate attributes.
- *  
  * @author Paul Silvey
  */
 public class Point extends GeometryBase {
@@ -42,8 +39,6 @@ public class Point extends GeometryBase {
 	private static final long serialVersionUID = 1L;
 
 	private Geodetic2DPoint pt; // or extended Geodetic3DPoint
-
-    // private Boolean tessellate; // default (false)
 
 	/**
 	 * Empty ctor only for object IO

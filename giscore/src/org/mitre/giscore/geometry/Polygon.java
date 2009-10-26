@@ -49,7 +49,6 @@ import org.slf4j.LoggerFactory;
  *  - If validateTopology is selected then constructor enforces that the outer ring lists its points
  *   in the clockwise direction, and one or more fully and properly contained inner rings that
  *   list their points counter-clockwise. <br/>
- *  - Geometry does not support tessellate attribute.
  *
  * @author Jason Mathews
  */
@@ -60,8 +59,6 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 
     private LinearRing outerRing;
     private List<LinearRing> ringList;
-
-    // private Boolean tessellate; // default (false)
 
     /**
      * Empty ctor for object io

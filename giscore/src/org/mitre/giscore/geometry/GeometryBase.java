@@ -21,6 +21,8 @@ public abstract class GeometryBase extends Geometry {
 
     private Boolean extrude; // default (false)
 
+	private Boolean tessellate; // default (false)
+
     /**
      * Altitude Mode ([clampToGround], relativeToGround, absolute). If value is null
      * then the default clampToGround is assumed and altitude can be ignored.
@@ -40,9 +42,10 @@ public abstract class GeometryBase extends Geometry {
 	}
 
     /**
-     * Set altitudeMode
+     * Set altitudeMode to normalized AltitudeModeEnumType value or null if invalid. 
 	 * @param altitudeMode
 	 *            the altitudeMode to set ([clampToGround], relativeToGround, absolute)
+	 * 				also includes gx:extensions (clampToSeaFloor and relativeToSeaFloor)
 	 */
     public void setAltitudeMode(String altitudeMode) {
         this.altitudeMode = AltitudeModeEnumType.getNormalizedMode(altitudeMode);
@@ -54,6 +57,14 @@ public abstract class GeometryBase extends Geometry {
 
     public void setExtrude(Boolean extrude) {
         this.extrude = extrude;
+    }
+
+	public Boolean getTessellate() {
+        return tessellate;
+    }
+
+    public void setTessellate(Boolean tessellate) {
+        this.tessellate = tessellate;
     }
 
     /**
@@ -77,6 +88,8 @@ public abstract class GeometryBase extends Geometry {
 		altitudeMode = val != null && val.length() != 0 ? AltitudeModeEnumType.valueOf(val) : null;
         int ch = in.readByte();
         extrude = (ch  == 0 || ch == 1) ? Boolean.valueOf(ch == 1) : null;
+		ch = in.readByte();
+		tessellate = (ch  == 0 || ch == 1) ? Boolean.valueOf(ch == 1) : null;
 	}
 
     /**
@@ -89,5 +102,6 @@ public abstract class GeometryBase extends Geometry {
 		super.writeData(out);
         out.writeString(altitudeMode == null ? "" : altitudeMode.toString());
 		out.writeByte(extrude == null ? 0xff : extrude ? 1 : 0);
+		out.writeByte(tessellate == null ? 0xff : tessellate ? 1 : 0);
 	}
 }

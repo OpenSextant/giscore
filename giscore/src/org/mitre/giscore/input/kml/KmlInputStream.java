@@ -86,7 +86,8 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Geometry is handled by common code as well. All coordinates in KML are
  * transmitted as tuples of two or three elements. The formatting of these is
- * consistent and is handled by {@link #parseCoordinates(QName)}.
+ * consistent and is handled by {@link #parseCoordinates(QName)}. Tessellate,
+ * extrude, and altitudeMode properties are maintained on the associated Geometry. 
  * <p>
  * Feature properties (i.e., name, description, visibility, Camera/LookAt,
  * styleUrl, inline Styles, TimeStamp/TimeSpan elements) in addition
@@ -147,7 +148,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private Map<String, Schema> schemata = new HashMap<String, Schema>();
 
 	// stores current altitudeMode value for last geometry parsed 
-	private transient String altitudeMode;
+	//private transient String altitudeMode;
 
 	private static final List<SimpleDateFormat> ms_dateFormats = new ArrayList<SimpleDateFormat>(6);
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
@@ -1806,6 +1807,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
             // if only one geometry valid then drop collection and use single geometry
             if (geometries.size() == 1) {
                 log.debug("Convert MultiGeometry to single geometry");
+				// todo: confirm that tesselate/extrude preserved
                 return geometries.get(0);
             }
 			boolean allpoints = true;
@@ -1839,43 +1841,40 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                     } else if (localPart.equals(ALTITUDE_MODE)) {
                         model.setAltitudeMode(getNonEmptyElementText());
                     }
+					// todo: Orientation, Scale, Link, ResourceMap
 				}                        
             }
             return model;
 		} else {
 			// otherwise try LineString, LinearRing, Polygon
-			altitudeMode = null; // reset altitudeMode for next geometry
-			GeometryBase geom = getGeometryBase(name, localname);
-			if (geom != null && altitudeMode != null) {
-				geom.setAltitudeMode(altitudeMode);
-			}
-			return geom;
+			return getGeometryBase(name, localname);
 		}
 	}
 
 	private GeometryBase getGeometryBase(QName name, String localname) throws XMLStreamException {
 		if (localname.equals(LINE_STRING)) {
-			List<Point> coords = parseCoordinates(name);
-            if (coords.size() == 1) {
-                Point pt = coords.get(0);
+			GeometryGroup geom = parseCoordinates(name);
+            if (geom.size() == 1) {
+                Point pt = geom.points.get(0);
                 log.warn("line with single coordinate converted to point: " + pt);
-                return pt;
+                return getGeometry(geom, pt);
             }
-			else return new Line(coords);
+			else return getGeometry(geom, new Line(geom.points));
 		} else if (localname.equals(LINEAR_RING)) {
-			List<Point> coords = parseCoordinates(name);
-            if (coords.size() == 1) {
-                Point pt = coords.get(0);
+			GeometryGroup geom = parseCoordinates(name);
+            if (geom.size() == 1) {
+                Point pt = geom.points.get(0);
                 log.warn("ring with single coordinate converted to point: " + pt);
-                return pt;
-            } else if (coords.size() != 0 && coords.size() < 4) {
-                log.warn("ring with " + coords.size()+ " coordinates converted to line: " + coords);
-                return new Line(coords);
+                return getGeometry(geom, pt);
+            } else if (geom.size() != 0 && geom.size() < 4) {
+                log.warn("ring with " + geom.size()+ " coordinates converted to line: " + geom);
+				return getGeometry(geom, new Line(geom.points));
             }
-			else return new LinearRing(coords);
+			else return getGeometry(geom, new LinearRing(geom.points));
 		} else if (localname.equals(POLYGON)) {
-			// Contains two linear rings
+			// contains one outer ring and 0 or more inner rings
 			LinearRing outer = null;
+			GeometryGroup geom = new GeometryGroup();
 			List<LinearRing> inners = new ArrayList<LinearRing>();
 			while (true) {
 				XMLEvent event = stream.nextEvent();
@@ -1887,32 +1886,61 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					QName qname = se.getName();
 					String sename = qname.getLocalPart();
 					if (sename.equals(OUTER_BOUNDARY_IS)) {
-						List<Point> coords = parseCoordinates(qname);
-                        if (coords.size() == 1) {
-                            Point pt = coords.get(0);
+						parseCoordinates(qname, geom);
+						int nPoints = geom.size();
+                        if (nPoints == 1) {
+                            Point pt = geom.points.get(0);
                             log.warn("polygon with single coordinate converted to point: " + pt);
-                            return pt;
-                        } else if (coords.size() != 0 && coords.size() < 4) {
-                            log.warn("polygon with " + coords.size()+ " coordinates converted to line: " + coords);
-                            return new Line(coords);
+							return getGeometry(geom, pt);
+                        } else if (nPoints != 0 && nPoints < 4) {
+							// less than 4 points - use line for the shape
+                            log.warn("polygon with " + nPoints + " coordinates converted to line: " + geom);
+							Line line = new Line(geom.points);
+							return getGeometry(geom, line);
                         }
-						outer = new LinearRing(coords);
+						outer = new LinearRing(geom.points);
 					} else if (sename.equals(INNER_BOUNDARY_IS)) {
-						List<Point> coords = parseCoordinates(qname);
-						inners.add(new LinearRing(coords));
+						GeometryGroup innerRing = parseCoordinates(qname);
+						if (innerRing.size() != 0)
+							inners.add(new LinearRing(innerRing.points));
 					} else if (sename.equals(ALTITUDE_MODE)) {
-						altitudeMode = getNonEmptyElementText(); 
+						geom.altitudeMode = getNonEmptyElementText();
+					} else if (EXTRUDE.equals(sename)) {
+						String val = getNonEmptyElementText();
+						if (val != null && (val.equals("1") || val.equalsIgnoreCase("true")))
+							geom.extrude = Boolean.TRUE;
+					} else if (TESSELLATE.equals(sename)) {
+						String val = getNonEmptyElementText();
+						if (val != null && (val.equals("1") || val.equalsIgnoreCase("true")))
+							geom.tessellate = Boolean.TRUE;
 					}
 				}
 			}
 			if (outer == null) {
 				throw new IllegalStateException("Bad poly found, no outer ring");
 			}
-
-			return new Polygon(outer, inners);
+			return getGeometry(geom, new Polygon(outer, inners));
 		}
-		
+
 		return null;
+	}
+
+	/**
+	 * Map properties of GeometryGroup onto the created <code>GeometryBase</code> 
+	 * @param group
+	 * @param geom GeometryBase, never null 
+	 * @return filled in GeometryBase object  
+	 */
+	private static GeometryBase getGeometry(GeometryGroup group, GeometryBase geom) {
+		if (group != null) {
+			if (group.tessellate != null)
+				geom.setTessellate(group.tessellate);
+			if (group.extrude != null)
+				geom.setExtrude(group.extrude);
+			if (group.altitudeMode != null)
+				geom.setAltitudeMode(group.altitudeMode);
+		}
+		return geom;
 	}
 
 	private Geodetic2DPoint parseLocation(QName qname) throws XMLStreamException {
@@ -1962,6 +1990,49 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 : new Geodetic3DPoint(longitude, latitude, altitude);
     }
 
+	/**
+	 * Find the coordinates element and extract the fractional lat/lons/alts
+	 * into an array. The element name is used to spot if we leave the "end" of
+	 * the block. The stream will be positioned after the element when this
+	 * returns.
+	 *
+	 * @param name  the qualified name of this event
+     * @param geom GeomBase, never null
+	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 */
+	private void parseCoordinates(QName name, GeometryGroup geom) throws XMLStreamException {
+		while (true) {
+			XMLEvent event = stream.nextEvent();
+			if (foundEndTag(event, name)) {
+				break;
+			}
+			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
+				String localPart = event.asStartElement().getName().getLocalPart();
+				if (COORDINATES.equals(localPart)) {
+					String text = getNonEmptyElementText();
+					if (text != null) geom.points = parseCoord(text);
+					skipNextElement(stream, name);
+					break;
+				}
+				else if (ALTITUDE_MODE.equals(localPart)) {
+					// note: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
+					geom.altitudeMode = getNonEmptyElementText();
+				}
+				else if (EXTRUDE.equals(localPart)) {
+					String val = getNonEmptyElementText();
+					if (val != null && (val.equals("1") || val.equalsIgnoreCase("true")))
+						geom.extrude = Boolean.TRUE;
+				}
+				else if (TESSELLATE.equals(localPart)) {
+					String val = getNonEmptyElementText();
+					if (val != null && (val.equals("1") || val.equalsIgnoreCase("true")))
+						geom.tessellate = Boolean.TRUE;
+				}
+			}
+		}
+		if (geom.points == null) geom.points = Collections.emptyList();
+	}
+
     /**
 	 * Find the coordinates element and extract the fractional lat/lons/alts
 	 * into an array. The element name is used to spot if we leave the "end" of
@@ -1972,30 +2043,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @return the list coordinates, empty list if no valid coordinates are found
      * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private List<Point> parseCoordinates(QName name)
-			throws XMLStreamException {
-		List<Point> rval = null;
-		while (true) {
-			XMLEvent event = stream.nextEvent();
-			if (foundEndTag(event, name)) {
-				break;
-			}
-			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
-				String localPart = event.asStartElement().getName().getLocalPart();
-				if (COORDINATES.equals(localPart)) {
-					String text = getNonEmptyElementText();
-					if (text != null) rval = parseCoord(text);
-					skipNextElement(stream, name);
-					break;
-				}
-				else if (ALTITUDE_MODE.equals(localPart)) {
-					// note: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
-					altitudeMode = getNonEmptyElementText();
-				}
-			}
-		}
-		if (rval == null) rval = Collections.emptyList();
-		return rval;
+	private GeometryGroup parseCoordinates(QName name) throws XMLStreamException {
+		GeometryGroup geom = new GeometryGroup();
+		parseCoordinates(name, geom);
+		return geom;
 	}
 
 	/**
@@ -2011,6 +2062,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private Point parseCoordinate(QName name) throws XMLStreamException {
 		Point rval = null;
 		String altitudeMode = null;
+		Boolean extrude = null;
 		while (true) {
 			XMLEvent event = stream.nextEvent();
 			if (foundEndTag(event, name)) {
@@ -2031,10 +2083,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					// note: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
 					altitudeMode = getNonEmptyElementText();					
 				}
+				else if (EXTRUDE.equals(localPart)) {
+					String val = getNonEmptyElementText();
+					if (val != null && (val.equals("1") || val.equalsIgnoreCase("true")))
+						extrude = Boolean.TRUE;
+				}
+				// Note tessellate tag is not applicable to Point
 			}
 		}
-		if (rval != null && altitudeMode != null)
-			rval.setAltitudeMode(altitudeMode);
+		if (rval != null) {
+			if (altitudeMode != null) rval.setAltitudeMode(altitudeMode);
+			if (extrude != null) rval.setExtrude(extrude);
+		}
 		return rval;
 	}
 
@@ -2242,5 +2302,19 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
         elementText = elementText.trim();
         return elementText.length() == 0 ? null : elementText;
     }
+
+	private static class GeometryGroup {
+		List<Point> points;
+		String altitudeMode;
+		Boolean extrude;
+		Boolean tessellate;
+
+		int size() {
+			return points == null ? 0 : points.size();
+		}
+		public String toString() {
+			return String.valueOf(points);
+		}
+	}
 
 }

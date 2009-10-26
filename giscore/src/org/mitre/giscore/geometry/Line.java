@@ -50,8 +50,6 @@ public class Line extends GeometryBase implements Iterable<Point> {
     private List<Point> pointList;
     private boolean idlWrap;  // International Date Line Wrap
 
-    private Boolean tessellate; // default (false)
-
     /**
      * This method returns an iterator for cycling through the Points in this Line.
      * This class supports use of Java 'for each' syntax to cycle through the Points.
@@ -132,15 +130,7 @@ public class Line extends GeometryBase implements Iterable<Point> {
 		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds)bbox)
 				: new UnmodifiableGeodetic2DBounds(bbox);
         pointList = pts;
-	}
-
-    public Boolean getTessellate() {
-        return tessellate;
-    }
-
-    public void setTessellate(Boolean tessellate) {
-        this.tessellate = tessellate;
-    }
+	}   
 
     /**
      * This predicate method is used to tell if this Ring has positive Longitude points
@@ -176,8 +166,6 @@ public class Line extends GeometryBase implements Iterable<Point> {
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
 		super.readData(in);
-        int ch = in.readByte();
-        tessellate = (ch  == 0 || ch == 1) ? Boolean.valueOf(ch == 1) : null;
 		idlWrap = in.readBoolean();
 		List<Point> plist = (List<Point>) in.readObjectCollection();
 		init(plist);
@@ -188,8 +176,7 @@ public class Line extends GeometryBase implements Iterable<Point> {
 	 */
 	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
-		super.writeData(out);
-        out.writeByte(tessellate == null ? 0xff : tessellate ? 1 : 0);
+		super.writeData(out);        
 		out.writeBoolean(idlWrap);
 		out.writeObjectCollection(pointList);
 	}

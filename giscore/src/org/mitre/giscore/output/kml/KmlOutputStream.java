@@ -28,10 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.Formatter;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Locale;
 import java.util.TimeZone;
 import java.util.Queue;
 import java.text.ParseException;
@@ -72,7 +70,6 @@ import org.slf4j.LoggerFactory;
  * accept method.
  * <p/>
  * Notes/Limitations:<br/>
- *  -Output does NOT support tessellate attributes for all geometries (only Line)<br/>
  *  -A few tags are not yet supported on features so are omitted from output:
  *   atom:author, atom:link, address, xal:AddressDetails, ListStyle,
  *   Metadata, open, phoneNumber, Region, Snippet, snippet, visibility.
@@ -590,7 +587,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (poly != null)
             try {
                 writer.writeStartElement(POLYGON);
-                handleGeometryAttributes(poly, null); // todo: add tesselate
+                handleGeometryAttributes(poly); // todo: add tesselate
                 if (poly.getOuterRing() != null) {
                     writer.writeStartElement(OUTER_BOUNDARY_IS);
                     writer.writeStartElement(LINEAR_RING);
@@ -625,7 +622,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (r != null)
             try {
                 writer.writeStartElement(LINEAR_RING);
-                handleGeometryAttributes(r, null); // todo: add tesselate
+                handleGeometryAttributes(r); // todo: add tesselate
                 handleSimpleElement(COORDINATES, handleCoordinates(r.iterator()));
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
@@ -643,7 +640,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (l != null)
             try {
                 writer.writeStartElement(LINE_STRING);
-                handleGeometryAttributes(l, l.getTessellate());
+                handleGeometryAttributes(l);
                 handleSimpleElement(COORDINATES, handleCoordinates(l.getPoints()));
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
@@ -661,7 +658,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (p != null)
             try {
                 writer.writeStartElement(POINT);
-                handleGeometryAttributes(p, null);
+                handleGeometryAttributes(p);
                 //<extrude>0</extrude> <!-- boolean -->
                 //<altitudeMode>clampToGround</altitudeMode>
                 handleSimpleElement(COORDINATES, handleCoordinates(Collections
@@ -774,13 +771,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Handle Geometry attributes common to Point, Line, LinearRing, and Polygon namely
      * extrude, tessellate, and altitudeMode.  Note tessellate tag is not applicable to Point
-     * geometry.
+     * geometry and will be ignored is set on Points.
      *
      * @param geom
-     * @param tessellate
-	 * @throws XMLStreamException if there is an error with the underlying XML.
+     * @throws XMLStreamException if there is an error with the underlying XML.
      */
-    private void handleGeometryAttributes(GeometryBase geom, Boolean tessellate) throws XMLStreamException {
+    private void handleGeometryAttributes(GeometryBase geom) throws XMLStreamException {
         /*
             <element ref="kml:extrude" minOccurs="0"/>
             <element ref="kml:tessellate" minOccurs="0"/>
@@ -794,6 +790,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         Boolean extrude = geom.getExtrude();
         if (extrude != null)
             handleSimpleElement(EXTRUDE, extrude ? "1" : "0");
+		Boolean tessellate = geom.getTessellate();
         if (tessellate != null && !(geom instanceof Point))
             handleSimpleElement(TESSELLATE, tessellate ? "1" : "0");
 		handleAltitudeMode(geom.getAltitudeMode());

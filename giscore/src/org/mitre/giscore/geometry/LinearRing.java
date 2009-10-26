@@ -49,7 +49,6 @@ import org.slf4j.LoggerFactory;
  *   -LinearRing must contain at least 4 Points. <br/>
  *   -If validateTopology is selected then constructor enforces that the ring must start and end
  *    with the same point and the ring does not self-intersect. <br/>
- *   -Geometry does not support tessellate attribute.
  *
  * @author Paul Silvey
  */
@@ -59,8 +58,6 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
 
     private List<Point> pointList;
     private boolean idlWrap;  // International Date Line Wrap
-
-    // private Boolean tessellate; // default (false)
 
     /**
      * This method returns an iterator for cycling through the Points in this Ring.
