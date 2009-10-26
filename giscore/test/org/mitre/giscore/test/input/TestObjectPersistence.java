@@ -43,6 +43,8 @@ import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 
 /**
  * Test the geometry and the feature objects
@@ -161,6 +163,40 @@ public class TestObjectPersistence {
 		MultiPolygons mp = (MultiPolygons) sois.readObject();
 		assertEquals(1, mp.getNumParts());
 		
+		sois.close();
+	}
+
+	@Test public void testFeatureProperties() throws Exception {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+		List<Line> lines = new ArrayList<Line>(5);
+		
+		// output every combination of extrude and tessellate: 0, 1, or null (2)
+		for (int extrude=0; extrude <= 2; extrude++)
+			for (int tessellate=0; tessellate <= 2; tessellate++) {
+			List<Point> pts = new ArrayList<Point>();
+			for (int j = 0; j < 10; j++) {
+				pts.add(new Point(j * .01, j * .01));
+			}
+			Line l = new Line(pts);
+			if (extrude != 2)
+				l.setExtrude(extrude == 1);
+			if (tessellate != 2)
+				l.setTessellate(tessellate == 1);
+			lines.add(l);
+			soos.writeObject(l);
+		}
+
+		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+
+		for (Line line : lines) {
+			Geometry g = (Geometry) sois.readObject();
+			assertEquals(line.getNumPoints(), g.getNumPoints());
+			assertEquals(line.getBoundingBox(), g.getBoundingBox());
+			assertEquals(line, g);
+			// System.out.println(ToStringBuilder.reflectionToString(g, ToStringStyle.MULTI_LINE_STYLE));
+		}
 		sois.close();
 	}
 	
