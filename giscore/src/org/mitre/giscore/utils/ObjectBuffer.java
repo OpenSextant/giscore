@@ -52,7 +52,7 @@ public class ObjectBuffer {
 	 * <code>null</code> until there is data in the secondary 
 	 * store.
 	 */
-	private File secondaryStore = null;
+	private File secondaryStore;
 	
 	/**
 	 * The simple object output stream used to write
@@ -64,7 +64,7 @@ public class ObjectBuffer {
 	 * The simple object input stream used to read objects
 	 * from the secondary store.
 	 */
-	private SimpleObjectInputStream inputStream = null;
+	private SimpleObjectInputStream inputStream;
 	
 	/**
 	 * The actual data buffer, allocated on the
@@ -107,17 +107,20 @@ public class ObjectBuffer {
 	 * @throws IOException 
 	 */
 	public void close() throws IOException {
-		closeOutputStream();
-		if (inputStream != null) {
-			inputStream.close();
-			inputStream = null; 
+		try {
+			closeOutputStream();
+			if (inputStream != null) {
+				inputStream.close();
+				inputStream = null;
+			}
+		} finally {
+			buffer = null;
+			readIndex = 0;
+			storeIndex = 0;
+			if (secondaryStore != null) {
+				secondaryStore.delete();
+			}
 		}
-		if (secondaryStore != null) {
-			secondaryStore.delete();
-		}
-		buffer = null;
-		readIndex = 0;
-		storeIndex = 0;
 	}
 	
 	/**
@@ -197,6 +200,4 @@ public class ObjectBuffer {
 		readIndex = 0;
 	}
 
-
-	
 }
