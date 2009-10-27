@@ -21,6 +21,7 @@ package org.mitre.giscore.utils;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Closeable;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -36,11 +37,11 @@ import org.slf4j.LoggerFactory;
  * 
  * @author DRAND
  */
-public class SimpleObjectOutputStream {
+public class SimpleObjectOutputStream implements Closeable {
 
 	private static final Logger log = LoggerFactory.getLogger(SimpleObjectOutputStream.class);
 	
-	private DataOutputStream stream;
+	private final DataOutputStream stream;
 	/**
 	 * Tracks the correspondence between a generated id and the class
 	 */

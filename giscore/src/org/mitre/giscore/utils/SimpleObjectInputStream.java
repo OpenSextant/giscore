@@ -18,10 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.utils;
 
-import java.io.DataInputStream;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,7 +34,7 @@ import org.apache.commons.io.IOUtils;
  * @author DRAND
  * 
  */
-public class SimpleObjectInputStream {
+public class SimpleObjectInputStream implements Closeable {
 	static final int NULL = 0;
 	static final int BOOL = 1;
 	static final int SHORT = 2;
@@ -49,7 +46,7 @@ public class SimpleObjectInputStream {
 	static final int OBJECT_NULL = 8;
 	static final int DATE = 9;
 	
-	private DataInputStream stream;
+	private final DataInputStream stream;
 	@SuppressWarnings("unchecked")
 	private final Map<Integer, Class> classMap = new HashMap<Integer, Class>();
 	
