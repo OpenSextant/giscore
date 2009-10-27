@@ -31,8 +31,11 @@ public interface IDataSerializable {
 	 * 
 	 * @param in
 	 *            the input stream, never <code>null</code>
-	 * @throws IOException
+	 * 
+	 * @throws IOException  if an I/O error occurs.
 	 * @throws ClassNotFoundException
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException, IllegalAccessException;
@@ -41,7 +44,8 @@ public interface IDataSerializable {
 	 * Write the object to the data stream
 	 * 
 	 * @param out
-	 * @throws IOException
+	 *            the output stream, never <code>null</code>
+	 * @throws  IOException  if an I/O error occurs.
 	 */
 	public void writeData(SimpleObjectOutputStream out) throws IOException;
 }
