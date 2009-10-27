@@ -23,10 +23,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * A buffer that will hold a fixed amount of data in memory, 
  * and overflows into secondary storage if there's too much data 
