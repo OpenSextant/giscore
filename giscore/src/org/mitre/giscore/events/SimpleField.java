@@ -351,7 +351,15 @@ public class SimpleField implements IDataSerializable {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		return EqualsBuilder.reflectionEquals(this, obj);
+		// note: if use EqualsBuilder.reflectionEquals then Feature.approximatelyEquals() gets messed up
+		// when comparing fields from two different Features so just test the name field.
+		if (obj instanceof SimpleField) {
+			SimpleField other = (SimpleField)obj;
+			if (name == null) return other.name == null;
+			return name.equals(other.name);
+		}
+		return false;
+		//return EqualsBuilder.reflectionEquals(this, obj);
 	}
 
 	/*
