@@ -49,13 +49,12 @@ public class Row extends AbstractObject implements IDataSerializable {
 	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
-	public void readData(SimpleObjectInputStream in) throws IOException,
-			ClassNotFoundException, InstantiationException,
-			IllegalAccessException {
+	public void readData(SimpleObjectInputStream in) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+		super.readData(in);
 		String schemaStr = in.readString(); 
 		try {
 			schema = schemaStr != null ? new URI(schemaStr) : null;
@@ -76,6 +75,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 	 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
 	 */
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
 		out.writeString(schema != null ? schema.toString() : null);
 		int cnt = extendedData.size();
 		out.writeInt(cnt);
