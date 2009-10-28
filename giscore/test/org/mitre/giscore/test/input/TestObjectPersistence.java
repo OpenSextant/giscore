@@ -208,6 +208,9 @@ public class TestObjectPersistence {
 	@Test public void testFeatures() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
 		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+
+		Feature pt = makePointFeature();
+		soos.writeObject(pt);
 		
 		GroundOverlay go = makeGO();
 		soos.writeObject(go);
@@ -228,6 +231,9 @@ public class TestObjectPersistence {
 
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+
+		Feature  f2 = (Feature) sois.readObject();
+		assertEquals(pt, f2);
 		
 		GroundOverlay g2 = (GroundOverlay) sois.readObject();
 		assertEquals(go, g2);
@@ -243,8 +249,19 @@ public class TestObjectPersistence {
 		
 		ContainerStart c2 = (ContainerStart) sois.readObject();
 		assertEquals(cs, c2);
-		
+
 		sois.close();
+	}
+
+	private Feature makePointFeature() {
+		Feature f = new Feature();
+        f.setName("test");
+		f.setDescription("this is a test placemark");
+		Date date = new Date();
+		f.setStartTime(date);
+		f.setEndTime(date);
+		f.setGeometry(new Point(42.504733587704, -71.238861602674));
+		return f;
 	}
 
 	/**
@@ -292,6 +309,8 @@ public class TestObjectPersistence {
 	 */
 	private PhotoOverlay makePO() {
 		PhotoOverlay po = new PhotoOverlay();
+		po.setColor(Color.RED);
+		po.setId("po01");
 		
 		return po;
 	}
