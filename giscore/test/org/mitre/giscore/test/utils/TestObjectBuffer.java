@@ -21,15 +21,20 @@ package org.mitre.giscore.test.utils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Date;
+import java.util.List;
+import java.util.ArrayList;
 
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.ObjectBuffer;
+import org.mitre.giscore.geometry.Point;
 
 /**
  * Test object buffers for several different scenarios
@@ -47,7 +52,7 @@ public class TestObjectBuffer {
 		IDataSerializable objects[] = setupTest(count, buffer);
 		doTest(objects, buffer);
 	}
-	
+
 	@Test
 	public void test2() throws Exception {
 		int count = max;
@@ -70,8 +75,33 @@ public class TestObjectBuffer {
 		ObjectBuffer buffer = new ObjectBuffer(max);
 		IDataSerializable objects[] = setupTest(count, buffer);
 		doTest(objects, buffer);
-	}	
-	
+	}
+
+	@Test
+	public void testPoints() throws Exception {
+		final int count = 4;
+		System.out.println("testPoints");
+		ObjectBuffer buffer = new ObjectBuffer(2);
+		Schema schema = new Schema();
+		SimpleField id = new SimpleField("id", SimpleField.Type.INT);
+		SimpleField name = new SimpleField("name");
+		name.setLength(1);
+		schema.put(id);
+		schema.put(name);
+		// keeps 2 in-memory and 2 on disk
+		List<IDataSerializable> objects = new ArrayList<IDataSerializable>(count);
+		for (int i=0; i < count; i++) {
+			Feature f = makePointFeature();
+			f.setName(Integer.toString(i));
+			f.putData(id, i & 2);
+			f.putData(name, f.getName());
+			f.setSchema(schema.getId());
+			objects.add(f);
+			buffer.write(f);
+		}
+		doTest(objects.toArray(new IDataSerializable[count]), buffer);
+	}
+
 	@Test
 	public void testTimed() throws Exception {
 		ObjectBuffer buffer = new ObjectBuffer(10000);
@@ -125,20 +155,37 @@ public class TestObjectBuffer {
 		return objects;
 	}
 
+	private Feature makePointFeature() {
+		Feature f = new Feature();
+		f.setDescription("this is a test placemark");
+		Date date = new Date();
+		f.setStartTime(date);
+		f.setEndTime(date);
+		double lat = 40.0 + (5.0 * RandomUtils.nextDouble());
+		double lon = 40.0 + (5.0 * RandomUtils.nextDouble());
+		f.setGeometry(new Point(lat, lon));
+		return f;
+	}
+
 	private void doTest(IDataSerializable[] objects, ObjectBuffer buffer)
 			throws IOException, ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
-		assertEquals(objects.length, buffer.count());
+		try {
+			assertEquals(objects.length, buffer.count());
 
-		// Check each object against the buffer
-		for (int i = 0; i < objects.length; i++) {
-			IDataSerializable retrieved = buffer.read();
-			assertNotNull(retrieved);
-			assertEquals(objects[i], retrieved);
+			// Check each object against the buffer
+			for (IDataSerializable object : objects) {
+				IDataSerializable retrieved = buffer.read();
+				assertNotNull(retrieved);
+				//if (object instanceof Feature && retrieved instanceof Feature)
+					// System.out.println( ((Feature)object).approximatelyEquals((Feature)retrieved) );
+				assertEquals(object, retrieved);
+			}
+			assertNull(buffer.read());
+
+		} finally {
+			buffer.close();
 		}
-		assertNull(buffer.read());
-
-		buffer.close();
 	}
 
 }
