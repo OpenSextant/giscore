@@ -1,5 +1,11 @@
 package org.mitre.giscore.events;
 
+import org.mitre.giscore.utils.IDataSerializable;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+
+import java.io.IOException;
+
 /**
  * AbstractObject is a base IGISObject that simply has a unique id field.
  * Conceptually same as the KML AbstractObjectGroup element. 
@@ -7,7 +13,7 @@ package org.mitre.giscore.events;
  * @author Jason Mathews, MITRE Corp.
  * Date: Sep 15, 2009 10:50:00 AM
  */
-public abstract class AbstractObject implements IGISObject {
+public abstract class AbstractObject implements IDataSerializable, IGISObject {
 
     private String id;
 
@@ -30,5 +36,19 @@ public abstract class AbstractObject implements IGISObject {
         }
         this.id = id;
     }
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+	public void readData(SimpleObjectInputStream in) throws IOException, ClassNotFoundException, IllegalAccessException, InstantiationException {
+		id = in.readString();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		out.writeString(id);
+	}
     
 }
