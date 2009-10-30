@@ -23,6 +23,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import org.mitre.giscore.GISFactory;
+
 /**
  * A buffer that will hold a fixed amount of data in memory, 
  * and overflows into secondary storage if there's too much data 
@@ -81,7 +83,7 @@ public class ObjectBuffer {
 	private int readIndex = 0;
 	
 	public ObjectBuffer() {
-		this(DEFAULT_SIZE);
+		this(GISFactory.inMemoryBufferSize.get());
 	}
 	
 	/**
@@ -194,6 +196,7 @@ public class ObjectBuffer {
 	 */
 	public void resetReadIndex() {
 		readIndex = 0;
+		inputStream = null;
 	}
 
 }

@@ -1,39 +1,43 @@
 <?xml-stylesheet type="text/xsl" href="http://www.jayasoft.fr/org/ivyrep/ivy-doc.xsl"?>
 <ivy-module version="2.0">
-	<info organisation="org.mitre.itf" module="giscore"/>
+	<info organisation="org.mitre.itf" module="giscore" />
 	<configurations>
 		<conf name="compile"
-			description="This is this configuration that describes modules need to build our project"/>
-		<conf name="runtime" extends="compile"/>
+			description="This is this configuration that describes modules need to build our project" />
+		<conf name="runtime" extends="compile" />
 		<conf name="test" extends="runtime"
-			description="This is this configuration that describes modules need to run test on our project"
-		/>
+			description="This is this configuration that describes modules need to run test on our project" />
 	</configurations>
 	<publications>
-		<artifact name="giscore" type="jar" conf="compile"/>
-		<artifact name="giscore" type="pom" ext="pom"/>
-		<artifact name="giscore-sources" type="sources" ext="jar"/>
-		<artifact name="giscore-javadoc" type="javadoc" ext="jar"/>
+		<artifact name="giscore" type="jar" conf="compile" />
+		<artifact name="giscore" type="pom" ext="pom" />
+		<artifact name="giscore-sources" type="sources" ext="jar" />
+		<artifact name="giscore-javadoc" type="javadoc" ext="jar" />
 	</publications>
 	<dependencies defaultconf="compile->default">
-		<dependency org="org.mitre.javautil" name="javautil-tiger" rev="0.9.6"/>
-		<dependency org="org.mitre.itf" name="geodesy" rev="1.9.6"/>
-		<dependency org="commons-lang" name="commons-lang" rev="2.4"/>
-		<dependency org="commons-io" name="commons-io" rev="1.4"/>
-		<dependency org="org.slf4j" name="slf4j-api" rev="1.5.6"/>
-		<dependency org="stax" name="stax-api-osgi" rev="1.0.1"/>
+		<dependency org="org.mitre.javautil" name="javautil-tiger"
+			rev="0.9.6" />
+		<dependency org="org.mitre.itf" name="geodesy" rev="1.9.6" />
+		<dependency org="commons-lang" name="commons-lang" rev="2.4" />
+		<dependency org="commons-io" name="commons-io" rev="1.4" />
+		<dependency org="org.slf4j" name="slf4j-api" rev="1.5.6" />
+		<dependency org="stax" name="stax-api-osgi" rev="1.0.1" />
+		<dependency org="org.geotools" name="gt-main" rev="2.5.7" />
 		<!-- This dependency will break in OSGi land. -->
-		<dependency org="com.esri.arcgis" name="arcobjects" rev="9.3.0.B"/>
+		<dependency org="com.esri.arcgis" name="arcobjects" rev="9.3.0.B" />
 		<!-- junit is only needed in the test configuration-->
-		<dependency org="junit" name="junit" rev="4.5" conf="test->default"/>
+		<dependency org="junit" name="junit" rev="4.5" conf="test->default" />
 
-		<dependency org="org.slf4j" name="slf4j-log4j12" rev="1.5.6" conf="test->default"/>
-		<dependency org="org.slf4j" name="jcl-over-slf4j" rev="1.5.6" conf="test->default"/>
-		<dependency org="log4j" name="log4j-osgi" rev="1.2.15" conf="test->default"/>
+		<dependency org="org.slf4j" name="slf4j-log4j12" rev="1.5.6"
+			conf="test->default" />
+		<dependency org="org.slf4j" name="jcl-over-slf4j" rev="1.5.6"
+			conf="test->default" />
+		<dependency org="log4j" name="log4j-osgi" rev="1.2.15"
+			conf="test->default" />
 
-		<exclude org="commons-logging" module="commons-logging"/>
-		<exclude org="org.apache.xerces" module="com.springsource.org.apache.xerces"/>
-		<exclude org="org.apache.xml" module="com.springsource.org.apache.xml.resolver"/>
-		<exclude org="log4j" module="log4j"/>
+		<exclude org="commons-logging" module="commons-logging" />
+		<exclude org="org.apache.xerces" module="com.springsource.org.apache.xerces" />
+		<exclude org="org.apache.xml" module="com.springsource.org.apache.xml.resolver" />
+		<exclude org="log4j" module="log4j" />
 	</dependencies>
 </ivy-module>

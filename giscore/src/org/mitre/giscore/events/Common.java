@@ -170,6 +170,7 @@ public abstract class Common extends Row {
 			endTime = null;
 		}
 		viewGroup = (TaggedMap) in.readObject();
+		visibility = (Boolean) in.readScalar();
 	}
 
 	/**
@@ -192,6 +193,7 @@ public abstract class Common extends Row {
 		else 
 			out.writeLong(-1);
 		out.writeObject(viewGroup);
+		out.writeScalar(visibility);
 	}
 
 	/*

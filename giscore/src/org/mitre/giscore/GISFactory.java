@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -47,6 +48,12 @@ import org.mitre.giscore.output.shapefile.ShapefileOutputStream;
  * @author DRAND
  */
 public class GISFactory {
+	/**
+	 * The size of the buffer that should be used when buffering content
+	 * in memory. Right now this is a per feature class buffer size.
+	 */
+	public static AtomicInteger inMemoryBufferSize = new AtomicInteger(2000);
+	
 	/**
 	 * Input stream factory
 	 * 

@@ -414,7 +414,7 @@ public class SimpleField implements IDataSerializable {
 		out.writeString(getModelName());
 		out.writeString(getName());
 		out.writeString(getType().name());
-		out.writeScalar(getLength());
+		out.writeScalar(length);
 		out.writeScalar(getPrecision());
 		out.writeScalar(getScale());
 	}

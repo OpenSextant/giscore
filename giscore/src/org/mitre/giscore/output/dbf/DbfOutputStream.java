@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.Collection;
 import java.util.ArrayList;
 
+import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
@@ -98,7 +99,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 					"outputStream should never be null");
 		}
 		stream = new BinaryOutputStream(outputStream);
-		this.buffer = new ObjectBuffer(2000);
+		this.buffer = new ObjectBuffer();
 
 		// Write the xBaseFile signature (should be 0x03 for dBase III)
 		stream.writeByte(SIGNATURE);
