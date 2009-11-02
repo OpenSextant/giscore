@@ -158,20 +158,25 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
     static {
 		ms_fact = XMLInputFactory.newInstance();
+		
+		// all non-container elements that extend kml:AbstractFeatureType base type in KML Schema
 		ms_features.add(PLACEMARK);
 		ms_features.add(NETWORK_LINK);
 		ms_features.add(GROUND_OVERLAY);
 		ms_features.add(PHOTO_OVERLAY);
 		ms_features.add(SCREEN_OVERLAY);
 
+		// all elements that extend kml:AbstractContainerType in KML Schema
 		ms_containers.add(FOLDER);
 		ms_containers.add(DOCUMENT);
 
+		// basic tags in Feature that are skipped but consumed
 		ms_attributes.add(VISIBILITY);
 		ms_attributes.add(OPEN);
 		ms_attributes.add(ADDRESS);
 		ms_attributes.add(PHONE_NUMBER);
 
+		// all posible elements that extend kml:AbstractGeometryType base type in KML Schema
 		ms_geometries.add(POINT);
 		ms_geometries.add(LINE_STRING);
 		ms_geometries.add(LINEAR_RING);
@@ -391,7 +396,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 feature.setStyleUrl(stream.getElementText());
                 return true;
 			} else if (localname.equals(REGION)) {
-                handleRegion(feature, ee);
+                handleRegion(feature, name);
                 return true;
             } else if (localname.equals(TIME_SPAN) || localname.equals(TIME_STAMP)) {
                 handleTimePrimitive(feature, ee);
@@ -873,21 +878,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * Handle KML region
-	 * @param ee
+	 * @param name
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleRegion(Common cs, XMLEvent ee)
+	private void handleRegion(Common cs, QName name)
 			throws XMLStreamException {
-		XMLEvent next;
-
-		while (true) {
-			next = stream.nextEvent();
-			if (next == null)
-				return;
-			if (foundEndTag(next, REGION)) {
-				return;
-			}
-		}
+		skipNextElement(stream, name);
 	}
 
 	/**
@@ -960,9 +956,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handlePolyStyle(Style style, QName qname) throws XMLStreamException {
-		Color color = Color.white;
-		boolean fill = true;
-		boolean outline = true;
+		Color color = Color.white; // default color="ffffffff" (white)
+		boolean fill = true; // default = true
+		boolean outline = true;	// default = true
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (foundEndTag(e, qname)) {
@@ -988,10 +984,17 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * 
 	 * @param val
 	 *            the value, may be <code>null</code>
-	 * @return <code>false</code> if the value is not the single character "1".
+	 * @return <code>true</code> if the value is the single character "1" or "true".
 	 */
 	private boolean isTrue(String val) {
-		return val != null && val.trim().equals("1");
+		// xsd:boolean· can have the following legal literals {true, false, 1, 0}.
+		if (val != null) {
+			val = val.trim();
+			if (val.equals("1")) return true;
+			else if (val.equals("0")) return false;
+			return val.equalsIgnoreCase("true");
+		}
+		return false;
 	}
 
 	/**
@@ -1907,13 +1910,13 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					} else if (sename.equals(ALTITUDE_MODE)) {
 						geom.altitudeMode = getNonEmptyElementText();
 					} else if (EXTRUDE.equals(sename)) {
-						String val = getNonEmptyElementText();
-						if (val != null && (val.equals("1") || val.equalsIgnoreCase("true")))
+						if (isTrue(stream.getElementText()))
 							geom.extrude = Boolean.TRUE;
+						// default 0/false
 					} else if (TESSELLATE.equals(sename)) {
-						String val = getNonEmptyElementText();
-						if (val != null && (val.equals("1") || val.equalsIgnoreCase("true")))
+						if (isTrue(stream.getElementText()))
 							geom.tessellate = Boolean.TRUE;
+						// default 0/false
 					}
 				}
 			}
