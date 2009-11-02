@@ -1,11 +1,12 @@
 package org.mitre.giscore.utils;
 
+import org.mitre.itf.geodesy.Geodetic2DBounds;
+import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.GeometryBag;
+import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 
@@ -32,6 +33,7 @@ import java.net.URISyntaxException;
  *  <li> Invalid TimeSpan if begin later than end value
  *  <li> End container with no matching start container
  *  <li> Starting container tag with no matching end container
+ *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem)
  * </ul>
  * 
  * This tool helps to uncover issues in reading and writing target KML files.
@@ -280,6 +282,7 @@ public class KmlMetaDump implements IKml {
             addTag(PLACEMARK);
             checkFeature(f);
             if (geom != null) {
+                checkGeometry(geom);
                 Class geomClass = geom.getClass();
                 if (geomClass == GeometryBag.class) {
                     addTag(MULTI_GEOMETRY);
@@ -420,6 +423,23 @@ public class KmlMetaDump implements IKml {
 		}
 	}
 
+	/**
+	 * Detect dateline wrap or antimeridian spanning when geometry spans the -180/+180 longtiude line
+	 */
+	private void checkGeometry(Geometry geom) {
+		// geom must have at least 2 points (points cannot span the line)
+		if (geom.getNumPoints() < 2) return;
+		Geodetic2DBounds bbox = geom.getBoundingBox();
+		//if (geom instanceof Line && (((Line)geom).clippedAtDateLine())) System.out.println(":clipped");
+		//else if (geom instanceof LinearRing && (((LinearRing)geom).clippedAtDateLine())) System.out.println(":clipped");
+		// see http://www.cadmaps.com/gisblog/?cat=10
+		if (bbox.westLon.inDegrees() > bbox.eastLon.inDegrees()) {
+			//System.out.println(geom.getClass().getName());
+			addTag(":Geometry spans -180/+180 longtiude line");
+			// such geometries must be sub-divided to render correctly
+		}
+	}
+
 	private void checkNetworkLink(NetworkLink networkLink) {
 		TaggedMap link = networkLink.getLink();
 		if (link != null) {
@@ -461,13 +481,13 @@ public class KmlMetaDump implements IKml {
 				}
 			}
 		} else if (containerStartDate != null || containerEndDate != null) {
-            /*
-                Features with no time properties inherit the time
-                of its ancestors if they have time constraints.
-            */
+			/*
+			   Features with no time properties inherit the time
+			   of its ancestors if they have time constraints.
+			 */
 			addTag(":Feature inherits container time");
 		}
-        // otherwise feature doesn't have timeStamp or timeSpans
+		// otherwise feature doesn't have timeStamp or timeSpans
 
 		if (f.hasExtendedData()) {
 			addTag(EXTENDED_DATA);
