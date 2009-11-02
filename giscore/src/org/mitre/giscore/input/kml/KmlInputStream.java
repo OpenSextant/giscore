@@ -384,7 +384,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 feature.setDescription(getElementText(name));
                 return true;
             } else if (localname.equals(VISIBILITY)) {
-                feature.setVisibility(Boolean.valueOf("1".equals(getNonEmptyElementText())));
+				if (isTrue(stream.getElementText()))
+                	feature.setVisibility(Boolean.TRUE);
                 return true;
             } else if (localname.equals(STYLE)) {
                 handleStyle(feature, ee, name);
@@ -2023,13 +2024,11 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					geom.altitudeMode = getNonEmptyElementText();
 				}
 				else if (EXTRUDE.equals(localPart)) {
-					String val = getNonEmptyElementText();
-					if (val != null && (val.equals("1") || val.equalsIgnoreCase("true")))
+					if (isTrue(stream.getElementText()))
 						geom.extrude = Boolean.TRUE;
 				}
 				else if (TESSELLATE.equals(localPart)) {
-					String val = getNonEmptyElementText();
-					if (val != null && (val.equals("1") || val.equalsIgnoreCase("true")))
+					if (isTrue(stream.getElementText()))
 						geom.tessellate = Boolean.TRUE;
 				}
 			}
@@ -2088,8 +2087,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					altitudeMode = getNonEmptyElementText();					
 				}
 				else if (EXTRUDE.equals(localPart)) {
-					String val = getNonEmptyElementText();
-					if (val != null && (val.equals("1") || val.equalsIgnoreCase("true")))
+					if (isTrue(stream.getElementText()))
 						extrude = Boolean.TRUE;
 				}
 				// Note tessellate tag is not applicable to Point
