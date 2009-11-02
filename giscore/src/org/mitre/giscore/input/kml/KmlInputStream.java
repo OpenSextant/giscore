@@ -422,16 +422,17 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 skipNextElement(stream, name);
                 return true;
 			} else {
-                //StartElement sl = ee.asStartElement();
+				//StartElement sl = ee.asStartElement();
 				//QName name = sl.getName();
-                // skip atom:link and atom:author elements ## http://www.w3.org/2005/Atom
+				// skip atom:link and atom:author elements ## http://www.w3.org/2005/Atom
+				// skip known non-KML namespace elements. what about unknown ones?
 				String ns = name.getNamespaceURI();
 				if (ns != null && (ns.startsWith("http://www.w3.org/") || ns.startsWith("http://www.google.com/kml/ext/"))) {
-                    log.debug("skip:" + name);
-                    skipNextElement(stream, name);
-                    return true;
-                }
-                //System.out.println("*** skip other: " + localname + " sl=" + sl + " name=" + name.getNamespaceURI());
+					log.debug("skip " + name.getPrefix() + ":" + localname);
+					skipNextElement(stream, name);
+					return true;
+				}
+				//System.out.println("*** skip other: " + localname + " sl=" + sl + " name=" + name.getNamespaceURI());
             }
 		} catch (XMLStreamException e) {
             log.error("Failed to handle: " + localname, e);
