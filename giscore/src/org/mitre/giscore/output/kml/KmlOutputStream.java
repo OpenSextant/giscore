@@ -550,7 +550,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      *
      * @param containerType type of Container were visiting if (Feature is a Document or Folder) otherwise null
      * @throws XMLStreamException if an error occurs
-     * @throws IllegalStateException if invalid element is found in waitingElements list  @param containerType
+     * @throws IllegalStateException if invalid element is found in waitingElements list
      */
     private void handleWaitingElements(String containerType) throws XMLStreamException {
         for (int i = waitingElements.size() - 1; i >= 0; i--) {
@@ -587,7 +587,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (poly != null)
             try {
                 writer.writeStartElement(POLYGON);
-                handleGeometryAttributes(poly); // todo: add tesselate
+                handleGeometryAttributes(poly);
                 if (poly.getOuterRing() != null) {
                     writer.writeStartElement(OUTER_BOUNDARY_IS);
                     writer.writeStartElement(LINEAR_RING);
@@ -622,7 +622,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (r != null)
             try {
                 writer.writeStartElement(LINEAR_RING);
-                handleGeometryAttributes(r); // todo: add tesselate
+                handleGeometryAttributes(r);
                 handleSimpleElement(COORDINATES, handleCoordinates(r.iterator()));
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
