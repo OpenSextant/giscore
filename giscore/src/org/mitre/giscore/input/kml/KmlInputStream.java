@@ -697,7 +697,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement ie = next.asStartElement();
 				if (foundStartTag(ie, PAIR)) {
-					handleStyleMapPair(sm);
+					handleStyleMapPair(sm, ie.getName());
 				}
 			}
 		}
@@ -705,28 +705,31 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 	/**
 	 * @param sm
+	 * @param name
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleStyleMapPair(StyleMap sm) throws XMLStreamException {
+	private void handleStyleMapPair(StyleMap sm, QName name) throws XMLStreamException {
 		String key = null, value = null;
 		while (true) {
 			XMLEvent ce = stream.nextEvent();
-			if (ce == null)
+			if (ce == null) {
 				return;
+			}
 			if (ce.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = ce.asStartElement();
 				if (foundStartTag(se, KEY)) {
                     // key: type="kml:styleStateEnumType" default="normal"/>
                     // styleStateEnumType: [normal] or highlight
-					key = getNonEmptyElementText();
+					key = getNonEmptyElementText();					
 				} else if (foundStartTag(se, STYLE_URL)) {
                     value = getNonEmptyElementText(); // type=anyURI
 				}
+				// does not support inline Styles within StyleMap. Only styleUrls.
 			}
 			XMLEvent ne = stream.peek();
-			if (foundEndTag(ne, STYLE_MAP)) {
+			if (foundEndTag(ne, name)) {
 				if (value != null) {
-                    if (key == null) key = "normal"; // default 
+                    if (key == null) key = "normal"; // default
 					sm.put(key, value);
 				}
 				return;
@@ -990,7 +993,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private boolean isTrue(String val) {
 		// xsd:boolean· can have the following legal literals {true, false, 1, 0}.
 		if (val != null) {
-			val = val.trim();
+			val = val.trim();                   
 			if (val.equals("1")) return true;
 			else if (val.equals("0")) return false;
 			return val.equalsIgnoreCase("true");
