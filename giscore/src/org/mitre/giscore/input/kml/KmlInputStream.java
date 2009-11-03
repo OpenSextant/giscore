@@ -682,6 +682,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			throws XMLStreamException {
 		XMLEvent next;
 		StyleMap sm = new StyleMap();
+		/*if (cs != null)*/
 		addFirst(sm);
 		StartElement sl = ee.asStartElement();
 		Attribute id = sl.getAttributeByName(ID_ATTR);
@@ -692,7 +693,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		while (true) {
 			next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
-				return;
+				return; // return sm
 			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement ie = next.asStartElement();
@@ -919,7 +920,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 * @return
 	 */
-	private Style handleStyle(Common cs, XMLEvent ee, QName name)
+	private void handleStyle(Common cs, XMLEvent ee, QName name)
 			throws XMLStreamException {
 		XMLEvent next;
 
@@ -929,11 +930,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		if (id != null) {
 			style.setId(id.getValue());
 		}
-		if (cs != null) addFirst(style);
+		/*if (cs != null)*/
+		addFirst(style);
 		while (true) {
 			next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
-				return style;
+				return; // return style
 			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
@@ -1251,9 +1253,16 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
 				return handleNetworkLinkControl(stream, name);
 			} else if (STYLE.equals(localname)) {
-                log.warn("Handle out of sequence Style");
 				// note this breaks the strict ordering required by KML 2.2
-				return handleStyle(null, e, name);
+				// return handleStyle(null, e, name);
+				// if return out of order Style then KmlOutputStream queues Styles and attaches to next Feature
+				// which in case of out of order Styles is already written to the stream. punt this for now.
+				return skipOutOrderElement(se);
+			}
+			else if (STYLE_MAP.equals(localname)) {
+				// this messes up the way Style+StyleMap are added to last Feature written
+                //return handleStyleMap(null, se, name);
+				return skipOutOrderElement(se);
 			} else {
 				// Look for next start element and recurse
 				e = stream.nextTag();
@@ -1268,6 +1277,32 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 		// return non-null NullObject to skip but not end parsing...
 		return NullObject.getInstance();
+	}
+
+	private Comment skipOutOrderElement(StartElement se) throws IOException {
+		QName name = se.getName();
+		String localname = name.getLocalPart();
+		log.debug("Skip out of order " + localname);
+		StringBuilder sb = new StringBuilder();
+		sb.append("placeholder for ").append(localname);
+		int count = 0;
+		for(Iterator it = se.getAttributes(); it.hasNext(); ) {
+			Object o = it.next();
+			if (o instanceof Attribute) {
+				Attribute a = (Attribute)o;
+				count++;
+				sb.append("\n\t").append(a.getName()).append("=").append(a.getValue());
+			}
+		}
+		try {
+			skipNextElement(stream, name);
+		} catch (XMLStreamException xe) {
+			final IOException e2 = new IOException();
+			e2.initCause(xe);
+			throw e2;
+		}
+		if (count != 0) sb.append('\n');
+		return new Comment(sb.toString());
 	}
 
 	/**
