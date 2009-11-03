@@ -917,8 +917,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param ee
 	 * @param name
 	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 * @return
 	 */
-	private void handleStyle(Common cs, XMLEvent ee, QName name)
+	private Style handleStyle(Common cs, XMLEvent ee, QName name)
 			throws XMLStreamException {
 		XMLEvent next;
 
@@ -928,11 +929,11 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		if (id != null) {
 			style.setId(id.getValue());
 		}
-		addFirst(style);
+		if (cs != null) addFirst(style);
 		while (true) {
 			next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
-				return;
+				return style;
 			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
@@ -1213,7 +1214,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		if (ns != null && ns.startsWith("http://www.google.com/kml/ext/")) {
 			// if extension namespace then skip it (e.g. http://www.google.com/kml/ext/2.2)
 			// see http://code.google.com/apis/kml/documentation/kmlreference.html#kmlextensions
-			log.debug("SKIP: " + name);
+			log.debug("skip " + name.getPrefix() + ":" + name.getLocalPart());
 			try {
 				skipNextElement(stream, name);
 			} catch (XMLStreamException xe) {
@@ -1250,31 +1251,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
 				return handleNetworkLinkControl(stream, name);
 			} else if (STYLE.equals(localname)) {
-                log.debug("Out of order Style");
-                StringBuilder sb = new StringBuilder();
-                sb.append("placeholder for style");
-                int count = 0;
-                for(Iterator it = se.getAttributes(); it.hasNext(); ) {
-                    Object o = it.next();
-                    if (o instanceof Attribute) {
-                        Attribute a = (Attribute)o;
-                        count++;
-                        sb.append("\n\t").append(a.getName()).append("=").append(a.getValue());
-                    }
-                }
-
-                //System.out.println("XXX: skipping found style out of order");
-				//handleStyle(null, e);
-				//return buffered.removeFirst();
-                try {
-					skipNextElement(stream, name);
-				} catch (XMLStreamException xe) {
-					final IOException e2 = new IOException();
-					e2.initCause(xe);
-					throw e2;
-				}
-                if (count != 0) sb.append('\n');
-                return new Comment(sb.toString());
+                log.warn("Handle out of sequence Style");
+				// note this breaks the strict ordering required by KML 2.2
+				return handleStyle(null, e, name);
 			} else {
 				// Look for next start element and recurse
 				e = stream.nextTag();
