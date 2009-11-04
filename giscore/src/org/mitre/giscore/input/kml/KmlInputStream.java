@@ -175,6 +175,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		ms_attributes.add(OPEN);
 		ms_attributes.add(ADDRESS);
 		ms_attributes.add(PHONE_NUMBER);
+		ms_attributes.add(REGION);
+		ms_attributes.add(METADATA);
+		ms_attributes.add(SNIPPET);		// Snippnet
+		ms_attributes.add("snippet");	// snippet (deprecated in 2.2)
+		// Note: KML Schema shows Snippet is deprecated but Google documentation and examples
+		// suggestion snippet (lower case 's') is deprecated instead...
 
 		// all posible elements that extend kml:AbstractGeometryType base type in KML Schema
 		ms_geometries.add(POINT);
@@ -391,14 +397,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 handleStyle(feature, ee, name);
                 return true;
             } else if (ms_attributes.contains(localname)) {
-                // Skip, but consume
+				// basic tags in Feature that are skipped but consumed
+				// e.g. visibility open, address, phoneNumber, Region, Metadata
+                // Skip, but consumed
+				skipNextElement(stream, name);
                 return true;
 			} else if (localname.equals(STYLE_URL)) {
                 feature.setStyleUrl(stream.getElementText());
                 return true;
-			} else if (localname.equals(REGION)) {
+			/* else if (localname.equals(REGION)) {
                 handleRegion(feature, name);
                 return true;
+                */
             } else if (localname.equals(TIME_SPAN) || localname.equals(TIME_STAMP)) {
                 handleTimePrimitive(feature, ee);
                 return true;
@@ -411,17 +421,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} else if (localname.equals(EXTENDED_DATA)) {
                 handleExtendedData(feature, name);
                 return true;
-			} else if (localname.equals(METADATA)) {
-                handleMetadata(feature, name);
-                return true;
-			} else if (localname.equals(SNIPPET)) {
-                handleSnippet(feature, name); // Snippet
-                return true;
-			} else if (localname.equals("snippet")) {
-				handleSnippet(feature, name); // snippet (deprecated in 2.2)
-				// Note: schema shows Snippet is deprecated but Google documentation and examples
-				// suggestion snippet (lower case 's') is deprecated instead...
-				return true;
             } else if (localname.equals("AddressDetails")) {
                 // skip AddressDetails (namespace: urn:oasis:names:tc:ciq:xsdschema:xAL:2.0)
                 log.debug("skip " + localname);
@@ -644,24 +643,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
-	 * @param cs
-	 * @param name
-	 * @throws XMLStreamException if there is an error with the underlying XML.
-	 */
-	private void handleMetadata(Common cs, QName name)
-			throws XMLStreamException {
-		skipNextElement(stream, name);
-		/*
-		XMLEvent next;
-		while (true) {
-			next = stream.nextEvent();
-			if (foundEndTag(next, name))
-				return;
-		}
-		*/
-	}
-
-	/**
 	 * @param feature
 	 * @param localname
 	 * @throws XMLStreamException if there is an error with the underlying XML.
@@ -678,12 +659,11 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @param name
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleStyleMap(Common cs, XMLEvent ee, QName name)
+	private StyleMap handleStyleMap(Common cs, XMLEvent ee, QName name)
 			throws XMLStreamException {
 		XMLEvent next;
 		StyleMap sm = new StyleMap();
-		/*if (cs != null)*/
-		addFirst(sm);
+		if (cs != null) addFirst(sm);
 		StartElement sl = ee.asStartElement();
 		Attribute id = sl.getAttributeByName(ID_ATTR);
 		if (id != null) {
@@ -693,7 +673,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		while (true) {
 			next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
-				return; // return sm
+				return sm;
 			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement ie = next.asStartElement();
@@ -881,34 +861,17 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		}
 	}
 
-	/**
+	/*
 	 * Handle KML region
 	 * @param name
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
+	/*
 	private void handleRegion(Common cs, QName name)
 			throws XMLStreamException {
 		skipNextElement(stream, name);
 	}
-
-	/**
-	 * @param cs
-	 * @param name
-	 * @throws XMLStreamException if there is an error with the underlying XML.
-	 */
-	private void handleSnippet(Common cs, QName name)
-			throws XMLStreamException {
-		skipNextElement(stream, name);
-		/*
-		XMLEvent next;
-		while (true) {
-			next = stream.nextEvent();
-			if (foundEndTag(next, name)) {
-				return;
-			}
-		}
-		*/
-	}
+	*/
 
 	/**
 	 * Get the style data and push the style onto the buffer so it is returned
@@ -920,7 +883,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 * @return
 	 */
-	private void handleStyle(Common cs, XMLEvent ee, QName name)
+	private Style handleStyle(Common cs, XMLEvent ee, QName name)
 			throws XMLStreamException {
 		XMLEvent next;
 
@@ -930,12 +893,11 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		if (id != null) {
 			style.setId(id.getValue());
 		}
-		/*if (cs != null)*/
-		addFirst(style);
+		if (cs != null) addFirst(style);
 		while (true) {
 			next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
-				return; // return style
+				return style;
 			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
@@ -1253,16 +1215,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
 				return handleNetworkLinkControl(stream, name);
 			} else if (STYLE.equals(localname)) {
+				log.debug("Out of order element: " + localname);
 				// note this breaks the strict ordering required by KML 2.2
-				// return handleStyle(null, e, name);
 				// if return out of order Style then KmlOutputStream queues Styles and attaches to next Feature
-				// which in case of out of order Styles is already written to the stream. punt this for now.
-				return skipOutOrderElement(se);
+				// which in case of out of order Styles is already written to the stream so
+				// we return as WrappedObject which forces caller to either do special handling
+				// or treat as a Comment.
+				return new WrappedObject(handleStyle(null, se, name));
 			}
 			else if (STYLE_MAP.equals(localname)) {
+				log.debug("Out of order element: " + localname);
 				// this messes up the way Style+StyleMap are added to last Feature written
-                //return handleStyleMap(null, se, name);
-				return skipOutOrderElement(se);
+				return new WrappedObject(handleStyleMap(null, se, name));
 			} else {
 				// Look for next start element and recurse
 				e = stream.nextTag();
@@ -1271,38 +1235,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				}                
 			}
 		} catch (XMLStreamException e1) {
-			log.warn("Failed at element: " + localname);
+			log.warn("Skip unexpected element: " + localname);
 			skipNextElement(stream, name);
 		}
 
 		// return non-null NullObject to skip but not end parsing...
 		return NullObject.getInstance();
-	}
-
-	private Comment skipOutOrderElement(StartElement se) throws IOException {
-		QName name = se.getName();
-		String localname = name.getLocalPart();
-		log.debug("Skip out of order " + localname);
-		StringBuilder sb = new StringBuilder();
-		sb.append("placeholder for ").append(localname);
-		int count = 0;
-		for(Iterator it = se.getAttributes(); it.hasNext(); ) {
-			Object o = it.next();
-			if (o instanceof Attribute) {
-				Attribute a = (Attribute)o;
-				count++;
-				sb.append("\n\t").append(a.getName()).append("=").append(a.getValue());
-			}
-		}
-		try {
-			skipNextElement(stream, name);
-		} catch (XMLStreamException xe) {
-			final IOException e2 = new IOException();
-			e2.initCause(xe);
-			throw e2;
-		}
-		if (count != 0) sb.append('\n');
-		return new Comment(sb.toString());
 	}
 
 	/**
