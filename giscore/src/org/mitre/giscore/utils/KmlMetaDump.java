@@ -27,13 +27,16 @@ import java.net.URISyntaxException;
  *
  * Notes following conditions if found:
  * <ul>
- *  <li> Feature inherits time from parent container
- *  <li> NetworkLink has missing or empty HREF
- *  <li> Overlay does not contain Icon element
- *  <li> Invalid TimeSpan if begin later than end value
- *  <li> End container with no matching start container
- *  <li> Starting container tag with no matching end container
- *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem)
+
+ *  <li> NetworkLink has missing or empty HREF (info)
+ *  <li> Overlay does not contain Icon element (info)
+ *  <li> End container with no matching start container (error)
+ *  <li> Starting container tag with no matching end container (error)
+ *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem) (warning)
+ *  <li> Invalid TimeSpan if begin later than end value (warning)
+ *  <li> Feature inherits time from parent container (info)
+ *  <li> Container start date is earlier than that of its ancestors (info)
+ *  <li> Container end date is later than that of its ancestors (info)
  * </ul>
  * 
  * This tool helps to uncover issues in reading and writing target KML files.
@@ -107,9 +110,9 @@ public class KmlMetaDump implements IKml {
 		this.outPath = outPath;
 	}
 
-    public void setVerbose(boolean verbose) {
-        this.verbose = verbose;
-    }
+	public void setVerbose(boolean verbose) {
+		this.verbose = verbose;
+	}
 
 	public void setUseStdout(boolean useStdout) {
 		this.useStdout = useStdout;
@@ -316,25 +319,32 @@ public class KmlMetaDump implements IKml {
                 // Source: OGC KML Best Practices document OGC 07-113r1
                 //
                 inheritsTime = true;
-                if (verbose) System.out.println(cs.getType() + " container has time");
-                if (startTime != null) {
-                    if (endTime != null && startTime.compareTo(endTime) > 0) {
-                        // assertion: the begin value is earlier than the end value.
-                        // if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
-                        addTag(":Invalid time range: start > end");
-                        if (verbose) System.out.println(" Error: Invalid time range: start > end\n");
-                    }
-                    if (containerStartDate != null && verbose) System.out.println(" Overriding parent container start date");
-                    // override any previous start date
-                    containerStartDate = startTime;
-                    // log.debug("use container start date");
-                }
-                if (endTime != null) {
-                    if (containerEndDate != null && verbose) System.out.println(" Overriding parent container end date");
-                    // override any previous end date
-                    // log.debug("use container end date");
-                    containerEndDate = endTime;
-                }
+				if (verbose) System.out.println(cs.getType() + " container has time");
+				if (startTime != null) {
+					if (endTime != null && startTime.compareTo(endTime) > 0) {
+						// assertion: the begin value is earlier than the end value.
+						// if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
+						addTag(":Invalid time range: start > end");
+						if (verbose) System.out.println(" Error: Invalid time range: start > end\n");
+					}
+					if (containerStartDate != null) {
+						if (verbose) System.out.println(" Overriding parent container start date");
+						if (startTime.compareTo(containerStartDate) < 0)
+							addTag(":Container start date is earlier than that of its ancestors");
+					}
+					// log.debug("use container start date");
+				}
+				// override any previous start date
+				containerStartDate = startTime;
+				if (endTime != null) {
+					if (containerEndDate != null) {
+						if (verbose) System.out.println(" Overriding parent container end date");
+						if (endTime.compareTo(containerEndDate) > 0)
+							addTag(":Container end date is later than that of its ancestors");
+					}
+				}
+				// override any previous end date
+				containerEndDate = endTime;
             }
         } else if (cl == ContainerEnd.class) {
             //
@@ -360,22 +370,25 @@ public class KmlMetaDump implements IKml {
             }
 
             if (inheritsTime) {
-                // reset times with last start/end times in the hierachy if any is present
                 inheritsTime = false;
                 containerStartDate = null;
                 containerEndDate = null;
+                // start at outer-most container and check if any container still defines time
                 for (ContainerStart cs : containers) {
                     Date startDate = cs.getStartTime();
                     Date endDate = cs.getEndTime();
                     if (startDate != null || endDate != null) {
                         containerStartDate = startDate;
                         containerEndDate = endDate;
+                        inheritsTime = true;
                     }
                 } // for each container
+		/*
                 if (containerStartDate != null || containerEndDate != null) {
                     // log.info("Container has inheritable time");
                     inheritsTime = true;
                 }
+                */
             }
         } else if (cl == Style.class) {
             addTag(cl);
