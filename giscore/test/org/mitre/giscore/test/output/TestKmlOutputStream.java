@@ -31,9 +31,11 @@ import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
+import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.XmlOutputStreamBase;
 import org.mitre.giscore.output.kml.KmlOutputStream;
+import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.giscore.test.TestGISBase;
 
 import javax.xml.stream.XMLStreamException;
@@ -222,7 +224,68 @@ public class TestKmlOutputStream extends TestGISBase {
         }
     }
 
-    public void doTest(InputStream fs) throws Exception {
+	@Test
+	public void testRegion() throws XMLStreamException, IOException {
+		// test all variations of Lod and LatLonAltBox combinations
+		// test Region with LatLonAltBox only
+		doTestRegion(new String[]{
+				IKml.NORTH, "45",
+				IKml.SOUTH, "35",
+				IKml.EAST, "1",
+				IKml.WEST, "10",
+		});
+		// test Region with LatLonAltBox + Lod
+		doTestRegion(new String[]{
+				IKml.NORTH, "45",
+				IKml.SOUTH, "35",
+				IKml.EAST, "1",
+				IKml.WEST, "10",
+				IKml.MIN_LOD_PIXELS, "256",
+				IKml.MAX_LOD_PIXELS, "-1"
+		});
+		// test Region with Lod only
+		doTestRegion(new String[]{
+				IKml.MIN_LOD_PIXELS, "256",
+				IKml.MAX_LOD_PIXELS, "-1"
+		});
+	}
+
+	private void doTestRegion(String[] props) throws XMLStreamException, IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		kos.write(new DocumentStart(DocumentType.KML));
+		Feature f = new Feature();
+		f.setGeometry(new Point(42.504733587704, -71.238861602674));
+		f.setName("test");
+		f.setDescription("this is a test placemark");
+		TaggedMap region = new TaggedMap(IKml.LAT_LON_ALT_BOX);
+		for (int i = 0; i < props.length; i += 2) {
+			region.put(props[i], props[i + 1]);
+		}
+		f.setRegion(region);
+		kos.write(f);
+		kos.close();
+		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+		IGISObject o;
+		while ((o = kis.read()) != null) {
+			if (o instanceof Feature) {
+				Feature f2 = (Feature)o;
+				assertEquals(region, f2.getRegion());
+				/*
+				if(!(region.equals(f2.getRegion()))) {
+					System.out.println("== region mismatch ==");
+					System.out.println("1:" + region);
+					System.out.println("2:" + f2.getRegion());
+					System.out.println(new String(bos.toByteArray()));
+					System.out.println();
+				}
+				*/
+			}
+		}
+		kis.close();
+	}
+
+	public void doTest(InputStream fs) throws Exception {
         File temp = null;
         try {
             IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);

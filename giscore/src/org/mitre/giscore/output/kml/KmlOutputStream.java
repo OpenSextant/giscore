@@ -72,7 +72,7 @@ import org.slf4j.LoggerFactory;
  * Notes/Limitations:<br/>
  *  -A few tags are not yet supported on features so are omitted from output:
  *   atom:author, atom:link, address, xal:AddressDetails, ListStyle,
- *   Metadata, open, phoneNumber, Region, Snippet, snippet, visibility.
+ *   Metadata, open, phoneNumber, Snippet, snippet.
  * -Warns if shared styles appear in Folders. According to OGC KML specification
  *  shared styles shall only appear within a Document [OGC 07-147r2 section 6.4].
  *
@@ -199,7 +199,63 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
-    private void handleAbstractView(TaggedMap viewGroup) {
+	 private void handleRegion(TaggedMap region) {
+		 if (region != null && !region.isEmpty()) {
+			 try {
+				 // postpone writing out LAT_LON_BOX element until there is a child element
+				 // likewise don't write Region element unless we have LAT_LON_BOX or Lod
+				 List<String> waitingList = new java.util.LinkedList<String>();
+				 waitingList.add(REGION);
+				 waitingList.add(LAT_LON_ALT_BOX);
+				 handleTaggedElement(NORTH, region, waitingList);
+				 handleTaggedElement(SOUTH, region, waitingList);
+				 handleTaggedElement(EAST, region, waitingList);
+				 handleTaggedElement(WEST, region, waitingList);
+				 handleTaggedElement(MIN_ALTITUDE, region, waitingList);
+				 handleTaggedElement(MAX_ALTITUDE, region, waitingList);
+				 // if altitudeMode is invalid then it will be omitted
+				 AltitudeModeEnumType altMode = AltitudeModeEnumType.getNormalizedMode(region.get(ALTITUDE_MODE));
+				 if (altMode != null) {
+					 /*
+					 if (!waitingList.isEmpty()) {
+					 	writer.writeStartElement(REGION);
+						writer.writeStartElement(LAT_LON_ALT_BOX);
+						waitingList.clear();
+					 }
+					 handleAltitudeMode(altMode);
+					 */
+					 if (waitingList.isEmpty()) {
+					 	handleAltitudeMode(altMode);
+					 }
+					 // otherwise don't have LatLonAltBox so far then don't need AltitudeMode
+				 }
+				 if (waitingList.isEmpty()) {
+					 writer.writeEndElement(); // end LatLonAltBox
+				 } else {
+					 waitingList.remove(1); // remove LatLonAltBox from consideration
+					 // we still have Region in waiting list
+				 }
+				 // next check Lod
+				 waitingList.add(LOD);
+				 handleTaggedElement(MIN_LOD_PIXELS, region, waitingList);
+				 handleTaggedElement(MAX_LOD_PIXELS, region, waitingList);
+				 handleTaggedElement(MIN_FADE_EXTENT, region, waitingList);
+				 handleTaggedElement(MAX_FADE_EXTENT, region, waitingList);
+				 if (waitingList.isEmpty())
+					 writer.writeEndElement(); // end Lod
+				 //if (!waitingList.isEmpty()) System.out.println("XXX: *NO* LOD in region..."); // debug
+				 //else System.out.println("XXX: got LOD in region..."); // debug
+				 // if have 2 elements in map then have neither Lod nor Region to end
+				 // if have 0 or 1 {Lod} elements in list then we need to end of Region
+				 if (waitingList.size() < 2)
+					 writer.writeEndElement(); // end Region
+			} catch (XMLStreamException e) {
+				throw new RuntimeException(e);
+			}
+		 }
+	 }
+
+	private void handleAbstractView(TaggedMap viewGroup) {
         if (viewGroup != null && !viewGroup.isEmpty()) {
 			String tag = viewGroup.getTag();
 			if (!CAMERA.equals(tag) && !LOOK_AT.equals(tag)) {
@@ -281,6 +337,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             handleNonNullSimpleElement(STYLE_URL, feature.getStyleUrl());
             // if feature has inline style needs to write here
             handleWaitingElements(containerType);
+
+			handleRegion(feature.getRegion());
 
             if (feature.hasExtendedData()) {
                 URI schema = feature.getSchema();
@@ -976,6 +1034,18 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
 	private void handleTaggedElement(String tag, TaggedMap map) throws XMLStreamException {
 		handleNonNullSimpleElement(tag, map.get(tag));
+	}
+
+	private void handleTaggedElement(String tag, TaggedMap map, List<String> waitingList) throws XMLStreamException {
+		String content = map.get(tag);
+		if (content != null) {
+            if (waitingList != null) {
+				while (!waitingList.isEmpty()) {
+					writer.writeStartElement(waitingList.remove(0));
+				}
+			}
+            handleSimpleElement(tag, content);
+        }
 	}
 
     /*

@@ -90,7 +90,7 @@ import org.slf4j.LoggerFactory;
  * extrude, and altitudeMode properties are maintained on the associated Geometry. 
  * <p>
  * Feature properties (i.e., name, description, visibility, Camera/LookAt,
- * styleUrl, inline Styles, TimeStamp/TimeSpan elements) in addition
+ * styleUrl, inline Styles, Region, TimeStamp/TimeSpan elements) in addition
  * to the geometry are parsed and set on the Feature object.
  * <p>
  * Notes/Limitations:
@@ -102,7 +102,7 @@ import org.slf4j.LoggerFactory;
  * <p> 
  * Unsupported tags include the following:
  *  atom:author, atom:link, address, xal:AddressDetails, Metadata,
- *  open, phoneNumber, Region, Snippet, snippet. <br>
+ *  open, phoneNumber, Snippet, snippet. <br>
  * These tags are consumed but discarded.
  * <p>
  * gx extensions (e.g. Tour, Playlist, etc.) are ignored, however, gx:altitudeMode
@@ -171,11 +171,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		ms_containers.add(DOCUMENT);
 
 		// basic tags in Feature that are skipped but consumed
-		ms_attributes.add(VISIBILITY);
 		ms_attributes.add(OPEN);
 		ms_attributes.add(ADDRESS);
 		ms_attributes.add(PHONE_NUMBER);
-		ms_attributes.add(REGION);
 		ms_attributes.add(METADATA);
 		ms_attributes.add(SNIPPET);		// Snippnet
 		ms_attributes.add("snippet");	// snippet (deprecated in 2.2)
@@ -398,25 +396,24 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                 return true;
             } else if (ms_attributes.contains(localname)) {
 				// basic tags in Feature that are skipped but consumed
-				// e.g. visibility open, address, phoneNumber, Region, Metadata
+				// e.g. open, address, phoneNumber, Metadata
                 // Skip, but consumed
 				skipNextElement(stream, name);
                 return true;
 			} else if (localname.equals(STYLE_URL)) {
                 feature.setStyleUrl(stream.getElementText());
                 return true;
-			/* else if (localname.equals(REGION)) {
-                handleRegion(feature, name);
-                return true;
-                */
             } else if (localname.equals(TIME_SPAN) || localname.equals(TIME_STAMP)) {
                 handleTimePrimitive(feature, ee);
+                return true;
+			} else if (localname.equals(REGION)) {
+                handleRegion(feature, name);
                 return true;
             } else if (localname.equals(STYLE_MAP)) {
                 handleStyleMap(feature, ee, name);
                 return true;
 			} else if (localname.equals(LOOK_AT) || localname.equals(CAMERA)) {
-                handleAbstractView(feature, localname);
+                handleAbstractView(feature, name);
                 return true;
 			} else if (localname.equals(EXTENDED_DATA)) {
                 handleExtendedData(feature, name);
@@ -643,14 +640,46 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
+	 * Handle AbstractView (Camera or LookAt) element
 	 * @param feature
-	 * @param localname
+	 * @param name
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void handleAbstractView(Common feature, String localname)
+	private void handleAbstractView(Common feature, QName name)
 			throws XMLStreamException {
-		TaggedMap viewGroup = handleTaggedData(localname); // Camera or LookAt
-		feature.setViewGroup(viewGroup);
+		TaggedMap viewGroup = handleTaggedData(name); // Camera or LookAt
+		if (viewGroup != null) feature.setViewGroup(viewGroup);
+	}
+
+	/**
+	 * Handle KML Region
+	 * @param feature
+	 * @param name
+	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 */
+	private void handleRegion(Common feature, QName name)
+			throws XMLStreamException {
+		TaggedMap region = new TaggedMap(LAT_LON_ALT_BOX);
+		boolean hasData = false;
+		while (true) {
+			XMLEvent next = stream.nextEvent();
+			if (foundEndTag(next, name)) {
+				if (hasData) feature.setRegion(region);
+				return;
+			}
+			if (next.getEventType() == XMLEvent.START_ELEMENT) {
+				StartElement se = next.asStartElement();
+				if (foundStartTag(se, LAT_LON_ALT_BOX)) {
+					if (handleTaggedData(se.getName(), region) != null) {
+						hasData = true;
+					}
+				} else if (foundStartTag(se, LOD)) {
+					if (handleTaggedData(se.getName(), region) != null) {
+						hasData = true;
+					}
+				}
+			}
+		}
 	}
 
 	/**
@@ -860,18 +889,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			throw e;
 		}
 	}
-
-	/*
-	 * Handle KML region
-	 * @param name
-	 * @throws XMLStreamException if there is an error with the underlying XML.
-	 */
-	/*
-	private void handleRegion(Common cs, QName name)
-			throws XMLStreamException {
-		skipNextElement(stream, name);
-	}
-	*/
 
 	/**
 	 * Get the style data and push the style onto the buffer so it is returned
@@ -1270,7 +1287,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
-				String tag = se.getName().getLocalPart();
+				QName qname = se.getName();
+				String tag = qname.getLocalPart();
 				if (updateFlag) {
 					if (tag.equals("targetHref")) {
 						String val = getNonEmptyElementText();
@@ -1315,7 +1333,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 								log.warn("Ignoring bad expires value: " + expires + ": " + e);
 							}
 					} else if (tag.equals(LOOK_AT) || tag.equals(CAMERA)) {
-						TaggedMap viewGroup = handleTaggedData(tag);
+						TaggedMap viewGroup = handleTaggedData(qname);
 						c.setViewGroup(viewGroup);
 					} else if (tag.equals("Update")) {
 						updateFlag = true; // set flag to parse inside Update element
@@ -1546,7 +1564,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 							((Overlay) fs).setDrawOrder(Integer.parseInt(stream
 									.getElementText()));
 						} else if (ICON.equals(localname)) {
-							((Overlay) fs).setIcon(handleTaggedData(localname));
+							((Overlay) fs).setIcon(handleTaggedData(qName));
 						}
 						if (ground) {
 							if (LAT_LON_BOX.equals(localname)) {
@@ -1596,9 +1614,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 							((NetworkLink) fs).setFlyToView(isTrue(stream
 									.getElementText()));
 						} else if (LINK.equals(localname)) {
-							((NetworkLink) fs).setLink(handleTaggedData(localname));
+							((NetworkLink) fs).setLink(handleTaggedData(qName));
 						} else if (URL.equals(localname)) {
-							((NetworkLink) fs).setLink(handleTaggedData(localname));
+							((NetworkLink) fs).setLink(handleTaggedData(qName));
 						}
 					}
 				}
@@ -1646,38 +1664,49 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * Handle a set of elements with character values. The block has been found
 	 * that starts with a &lt;localname&gt; tag, and it will end with a matching
 	 * tag. All other elements found will be added to a created map object.
-	 * 
-	 * @param localname
-	 *            the localname, assumed not <code>null</code>.
+	 *
+	 * @param name
+	 *            the QName, assumed not <code>null</code>.
+	 * @param map
+	 *            TaggedMap to provide, never null
 	 * @return the map, null if no non-empty values are found
 	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
-	private TaggedMap handleTaggedData(String localname)
+	private TaggedMap handleTaggedData(QName name, TaggedMap map)
 			throws XMLStreamException {
-		TaggedMap rval = new TaggedMap(localname);
+		String rootNs = name.getNamespaceURI();
 		while (true) {
 			XMLEvent event = stream.nextEvent();
-			if (foundEndTag(event, localname)) {
+			if (foundEndTag(event, name)) {
 				break;
 			}
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 				StartElement se = event.asStartElement();
-				QName name = se.getName();
-				// ignore extension elements. don't know how to parse inside them yet
-				// e.g. http://www.google.com/kml/ext/2.2
-				String ns = name.getNamespaceURI();
-				if (ns != null && ns.startsWith("http://www.google.com/kml/ext/")) {
-					skipNextElement(stream, name);
-					continue;
+				QName qname = se.getName();
+				String sename = qname.getLocalPart();
+				if (rootNs != null) {
+					// rootNs should never be null. should be empty string "" if default xmlns
+					// ignore extension elements. don't know how to parse inside them yet
+					// e.g. http://www.google.com/kml/ext/2.2
+					// only add those element that are part of the KML namespace which we expect
+					String ns = qname.getNamespaceURI();
+					if (!rootNs.equals(ns)) {
+						log.debug("Skip " + qname.getPrefix() + ":" + sename);
+						skipNextElement(stream, qname);
+						continue;
+					}
 				}
-				String sename = name.getLocalPart();
 				String value = getNonEmptyElementText();
                 // ignore empty elements; e.g. <Icon><href /></Icon>
                 if (value != null)
-                    rval.put(sename, value);
+                    map.put(sename, value);
 			}
 		}
-		return rval.size() == 0 ? null : rval;
+		return map.isEmpty() ? null : map;
+	}
+
+	private TaggedMap handleTaggedData(QName name) throws XMLStreamException {
+		return handleTaggedData(name, new TaggedMap(name.getLocalPart()));
 	}
 
 	/**

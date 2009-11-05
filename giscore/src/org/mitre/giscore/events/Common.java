@@ -40,6 +40,7 @@ public abstract class Common extends Row {
 	protected Date endTime;
 	protected String styleUrl;
 	private TaggedMap viewGroup;
+	private TaggedMap region;
 
 	/**
 	 * @return the name
@@ -130,6 +131,18 @@ public abstract class Common extends Row {
 		this.viewGroup = viewGroup;
 	}
 
+	public TaggedMap getRegion() {
+		return region;
+	}
+
+    /**
+     * Set Region on feature
+     * @param region
+     */
+	public void setRegion(TaggedMap region) {
+		this.region = region;
+	}
+
 	public Boolean getVisibility() {
 		return visibility;
 	}
@@ -170,6 +183,7 @@ public abstract class Common extends Row {
 			endTime = null;
 		}
 		viewGroup = (TaggedMap) in.readObject();
+		region = (TaggedMap) in.readObject();
 		visibility = (Boolean) in.readScalar();
 	}
 
@@ -193,6 +207,7 @@ public abstract class Common extends Row {
 		else 
 			out.writeLong(-1);
 		out.writeObject(viewGroup);
+		out.writeObject(region);
 		out.writeScalar(visibility);
 	}
 
