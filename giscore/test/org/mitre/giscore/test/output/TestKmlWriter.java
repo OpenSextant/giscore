@@ -85,11 +85,14 @@ public class TestKmlWriter extends TestGISBase {
 		try {
 			System.out.println(">create " + temp);
 			KmlWriter writer = new KmlWriter(temp);
+			int features = 0;
 			for (IGISObject o : objs) {
+				if (o instanceof Feature) features++;
 				writer.write(o);
 			}
 			writer.close();
 			// Filter original list such that it will match the re-imported list
+			/*
 			List<IGISObject> objs2 = new ArrayList<IGISObject>();
 			for (int i = 0; i < objs.size(); i++) {
 				IGISObject o = objs.get(i);
@@ -119,8 +122,17 @@ public class TestKmlWriter extends TestGISBase {
 				objs2.add(o);
 			}
 			objs = objs2;
+			*/
 			KmlReader reader2 = new KmlReader(temp);
-			List<IGISObject> elements = reader2.readAll();
+			IGISObject o;
+			int features2 = 0;
+			while ((o = reader2.read()) != null) {
+				if (o instanceof Feature) features2++;
+			}
+			if (features != features2)
+				System.out.println("ERROR: element count failed");
+			assertEquals(features, features2);
+			//List<IGISObject> elements = reader2.readAll();
 			/*
 			if (objs.size() != elements.size()) {
 					for(Object o : objs) {
@@ -135,7 +147,11 @@ public class TestKmlWriter extends TestGISBase {
 					//System.out.println();
 			}
 			*/
+			/*
+			if (objs.size() != elements.size())
+				System.out.println("ERROR: element count failed");
 			assertEquals(objs.size(), elements.size());
+			*/
 		} finally {
 			// delete temp file
 			if (autoDelete && temp.exists()) temp.delete();
