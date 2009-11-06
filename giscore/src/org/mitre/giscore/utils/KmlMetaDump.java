@@ -515,6 +515,9 @@ public class KmlMetaDump implements IKml {
             addTag(viewGroup.getTag()); // Camera or LookAt
 		}
 
+		if (f.getRegion() != null)
+			addTag(REGION);
+
         //if (lastObj instanceof StyleSelector) {
         if (lastObjClass == Style.class || lastObjClass == StyleMap.class)
             addTag(":Feature uses inline " + getClassName(lastObjClass)); // Style or StyleMap
