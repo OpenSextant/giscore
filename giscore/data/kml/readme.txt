@@ -15,9 +15,11 @@ See also http://kml-samples.googlecode.com/svn/trunk/morekml/
 
 Summary of tags and properties used in KML collection
 
+	Container end date is later than that of its ancestors
 	Feature inherits container time
 	Feature uses inline Style
 	Feature uses inline StyleMap
+	Geometry spans -180/+180 longtiude line
 	Invalid time range: start > end
 	NetworkLink missing Link
 	Overlay missing icon
@@ -30,13 +32,13 @@ Summary of tags and properties used in KML collection
 	GroundOverlay		 Point
 	IconStyle		 PolyStyle
 	LabelStyle		 Polygon
-	LatLonBox		 Schema
-	Line			 ScreenOverlay
-	LineStyle		 Style
-	LinearRing		 StyleMap
-	LookAt			 TimeSpan
-	Model			 TimeStamp
-	MultiGeometry
+	LatLonBox		 Region
+	Line			 Schema
+	LineStyle		 ScreenOverlay
+	LinearRing		 Style
+	LookAt			 StyleMap
+	Model			 TimeSpan
+	MultiGeometry		 TimeStamp
 
 ----------------------------------------------------------------------------------------------------
 
@@ -109,6 +111,9 @@ data\kml\Camera\golden-gate.kml
 	# features=13
 
 data\kml\ExtendedData\data-ext-ns.kml
+DEBUG [main] (KmlInputStream.java:504) - skip {http://campsites.com}number
+DEBUG [main] (KmlInputStream.java:504) - skip {http://campsites.com}parkingSpaces
+DEBUG [main] (KmlInputStream.java:504) - skip {http://campsites.com}tentSites
 
 	Placemark            1
 	Point                1
@@ -383,6 +388,7 @@ data\kml\ListStyle\check.kml
 
 data\kml\ListStyle\item-icon-hotspot.kml
 
+	IconStyle            1
 	Placemark            1
 	Point                1
 	Style                1
@@ -438,6 +444,7 @@ data\kml\listview\nosnippet.kml
 
 data\kml\Metadata\metadata-data.kml
 
+	BalloonStyle         1
 	Placemark            3
 	Point                3
 	Style                1
@@ -445,6 +452,7 @@ data\kml\Metadata\metadata-data.kml
 
 data\kml\Metadata\metadata-schemadata.kml
 
+	BalloonStyle         1
 	Placemark            3
 	Point                3
 	Schema               1
@@ -492,6 +500,7 @@ data\kml\MultiGeometry\emptyGeom.kml
 data\kml\MultiGeometry\multi-linestrings.kml
 
 	Line                 10
+	LineStyle            1
 	MultiGeometry        1
 	Placemark            1
 	Style                1
@@ -499,9 +508,12 @@ data\kml\MultiGeometry\multi-linestrings.kml
 
 data\kml\MultiGeometry\multi-rollover.kml
 
+	LabelStyle           1
+	LineStyle            2
 	MultiGeometry        1
 	Placemark            1
 	Point                1
+	PolyStyle            2
 	Polygon              1
 	Style                2
 	StyleMap             1
@@ -524,11 +536,10 @@ data\kml\MultiGeometry\MultiGeomMixed-Pentagon.kml
 
 data\kml\MultiGeometry\NestedMultiGeoms.kml
 
-	GeometryBag          1
-	Line                 1
+	Line                 2
 	MultiGeometry        1
 	Placemark            1
-	Point                1
+	Point                2
 	# features=2
 
 data\kml\MultiGeometry\polygon-point.kml
@@ -669,7 +680,10 @@ data\kml\Placemark\AllElements.kml
 data\kml\Placemark\clippedAtDateLine.kml
 
 	Feature uses inline Style
+	Geometry spans -180/+180 longtiude line
+
 	Line                 2
+	LineStyle            2
 	Placemark            3
 	Point                1
 	Style                2
@@ -702,16 +716,20 @@ data\kml\Placemark\LinearRing\polygon-tessellate-lr.kml
 data\kml\Placemark\LineString\absolute-extruded.kml
 
 	Line                 1
+	LineStyle            1
 	LookAt               1
 	Placemark            1
+	PolyStyle            1
 	Style                1
 	# features=5
 
 data\kml\Placemark\LineString\extruded.kml
 
 	Line                 1
+	LineStyle            1
 	LookAt               1
 	Placemark            1
+	PolyStyle            1
 	Style                1
 	# features=5
 
@@ -725,8 +743,10 @@ data\kml\Placemark\LineString\straight.kml
 data\kml\Placemark\LineString\styled.kml
 
 	Line                 1
+	LineStyle            1
 	LookAt               1
 	Placemark            1
+	PolyStyle            1
 	Style                1
 	# features=5
 
@@ -783,6 +803,9 @@ data\kml\Placemark\simple_placemark.kml
 data\kml\Placemark\styled_placemark.kml
 
 	Feature uses inline Style
+	BalloonStyle         1
+	IconStyle            1
+	LabelStyle           1
 	Placemark            1
 	Point                1
 	Style                1
@@ -811,12 +834,14 @@ data\kml\Polygon\treasureIsland.kml
 data\kml\Region\GroundOverlay\usa-ca-sf.kmz
 
 	GroundOverlay        3
+	Region               3
 	# features=6
 
 data\kml\Region\minlodpixels.kml
 
 	Line                 1
 	Placemark            1
+	Region               8
 	ScreenOverlay        8
 	# features=14
 
@@ -824,6 +849,7 @@ data\kml\Region\minlodpixels.kmz
 
 	Line                 1
 	Placemark            1
+	Region               8
 	ScreenOverlay        8
 	# features=14
 
@@ -831,6 +857,7 @@ data\kml\Region\polygon-fade.kml
 
 	Feature uses inline Style
 	Placemark            1
+	PolyStyle            1
 	Polygon              1
 	Style                1
 	# features=3
@@ -839,6 +866,7 @@ data\kml\Region\polygon-min-max.kml
 
 	Feature uses inline Style
 	Placemark            1
+	PolyStyle            1
 	Polygon              1
 	Style                1
 	# features=3
@@ -900,10 +928,12 @@ data\kml\Region\simple-lod-demo.kml
 	Line                 1
 	Placemark            5
 	Point                4
+	Region               4
 	# features=8
 
 data\kml\Schema\AllTypes.kml
 
+	ExtendedData         1
 	Placemark            1
 	Point                1
 	Schema               1
@@ -911,6 +941,7 @@ data\kml\Schema\AllTypes.kml
 
 data\kml\Schema\MixedTypes.kml
 
+	ExtendedData         1
 	Placemark            1
 	Point                1
 	Schema               2
@@ -1063,17 +1094,24 @@ data\kml\Style\overrideStyles.kml
 
 data\kml\Style\SharedStyle.kml
 
-	Placemark            2
-	Point                2
+	IconStyle            1
+	LabelStyle           1
+	Placemark            1
+	Point                1
 	Style                1
-	# features=6
+	# features=5
 
 data\kml\Style\style-merging.kml
 
 	Feature uses inline Style
+	BalloonStyle         2
+	IconStyle            1
+	LabelStyle           1
 	Line                 1
+	LineStyle            3
 	Placemark            3
 	Point                1
+	PolyStyle            1
 	Polygon              1
 	Style                4
 	# features=12
@@ -1096,6 +1134,7 @@ data\kml\Style\styled_placemark.kml
 
 data\kml\Style\styles.kml
 
+	IconStyle            1
 	Style                2
 	# features=5
 
@@ -1117,7 +1156,9 @@ data\kml\time\dates.kml
 
 data\kml\time\multiNestedInherits.kml
 
+	Container end date is later than that of its ancestors
 	Feature uses inline Style
+	--
 	IconStyle            2
 	Placemark            2
 	Point                2
@@ -1165,7 +1206,7 @@ data\kml\time\time-inherit2.kml
 
 data\kml\time\time-inherits.kml
 
-	Container overrides feature time
+	Feature inherits container time
 	--
 	Folder               4
 	GroundOverlay        6
@@ -1174,11 +1215,13 @@ data\kml\time\time-inherits.kml
 data\kml\time\time-span-overlay.kml
 
 	GroundOverlay        12
+	LatLonBox            12
 	TimeSpan             12
 	# features=15
 
 data\kml\time\time-stamp-point.kmz
 
+	IconStyle            3
 	Placemark            361
 	Point                361
 	Style                4
@@ -1195,11 +1238,14 @@ data\kml\time\timestamps.kml
 
 data\kml\time\TimeTest.kml
 
+	Feature uses inline Style
+	IconStyle            6
 	Placemark            6
 	Point                6
+	Style                6
 	TimeSpan             3
 	TimeStamp            2
-	# features=9
+	# features=15
 
 data\kml\time\YearDates.kml
 
