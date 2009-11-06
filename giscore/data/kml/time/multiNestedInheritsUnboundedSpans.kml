@@ -5,27 +5,28 @@ Timestamps on nested Features with unbounded intervals.
 
 Child placemarks "inherit" time from each of its parent containers.
 
-As of Google Earth 5.0 the following rule applied:
-In order for a feature to be visible, all of its ancestors must be visible
-and that feature must be visible given visibility flags and temporal
-conditions up the chain to top-most feature.
-
 As of Google Earth 5.1 the following rule applies:
-The value of time elements shall be inherited by all Feature members of
-a hierarchy unless overruled by the presence of such elements locally.
+ The value of time elements shall be inherited by all Feature members of
+ a hierarchy unless overruled by the presence of such elements locally.
+
+As of Google Earth 5.0 the following rule applied:
+ In order for a feature to be visible, all of its ancestors must be visible
+ and that feature must be visible given visibility flags and temporal
+ conditions up the chain to top-most feature.
 
 Example shows how temporal visibility is inherited.
 
-	[2    .   .    .    . 	timespan of outer-most container: begin only
-[1       .    .   .    .    6] 	timespan of placemark#1
-	[2    .   .    .    6]	effective temporal visilbity of placemark #1 (**)
- .	 .    .   4]		timespan of inner-most container end only
-[1	 .    .   .    .    6] 	timespan of placemark#2
-	[2    .   4]      	effective temporal visilbity of placemark #2 (**)
+    [2    .   .    .    .	timespan of outer-most container: begin only
+[1   .    .   .    .    6]	timespan of placemark#1
+    [2    .   .    .    6]	effective temporal visilbity of placemark #1 (**)
+ .   .    .   4]		timespan of inner-most container end only
+[1   .    .   .    .    6]	timespan of placemark#2
+    [2    .   4]      		effective temporal visilbity of placemark #2 (**)
 
 ** As of Google Earth 5.1 the local times of features define the time that
    feature is visible. Prior to Google Earth 5.1 the visibility of features
    was affected by the time of its ancestors.
+   see http://code.google.com/p/kml-samples/issues/detail?id=296
 
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
