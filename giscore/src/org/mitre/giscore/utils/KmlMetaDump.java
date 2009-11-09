@@ -39,6 +39,7 @@ import java.net.URISyntaxException;
  *  <li> Feature inherits time from parent container (info)
  *  <li> Container start date is earlier than that of its ancestors (info)
  *  <li> Container end date is later than that of its ancestors (info)
+ *  <li> Out of order elements
  * </ul>
  * 
  * This tool helps to uncover issues in reading and writing target KML files.
@@ -278,6 +279,11 @@ public class KmlMetaDump implements IKml {
 	}
 
 	private void checkObject(IGISObject gisObj) {
+		if (gisObj instanceof WrappedObject) {
+			// unwrap wrapped gis objects
+			gisObj = ((WrappedObject)gisObj).getObject();
+			addTag(":Out of order elements");
+		}
         if (verbose) System.out.println(gisObj);
         features++;
         Class cl = gisObj.getClass();
