@@ -98,7 +98,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     public KmlOutputStream(OutputStream stream, String encoding) throws XMLStreamException {
         super(stream, encoding);
         if (StringUtils.isBlank(encoding))
-            writer.writeStartDocument();
+            writer.writeStartDocument();                                                                                      
         else
             writer.writeStartDocument(encoding, "1.0");
         writer.writeCharacters("\n");
@@ -227,7 +227,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 					 if (waitingList.isEmpty()) {
 					 	handleAltitudeMode(altMode);
 					 }
-					 // otherwise don't have LatLonAltBox so far then don't need AltitudeMode
+					 // otherwise don't have LatLonAltBox so AltitudeMode has no meaning
 				 }
 				 if (waitingList.isEmpty()) {
 					 writer.writeEndElement(); // end LatLonAltBox
