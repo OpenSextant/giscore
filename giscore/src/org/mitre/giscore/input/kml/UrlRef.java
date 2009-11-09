@@ -32,26 +32,29 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.IOUtils;
 
 /**
- * UrlRef manages the encoding/decoding of internally created
+ * <code>UrlRef</code> manages the encoding/decoding of internally created
  * KML/KMZ URLs to preserve the association between the
  * parent KMZ file and its relative file reference. Handles getting an inputStream
  * to KML linked resources whether its a fully qualified URL or a entry in a KMZ file.
- *  <p/>
+ * <p/>
  * If <code>KmlReader</code> is used to read a KMZ resource then href values for
- * relative URLs will be rewritten such that the links can be fetched later using
- * UrlRef.  A UrlRef is created for each linked resource (e.g. NetworkLink, GroundOverlay,
- * ScreenOverlay, IconStyle, etc.) during reading and an internal URI is used to reference
- * the resource.  If the parent file/URL is a KMZ file and link is a relative URL
- * then the association is preserved otherwise the URL is treated normally.
- *  <p/>
- * For example:
- *  Given the URI: <code>kmzhttp://server/test.kmz?file=kml/include.kml</code>
- *  UrlRef strips the "kmz" prefix and the "?file=" suffix from the URL resolving
- *  the resource as having a parent URL as <code>http://server/test.kmz</code> and
- *  a relative link to the file as <code>kml/include.kml</code>.
- *  <p/> 
- * Use getURI() to get the internal URI and getUrl() to return
- * the original URL.
+ * relative URLs will be rewritten as special URIs such that the links can be fetched
+ * later using <code>UrlRef</code> to wrap the URI. A UrlRef is created for each linked
+ * resource (e.g. NetworkLink, GroundOverlay, ScreenOverlay, IconStyle, etc.) during
+ * reading and an internal URI is used to reference the resource.  If the parent
+ * file/URL is a KMZ file and link is a relative URL then the association is preserved
+ * otherwise the URL is treated normally.
+ * <p/>
+ * For example suppose we have a KMZ resource at <code>http://server/test.kmz</code>
+ * and its root KML document includes a supporting KML file through
+ * a relative link <code>kml/include.kml</code>. The URI to this networkLink
+ * is returned as <code>kmzhttp://server/test.kmz?file=kml/include.kml</code>.
+ * UrlRef strips the "kmz" prefix and the "?file=" suffix from the URI resolving
+ * the resource as having a parent URL as <code>http://server/test.kmz</code>
+ * and a relative link to the file as <code>kml/include.kml</code>.
+ * <p/> 
+ * Use <code>getURI()</code> to get the internal URI and <code>getUrl()</code>
+ * to return the original URL.
  *
  * @author Jason Mathews
  */
