@@ -1,7 +1,6 @@
 package org.mitre.giscore.utils;
 
 import org.mitre.itf.geodesy.Geodetic2DBounds;
-import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.UrlRef;
@@ -33,6 +32,9 @@ import java.net.URISyntaxException;
  *  <li> End container with no matching start container (error)
  *  <li> Starting container tag with no matching end container (error)
  *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem) (warning)
+ *  <li> Region has invalid LatLonAltBox (error)
+ *  <li> LatLonAltBox appears to be very small area (warning)
+ *  <li> minLodPixels must be less than maxLodPixels in Lod (error)
  *  <li> Invalid TimeSpan if begin later than end value (warning)
  *  <li> Feature inherits time from parent container (info)
  *  <li> Container start date is earlier than that of its ancestors (info)
@@ -515,12 +517,88 @@ public class KmlMetaDump implements IKml {
             addTag(viewGroup.getTag()); // Camera or LookAt
 		}
 
-		if (f.getRegion() != null)
-			addTag(REGION);
+		checkRegion(f);
 
         //if (lastObj instanceof StyleSelector) {
         if (lastObjClass == Style.class || lastObjClass == StyleMap.class)
             addTag(":Feature uses inline " + getClassName(lastObjClass)); // Style or StyleMap
+	}
+
+	private void checkRegion(Feature f) {
+		TaggedMap region = f.getRegion();
+		if (region == null) return;
+
+		addTag(REGION);
+		try {
+			double north = handleTaggedElement(IKml.NORTH, region, 0, 90);
+			double south = handleTaggedElement(IKml.SOUTH, region, 0, 90);
+			double east = handleTaggedElement(IKml.EAST, region, 0, 180);
+			double west = handleTaggedElement(IKml.WEST, region, 0, 180);
+			if (Math.abs(north - south) < 1e-5 || Math.abs(east - west) < 1e-5) {
+				// incomplete bounding box or too small so skip it
+				// 0.0001 (1e-4) degree dif  =~ 10 meter
+				// 0.00001 (1e-5) degree dif =~ 1 meter
+				// if n/s/e/w values all 0's then ignore LatLonAltBox
+				if (north != 0 || south != 0 || east != 0 || west != 0)
+					addTag(":LatLonAltBox appears to be very small area");
+			} else {
+				// Check valid Region-LatLonAltBox values:
+				// 1. kml:north > kml:south; lat range: +/- 90
+				// 2. kml:east > kml:west;   lon range: +/- 180
+				// Test ATC 8: Region - LatLonAltBox
+				// Reference: OGC-07-147r2: cl. 9.15.2
+				if (north < south || east < west) {
+					addTag(":Region has invalid LatLonAltBox");
+					if (verbose) System.out.println(" Error: LatLonAltBox fails to satisfy constraints"); 
+				}
+			}
+			double minAlt = handleTaggedElement(IKml.MIN_ALTITUDE, region, 0, 0);
+			double maxAlt = handleTaggedElement(IKml.MAX_ALTITUDE, region, 0, 0);
+			// 3. kml:minAltitude <= kml:maxAltitude;
+			// 4. if kml:minAltitude and kml:maxAltitude are both present,
+			//    then kml:altitudeMode does not have the value "clampToGround".
+			if (minAlt > maxAlt) {
+				addTag(":Region has invalid LatLonAltBox");
+				if (verbose) System.out.println(" Error: LatLonAltBox fails to satisfy Altitude constraints");
+			}
+		} catch (NumberFormatException nfe) {
+			addTag(":Region has invalid LatLonAltBox");
+			if (verbose) System.out.println(" Error: " + nfe.getMessage());
+		}
+		
+		try {
+			double minLodPixels = handleTaggedElement(IKml.MIN_LOD_PIXELS, region, 0, 0);
+			double maxLodPixels = handleTaggedElement(IKml.MAX_LOD_PIXELS, region, -1, 0);
+			if (maxLodPixels == -1) maxLodPixels = Integer.MAX_VALUE; // -1 = infinite
+			if (minLodPixels >= maxLodPixels) {
+				addTag(":minLodPixels must be less than maxLodPixels in Lod");
+			}
+			/*
+			kml:minLodPixels shall be less than kml:maxLodPixels (where a value of -1 = infinite).
+			It is also advised that kml:minFadeExtent + kml:maxFadeExtent is less than or equal to
+			kml:maxLodPixels - kml:minLodPixels.
+			*/
+		} catch (NumberFormatException nfe) {
+			addTag(":Region has invalid Lod");
+			if (verbose) System.out.println(" Error: " + nfe.getMessage());
+		}
+	}
+
+	private static double handleTaggedElement(String tag, TaggedMap region, int defaultValue, int maxAbsValue) throws NumberFormatException {
+		String val = region.get(tag);
+		if (val != null && val.length() != 0) {
+			double rv;
+			try {
+				rv = Double.parseDouble(val);
+			} catch (NumberFormatException nfe) {
+				throw new NumberFormatException(String.format("The value '%s' of element '%s' is not valid", val, tag));
+			}
+			if (maxAbsValue > 0 && Math.abs(rv) > maxAbsValue) {
+				throw new NumberFormatException(String.format("Invalid value out of range: %s=%s", tag, val));
+			}
+			return rv;
+		}
+		return defaultValue;
 	}
 
 	private void addTag(Class aClass) {
