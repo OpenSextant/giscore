@@ -69,10 +69,10 @@ import org.slf4j.LoggerFactory;
  * The geometry visitors are invoked by the feature vistor via the Geometry
  * accept method.
  * <p/>
- * Notes/Limitations:<br/>
+ * <h4>Notes/Limitations:</h4>
  *  -A few tags are not yet supported on features so are omitted from output:
- *   atom:author, atom:link, address, xal:AddressDetails, ListStyle,
- *   Metadata, open, phoneNumber, Snippet, snippet.
+ *   {@code atom:author, atom:link, address, xal:AddressDetails, ListStyle,
+ *   Metadata, open, phoneNumber, Snippet, snippet}.<br/>
  * -Warns if shared styles appear in Folders. According to OGC KML specification
  *  shared styles shall only appear within a Document [OGC 07-147r2 section 6.4].
  *

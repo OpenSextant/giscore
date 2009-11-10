@@ -15,7 +15,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 /**
  * Basic Model object that represents a 3D object described in a COLLADA file as used in a KML context.  
  * <p>
- * Notes/Limitations: <br/>
+ * <h4>Notes/Limitations:</h4>
  *  - Only contains AltitudeMode and Location for now until more is supported. <br/>
  *  - TODO: add other elements (e.g. Orientation, Scale, Link, ResourceMap) 
  * 

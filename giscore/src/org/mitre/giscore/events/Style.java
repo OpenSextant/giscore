@@ -45,9 +45,9 @@ import org.mitre.giscore.IStreamVisitor;
  * Values for <colorMode> are normal (no effect) and random. A value of random
  * applies a random linear scale to the base <color> as follows.
  * <p>
- * Notes/Limitations:
+ * <h4>Notes/Limitations:</h4>
  * <p>
- *  TODO: ListStyle not supported
+ *  TODO: {@code ListStyle} not supported
  * <br>
  *  Some less common tags (e.g. heading & hotSpot in IconStyle) are not preserved.
  * 

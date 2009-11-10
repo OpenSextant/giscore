@@ -38,7 +38,7 @@ import java.text.SimpleDateFormat;
  * <p/> http://www.georss.org/xml/1.1/georss.xsd
  * <p/> http://www.windsorsolutions.biz/xsd/ENGeoTF/gmlgeorss11.xsd
  * <p/> 
- * Notes/Limitations:
+ * <h4>Notes/Limitations:</h4>
  * <p/>
  * -Handles all basic GeoRSS-simple shapes (Point, Line, Polygon, Circle).<br/>
  * -Current georss-Simple spec, however, does not have a native collection/multigeometry

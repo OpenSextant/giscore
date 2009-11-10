@@ -36,7 +36,7 @@ import org.slf4j.LoggerFactory;
  * with a single part.  In Google KML files, this object corresponds to a Geometry object of
  * type LineString. <p/>
  *
- * Notes/Limitations: <br/>
+ * <h4>Notes/Limitations:</h4>
  * - If have points of mixed dimensions then line is downgraded to 2d. <br/>
  *
  * @author Paul Silvey

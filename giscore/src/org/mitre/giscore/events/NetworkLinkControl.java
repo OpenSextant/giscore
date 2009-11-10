@@ -11,9 +11,9 @@ import java.util.Date;
 /**
  * Controls the behavior of files fetched by a NetworkLink. <p/>
  *
- * Notes/Limitations: <p/>
+ * <h4>Notes/Limitations:</h4>
  *
- * Holder for NetworkLinkControl but doe not yet hold the Update contents
+ * Holder for NetworkLinkControl but does not yet hold the Update contents
  *
  * @author Jason Mathews, MITRE Corp.
  * Date: May 20, 2009 3:47:51 PM
