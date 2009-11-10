@@ -61,15 +61,18 @@ import org.slf4j.LoggerFactory;
  * <ul>
  * <li>A new container
  * <li>Exiting a container
- * <li>A new features
- * <li>Existing the feature
+ * <li>A new feature
+ * <li>Exiting the feature
  * </ul>
  * <p>
  * There are some interesting behaviors needed to make this work properly. The
  * stream needs to buffer data before returning. For example, KML contains
- * elements like Style and StyleMap that are part of the feature. To handle this
- * correctly on output, these elements need to be earlier in the output stream
- * than the container (or feature) itself.
+ * elements like {@link Style} and {@link StyleMap} that are part of the feature.
+ * To handle this correctly on output, these elements need to be earlier in the output stream
+ * than the container (or feature) itself. If these elements are out of order on input
+ * then a {@link WrappedObject} is created that enclosed a {@code Style} or {@code StyleMap}
+ * element that requires handling by caller to unwrap. By default a {@code WrappedObject}
+ * is treated as a {@link Comment}.
  * <p>
  * This is handled in the KML stream by buffering those elements before the
  * container (or feature). The container (and feature) handlers return the top
@@ -81,51 +84,52 @@ import org.slf4j.LoggerFactory;
  * methods. Every feature in KML can have a set of common attributes and
  * additional elements. The
  * {@link #handleProperties(Common,XMLEvent,QName)} method takes care of
- * these. This returns <code>false</code> if the current element isn't a
+ * these. This returns {@code false} if the current element isn't a
  * common element, which allows the caller to handle the code.
  * <p>
  * Geometry is handled by common code as well. All coordinates in KML are
  * transmitted as tuples of two or three elements. The formatting of these is
- * consistent and is handled by {@link #parseCoordinates(QName)}. Tessellate,
- * extrude, and altitudeMode properties are maintained on the associated Geometry. 
+ * consistent and is handled by {@link #parseCoordinates(QName)}. {@code Tessellate},
+ * {@code extrude}, and {@code altitudeMode} properties are maintained on the associated
+ * Geometry. 
  * <p>
- * Feature properties (i.e., name, description, visibility, Camera/LookAt,
- * styleUrl, inline Styles, Region, TimeStamp/TimeSpan elements) in addition
+ * Feature properties (i.e., {@code name, description, visibility, Camera/LookAt,
+ * styleUrl, inline Styles, Region, TimeStamp/TimeSpan} elements) in addition
  * to the geometry are parsed and set on the Feature object.
  * <p>
- * Notes/Limitations:
+ * <h4>Notes/Limitations:</h4>
  * <p> 
- * Note only a single Data/SchemaData/Schema ExtendedData mapping is assumed
- * per Feature but Collections can reference among several Schemas. Features
- * with mixed Data and/or Multiple SchemaData elements will be associated
- * only with the last Schema referenced.
+ * Only a single {@code Data/SchemaData/Schema ExtendedData} mapping is assumed
+ * per Feature but note that although uncommmon, KML allows features to define multiple
+ * Schemas. Features with mixed {@code Data} and/or multiple {@code SchemaData} elements
+ * will be associated only with the last {@code Schema} referenced.
  * <p> 
  * Unsupported tags include the following:
- *  atom:author, atom:link, address, xal:AddressDetails, Metadata,
- *  open, phoneNumber, Snippet, snippet. <br>
+ *  {@code atom:author, atom:link, address, xal:AddressDetails, Metadata,
+ *  open, phoneNumber, Snippet, snippet}. 
  * These tags are consumed but discarded.
  * <p>
- * gx extensions (e.g. Tour, Playlist, etc.) are ignored, however, gx:altitudeMode
- * is stored as a value of the altitudeMode in LookAt, Camera, Geometry, or
+ * gx extensions (e.g. Tour, Playlist, etc.) are ignored, however, {@code gx:altitudeMode}
+ * is stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry, or
  * GroundOverlay,
  * <p> 
- * StyleMaps with inline Styles or nested StyleMaps are not supported.
- * StyleMaps must specify styleUrl.
+ * {@code StyleMaps} with inline Styles or nested StyleMaps are not supported.
+ * StyleMaps must specify {@code styleUrl}.
  * <p>
- * ListStyle not supported.
+ * {@code ListStyle} not supported.
  * <p> 
- * Limited support for PhotoOverlay which creates an basic overlay object
+ * Limited support for {@code PhotoOverlay} which creates an basic overlay object
  * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
  * ImagePyramid, Point, shape, etc).
  * <p>
- * Limited support for Model geometry type. Keeps only location and altitude
+ * Limited support for {@code Model} geometry type. Keeps only location and altitude
  * properties.
  * <p> 
- * Limited support for NetworkLinkControl which creates an object wrapper for the link
+ * Limited support for {@code NetworkLinkControl} which creates an object wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
  * <p>
  * Allow timestamps to omit seconds field. Strict XML schema validation requires seconds field
- * in the dateTime (YYYY-MM-DDThh:mm:ssZ) format but Google Earth is lax in its rules.
+ * in the dateTime ({@code YYYY-MM-DDThh:mm:ssZ}) format but Google Earth is lax in its rules.
  * Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC.
  *
  * @author DRAND

@@ -6,7 +6,7 @@ import org.mitre.giscore.IStreamVisitor;
 
 /**
  * Represents a Comment object. In XML would
- * be represented as <!-- text content -->.
+ * be represented as {@code <!-- text content -->}.
  * 
  * @author Jason Mathews, MITRE Corp.
  * Created: Mar 10, 2009 9:03:48 AM
