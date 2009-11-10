@@ -32,6 +32,7 @@ import java.util.Collections;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.CancellationException;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -53,6 +54,7 @@ import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.output.dbf.DbfOutputStream;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.ObjectBuffer;
+import org.mitre.giscore.utils.ICancelable;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DBounds;
@@ -199,7 +201,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Output the data.
-	 * 
+	 *
 	 * @throws IOException if an error occurs
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
@@ -207,6 +209,27 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * @throws XMLStreamException
 	 */
 	public void process() throws IOException, ClassNotFoundException,
+			InstantiationException, IllegalAccessException, XMLStreamException {
+		process(null);
+	}
+
+
+
+	/**
+	 * Output the data.
+	 *
+	 * @param callback Provide {@code ICancelable} callback which if {@code isCanceled()}
+	 * returns true then processing is aborted and CancellationException is thrown.
+	 * If {@code null} then no cancellation checks are done.
+	 * 
+	 * @throws IOException if an error occurs
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
+	 * @throws ClassNotFoundException
+	 * @throws XMLStreamException
+	 * @throws CancellationException if callback is provided and forces a cancellation
+	 */
+	public void process(ICancelable callback) throws IOException, ClassNotFoundException,
 			InstantiationException, IllegalAccessException, XMLStreamException {
 		// Write prj
 		FileOutputStream prjos = new FileOutputStream(prjFile);
@@ -216,7 +239,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		    prjos.close();
         }
 		// Write shp and shx
-		outputFeatures();
+		outputFeatures(callback);
 		// Write dbf
 		FileOutputStream dbfos = new FileOutputStream(dbfFile);
         try {
@@ -296,13 +319,16 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output the features. As the features are output, track the bounding box
 	 * information and check for consistent geometry usage. After all the
 	 * features are written we reopen the shapefile to output the header.
-	 * 
+	 *
+	 * @param callback
+	 *
 	 * @throws IOException if an error occurs
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
+	 * @throws CancellationException if callback is provided and forces a cancellation
 	 */
-	private void outputFeatures() throws IOException, ClassNotFoundException,
+	private void outputFeatures(ICancelable callback) throws IOException, ClassNotFoundException,
 			InstantiationException, IllegalAccessException {
 		BinaryOutputStream shxbos = null;
 		int recordNumber = 1;
@@ -326,6 +352,9 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			}
 			IDataSerializable ser = buffer.read();
 			while (ser != null) {
+				if (callback != null && callback.isCanceled()) {
+					throw new CancellationException();
+				}
 				Feature feat = (Feature) ser;
 				Geometry geo = feat.getGeometry();
 				int shape = getEsriShapeType(geo);
