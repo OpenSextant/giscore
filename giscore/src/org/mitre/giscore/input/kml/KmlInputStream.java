@@ -1145,12 +1145,13 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private void handleIconStyle(Style style, QName name) throws XMLStreamException {
 		String url = null;
 		double scale = 1.0;		// default value
+		double heading = 0.0;
 		Color color = Color.white;	// default="ffffffff"
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (foundEndTag(e, name)) {
 				try {
-					style.setIconStyle(color, scale, url);
+					style.setIconStyle(color, scale, heading, url);
 				} catch (IllegalArgumentException iae) {
 					log.warn("Invalid style: " + iae);
 				}
@@ -1161,13 +1162,21 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				QName qname = se.getName();
 				String localPart = qname.getLocalPart();
 				if (localPart.equals(SCALE)) {
-                    String value = getNonEmptyElementText();
-                    if (value != null)
-                        try {
-                            scale = Double.parseDouble(value);
-                        } catch (NumberFormatException nfe) {
-                            log.warn("Invalid scale value: " + value);
-                        }
+					String value = getNonEmptyElementText();
+					if (value != null)
+						try {
+							scale = Double.parseDouble(value);
+						} catch (NumberFormatException nfe) {
+							log.warn("Invalid scale value: " + value);
+						}
+				} else if (localPart.equals(HEADING)) {
+					String value = getNonEmptyElementText();
+					if (value != null)
+						try {
+							heading = Double.parseDouble(value);
+						} catch (NumberFormatException nfe) {
+							log.warn("Invalid heading value: " + value);
+						}
 				} else if (localPart.equals(COLOR)) {
 					String value = stream.getElementText();
 					color = parseColor(value);

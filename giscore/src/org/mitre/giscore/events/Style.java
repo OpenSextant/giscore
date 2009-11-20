@@ -49,17 +49,18 @@ import org.mitre.giscore.IStreamVisitor;
  * <p>
  *  TODO: {@code ListStyle} not supported
  * <br>
- *  Some less common tags (e.g. heading & hotSpot in IconStyle) are not preserved.
+ *  Some less common tags (e.g. hotSpot in IconStyle) are not preserved.
  * 
  * @author DRAND
  */
 public class Style extends StyleSelector {
-    
+
 	public enum ColorMode { NORMAL, RANDOM }
 	
 	private boolean hasIconStyle = false;
 	private Color iconColor;
 	private double iconScale;
+	private double iconHeading;
 	private String iconUrl;
 
 	private boolean hasLineStyle = false;
@@ -139,12 +140,31 @@ public class Style extends StyleSelector {
 	 * @throws IllegalArgumentException if color is null. 
 	 */
 	public void setIconStyle(Color color, double scale, String url) {
+		setIconStyle(color, scale, 0.0, url);
+	}
+
+	/**
+	 * Set the icon style information
+	 * 
+	 * @param color
+	 *            the color for the icon, never <code>null</code>
+	 * @param scale
+	 *            the scale of the icon
+	 * @param heading
+	 *            heading (i.e. icon rotation) in degrees. Default=0 (North).
+	 *            Values range from 0 to 360 degrees. 
+	 * @param url
+	 *            the url of the icon
+	 * @throws IllegalArgumentException if color is null. 
+	 */
+	public void setIconStyle(Color color, double scale, double heading, String url) {
 		if (color == null) {
 			throw new IllegalArgumentException("color should never be null");
 		}
 		hasIconStyle = true;
 		iconColor = color;
 		iconScale = scale <= 0.0 ? 0 : scale;
+		iconHeading = Math.abs(heading - 360) < 0.1 ? 0 : heading;
 		iconUrl = StringUtils.isBlank(url) ? null : url;
 	}
 
@@ -164,6 +184,10 @@ public class Style extends StyleSelector {
 	 */
 	public double getIconScale() {
 		return iconScale;
+	}
+
+	public double getIconHeading() {
+		return iconHeading;
 	}
 
 	/**

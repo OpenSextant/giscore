@@ -1152,6 +1152,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         writer.writeStartElement(ICON_STYLE);
         handleColor(COLOR, style.getIconColor());
         handleSimpleElement(SCALE, Double.toString(style.getIconScale()));
+        double heading = style.getIconHeading();
+        if (Math.abs(heading) > 0.1 && heading < 360)
+            handleSimpleElement(HEADING, formatDouble(heading));
         String iconUrl = style.getIconUrl();
         if (iconUrl != null) {
             writer.writeStartElement(ICON);
