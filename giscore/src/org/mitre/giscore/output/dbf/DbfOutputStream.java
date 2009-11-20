@@ -225,7 +225,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		}
 		return fieldlen;
 	}
-
+	
 	private void outputRows(byte len[]) throws ClassNotFoundException,
 			IOException, InstantiationException, IllegalAccessException {
 		Row row = (Row) buffer.read();

@@ -241,7 +241,7 @@ public class CsvOutputStream extends StreamVisitorBase implements
      *                                  using specified data type.
      */
     private String formatValue(Type type, Object data) {
-        if (data == null || ObjectUtils.NULL.equals(data)) {
+        if (data == null) {
             return "";
         } else if (Type.DATE.equals(type)) {
             Object val = data;

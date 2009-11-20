@@ -156,7 +156,11 @@ public class Row extends AbstractObject implements IDataSerializable {
 			throw new IllegalArgumentException(
 					"field should never be null or empty");
 		}
-		return extendedData.get(field);
+		Object value = extendedData.get(field);
+		if (ObjectUtils.NULL.equals(value))
+			return null;
+		else
+			return value;
 	}
 
     /**

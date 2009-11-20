@@ -570,7 +570,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			throw new IllegalArgumentException(
 					"name should never be null or empty");
 		}
-		if (value == null || ObjectUtils.NULL.equals(value)) {
+		if (value == null) {
 			return new Variant(name);
 		}
 

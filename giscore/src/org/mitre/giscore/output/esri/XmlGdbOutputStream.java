@@ -484,7 +484,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 					field.getType().getXmlSchemaType());
 		}
 		SimpleField.Type type = field.getType();
-		if (datum == null || ObjectUtils.NULL.equals(datum)) {
+		if (datum == null) {
 			// Can't put out nothing for the value - ESRI really don't seem to
 			// have that as a concept
 			if (type.getGdbEmptyValue() != null) {
