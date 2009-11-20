@@ -40,6 +40,7 @@ import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.shapefile.BinaryOutputStream;
 import org.mitre.giscore.utils.ObjectBuffer;
+import org.mitre.giscore.utils.SafeDateFormat;
 import org.mitre.giscore.utils.StringHelper;
 import org.apache.commons.io.IOUtils;
 
@@ -60,7 +61,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			new SimpleDateFormat("dd-MMM-yyyy"), dateFormat };
 	private final DecimalFormat decimalFormat = new DecimalFormat(
 			"+###############0.################;-###############0.################");
-
+	private final SafeDateFormat isoDateFormat = new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 	/**
 	 * Output stream, set in ctor.
 	 */
@@ -334,6 +335,8 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 	private String getString(Object data) {
 		if (data == null) {
 			return "";
+		} else if (data instanceof Date) {
+			return isoDateFormat.format((Date) data);
 		} else {
 			return data.toString();
 		}

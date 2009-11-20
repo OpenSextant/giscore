@@ -26,6 +26,7 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.*;
+import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
 import org.mitre.giscore.output.IGISOutputStream;
@@ -66,6 +67,8 @@ public class TestShapefileOutput extends TestGISBase {
 		SimpleField id = new SimpleField("testid");
 		id.setLength(10);
 		schema.put(id);
+		SimpleField dtm = new SimpleField("dtm", Type.DATE);
+		schema.put(dtm);
 		DocumentStart ds = new DocumentStart(DocumentType.Shapefile);
 		shpos.write(ds);
 		ContainerStart cs = new ContainerStart("Folder");
@@ -75,6 +78,7 @@ public class TestShapefileOutput extends TestGISBase {
 		for(int i = 0; i < 5; i++) {
 			Feature f = new Feature();
 			f.putData(id, "id " + i);
+			f.putData(dtm, new Date(System.currentTimeMillis()));
 			f.setSchema(schema.getId());
 			double lat = 40.0 + (5.0 * RandomUtils.nextDouble());
 			double lon = 40.0 + (5.0 * RandomUtils.nextDouble());
@@ -92,11 +96,14 @@ public class TestShapefileOutput extends TestGISBase {
 		SimpleField id = new SimpleField("testid");
 		id.setLength(10);
 		schema.put(id);
+		SimpleField dtm = new SimpleField("dtm", Type.DATE);
+		schema.put(dtm);
 		ObjectBuffer buffer = new ObjectBuffer();
 		List<Point> pts = new ArrayList<Point>(5);
 		for(int i = 0; i < 5; i++) {
 			Feature f = new Feature();
 			f.putData(id, "id " + i);
+			f.putData(dtm, new Date(System.currentTimeMillis()));
 			f.setSchema(schema.getId());
 			Point point = getRandomPoint();
 			pts.add(point);
@@ -114,11 +121,14 @@ public class TestShapefileOutput extends TestGISBase {
 		SimpleField id = new SimpleField("testid");
 		id.setLength(10);
 		schema.put(id);
+		SimpleField dtm = new SimpleField("dtm", Type.DATE);
+		schema.put(dtm);
 		ObjectBuffer buffer = new ObjectBuffer();
 		List<Point> pts = new ArrayList<Point>(5);
 		for(int i = 0; i < 5; i++) {
 			Feature f = new Feature();
 			f.putData(id, "id " + i);
+			f.putData(dtm, new Date(System.currentTimeMillis()));
 			f.setSchema(schema.getId());
 			Point point = getRandomPointZ();
 			pts.add(point);

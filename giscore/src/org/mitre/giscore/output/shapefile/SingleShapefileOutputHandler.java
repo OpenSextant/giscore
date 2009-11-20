@@ -40,6 +40,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.Style;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
@@ -244,13 +245,48 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		FileOutputStream dbfos = new FileOutputStream(dbfFile);
         try {
 		    buffer.resetReadIndex();
-		    DbfOutputStream dbf = new DbfOutputStream(dbfos, schema, buffer);
+		    // Modify the schema for the dbf if we have dates since shapefile's
+		    // output of dates is entirely useless. Substitute string for date
+		    Schema dbfschema = dbfModify(schema);
+		    DbfOutputStream dbf = new DbfOutputStream(dbfos, dbfschema, buffer);
 		    dbf.close();
         } finally {
 		    dbfos.close();
         }
 		// Write shm
 		writeShm();
+	}
+
+	/**
+	 * Find and replace and simple fields of type date with type string
+	 * @param orign
+	 * @return
+	 */
+	private Schema dbfModify(Schema orign) {
+		boolean foundDate = false;
+		for(SimpleField field : orign.getFields()) {
+			if (field.getType().equals(SimpleField.Type.DATE))
+			{
+				foundDate = true;
+				break;
+			}
+		}
+		if (! foundDate) {
+			return orign;
+		}
+		Schema rval = new Schema();
+		for(SimpleField field : orign.getFields()) {
+			if (field.getType().equals(SimpleField.Type.DATE))
+			{	
+				SimpleField copy = new SimpleField(field.getName());
+				copy.setAliasName(field.getAliasName());
+				copy.setDisplayName(field.getDisplayName());
+				rval.put(copy);
+			} else {
+				rval.put(field);
+			}
+		}
+		return rval;
 	}
 
 	/**
