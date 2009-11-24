@@ -9,6 +9,7 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.FrameOfReference;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.ObjectUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -598,11 +599,11 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             // use feature startTime or endTime as pubDate ??
             // for now requires explicit pubDate extended data field
             if (feature.hasExtendedData()) {
-                for (SimpleField field : feature.getFields()) {
-                    Object value = feature.getData(field);
-                    if (value != null) {
+				for (Map.Entry<SimpleField, Object> entry : feature.getEntrySet()) {
+					Object value = entry.getValue();
+					if (value != null && !ObjectUtils.NULL.equals(value)) {
                         String textVal = value instanceof Date ? dateFormatter.format((Date)value) : value.toString();
-                        String name = field.getName();
+						String name = entry.getKey().getName();
                         Namespace ns = namespaceMap == null ? null : namespaceMap.get(name);
                         handleSimpleElement(ns, name, textVal); // treat as RSS element
                         //writer.writeCharacters("\n");
