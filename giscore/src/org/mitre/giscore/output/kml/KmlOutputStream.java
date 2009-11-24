@@ -346,22 +346,26 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 if (schema == null) {
                     for (SimpleField field : feature.getFields()) {
                         Object value = feature.getData(field);
-                        writer.writeStartElement(DATA);
-                        writer.writeAttribute(NAME, field.getName());
-                        handleSimpleElement(VALUE, formatValue(field.getType(),
-                                value));
-                        writer.writeEndElement();
+						if (value != null) {
+							writer.writeStartElement(DATA);
+							writer.writeAttribute(NAME, field.getName());
+							handleSimpleElement(VALUE, formatValue(field.getType(),
+									value));
+							writer.writeEndElement();
+						}
                     }
                 } else {
                     writer.writeStartElement(SCHEMA_DATA);
                     writer.writeAttribute(SCHEMA_URL, schema.toString());
                     for (SimpleField field : feature.getFields()) {
                         Object value = feature.getData(field);
-                        writer.writeStartElement(SIMPLE_DATA);
-                        writer.writeAttribute(NAME, field.getName());
-                        handleCharacters(formatValue(field.getType(),
-                                value));
-                        writer.writeEndElement();
+						if (value != null) {
+							writer.writeStartElement(SIMPLE_DATA);
+							writer.writeAttribute(NAME, field.getName());
+							handleCharacters(formatValue(field.getType(),
+									value));
+							writer.writeEndElement();
+						}
                     }
                     writer.writeEndElement();
                 }
