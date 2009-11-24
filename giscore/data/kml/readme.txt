@@ -22,6 +22,7 @@ Summary of tags and properties used in KML collection
 	Geometry spans -180/+180 longtiude line
 	Invalid time range: start > end
 	NetworkLink missing Link
+	Out of order elements
 	Overlay missing icon
 
 	BalloonStyle		 MultiPoint
@@ -1017,10 +1018,11 @@ java.lang.IllegalArgumentException: Angle 52.35987755982989 radians is too big
 	# features=40
 
 data\kml\sloppy\bluedevil20080812-short2.kml
-	DEBUG [main] (KmlInputStream.java:1181) - Out of order Style
-	DEBUG [main] (KmlInputStream.java:1181) - Out of order Style
-	DEBUG [main] (KmlInputStream.java:1181) - Out of order Style
-	WARN [main] (KmlInputStream.java:1214) - Failed at element: name
+DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
+DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
+DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
+ WARN [main] (KmlInputStream.java:1255) - Skip unexpected element: name
+ INFO [main] (AltitudeModeEnumType.java:40) - Ignoring invalid altitudeMode value: clampedToGround
 
 	Feature uses inline Style
 	Overlay missing icon
