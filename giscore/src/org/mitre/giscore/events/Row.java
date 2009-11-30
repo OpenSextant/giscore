@@ -123,8 +123,9 @@ public class Row extends AbstractObject implements IDataSerializable {
     /**
      * Returns a {@link Set} view of the Extended data mappings associated with this row.
      * Note values will be {@code ObjectUtils.NULL} if original value was @{code null} so
-     * this needs to be tested accordingly by the caller. 
-     * 
+     * this needs to be tested accordingly by the caller. If, however, {@link #getData(SimpleField)}
+	 * is used then {@code ObjectUtils.NULL} values are returned as {@code null} values.
+	 *
      * @return a set view of the Extended data mappings contained in this row
      */
 	public Set<Map.Entry<SimpleField,Object>> getEntrySet() {
