@@ -294,10 +294,22 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 	@Override
 	public List<Point> getPoints() {
 		List<Point> rval = new ArrayList<Point>();
-		if (outerRing != null) rval.addAll(outerRing.getPoints());
+		if (outerRing != null) {
+			List<Point> pts = outerRing.getPoints();
+			if (outerRing.clockwise() == false) {
+				// Points are backward, reverse
+				Collections.reverse(pts);
+			}
+			rval.addAll(pts);
+		}
 		if (ringList != null) {
 			for(LinearRing ring : ringList) {
-				rval.addAll(ring.getPoints());
+				List<Point> pts = ring.getPoints();
+				if (ring.clockwise() == true) {
+					// Points are backward, reverse
+					Collections.reverse(pts);
+				}
+				rval.addAll(pts);
 			}
 		}
 		return rval;

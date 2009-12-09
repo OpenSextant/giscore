@@ -228,15 +228,16 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     private IGISObject readNext() throws IOException {
     	Feature f = (Feature) dbf.read();
     	boolean is3D = is3D(shpType);
+    	boolean includeM = isM(shpType);
     	if (f != null) {
-    		Geometry geo = getGeometry(is3D);
+    		Geometry geo = getGeometry(is3D, includeM);
     		f.setGeometry(geo);
     	}
 		return f;
 	}
     
     // Read the next Geometry Object and validate type. Return null at valid EOF.
-    private Geometry getGeometry(boolean is3D)
+    private Geometry getGeometry(boolean is3D, boolean includeM)
             throws IOException, IllegalArgumentException {
         // EOF is OK if it occurs here, otherwise we'll throw the exception to caller
         try {
@@ -259,9 +260,9 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
             else {
                 // Skip over Bounding Box coordinates (we'll reconstruct directly from points)
                 for (int i = 0; i < 4; i++) stream.readDouble(ByteOrder.LITTLE_ENDIAN);
-                if (st == MULTILINE_TYPE) geomObj = getPolyLine(is3D);
-                else if (st == MULTINESTEDRINGS_TYPE) geomObj = getPolygon(is3D);
-                else if (st == MULTIPOINT_TYPE) geomObj = getMultipoint(is3D);
+                if (st == MULTILINE_TYPE) geomObj = getPolyLine(is3D, includeM);
+                else if (st == MULTINESTEDRINGS_TYPE) geomObj = getPolygon(is3D, includeM);
+                else if (st == MULTIPOINT_TYPE) geomObj = getMultipoint(is3D, includeM);
                 else throw new IOException("Shapefile contains shape type (" +
                         shpType + ") that is currently unsupported");
             }
@@ -277,6 +278,17 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
      */
     protected boolean is3D(int shapeType) {
         return (shapeType > 10);
+    }
+    
+    /**
+     * Utility method to test for geometry that include M values. We ignore M
+     * values in these methods but must account for them in the data
+     * 
+     * @param shapeType
+     * @return
+     */
+    protected boolean isM(int shapeType) {
+    	return (shapeType > 20);
     }
 
 	/**
@@ -368,7 +380,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     }
     
     // Read PolyLine and Polygon point values and return Geodetic point array
-    private Geodetic2DPoint[] getPolyPoints(int nPoints, boolean is3D)
+    private Geodetic2DPoint[] getPolyPoints(int nPoints, boolean is3D, boolean includeM)
             throws IOException {
         Geodetic2DPoint[] pts;
         // Read the X and Y points into arrays
@@ -385,11 +397,13 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
             double[] z = new double[nPoints];
             for (int i = 0; i < nPoints; i++)
                 z[i] = stream.readDouble(ByteOrder.LITTLE_ENDIAN);
-            stream.readDouble(ByteOrder.LITTLE_ENDIAN); // skip Mmin
-            stream.readDouble(ByteOrder.LITTLE_ENDIAN); // skip Mmax
-            for (int i = 0; i < nPoints; i++)
-                stream.readDouble(ByteOrder.LITTLE_ENDIAN); // skip measured vals
-            // Convert x, y, and z values into Geodetic points
+            if (includeM) {
+	            stream.readDouble(ByteOrder.LITTLE_ENDIAN); // skip Mmin
+	            stream.readDouble(ByteOrder.LITTLE_ENDIAN); // skip Mmax
+	            for (int i = 0; i < nPoints; i++)
+	                stream.readDouble(ByteOrder.LITTLE_ENDIAN); // skip measured vals
+            }
+            // Convert x, y, and z values into Geodetic points, ignoring the m values
             pts = new Geodetic3DPoint[nPoints];
             for (int i = 0; i < nPoints; i++)
                 pts[i] = new Geodetic3DPoint(new Longitude(x[i], Angle.DEGREES),
@@ -406,12 +420,12 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     
     // Read next MultiLine (ESRI Polyline or PolylineZ) record
     // Take flattened file structure and construct the part hierarchy
-    private MultiLine getPolyLine(boolean is3D)
+    private MultiLine getPolyLine(boolean is3D, boolean includeM)
             throws IOException {
         int nParts = stream.readInt(ByteOrder.LITTLE_ENDIAN);
         int nPoints = stream.readInt(ByteOrder.LITTLE_ENDIAN);  // total numPoints
         int[] parts = getPartOffsets(nParts, nPoints);
-        Geodetic2DPoint[] pts = getPolyPoints(nPoints, is3D);
+        Geodetic2DPoint[] pts = getPolyPoints(nPoints, is3D, includeM);
         ArrayList<Line> lnList = new ArrayList<Line>();
         // Collect up the Geodetic points into the line parts
         int k = 0; // point index
@@ -435,12 +449,12 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     // TODO - we need to reverse the point order) - write LinearRing reverse method to help
     // Read next MultiPolygons (ESRI Polygon or PolygonZ) record
     // Take flattened file structure and construct the nested part hierarchy
-    private MultiPolygons getPolygon(boolean is3D)
+    private MultiPolygons getPolygon(boolean is3D, boolean includeM)
             throws IOException, IllegalArgumentException {
         int nParts = stream.readInt(ByteOrder.LITTLE_ENDIAN);
         int nPoints = stream.readInt(ByteOrder.LITTLE_ENDIAN);  // total numPoints
         int[] parts = getPartOffsets(nParts, nPoints);
-        Geodetic2DPoint[] pts = getPolyPoints(nPoints, is3D);
+        Geodetic2DPoint[] pts = getPolyPoints(nPoints, is3D, includeM);
         // Shapefiles allow multiple outer rings intermixed with multiple inner rings
         // Our MultiLinearRings Object requires 1 outer and 0 or more inner.  We'll assume
         // inner rings follow their outer ring, and use direction as a list delimiter.
@@ -471,10 +485,10 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     }
     
     // Read next MultiPoint (ESRI MultiPoint or MultiPointZ) record
-    private MultiPoint getMultipoint(boolean is3D)
+    private MultiPoint getMultipoint(boolean is3D, boolean includeM)
             throws IOException {
         int nPoints = stream.readInt(ByteOrder.LITTLE_ENDIAN);  // total numPoints
-        Geodetic2DPoint[] pts = getPolyPoints(nPoints, is3D);
+        Geodetic2DPoint[] pts = getPolyPoints(nPoints, is3D, includeM);
         ArrayList<Point> ptList = new ArrayList<Point>();
         for (int i = 0; i < nPoints; i++) ptList.add(new Point(pts[i]));
         return new MultiPoint(ptList);
