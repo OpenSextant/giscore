@@ -34,11 +34,7 @@ import org.mitre.giscore.GISFactory;
  *
  */
 public class ObjectBuffer {	
-	/**
-	 * Default number of elements to allow in memory.
-	 */
-	private static final int DEFAULT_SIZE = 2000;
-
+	
 	/**
 	 * The maximum number of buffered elements to hold in
 	 * memory before overflowing into secondary storage.
