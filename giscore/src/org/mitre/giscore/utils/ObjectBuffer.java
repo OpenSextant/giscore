@@ -35,11 +35,13 @@ import org.mitre.giscore.GISFactory;
  */
 public class ObjectBuffer {	
 	
+	private static final long DEFAULT_SIZE = 2000;
+
 	/**
 	 * The maximum number of buffered elements to hold in
-	 * memory before overflowing into secondary storage.
+	 * memory before overflowing into secondary storage. 
 	 */
-	private int maxElements;
+	private long maxElements;
 	
 	/**
 	 * A file pointer to the secondary store, remains 
@@ -71,12 +73,12 @@ public class ObjectBuffer {
 	 * stored into the virtual buffer. Values .ge. to maxElements
 	 * indicate elements that are stored in the file.
 	 */
-	private int storeIndex = 0;
+	private long storeIndex = 0;
 	
 	/**
 	 * The read pointer into the buffer or the file.
 	 */
-	private int readIndex = 0;
+	private long readIndex = 0;
 	
 	public ObjectBuffer() {
 		this(GISFactory.inMemoryBufferSize.get());
@@ -87,12 +89,15 @@ public class ObjectBuffer {
 	 * @param size the maximum count of elements held in memory, must
 	 * be a positive integer.
 	 */
-	public ObjectBuffer(int size) {
+	public ObjectBuffer(long size) {
 		if (size < 1) {
 			throw new IllegalArgumentException("size must be positive");
 		}
+		if (size > Integer.MAX_VALUE) {
+			throw new IllegalArgumentException("size must be no larger than integer max");
+		}
 		maxElements = size;
-		buffer = new IDataSerializable[size];
+		buffer = new IDataSerializable[(int) size];
 	}
 	
 	/**
@@ -140,7 +145,7 @@ public class ObjectBuffer {
 			throw new IllegalArgumentException("object should never be null");
 		}
 		if (storeIndex < maxElements) {
-			buffer[storeIndex] = object;
+			buffer[(int) storeIndex] = object;
 		} else {
 			if (secondaryStore == null) {
 				secondaryStore = File.createTempFile("obj", ".buffer");
@@ -165,7 +170,7 @@ public class ObjectBuffer {
 			if (readIndex >= storeIndex) {
 				return null;
 			} else if (readIndex < maxElements) {
-				return buffer[readIndex];
+				return buffer[(int) readIndex];
 			} else {
 				if (inputStream == null && secondaryStore != null) {
 					inputStream = new SimpleObjectInputStream(new FileInputStream(secondaryStore));
@@ -183,7 +188,7 @@ public class ObjectBuffer {
 	/**
 	 * @return the count of objects that have been stored in the buffer to this point.
 	 */
-	public int count() {
+	public long count() {
 		return storeIndex;
 	}
 

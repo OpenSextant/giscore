@@ -114,7 +114,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		this.schema = schema;
 		this.buffer = buffer;
 		stream = new BinaryOutputStream(outputStream);
-		numRecords = buffer.count();
+		numRecords = (int) buffer.count();
 		
 		// Write the xBaseFile signature (should be 0x03 for dBase III)
 		stream.writeByte(SIGNATURE);
@@ -145,9 +145,9 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 	public void close() throws IOException {
 		if (stream != null) {
 			try {
-			if (buffer.count() > 65535) {
+			if (buffer.count() > Integer.MAX_VALUE) {
 				throw new IllegalStateException(
-						"Trying to persist too many elements to DBF file, only 2^16 - 1 are allowed");
+						"Trying to persist too many elements to DBF file, only 2^32 - 1 are allowed");
 			}
 
 			// Write today's date as the date of last update (3 byte binary YY
@@ -165,7 +165,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			// Write record count (offset 0x4), header length (based on number of fields),
 			// and
 			// record length
-			stream.writeInt(buffer.count(), ByteOrder.LITTLE_ENDIAN);
+			stream.writeInt((int) buffer.count(), ByteOrder.LITTLE_ENDIAN);
 			stream.writeShort((short) ((schema.getKeys().size() * 32) + 33),
 					ByteOrder.LITTLE_ENDIAN);
 			stream.writeShort((short) getRecordLength(), ByteOrder.LITTLE_ENDIAN);
