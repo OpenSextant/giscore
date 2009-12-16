@@ -18,15 +18,19 @@
  ***************************************************************************************/
 package org.mitre.giscore.utils;
 
-import java.io.*;
+import java.io.Closeable;
+import java.io.DataInputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.ObjectUtils;
 
 /**
  * Simplified stream that doesn't hold object references on input
@@ -49,6 +53,12 @@ public class SimpleObjectInputStream implements Closeable {
 	private final DataInputStream stream;
 	@SuppressWarnings("unchecked")
 	private final Map<Integer, Class> classMap = new HashMap<Integer, Class>();
+	
+	/**
+	 * Objects that are references in the input stream. Used to reduce small
+	 * counts of objects that are used thousands of times in the input stream.
+	 */
+	private final Map<String, Object> refs = new HashMap<String, Object>();
 	
 	/**
 	 * Ctor
@@ -83,27 +93,48 @@ public class SimpleObjectInputStream implements Closeable {
 	public Object readObject() throws ClassNotFoundException, IOException,
 			InstantiationException, IllegalAccessException {
 		try {
-			boolean classref = readBoolean();
-			Class clazz = null;
-			if (classref) {
-				int refid = readInt();
-				if (refid == 0) {
-					return null;
+			IDataSerializable rval = readClass();
+			if (rval == null) return null;
+
+			boolean caching = readBoolean();
+			if (caching) {
+				String ref = readString();
+				boolean isdata = readBoolean();
+				if (isdata) {
+					rval.readData(this);
+					refs.put(ref, rval);
 				} else {
-					clazz = classMap.get(refid);
+					rval = (IDataSerializable) refs.get(ref);
 				}
 			} else {
-				String className = readString();
-				int refid = readInt();
-				clazz = (Class<IDataSerializable>) Class.forName(className);
-				classMap.put(refid, clazz);
+				rval.readData(this);
 			}
-			IDataSerializable rval = (IDataSerializable) clazz.newInstance();
-			rval.readData(this);
 			return rval;
 		} catch(EOFException e) {
 			return null;
 		}
+	}
+
+	private IDataSerializable readClass() throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		boolean classref = readBoolean();
+		Class clazz = null;
+		if (classref) {
+			int refid = readInt();
+			if (refid == 0) {
+				return null;
+			} else {
+				clazz = classMap.get(refid);
+			}
+		} else {
+			String className = readString();
+			int refid = readInt();
+			clazz = (Class<IDataSerializable>) Class.forName(className);
+			classMap.put(refid, clazz);
+		}
+		IDataSerializable rval = (IDataSerializable) clazz.newInstance();
+		return rval;
 	}
 
 	/**
@@ -169,17 +200,11 @@ public class SimpleObjectInputStream implements Closeable {
 	 * @throws IOException if an I/O error occurs
 	 */
 	public String readString() throws IOException {
-		int strlen = stream.readInt();
-		if (strlen > 0) {
-			byte strbytes[] = new byte[strlen];
-            int rc = stream.read(strbytes);
-			if (rc != strlen) {
-                System.err.format("wrong length: expected: %d bytes but was: %d%n", strlen, rc);
-                if (rc == -1) return null;
-            }
-			return new String(strbytes, "UTF8");
-		} else {
+		boolean isnull = stream.readBoolean();
+		if (isnull) {
 			return null;
+		} else {
+			return stream.readUTF();
 		}
 	}
 

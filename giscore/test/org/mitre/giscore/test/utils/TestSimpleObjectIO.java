@@ -28,11 +28,16 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.junit.Test;
+import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.utils.IDataSerializable;
+import org.mitre.giscore.utils.IObjectCacher;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
@@ -252,6 +257,51 @@ public class TestSimpleObjectIO {
 		TestClass rc1 = (TestClass) sois.readObject();
 		assertEquals(tc1, rc1);
 		
+		sois.close();
+	}
+	
+	@Test public void testCachedObjectIO() throws Exception {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
+		IObjectCacher cacher = new IObjectCacher() {
+			private Map<Object, Long> objs = new HashMap<Object, Long>();
+			private AtomicLong counter = new AtomicLong();
+			@Override
+			public void addToCache(Object outputObject) {
+				objs.put(outputObject, counter.incrementAndGet());
+			}
+
+			@Override
+			public Long getObjectOutputReference(Object outputObject) {
+				return objs.get(outputObject);
+			}
+
+			@Override
+			public boolean hasBeenCached(Object outputObject) {
+				return getObjectOutputReference(outputObject) != null;
+			}
+
+			@Override
+			public boolean shouldCache(Object outputObject) {
+				return outputObject instanceof SimpleField;
+			}
+			
+		};
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos, cacher);
+		SimpleField fields[] = new SimpleField[40];
+		
+		for(int i = 0; i < fields.length; i++) {
+			String label = "test" + i%5;
+			fields[i] = new SimpleField(label);
+			soos.writeObject(fields[i]);
+		}
+		soos.close();
+		
+		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+		for(int i = 0; i < fields.length; i++) {
+			SimpleField test = (SimpleField) sois.readObject();
+			assertEquals(fields[i], test);
+		}
 		sois.close();
 	}
 }

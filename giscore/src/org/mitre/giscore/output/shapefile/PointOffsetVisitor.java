@@ -24,7 +24,6 @@ import java.util.List;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.output.StreamVisitorBase;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
 

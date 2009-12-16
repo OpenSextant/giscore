@@ -29,12 +29,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.utils.FieldCachingObjectBuffer;
 import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 
@@ -184,7 +184,7 @@ public class FeatureSorter {
 				currentKey = key;
 				buffer = bufferMap.get(key);
 				if (buffer == null) {
-					buffer = new ObjectBuffer();
+					buffer = new FieldCachingObjectBuffer();
 					bufferMap.put(key, buffer);
 				}
 			}

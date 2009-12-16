@@ -27,6 +27,7 @@ import org.mitre.giscore.events.*;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.output.IGISOutputStream;
+import org.mitre.giscore.utils.FieldCachingObjectBuffer;
 import org.mitre.giscore.utils.ObjectBuffer;
 
 import java.io.File;
@@ -79,7 +80,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField dtm = new SimpleField("dtm", Type.DATE);
 		schema.put(dtm);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		List<Point> pts = new ArrayList<Point>(5);
 		for(int i = 0; i < 5; i++) {
 			Feature f = new Feature();
@@ -104,7 +105,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField dtm = new SimpleField("dtm", Type.DATE);
 		schema.put(dtm);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		List<Point> pts = new ArrayList<Point>(5);
 		for(int i = 0; i < 5; i++) {
 			Feature f = new Feature();
@@ -125,7 +126,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		SimpleField id = new SimpleField("testid");
 		id.setLength(10);
 		schema.put(id);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		Feature f = new Feature();
 		f.putData(id, "id multipoint");
 		f.setSchema(schema.getId());
@@ -147,7 +148,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		List<Line> lines = new ArrayList<Line>(5);
 		for(int i = 0; i < 5; i++) {
 			Feature f = new Feature();
@@ -174,7 +175,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		List<Line> lines = new ArrayList<Line>(5);
 		for(int i = 0; i < 5; i++) {
 			Feature f = new Feature();
@@ -202,7 +203,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		Feature f = new Feature();
 		f.putData(id, "id multiline");
 		f.putData(date, new Date());
@@ -229,7 +230,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		List<LinearRing> rings = new ArrayList<LinearRing>(5);
 		for(int i = 0; i < 5; i++) {
 			Point cp = getRandomPoint();
@@ -269,7 +270,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		for(int i = 0; i < 5; i++) {
 			Point cp = getRandomPoint();
 			Feature f = new Feature();
@@ -300,7 +301,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		for(int i = 0; i < 5; i++) {
 			Point cp = getRandomPoint(25.0); // Center of outer poly
 			Feature f = new Feature();
@@ -339,7 +340,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		for(int i = 0; i < 5; i++) {
 			Point cp = getRandomPoint(25.0); // Center of outer poly
 			Feature f = new Feature();
@@ -378,7 +379,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		Feature f = new Feature();
 		f.putData(id, "id multiring");
 		f.putData(date, new Date());
@@ -409,7 +410,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		Feature f = new Feature();
 		f.putData(id, "id multiringz");
 		f.putData(date, new Date());
@@ -440,7 +441,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		Feature f = new Feature();
 		f.putData(id, "id multipoly");
 		f.putData(date, new Date());
@@ -484,7 +485,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		schema.put(id);
 		SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
 		schema.put(date);
-		ObjectBuffer buffer = new ObjectBuffer();
+		ObjectBuffer buffer = new FieldCachingObjectBuffer();
 		Feature f = new Feature();
 		f.putData(id, "id multipolyz");
 		f.putData(date, new Date());

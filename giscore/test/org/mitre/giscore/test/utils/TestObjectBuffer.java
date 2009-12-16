@@ -32,6 +32,7 @@ import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.utils.FieldCachingObjectBuffer;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.geometry.Point;
@@ -48,7 +49,7 @@ public class TestObjectBuffer {
 	@Test
 	public void test1() throws Exception {
 		int count = max - 1;
-		ObjectBuffer buffer = new ObjectBuffer(max);
+		FieldCachingObjectBuffer buffer = new FieldCachingObjectBuffer(max);
 		IDataSerializable objects[] = setupTest(count, buffer);
 		doTest(objects, buffer);
 	}
@@ -56,7 +57,7 @@ public class TestObjectBuffer {
 	@Test
 	public void test2() throws Exception {
 		int count = max;
-		ObjectBuffer buffer = new ObjectBuffer(max);
+		ObjectBuffer buffer = new FieldCachingObjectBuffer(max);
 		IDataSerializable objects[] = setupTest(count, buffer);
 		doTest(objects, buffer);
 	}
@@ -64,7 +65,7 @@ public class TestObjectBuffer {
 	@Test
 	public void test3() throws Exception {
 		int count = max + 1;
-		ObjectBuffer buffer = new ObjectBuffer(max);
+		ObjectBuffer buffer = new FieldCachingObjectBuffer(max);
 		IDataSerializable objects[] = setupTest(count, buffer);
 		doTest(objects, buffer);
 	}
@@ -72,7 +73,7 @@ public class TestObjectBuffer {
 	@Test
 	public void test4() throws Exception {
 		int count = max * 2;
-		ObjectBuffer buffer = new ObjectBuffer(max);
+		ObjectBuffer buffer = new FieldCachingObjectBuffer(max);
 		IDataSerializable objects[] = setupTest(count, buffer);
 		doTest(objects, buffer);
 	}
@@ -81,7 +82,7 @@ public class TestObjectBuffer {
 	public void testPoints() throws Exception {
 		final int count = 4;
 		System.out.println("testPoints");
-		ObjectBuffer buffer = new ObjectBuffer(2);
+		ObjectBuffer buffer = new FieldCachingObjectBuffer(2);
 		Schema schema = new Schema();
 		SimpleField id = new SimpleField("id", SimpleField.Type.INT);
 		SimpleField name = new SimpleField("name");
@@ -104,7 +105,7 @@ public class TestObjectBuffer {
 
 	@Test
 	public void testTimed() throws Exception {
-		ObjectBuffer buffer = new ObjectBuffer(10000);
+		ObjectBuffer buffer = new FieldCachingObjectBuffer(10000);
 		
 		long start = System.nanoTime();
 		setupTest(10000, buffer);

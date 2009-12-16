@@ -7,10 +7,9 @@
 
 package org.mitre.giscore.utils;
 
-import java.util.Arrays;
-import java.io.Reader;
-import java.io.InputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 
 /**
  * The <code>NumberStreamTokenizer</code> class takes an input stream and

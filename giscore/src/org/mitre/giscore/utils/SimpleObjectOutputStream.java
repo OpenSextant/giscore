@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
@@ -42,6 +43,9 @@ public class SimpleObjectOutputStream implements Closeable {
 	private static final Logger log = LoggerFactory.getLogger(SimpleObjectOutputStream.class);
 	
 	private final DataOutputStream stream;
+	
+	private IObjectCacher cacher = null;
+	
 	/**
 	 * Tracks the correspondence between a generated id and the class
 	 */
@@ -58,10 +62,20 @@ public class SimpleObjectOutputStream implements Closeable {
 	 * @param s
 	 */
 	public SimpleObjectOutputStream(OutputStream s) {
+		this(s, null);
+	}
+	
+	/**
+	 * Ctor
+	 * @param s stream to hold the output data, never <code>null</code>
+	 * @param cacher the cacher that decides what objects can be deduplicated, may be <code>null</code>
+	 */
+	public SimpleObjectOutputStream(OutputStream s, IObjectCacher cacher) {
 		if (s == null) {
 			throw new IllegalArgumentException("s should never be null");
 		}
 		stream = new DataOutputStream(s);
+		this.cacher = cacher; 
 	}
 	
 	/**
@@ -83,21 +97,54 @@ public class SimpleObjectOutputStream implements Closeable {
 			writeBoolean(true);
 			writeInt(0);
 		} else {
-			Class clazz = object.getClass();
-			Integer classid = classMap.get(clazz);
-			if (classid != null) {
-				writeBoolean(true);
-				writeInt(classid);
+			boolean writeData = true;
+			boolean caching;
+			if (cacher != null && cacher.shouldCache(object)) {
+				caching = true;
+				writeData = !cacher.hasBeenCached(object); 
 			} else {
-				writeBoolean(false);
-				writeString(object.getClass().getName());
-				writeInt(cid);
-				classMap.put(clazz, cid);
-				cid++;
+				caching = false;
 			}
-			object.writeData(this);
+			
+			writeClass(object);
+			writeBoolean(caching);
+			if (caching == true) {
+				if (!cacher.hasBeenCached(object)) {
+					cacher.addToCache(object);
+				}
+				writeString(cacher.getObjectOutputReference(object).toString());
+				if (writeData) {
+					writeBoolean(true);
+					object.writeData(this);
+				} else {
+					writeBoolean(false);
+				}
+			} else {
+				object.writeData(this);
+			}
 		}
 		
+	}
+
+	/**
+	 * Write class information for the given object.
+	 * 
+	 * @param object
+	 * @throws IOException
+	 */
+	private void writeClass(IDataSerializable object) throws IOException {
+		Class clazz = object.getClass();
+		Integer classid = classMap.get(clazz);
+		if (classid != null) {
+			writeBoolean(true);
+			writeInt(classid);
+		} else {
+			writeBoolean(false);
+			writeString(object.getClass().getName());
+			writeInt(cid);
+			classMap.put(clazz, cid);
+			cid++;
+		}
 	}
 	
 	/**
@@ -164,14 +211,12 @@ public class SimpleObjectOutputStream implements Closeable {
 	 * @param str the string to write.
 	 * @throws IOException
 	 */
-    // REVIEW! : Doug should an empty string write null ?
 	public void writeString(String str) throws IOException {
-		if (StringUtils.isBlank(str)) {
-			stream.writeInt(0);
+		if (str == null) {
+			stream.writeBoolean(true);
 		} else {
-			byte arr[] = str.getBytes("UTF8");
-			stream.writeInt(arr.length);
-			stream.write(arr);
+			stream.writeBoolean(false);
+			stream.writeUTF(str);
 		}
 	}
 

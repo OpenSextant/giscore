@@ -39,6 +39,7 @@ import org.mitre.giscore.input.dbf.IDbfConstants;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.shapefile.BinaryOutputStream;
+import org.mitre.giscore.utils.FieldCachingObjectBuffer;
 import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.utils.SafeDateFormat;
 import org.mitre.giscore.utils.StringHelper;
@@ -51,6 +52,7 @@ import org.apache.commons.io.IOUtils;
  */
 public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 	private static final String US_ASCII = "US-ASCII";
+	private static final byte[] blankpad = new byte[255];
 	private final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 	private final DateFormat inputDateFormats[] = new DateFormat[] {
 			new SimpleDateFormat(IKml.ISO_DATE_FMT),
@@ -62,6 +64,13 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 	private final DecimalFormat decimalFormat = new DecimalFormat(
 			"+###############0.################;-###############0.################");
 	private final SafeDateFormat isoDateFormat = new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	
+	static {
+		for(int i = 0; i < blankpad.length; i++) {
+			blankpad[i] = ' ';
+		}
+	}
+	
 	/**
 	 * Output stream, set in ctor.
 	 */
@@ -100,7 +109,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 					"outputStream should never be null");
 		}
 		stream = new BinaryOutputStream(outputStream);
-		this.buffer = new ObjectBuffer();
+		this.buffer = new FieldCachingObjectBuffer();
 
 		// Write the xBaseFile signature (should be 0x03 for dBase III)
 		stream.writeByte(SIGNATURE);
@@ -308,12 +317,11 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 	private void writeField(BinaryOutputStream stream, String data, int length)
 			throws IOException {
 		byte str[] = data.getBytes(US_ASCII);
-		for (int i = 0; i < length; i++) {
-			if (i < str.length) {
-				stream.writeByte(str[i]);
-			} else {
-				stream.writeByte(' ');
-			}
+		if (str.length < length) {
+			stream.write(str, 0, str.length);
+			stream.write(blankpad, 0, length - str.length);
+		} else {
+			stream.write(str, 0, length);
 		}
 	}
 

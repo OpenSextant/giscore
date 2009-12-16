@@ -20,7 +20,6 @@ package org.mitre.giscore.output.shapefile;
 
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.Model;
 import org.mitre.giscore.geometry.MultiLine;
 import org.mitre.giscore.geometry.MultiLinearRings;
 import org.mitre.giscore.geometry.MultiPoint;

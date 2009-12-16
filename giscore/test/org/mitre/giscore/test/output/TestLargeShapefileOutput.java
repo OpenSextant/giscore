@@ -42,7 +42,9 @@ import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.shapefile.SingleShapefileOutputHandler;
 import org.mitre.giscore.test.TestGISBase;
+import org.mitre.giscore.utils.FieldCachingObjectBuffer;
 import org.mitre.giscore.utils.ObjectBuffer;
+import org.mitre.javautil.Stopwatch;
 
 /**
  * Create a large shapefile with comp
@@ -50,8 +52,8 @@ import org.mitre.giscore.utils.ObjectBuffer;
  * @author DRAND
  */
 public class TestLargeShapefileOutput extends TestGISBase {
-	public static final int memsize = 10000;
-	public static final int totsize = 200000;
+	public static final int memsize = 10;
+	public static final int totsize = 300;
 	
 	@Test public void createLargeShapefile() throws Exception {
 		GISFactory.inMemoryBufferSize.set(memsize);
@@ -80,7 +82,7 @@ public class TestLargeShapefileOutput extends TestGISBase {
 		File tempcsv = new File(tempdir, "large.csv");
 		OutputStream csvos = new FileOutputStream(tempcsv);
 		IGISOutputStream csvout = GISFactory.getOutputStream(DocumentType.CSV, csvos);
-		
+		long writestart = System.currentTimeMillis();
 		for(int i = 0; i < totsize; i++) {
 			Row r = new Row();
 			r.putData(id, "id " + i);
@@ -102,7 +104,9 @@ public class TestLargeShapefileOutput extends TestGISBase {
 		IOUtils.closeQuietly(csvos);
 		
 		IGISInputStream csvin = GISFactory.getInputStream(DocumentType.CSV, tempcsv, schema);
-		ObjectBuffer buffer = new ObjectBuffer();
+		FieldCachingObjectBuffer buffer = new FieldCachingObjectBuffer();
+		long readstart = System.currentTimeMillis();
+		System.out.println("Writing csv took " + (writestart - readstart) + "ms");
 		while(true) {
 			IGISObject ob = csvin.read();
 			if (ob == null) {
@@ -124,10 +128,13 @@ public class TestLargeShapefileOutput extends TestGISBase {
 				buffer.write(f);
 			}
 		}
+		long start = System.currentTimeMillis();
+		System.out.println("Reading into buffer took " + (readstart - start) + "ms");
 		SingleShapefileOutputHandler handler = new SingleShapefileOutputHandler(schema, null, buffer, tempdir, "largepoints", null);
 		handler.process();
+		long delta = System.currentTimeMillis() - start;
 		
-		System.out.println("Done");
+		System.out.println("Writing " + totsize + " records took " + delta + " ms");
 	}
 
 	private Object getRandomText(SimpleField simpleTextField) {

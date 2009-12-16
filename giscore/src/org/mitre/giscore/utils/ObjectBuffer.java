@@ -63,6 +63,12 @@ public class ObjectBuffer {
 	private SimpleObjectInputStream inputStream;
 	
 	/**
+	 * Optional cacher that is applied to the output stream that streamlines
+	 * the data that is stored to the file system.
+	 */
+	private IObjectCacher cacher = null;
+	
+	/**
 	 * The actual data buffer, allocated on the
 	 * first store operation.
 	 */
@@ -80,7 +86,7 @@ public class ObjectBuffer {
 	 */
 	private long readIndex = 0;
 	
-	public ObjectBuffer() {
+	protected ObjectBuffer() {
 		this(GISFactory.inMemoryBufferSize.get());
 	}
 	
@@ -89,7 +95,16 @@ public class ObjectBuffer {
 	 * @param size the maximum count of elements held in memory, must
 	 * be a positive integer.
 	 */
-	public ObjectBuffer(long size) {
+	protected ObjectBuffer(long size) {
+		this(size, null);
+	}
+	
+	/**
+	 * Ctor
+	 * @param size the maximum count of elements held in memory, must
+	 * be a positive integer.
+	 */
+	protected ObjectBuffer(long size, IObjectCacher cacher) {
 		if (size < 1) {
 			throw new IllegalArgumentException("size must be positive");
 		}
@@ -98,6 +113,7 @@ public class ObjectBuffer {
 		}
 		maxElements = size;
 		buffer = new IDataSerializable[(int) size];
+		this.cacher = cacher;
 	}
 	
 	/**
@@ -149,7 +165,7 @@ public class ObjectBuffer {
 		} else {
 			if (secondaryStore == null) {
 				secondaryStore = File.createTempFile("obj", ".buffer");
-				outputStream = new SimpleObjectOutputStream(new FileOutputStream(secondaryStore));
+				outputStream = new SimpleObjectOutputStream(new FileOutputStream(secondaryStore), cacher);
 			}
 			outputStream.writeObject(object);
 		}

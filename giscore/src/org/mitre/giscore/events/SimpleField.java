@@ -21,7 +21,6 @@ package org.mitre.giscore.events;
 import java.io.IOException;
 import java.util.Date;
 
-import org.apache.commons.lang.builder.EqualsBuilder;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
