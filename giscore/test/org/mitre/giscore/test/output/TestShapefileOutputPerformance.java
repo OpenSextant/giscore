@@ -1,5 +1,5 @@
 /****************************************************************************************
- *  TestLargeShapefileOutput.java
+ *  TestShapefileOutputPerformance.java
  *
  *  Created: Dec 10, 2009
  *
@@ -47,15 +47,15 @@ import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.javautil.Stopwatch;
 
 /**
- * Create a large shapefile with comp
+ * Create a shapefile with comp
  * 
  * @author DRAND
  */
-public class TestLargeShapefileOutput extends TestGISBase {
+public class TestShapefileOutputPerformance extends TestGISBase {
 	public static final int memsize = 10;
-	public static final int totsize = 300;
+	public static final int totsize = 3000;
 	
-	@Test public void createLargeShapefile() throws Exception {
+	@Test public void createShapefile() throws Exception {
 		GISFactory.inMemoryBufferSize.set(memsize);
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
