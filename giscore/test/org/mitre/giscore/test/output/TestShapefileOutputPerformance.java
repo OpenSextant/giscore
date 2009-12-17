@@ -22,9 +22,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
@@ -43,8 +41,6 @@ import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.shapefile.SingleShapefileOutputHandler;
 import org.mitre.giscore.test.TestGISBase;
 import org.mitre.giscore.utils.FieldCachingObjectBuffer;
-import org.mitre.giscore.utils.ObjectBuffer;
-import org.mitre.javautil.Stopwatch;
 
 /**
  * Create a shapefile with comp
@@ -52,8 +48,8 @@ import org.mitre.javautil.Stopwatch;
  * @author DRAND
  */
 public class TestShapefileOutputPerformance extends TestGISBase {
-	public static final int memsize = 10000;
-	public static final int totsize = 50000;
+	public static final int memsize = 10;
+	public static final int totsize = 300;
 	
 	@Test public void createShapefile() throws Exception {
 		GISFactory.inMemoryBufferSize.set(memsize);

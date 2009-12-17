@@ -119,6 +119,7 @@ public class SimpleField implements IDataSerializable {
 	
 	Type type;
 	String name;
+	int nameHash;
 	String displayName;
 	String aliasName;
 	String modelName;
@@ -204,6 +205,7 @@ public class SimpleField implements IDataSerializable {
 					"name should never be null or empty");
 		}
 		this.name = name;
+		nameHash = name != null ? name.hashCode() : 0;
 	}
 
 	/**
@@ -368,7 +370,7 @@ public class SimpleField implements IDataSerializable {
 	 */
 	@Override
 	public int hashCode() {
-		return name != null ? name.hashCode() : 0;
+		return nameHash;
 	}
 
 	/*
