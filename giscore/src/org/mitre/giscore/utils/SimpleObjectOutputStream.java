@@ -39,7 +39,12 @@ import org.slf4j.LoggerFactory;
  * @author DRAND
  */
 public class SimpleObjectOutputStream implements Closeable {
-
+	// Sync with input
+	private static final short NULL = 0;
+	private static final short UNCACHED = 1;
+	private static final short INSTANCE = 2;
+	private static final short REF = 3;
+	
 	private static final Logger log = LoggerFactory.getLogger(SimpleObjectOutputStream.class);
 	
 	private final DataOutputStream stream;
@@ -94,8 +99,7 @@ public class SimpleObjectOutputStream implements Closeable {
 	@SuppressWarnings("unchecked")
 	public void writeObject(IDataSerializable object) throws IOException {
 		if (object == null) {
-			writeBoolean(true);
-			writeInt(0);
+			writeShort(NULL);
 		} else {
 			boolean writeData = true;
 			boolean caching;
@@ -105,21 +109,19 @@ public class SimpleObjectOutputStream implements Closeable {
 			} else {
 				caching = false;
 			}
-			
-			writeClass(object);
-			writeBoolean(caching);
 			if (caching == true) {
 				if (!cacher.hasBeenCached(object)) {
 					cacher.addToCache(object);
 				}
+				writeShort(writeData ? INSTANCE : REF);
 				writeString(cacher.getObjectOutputReference(object).toString());
 				if (writeData) {
-					writeBoolean(true);
+					writeClass(object);
 					object.writeData(this);
-				} else {
-					writeBoolean(false);
-				}
+				} 
 			} else {
+				writeShort(UNCACHED);
+				writeClass(object);
 				object.writeData(this);
 			}
 		}

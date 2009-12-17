@@ -52,8 +52,8 @@ import org.mitre.javautil.Stopwatch;
  * @author DRAND
  */
 public class TestShapefileOutputPerformance extends TestGISBase {
-	public static final int memsize = 10;
-	public static final int totsize = 3000;
+	public static final int memsize = 10000;
+	public static final int totsize = 50000;
 	
 	@Test public void createShapefile() throws Exception {
 		GISFactory.inMemoryBufferSize.set(memsize);

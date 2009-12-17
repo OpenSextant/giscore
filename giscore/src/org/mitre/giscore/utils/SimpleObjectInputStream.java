@@ -50,6 +50,11 @@ public class SimpleObjectInputStream implements Closeable {
 	static final int OBJECT_NULL = 8;
 	static final int DATE = 9;
 	
+	// Sync with output
+	private static final short UNCACHED = 1;
+	private static final short INSTANCE = 2;
+	private static final short REF = 3;
+	
 	private final DataInputStream stream;
 	@SuppressWarnings("unchecked")
 	private final Map<Integer, Class> classMap = new HashMap<Integer, Class>();
@@ -93,23 +98,32 @@ public class SimpleObjectInputStream implements Closeable {
 	public Object readObject() throws ClassNotFoundException, IOException,
 			InstantiationException, IllegalAccessException {
 		try {
-			IDataSerializable rval = readClass();
-			if (rval == null) return null;
-
-			boolean caching = readBoolean();
-			if (caching) {
+			short type = readShort();
+			IDataSerializable rval = null;
+			if (type == NULL) {
+				return null;
+			} else if (type == UNCACHED) {
+				rval = readClass();
+				if (rval == null) {
+					throw new IllegalStateException("Couldn't reify class");
+				}
+				rval.readData(this);
+			} else {
 				String ref = readString();
-				boolean isdata = readBoolean();
-				if (isdata) {
+				if (type == INSTANCE) {
+					rval = readClass();
+					if (rval == null) {
+						throw new IllegalStateException("Couldn't reify class");
+					}
 					rval.readData(this);
 					refs.put(ref, rval);
 				} else {
 					rval = (IDataSerializable) refs.get(ref);
 				}
-			} else {
-				rval.readData(this);
 			}
 			return rval;
+		} catch(ClassNotFoundException e) {
+			throw e;
 		} catch(EOFException e) {
 			return null;
 		}
