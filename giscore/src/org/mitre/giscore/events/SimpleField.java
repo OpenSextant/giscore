@@ -205,7 +205,7 @@ public class SimpleField implements IDataSerializable {
 					"name should never be null or empty");
 		}
 		this.name = name;
-		nameHash = name != null ? name.hashCode() : 0;
+		nameHash = name.hashCode();
 	}
 
 	/**
