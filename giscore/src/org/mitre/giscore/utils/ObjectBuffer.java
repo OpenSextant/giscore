@@ -132,6 +132,7 @@ public class ObjectBuffer {
 			storeIndex = 0;
 			if (secondaryStore != null) {
 				secondaryStore.delete();
+                secondaryStore = null;
 			}
 		}
 	}
