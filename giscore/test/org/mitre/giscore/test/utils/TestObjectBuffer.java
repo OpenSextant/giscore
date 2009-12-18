@@ -106,34 +106,37 @@ public class TestObjectBuffer {
 	@Test
 	public void testTimed() throws Exception {
 		ObjectBuffer buffer = new FieldCachingObjectBuffer(10000);
-		
-		long start = System.nanoTime();
-		setupTest(10000, buffer);
-		long end = System.nanoTime();
-		long millis = (end - start) / 1000000;
-		System.out.println("Storing the first 10000 elements to memory took " + millis + " ms");
-		
-		start = System.nanoTime();
-		setupTest(10000, buffer);
-		end = System.nanoTime();
-		millis = (end - start) / 1000000;
-		System.out.println("Storing the next 10000 elements to file took " + millis + " ms");
-		
-		start = System.nanoTime();
-		for(int i = 0; i < 10000; i++) {
-			buffer.read();
-		}
-		end = System.nanoTime();
-		millis = (end - start) / 1000000;
-		System.out.println("Reading the first 10000 elements from memory took " + millis + " ms");
-		
-		start = System.nanoTime();
-		for(int i = 0; i < 10000; i++) {
-			buffer.read();
-		}
-		end = System.nanoTime();
-		millis = (end - start) / 1000000;
-		System.out.println("Reading the next 10000 elements from file took " + millis + " ms");
+        try {
+            long start = System.nanoTime();
+            setupTest(10000, buffer);
+            long end = System.nanoTime();
+            long millis = (end - start) / 1000000;
+            System.out.println("Storing the first 10000 elements to memory took " + millis + " ms");
+
+            start = System.nanoTime();
+            setupTest(10000, buffer);
+            end = System.nanoTime();
+            millis = (end - start) / 1000000;
+            System.out.println("Storing the next 10000 elements to file took " + millis + " ms");
+
+            start = System.nanoTime();
+            for(int i = 0; i < 10000; i++) {
+                buffer.read();
+            }
+            end = System.nanoTime();
+            millis = (end - start) / 1000000;
+            System.out.println("Reading the first 10000 elements from memory took " + millis + " ms");
+
+            start = System.nanoTime();
+            for(int i = 0; i < 10000; i++) {
+                buffer.read();
+            }
+            end = System.nanoTime();
+            millis = (end - start) / 1000000;
+            System.out.println("Reading the next 10000 elements from file took " + millis + " ms");
+        } finally {
+            buffer.close();
+        }
 	}
 
 	private IDataSerializable[] setupTest(int count, ObjectBuffer buffer)
