@@ -98,6 +98,11 @@ public class ESRIInitializer {
 				if(arcHome == null || arcHome.length() < 1) {
 					throw new UnsatisfiedLinkError("ArcGIS home (ARCGISHOME) not defined.");
 				}
+				// Normalize arcHome
+				arcHome = arcHome.replaceAll("\\\\", "/");
+				if (! arcHome.endsWith("/")) {
+					arcHome = arcHome + "/"; 
+				}
 				logger.debug("ARCGISHOME found at " + arcHome);
 				String libName = System.mapLibraryName(TEST_DLL);
 				String parent = arcHome + "bin";
