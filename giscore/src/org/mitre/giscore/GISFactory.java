@@ -52,7 +52,7 @@ public class GISFactory {
 	 * The size of the buffer that should be used when buffering content
 	 * in memory. Right now this is a per feature class buffer size.
 	 */
-	public static AtomicInteger inMemoryBufferSize = new AtomicInteger(2000);
+	public final static AtomicInteger inMemoryBufferSize = new AtomicInteger(2000);
 	
 	/**
 	 * Input stream factory
@@ -361,8 +361,8 @@ public class GISFactory {
 	private static void checkArguments(Class<? extends Object> types[],
 			Object arguments[], boolean required[]) {
 		int nreq = 0;
-		for (int i = 0; i < required.length; i++) {
-			if (!required[i])
+		for (boolean aRequired : required) {
+			if (!aRequired)
 				break;
 			nreq++;
 		}
