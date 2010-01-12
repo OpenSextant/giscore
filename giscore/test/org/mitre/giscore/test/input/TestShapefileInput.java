@@ -19,11 +19,17 @@
 package org.mitre.giscore.test.input;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.zip.ZipInputStream;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
+
+import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.IAcceptSchema;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.Feature;
@@ -32,6 +38,8 @@ import org.mitre.giscore.geometry.MultiLine;
 import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.MultiPolygons;
 import org.mitre.giscore.geometry.Point;
+import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
 
 /**
@@ -96,6 +104,52 @@ public class TestShapefileInput {
 
 	@Test public void testRingz() throws Exception {
 		doTest("ringz", MultiPolygons.class);
+	}
+	
+	@Test public void testAfghanistan() throws Exception {
+		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shpdir, "afghanistan");
+		Schema sh = (Schema) handler.read();
+		Feature shape = (Feature) handler.read();
+		assertNotNull(shape);
+		assertTrue(shape.getGeometry() instanceof MultiPolygons);
+		IGISObject next = handler.read();
+		assertNull(next);
+	}
+	
+	@Test public void testShapefileInputStream() throws Exception {
+		IAcceptSchema test = new IAcceptSchema() {
+			@Override
+			public boolean accept(Schema schema) {
+				return schema.get("today") != null;
+			}
+		};
+		
+		IGISInputStream stream = GISFactory.getInputStream(DocumentType.Shapefile, shpdir, test);
+		
+		IGISObject ob;
+		while((ob = stream.read()) != null) {
+			// No body
+		}
+	}
+	
+	@Test public void testShapefileInputStream2() throws Exception {
+		IGISInputStream stream = GISFactory.getInputStream(DocumentType.Shapefile, shpdir);
+		
+		IGISObject ob;
+		while((ob = stream.read()) != null) {
+			// No body
+		}
+	}
+	
+	@Test public void testShapefileInputStream3() throws Exception {
+		FileInputStream fis = new FileInputStream(new File(shpdir, "testLayersShp.zip"));
+		ZipInputStream zis = new ZipInputStream(fis);
+		IGISInputStream stream = GISFactory.getInputStream(DocumentType.Shapefile, zis);
+		
+		IGISObject ob;
+		while((ob = stream.read()) != null) {
+			System.out.println("(Zip) read: " + ob);
+		}
 	}
 
 	private void doTest(String file, Class geoclass) throws URISyntaxException, IOException {

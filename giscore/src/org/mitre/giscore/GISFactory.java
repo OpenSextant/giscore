@@ -31,6 +31,7 @@ import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.csv.CsvInputStream;
 import org.mitre.giscore.input.gdb.GdbInputStream;
 import org.mitre.giscore.input.kml.KmlInputStream;
+import org.mitre.giscore.input.shapefile.ShapefileInputStream;
 import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.csv.CsvOutputStream;
@@ -90,7 +91,7 @@ public class GISFactory {
 					new boolean[] { false });
 			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
 					&& arguments.length > 0 ? arguments[0] : null);
-			return new GdbInputStream(type, stream, accepter);
+			return new ShapefileInputStream(stream, accepter);
 		} else if (DocumentType.FileGDB.equals(type)) {
 			checkArguments(new Class[] { IAcceptSchema.class }, arguments,
 					new boolean[] { false });
@@ -146,7 +147,7 @@ public class GISFactory {
 					new boolean[] { false });
 			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
 					&& arguments.length > 0 ? arguments[0] : null);
-			return new GdbInputStream(type, file, accepter);
+			return new ShapefileInputStream(file, accepter);
 		} else if (DocumentType.FileGDB.equals(type)) {
 			checkArguments(new Class[] { IAcceptSchema.class }, arguments,
 					new boolean[] { false });
