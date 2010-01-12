@@ -27,6 +27,11 @@ import static org.junit.Assert.*;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.geometry.Line;
+import org.mitre.giscore.geometry.MultiLine;
+import org.mitre.giscore.geometry.MultiPoint;
+import org.mitre.giscore.geometry.MultiPolygons;
+import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
 
 /**
@@ -38,62 +43,62 @@ public class TestShapefileInput {
 	public static File shpdir = new File("data/shape");
 	
 	@Test public void testErrorcase1() throws Exception {
-		doTest("Point File Test_Point File Test");
+		doTest("Point File Test_Point File Test", Point.class);
 	}
 
 	@Test public void testPoints() throws Exception {
-		doTest("points");
+		doTest("points", Point.class);
 	}
 
 	@Test public void testPointz() throws Exception {
-		doTest("pointz");
+		doTest("pointz", Point.class);
 	}
 	
 	@Test public void testLines() throws Exception {
-		doTest("lines");
+		doTest("lines", MultiLine.class);
 	}
 
 	@Test public void testMultilines() throws Exception {
-		doTest("multilines");
+		doTest("multilines", MultiLine.class);
 	}
 	
 	@Test public void testMultipoint() throws Exception {
-		doTest("multipoint");
+		doTest("multipoint", MultiPoint.class);
 	}
 
 	@Test public void testMultipolys() throws Exception {
-		doTest("multipolys");
+		doTest("multipolys", MultiPolygons.class);                                                              
 	}
 	
 	@Test public void testMultipolyz() throws Exception {
-		doTest("multipolyz");
+		doTest("multipolyz", MultiPolygons.class);
 	}
 
 	@Test public void testMultirings() throws Exception {
-		doTest("multirings");
+		doTest("multirings", MultiPolygons.class);
 	}
 	
 	@Test public void testMultiringz() throws Exception {
-		doTest("multiringz");
+		doTest("multiringz", MultiPolygons.class);
 	}
 
 	@Test public void testPolys() throws Exception {
-		doTest("polys");
+		doTest("polys", MultiPolygons.class);
 	}
 	
 	@Test public void testPolyz() throws Exception {
-		doTest("polyz");
+		doTest("polyz", MultiPolygons.class);
 	}
    
 	@Test public void testRings() throws Exception {
-		doTest("rings");
+		doTest("rings", MultiPolygons.class);
 	}
 
 	@Test public void testRingz() throws Exception {
-		doTest("ringz");
+		doTest("ringz", MultiPolygons.class);
 	}
 
-	private void doTest(String file) throws URISyntaxException, IOException {
+	private void doTest(String file, Class geoclass) throws URISyntaxException, IOException {
 		System.out.println("Test " + file);
 		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shpdir, file);
 		try {
@@ -102,6 +107,9 @@ public class TestShapefileInput {
 			int count = 0;
 			while((ob = handler.read()) != null) {
 				assertTrue(ob instanceof Feature);
+				Feature feat = (Feature) ob;
+				assertNotNull(feat.getGeometry());
+				assertTrue(geoclass.isAssignableFrom(feat.getGeometry().getClass()));
 				count++;
 			}
 			assertTrue(count > 0);
