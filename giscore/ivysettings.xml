@@ -2,6 +2,7 @@
 	<!-- Create a ivy.properties file in your home dir and put a line in with your mapsrv user and passwd -->
 	<properties file="${user.home}/ivy.properties"/>
 	<property name="repository.dir" value="${user.home}/.ivy2"/>
+	<property name="repository.server" value="http://maven-proxy/artifactory" />
 	<settings defaultResolver="chained"/>
 	<credentials host="maven-proxy" realm="Artifactory Realm" username="${mapsrv-user}"
 		passwd="${mapsrv-passwd}"/>
@@ -34,17 +35,22 @@
 			<filesystem name="libraries">
 				<ivy pattern="${repository.dir}/[organisation]/ivy-[revision].xml"/>
 				<artifact
-					pattern="${repository.dir}/[organisation](-[module])/[artifact](-[type])-[revision].[ext]"
+					pattern="${repository.dir}/[organisation](-[module])/[artifact]-[revision](-[type]).[ext]"
 				/>
 			</filesystem>
 			<ibiblio name="maven-proxy" namespace="m2" m2compatible="true"
-				root="http://maven-proxy/artifactory/repo/"
-				pattern="[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"/>
+				root="${repository.server}/repo/"
+				pattern="[organisation]/[module]/[revision]/[artifact]-[revision](-[type]).[ext]"/>
 		</chain>
-		<url name="maven-proxy-local" namespace="m2" m2compatible="true">
+		<url name="maven-proxy-local" m2compatible="true">
 			<artifact
-				pattern="http://maven-proxy/artifactory/libs-releases-local/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"
+				pattern="${repository.server}/libs-releases-local/[organisation]/[module]/[revision]/[artifact]-[revision].[ext]"
 			/>
 		</url>
+		<url name="maven-proxy-local-extra" m2compatible="true">
+			<artifact
+				pattern="${repository.server}/libs-releases-local/[organisation]/[module]/[revision]/[artifact]-[revision]-[type].[ext]"
+			/>
+		</url>	
 	</resolvers>
 </ivysettings>

@@ -30,6 +30,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
@@ -48,6 +50,7 @@ import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.GISInputStreamBase;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.dbf.DbfInputStream;
+import org.mitre.giscore.utils.PolyHolder;
 import org.mitre.itf.geodesy.Angle;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
@@ -458,9 +461,8 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         // Shapefiles allow multiple outer rings intermixed with multiple inner rings
         // Our MultiLinearRings Object requires 1 outer and 0 or more inner.  We'll assume
         // inner rings follow their outer ring, and use direction as a list delimiter.
-        ArrayList<Polygon> polyList = new ArrayList<Polygon>();
-        ArrayList<LinearRing> rgList = null;
-        LinearRing outerRing = null;
+        ArrayList<PolyHolder> polyholders = new ArrayList<PolyHolder>();
+        ArrayList<LinearRing> savedRings = new ArrayList<LinearRing>();
         int k = 0; // point index
         for (int j = 1; j <= nParts; j++) {
             ArrayList<Point> ptList = new ArrayList<Point>();
@@ -468,19 +470,52 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
             for (int i = 0; i < n; i++) ptList.add(new Point(pts[k++]));
             LinearRing r = new LinearRing(ptList);
             if (r.clockwise()) {
-                // If ring is clockwise, assume it is an outer ring and start a new list
-                if (outerRing != null) polyList.add(new Polygon(outerRing, rgList));
-                rgList = new ArrayList<LinearRing>();
-                outerRing = r;
-            } else if (rgList == null || rgList.size() == 1) {
-                // otherwise, verify that it is not the first in list
-                throw new IllegalArgumentException("First (outer) ring should be " +
-                        "in clockwise point order");
+            	PolyHolder newPoly = new PolyHolder();
+            	newPoly.setOuterRing(r);
+            	polyholders.add(newPoly);
             } else {
-                rgList.add(r);
+            	// Find a holder that has the given inner in its bounds
+            	boolean found = false;
+            	for(PolyHolder holder : polyholders) {
+            		LinearRing outer = holder.getOuterRing();
+            		if (outer.contains(r)) {
+            			holder.addInnerRing(r);
+            			found = true;
+            			break;
+            		}
+            	}
+            	if (found == false) {
+            		savedRings.add(r);
+            	}
             }
         }
-        if (outerRing != null) polyList.add(new Polygon(outerRing, rgList));
+        ArrayList<Polygon> polyList = new ArrayList<Polygon>();
+        // Address all the saved rings
+        for(LinearRing saved : savedRings) {
+        	// Find a holder that has the given inner in its bounds
+        	boolean found = false;
+        	for(PolyHolder holder : polyholders) {
+        		LinearRing outer = holder.getOuterRing();
+        		if (outer.contains(saved)) {
+        			holder.addInnerRing(saved);
+        			found = true;
+        			break;
+        		}
+        	}
+        	if (found == false) {
+        		// If we don't find something then we'll treat the ring as a 
+        		// poly itself
+        		List<Point> rpts = new ArrayList<Point>();
+        		rpts.addAll(saved.getPoints());
+        		Collections.reverse(rpts);
+        		Polygon poly = new Polygon(new LinearRing(rpts));
+        		polyList.add(poly);
+        	}
+        }
+        // Make polygons from holders and create
+        for(PolyHolder holder : polyholders) {
+        	polyList.add(holder.toPolygon());
+        }
         return new MultiPolygons(polyList);
     }
     

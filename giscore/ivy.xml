@@ -7,12 +7,13 @@
 		<conf name="runtime" extends="compile" />
 		<conf name="test" extends="runtime"
 			description="This is this configuration that describes modules need to run test on our project" />
+		<conf name="pubextra" description="Publishing configuration for sources and javadocs" />				
 	</configurations>
 	<publications>
 		<artifact name="giscore" type="jar" conf="compile" />
-		<artifact name="giscore" type="pom" ext="pom" />
-		<artifact name="giscore-sources" type="sources" ext="jar" />
-		<artifact name="giscore-javadoc" type="javadoc" ext="jar" />
+		<artifact name="giscore" type="pom" ext="pom" conf="compile" />
+		<artifact name="giscore" type="sources" ext="jar" conf="pubextra" />
+		<artifact name="giscore" type="javadoc" ext="jar" conf="pubextra" />
 	</publications>
 	<dependencies defaultconf="compile->default">
 		<dependency org="org.mitre.javautil" name="javautil-tiger"
