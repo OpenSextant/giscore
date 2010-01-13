@@ -704,8 +704,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Output each poly point's XY paying attention to the need to close the
-	 * figure. If the last and first point are not the same then we add the
-	 * first point into the list again.
+	 * figure. 
 	 * 
 	 * @param geom
 	 * @throws IOException if an error occurs
@@ -715,13 +714,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			Geometry part = geom.getPart(j);
 			int count = part.getNumPoints();
 			if (count > 0) {
-				List<Point> pts = part.getPoints();
-				putPointsXY(pts);
-				Point first = pts.get(0);
-				Point last = pts.get(count - 1);
-				if (!first.equals(last)) {
-					putPointsXY(Collections.singletonList(first));
-				}
+				putPointsXY(part.getPoints());
 			}
 		}
 	}

@@ -364,7 +364,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 				pts.add(pts.get(0)); // should start and end with the same point
 				innerRings.add(new LinearRing(pts, true));
 			}
-			Polygon p = new Polygon(outerRing, innerRings);
+			Polygon p = new Polygon(outerRing, innerRings); 
 			f.setGeometry(p);
 			buffer.write(f);
 		}

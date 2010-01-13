@@ -18,7 +18,6 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.shapefile;
 
-import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -28,7 +27,11 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -108,12 +111,23 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	/**
 	 * Open shp file as a binary input stream
 	 */
-	private BinaryInputStream stream;
+	private FileChannel channel;
 	
 	/**
 	 * Geometry type for this shapefile
 	 */
 	private int shpType;
+	
+	/**
+	 * Where we are in the shpFile currently
+	 */
+	private int fileOffset = 0;
+	
+	/**
+	 * Holds the current record length, used to figure out if a geometry read
+	 * is overrunning the current written record for error detection purposes 
+	 */
+	private int recLen;
 
 	public SingleShapefileInputHandler(File inputDirectory, String shapefilename)
 			throws URISyntaxException, IOException {
@@ -158,8 +172,9 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 		}
 
 		FileInputStream fis = new FileInputStream(shpFile);
-		stream = new BinaryInputStream(fis);
+		channel = fis.getChannel();
 		readHeader();
+		fileOffset = 100; 
 	}
 
 	/**
@@ -200,13 +215,13 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	 * @throws RuntimeException if an I/O error occurs closing shp stream  
 	 */
 	public void close() {
-		if (stream != null) {
+		if (channel != null) {
 			try {
-				stream.close();
+				channel.close();
 			} catch (IOException e) {
 				throw new RuntimeException("Problem closing shp stream", e);
 			}
-			stream = null;
+			channel = null;
 		}
 		if (dbf != null) {
 			dbf.close();
@@ -243,37 +258,38 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     private Geometry getGeometry(boolean is3D, boolean includeM)
             throws IOException, IllegalArgumentException {
         // EOF is OK if it occurs here, otherwise we'll throw the exception to caller
-        try {
-            stream.readInt(ByteOrder.BIG_ENDIAN);
-        } catch (EOFException eof) {
-            return null;
-        }
-        int contentLen = stream.readInt(ByteOrder.BIG_ENDIAN);
+    	ByteBuffer buffer = channel.map(MapMode.READ_ONLY, fileOffset, 8);
+        int num = readInt(buffer, ByteOrder.BIG_ENDIAN);
+        int contentLen = readInt(buffer, ByteOrder.BIG_ENDIAN); // In 16 bit words
+        int nextFilePos = 2 * (contentLen + 4) + fileOffset;
         if (contentLen <= 4)
             throw new IOException("Shapefile contains badly formatted record");
         Geometry geomObj = null;
-        int recShapeType = stream.readInt(ByteOrder.LITTLE_ENDIAN);
+        recLen = contentLen * 2;
+        buffer = channel.map(MapMode.READ_ONLY, fileOffset + 8, recLen);
+        int recShapeType = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
         if (recShapeType != NULL_TYPE) {
             if (recShapeType != shpType)
                 throw new IOException("Shapefile contains record with " +
                         "unexpected shape type " + recShapeType + ", expecting " + shpType);
             // Now read the record content, corresponding to specified shapeType (adjusted if 3D)
             int st = (is3D) ? shpType - 10 : shpType;
-            if (st == POINT_TYPE) geomObj = getPoint(is3D);
+            if (st == POINT_TYPE) geomObj = getPoint(buffer, is3D);
             else {
                 // Skip over Bounding Box coordinates (we'll reconstruct directly from points)
-                for (int i = 0; i < 4; i++) stream.readDouble(ByteOrder.LITTLE_ENDIAN);
-                if (st == MULTILINE_TYPE) geomObj = getPolyLine(is3D, includeM);
-                else if (st == MULTINESTEDRINGS_TYPE) geomObj = getPolygon(is3D, includeM);
-                else if (st == MULTIPOINT_TYPE) geomObj = getMultipoint(is3D, includeM);
+                for (int i = 0; i < 4; i++) readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
+                if (st == MULTILINE_TYPE) geomObj = getPolyLine(buffer, is3D, includeM);
+                else if (st == MULTINESTEDRINGS_TYPE) geomObj = getPolygon(buffer, is3D, includeM);
+                else if (st == MULTIPOINT_TYPE) geomObj = getMultipoint(buffer, is3D, includeM);
                 else throw new IOException("Shapefile contains shape type (" +
                         shpType + ") that is currently unsupported");
             }
         }
+        fileOffset = nextFilePos; // Reposition for next call
         return geomObj;
     }
-    
-    /**
+
+	/**
      * Utility method to test for 3D geometry based on shapeType code
      * 
      * @param shapeType
@@ -300,42 +316,43 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	 * @throws IllegalArgumentException 
 	 */
 	private void readHeader() throws IllegalArgumentException, IOException {
-		shpType = getShapeTypeFromHeader();
-		getBoundingBoxFromHeader(is3D(shpType));
+    	ByteBuffer buffer = channel.map(MapMode.READ_ONLY, 0, 100);
+		shpType = getShapeTypeFromHeader(buffer);
+		getBoundingBoxFromHeader(buffer, is3D(shpType));
 	}
 	
 	// Read first part of shapefile header and get shapeType if possible
-    private int getShapeTypeFromHeader()
+    private int getShapeTypeFromHeader(ByteBuffer buffer)
             throws IOException, IllegalArgumentException {
         // Read and validate the shapefile signature (should be 9994)
-        int fileSig = stream.readInt(ByteOrder.BIG_ENDIAN);
+        int fileSig = readInt(buffer, ByteOrder.BIG_ENDIAN);
         if (fileSig != SIGNATURE)
             throw new IllegalArgumentException("Invalid Shapefile signature");
         // Skip over unused bytes in header
-        for (int i = 0; i < 5; i++) stream.readInt(ByteOrder.BIG_ENDIAN);
+        for (int i = 0; i < 5; i++) readInt(buffer, ByteOrder.BIG_ENDIAN);
         // Read the file length (total number of 2-byte words, including header)
-        stream.readInt(ByteOrder.BIG_ENDIAN);  // fileLen (not used)
+        readInt(buffer, ByteOrder.BIG_ENDIAN);  // fileLen (not used)
         // Read and validate the shapefile version (should be 1000)
-        int version = stream.readInt(ByteOrder.LITTLE_ENDIAN);
+        int version = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
         if (version != VERSION)
             throw new IllegalArgumentException("Invalid Shapefile version " + version);
         // Read return the shapeType (validation is done later)
-        return stream.readInt(ByteOrder.LITTLE_ENDIAN);
+        return readInt(buffer, ByteOrder.LITTLE_ENDIAN);
     }
 
-    // Read the remainder of shapefile header and get bounding box if possible
-    private Geodetic2DBounds getBoundingBoxFromHeader(boolean is3D)
+	// Read the remainder of shapefile header and get bounding box if possible
+    private Geodetic2DBounds getBoundingBoxFromHeader(ByteBuffer buffer, boolean is3D)
             throws IOException {
         // Read Bounding Box coordinates (assume WGS-84 decimal degrees, elevation in meters)
-        double xMin = stream.readDouble(ByteOrder.LITTLE_ENDIAN);
-        double yMin = stream.readDouble(ByteOrder.LITTLE_ENDIAN);
-        double xMax = stream.readDouble(ByteOrder.LITTLE_ENDIAN);
-        double yMax = stream.readDouble(ByteOrder.LITTLE_ENDIAN);
-        double zMin = stream.readDouble(ByteOrder.LITTLE_ENDIAN);
-        double zMax = stream.readDouble(ByteOrder.LITTLE_ENDIAN);
+        double xMin = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
+        double yMin = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
+        double xMax = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
+        double yMax = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
+        double zMin = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
+        double zMax = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
         // Read remaining header fields (not currently used)
-        stream.readDouble(ByteOrder.LITTLE_ENDIAN);  // mMin (not used)
-        stream.readDouble(ByteOrder.LITTLE_ENDIAN);  // mMax (not used)
+        readDouble(buffer, ByteOrder.LITTLE_ENDIAN);  // mMin (not used)
+        readDouble(buffer, ByteOrder.LITTLE_ENDIAN);  // mMax (not used)
         // See if the shapeType is valid and whether the points are 3D
         Geodetic2DBounds bbox;
         if (is3D) {
@@ -357,54 +374,53 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     }
 
     // Read next Point (ESRI Point or PointZ) record
-    private Point getPoint(boolean is3D)
+    private Point getPoint(ByteBuffer buffer, boolean is3D)
             throws IOException {
         Geodetic2DPoint gp;
-        Longitude lon = new Longitude(stream.readDouble(ByteOrder.LITTLE_ENDIAN), Angle.DEGREES);
-        Latitude lat = new Latitude(stream.readDouble(ByteOrder.LITTLE_ENDIAN), Angle.DEGREES);
+        Longitude lon = new Longitude(readDouble(buffer, ByteOrder.LITTLE_ENDIAN), Angle.DEGREES);
+        Latitude lat = new Latitude(readDouble(buffer, ByteOrder.LITTLE_ENDIAN), Angle.DEGREES);
         if (!is3D)
             gp = new Geodetic2DPoint(lon, lat); // ESRI Point type (X and Y fields)
         else {
             // ESRI PointZ type (x, y, z, and m fields)
-            gp = new Geodetic3DPoint(lon, lat, stream.readDouble(ByteOrder.LITTLE_ENDIAN));
-            stream.readDouble(ByteOrder.LITTLE_ENDIAN); // measure value M not used
+            gp = new Geodetic3DPoint(lon, lat, readDouble(buffer, ByteOrder.LITTLE_ENDIAN));
+            readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // measure value M not used
         }
         return new Point(gp);
     }
 
     // Read PolyLine and Polygon parts offset array
-    private int[] getPartOffsets(int nParts, int nPoints)
+    private int[] getPartOffsets(ByteBuffer buffer, int nParts, int nPoints)
             throws IOException {
         // read index array of starting positions for each part, put total numPoints at end
         int[] parts = new int[nParts + 1];
         parts[nParts] = nPoints;
-        for (int i = 0; i < nParts; i++) parts[i] = stream.readInt(ByteOrder.LITTLE_ENDIAN);
+        for (int i = 0; i < nParts; i++) parts[i] = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
         return parts;
     }
     
     // Read PolyLine and Polygon point values and return Geodetic point array
-    private Geodetic2DPoint[] getPolyPoints(int nPoints, boolean is3D, boolean includeM)
+    private Geodetic2DPoint[] getPolyPoints(ByteBuffer buffer, int nPoints, boolean is3D, boolean includeM)
             throws IOException {
         Geodetic2DPoint[] pts;
         // Read the X and Y points into arrays
         double[] x = new double[nPoints];
         double[] y = new double[nPoints];
         for (int i = 0; i < nPoints; i++) {
-            x[i] = stream.readDouble(ByteOrder.LITTLE_ENDIAN); // Longitude
-            y[i] = stream.readDouble(ByteOrder.LITTLE_ENDIAN); // Latitude
+            x[i] = readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // Longitude
+            y[i] = readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // Latitude
         }
         // If 3D, read the Z bounds + values and skip over rest of record (M bounds and values)
         if (is3D) {
-            stream.readDouble(ByteOrder.LITTLE_ENDIAN); // skip Zmin
-            stream.readDouble(ByteOrder.LITTLE_ENDIAN); // skip Zmax
+            readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip Zmin
+            readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip Zmax
             double[] z = new double[nPoints];
-            for (int i = 0; i < nPoints; i++)
-                z[i] = stream.readDouble(ByteOrder.LITTLE_ENDIAN);
-            if (includeM) {
-	            stream.readDouble(ByteOrder.LITTLE_ENDIAN); // skip Mmin
-	            stream.readDouble(ByteOrder.LITTLE_ENDIAN); // skip Mmax
-	            for (int i = 0; i < nPoints; i++)
-	                stream.readDouble(ByteOrder.LITTLE_ENDIAN); // skip measured vals
+            try {
+	            for (int i = 0; i < nPoints; i++) {
+	                z[i] = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
+	            }
+            } catch(BufferUnderflowException bfe) {
+            	logger.warn("Found too few z-values, the rest will be taken as 0.0");
             }
             // Convert x, y, and z values into Geodetic points, ignoring the m values
             pts = new Geodetic3DPoint[nPoints];
@@ -418,17 +434,30 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
                 pts[i] = new Geodetic2DPoint(new Longitude(x[i], Angle.DEGREES),
                         new Latitude(y[i], Angle.DEGREES));
         }
+        // Do the following just to get the spanning right, we ignore the m 
+        // values
+        if (includeM) {
+        	try {
+	            readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip Mmin
+	            readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip Mmax
+	            for (int i = 0; i < nPoints; i++) {
+	                readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip measured vals
+	            }
+        	} catch(BufferUnderflowException bfe) {
+        		logger.warn("Found too few m-values, but they were being ignored anyway");
+        	}
+        }
         return pts;
     }
     
     // Read next MultiLine (ESRI Polyline or PolylineZ) record
     // Take flattened file structure and construct the part hierarchy
-    private MultiLine getPolyLine(boolean is3D, boolean includeM)
+    private Geometry getPolyLine(ByteBuffer buffer, boolean is3D, boolean includeM)
             throws IOException {
-        int nParts = stream.readInt(ByteOrder.LITTLE_ENDIAN);
-        int nPoints = stream.readInt(ByteOrder.LITTLE_ENDIAN);  // total numPoints
-        int[] parts = getPartOffsets(nParts, nPoints);
-        Geodetic2DPoint[] pts = getPolyPoints(nPoints, is3D, includeM);
+        int nParts = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
+        int nPoints = readInt(buffer, ByteOrder.LITTLE_ENDIAN);  // total numPoints
+        int[] parts = getPartOffsets(buffer, nParts, nPoints);
+        Geodetic2DPoint[] pts = getPolyPoints(buffer, nPoints, is3D, includeM);
         ArrayList<Line> lnList = new ArrayList<Line>();
         // Collect up the Geodetic points into the line parts
         int k = 0; // point index
@@ -438,26 +467,32 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
             for (int i = 0; i < n; i++) ptList.add(new Point(pts[k++]));
             lnList.add(new Line(ptList));
         }
-        return new MultiLine(lnList);
+        if (lnList.size() == 1)
+        	return lnList.get(0);
+        else 
+        	return new MultiLine(lnList);
     }
     
 
-    // TODO - we need some topology checks and repairs, including international date line
-    // TODO - polygon splitting, and checking for non-containment of inner polygons
-    // TODO - which should be elevated to their own outer rings (and reverse the point
-    // TODO - order.
-
-    // TODO - note: all cntry02 inner rings intersect with their outer rings
-    // TODO - but they go counter-clockwise (we could make them separate outers, but
-    // TODO - we need to reverse the point order) - write LinearRing reverse method to help
-    // Read next MultiPolygons (ESRI Polygon or PolygonZ) record
-    // Take flattened file structure and construct the nested part hierarchy
-    private MultiPolygons getPolygon(boolean is3D, boolean includeM)
+	/**
+	 * Get the polygon(s) from the information present. We take the points in the
+	 * poly and turn them into rings. Then the rings are sorted into outer rings,
+	 * which are distinguished by being clockwise rings, and inner rings, which
+	 * are sorted by containment. 
+	 * 
+	 * @param is3D the shapefile type indicated that this shape has z data
+	 * @param includeM the shapefile type indicated that this shape has m or 
+	 * measured data
+	 * @return a geometry 
+	 * @throws IOException
+	 * @throws IllegalArgumentException
+	 */
+    private Geometry getPolygon(ByteBuffer buffer, boolean is3D, boolean includeM)
             throws IOException, IllegalArgumentException {
-        int nParts = stream.readInt(ByteOrder.LITTLE_ENDIAN);
-        int nPoints = stream.readInt(ByteOrder.LITTLE_ENDIAN);  // total numPoints
-        int[] parts = getPartOffsets(nParts, nPoints);
-        Geodetic2DPoint[] pts = getPolyPoints(nPoints, is3D, includeM);
+        int nParts = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
+        int nPoints = readInt(buffer, ByteOrder.LITTLE_ENDIAN);  // total numPoints
+        int[] parts = getPartOffsets(buffer, nParts, nPoints);
+        Geodetic2DPoint[] pts = getPolyPoints(buffer, nPoints, is3D, includeM);
         // Shapefiles allow multiple outer rings intermixed with multiple inner rings
         // Our MultiLinearRings Object requires 1 outer and 0 or more inner.  We'll assume
         // inner rings follow their outer ring, and use direction as a list delimiter.
@@ -512,20 +547,63 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         		polyList.add(poly);
         	}
         }
-        // Make polygons from holders and create
-        for(PolyHolder holder : polyholders) {
-        	polyList.add(holder.toPolygon());
+        // Decide what to do. If we have one object we should return a single
+        // polygon or ring. Otherwise we return a multipolygons
+        if ((polyholders.size() + polyList.size()) > 1) {
+	        // Make polygons from holders and create
+	        for(PolyHolder holder : polyholders) {
+	        	polyList.add(holder.toPolygon());
+	        }
+	        return new MultiPolygons((ArrayList) polyList);
+        } else if ((polyholders.size() + polyList.size()) == 1) {
+        	Polygon poly;
+        	if (polyholders.size() > 0) {
+        		poly = polyholders.get(0).toPolygon();
+        	} else {
+        		poly = polyList.get(0);
+        	}
+        	// If this has only an outer ring then return just that
+        	if (poly.getLinearRings() == null) 
+        		return poly.getOuterRing();
+        	else
+        		return poly;
+        } else {
+        	throw new IllegalStateException("Where's the geometry?");
         }
-        return new MultiPolygons(polyList);
     }
     
     // Read next MultiPoint (ESRI MultiPoint or MultiPointZ) record
-    private MultiPoint getMultipoint(boolean is3D, boolean includeM)
+    private Geometry getMultipoint(ByteBuffer buffer, boolean is3D, boolean includeM)
             throws IOException {
-        int nPoints = stream.readInt(ByteOrder.LITTLE_ENDIAN);  // total numPoints
-        Geodetic2DPoint[] pts = getPolyPoints(nPoints, is3D, includeM);
+        int nPoints = readInt(buffer, ByteOrder.LITTLE_ENDIAN);  // total numPoints
+        Geodetic2DPoint[] pts = getPolyPoints(buffer, nPoints, is3D, includeM);
         ArrayList<Point> ptList = new ArrayList<Point>();
         for (int i = 0; i < nPoints; i++) ptList.add(new Point(pts[i]));
-        return new MultiPoint(ptList);
+        if (ptList.size() == 1)
+        	return ptList.get(0);
+        else
+        	return new MultiPoint(ptList);
     }
+    
+    /**
+     * Set the order and read the next integer from the buffer
+     * @param buffer
+     * @param order
+     * @return
+     */
+    private int readInt(ByteBuffer buffer, ByteOrder order) {
+		buffer.order(order);
+		return buffer.getInt();
+	}
+    
+    /**
+     * Set the order and read the next double from the buffer
+     * @param buffer
+     * @param littleEndian
+     * @return
+     */
+    private double readDouble(ByteBuffer buffer, ByteOrder order) {
+    	buffer.order(order);
+    	return buffer.getDouble();
+	}
 }

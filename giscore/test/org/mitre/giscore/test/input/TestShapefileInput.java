@@ -34,6 +34,7 @@ import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.geometry.Line;
+import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.MultiLine;
 import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.MultiPolygons;
@@ -63,7 +64,7 @@ public class TestShapefileInput {
 	}
 	
 	@Test public void testLines() throws Exception {
-		doTest("lines", MultiLine.class);
+		doTest("lines", Line.class);
 	}
 
 	@Test public void testMultilines() throws Exception {
@@ -99,11 +100,11 @@ public class TestShapefileInput {
 	}
    
 	@Test public void testRings() throws Exception {
-		doTest("rings", MultiPolygons.class);
+		doTest("rings", Polygon.class);
 	}
 
 	@Test public void testRingz() throws Exception {
-		doTest("ringz", MultiPolygons.class);
+		doTest("ringz", Polygon.class);
 	}
 	
 	@Test public void testAfghanistan() throws Exception {
