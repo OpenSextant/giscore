@@ -92,7 +92,7 @@ public class TestShapefileInput {
 	}
 
 	@Test public void testPolys() throws Exception {
-		doTest("polys", MultiPolygons.class);
+		doTest("polys", Polygon.class);
 	}
 	
 	@Test public void testPolyz() throws Exception {
@@ -100,11 +100,11 @@ public class TestShapefileInput {
 	}
    
 	@Test public void testRings() throws Exception {
-		doTest("rings", Polygon.class);
+		doTest("rings", LinearRing.class);
 	}
 
 	@Test public void testRingz() throws Exception {
-		doTest("ringz", Polygon.class);
+		doTest("ringz", LinearRing.class);
 	}
 	
 	@Test public void testAfghanistan() throws Exception {

@@ -26,9 +26,12 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Formatter;
 import java.util.List;
 import java.util.Locale;
@@ -38,6 +41,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.apache.commons.io.IOUtils;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
@@ -53,14 +57,17 @@ import org.mitre.giscore.geometry.MultiPolygons;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.output.dbf.DbfOutputStream;
+import org.mitre.giscore.utils.ICancelable;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.ObjectBuffer;
-import org.mitre.giscore.utils.ICancelable;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DBounds;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
-import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.esri.arcgis.geoprocessing.tools.analysistools.MultipleRingBuffer;
 
 /**
  * Coordinate the output of a single buffer for writing the four shapefile
@@ -83,6 +90,8 @@ import org.apache.commons.io.IOUtils;
  * @author Paul Silvey for the original Mediate
  */
 public class SingleShapefileOutputHandler extends ShapefileBaseClass {
+	private static final Logger logger = LoggerFactory
+			.getLogger(SingleShapefileOutputHandler.class);
 	private static final int VERSION = 1000;
 	private static final String WGS84prj = "PROJCS[\"WGS_1984_UTM_Zone_35S\"," + //
 			"GEOGCS[\"GCS_WGS_1984\"," + //
@@ -108,6 +117,13 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 */
 	private final Style style;
 
+	/**
+	 * The current buffer being used to output geometry. The buffer is created
+	 * just before the current geometry's accept method is called and is set
+	 * back to <code>null</code> just afterward.
+	 */
+	private ByteBuffer obuf = null;
+
 	/*
 	 * Pointers to the four required files. Setup in the ctor and never modified
 	 * afterward.
@@ -125,11 +141,6 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * The buffer that holds the data to be output.
 	 */
 	private final ObjectBuffer buffer;
-
-	/**
-	 * Shp file binary stream
-	 */
-	private BinaryOutputStream bos;
 
 	/**
 	 * The mapper, which maps from urls used in the style to integer values used
@@ -157,8 +168,9 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 *            a mapper to go from the url based icons in the Style to a
 	 *            short value for use with ESRI, must not be <code>null</code>
 	 *            if style is not <code>null</code>.
-	 * @throws IllegalArgumentException if couldn't create output directory or any
-	 * 			of the required arguments are invalid
+	 * @throws IllegalArgumentException
+	 *             if couldn't create output directory or any of the required
+	 *             arguments are invalid
 	 */
 	public SingleShapefileOutputHandler(Schema schema, Style style,
 			ObjectBuffer buffer, File outputDirectory, String shapefilename,
@@ -202,8 +214,9 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Output the data.
-	 *
-	 * @throws IOException if an error occurs
+	 * 
+	 * @throws IOException
+	 *             if an error occurs
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
@@ -214,70 +227,72 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		process(null);
 	}
 
-
-
 	/**
 	 * Output the data.
-	 *
-	 * @param callback Provide {@code ICancelable} callback which if {@code isCanceled()}
-	 * returns true then processing is aborted and CancellationException is thrown.
-	 * If {@code null} then no cancellation checks are done.
 	 * 
-	 * @throws IOException if an error occurs
+	 * @param callback
+	 *            Provide {@code ICancelable} callback which if {@code
+	 *            isCanceled()} returns true then processing is aborted and
+	 *            CancellationException is thrown. If {@code null} then no
+	 *            cancellation checks are done.
+	 * 
+	 * @throws IOException
+	 *             if an error occurs
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
 	 * @throws XMLStreamException
-	 * @throws CancellationException if callback is provided and forces a cancellation
+	 * @throws CancellationException
+	 *             if callback is provided and forces a cancellation
 	 */
-	public void process(ICancelable callback) throws IOException, ClassNotFoundException,
-			InstantiationException, IllegalAccessException, XMLStreamException {
+	public void process(ICancelable callback) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException, XMLStreamException {
 		// Write prj
 		FileOutputStream prjos = new FileOutputStream(prjFile);
-        try {
-		    prjos.write(WGS84prj.getBytes("US-ASCII"));
-        } finally {
-		    prjos.close();
-        }
+		try {
+			prjos.write(WGS84prj.getBytes("US-ASCII"));
+		} finally {
+			prjos.close();
+		}
 		// Write shp and shx
 		outputFeatures(callback);
 		// Write dbf
 		FileOutputStream dbfos = new FileOutputStream(dbfFile);
-        try {
-		    buffer.resetReadIndex();
-		    // Modify the schema for the dbf if we have dates since shapefile's
-		    // output of dates is entirely useless. Substitute string for date
-		    Schema dbfschema = dbfModify(schema);
-		    DbfOutputStream dbf = new DbfOutputStream(dbfos, dbfschema, buffer);
-		    dbf.close();
-        } finally {
-		    dbfos.close();
-        }
+		try {
+			buffer.resetReadIndex();
+			// Modify the schema for the dbf if we have dates since shapefile's
+			// output of dates is entirely useless. Substitute string for date
+			Schema dbfschema = dbfModify(schema);
+			DbfOutputStream dbf = new DbfOutputStream(dbfos, dbfschema, buffer);
+			dbf.close();
+		} finally {
+			dbfos.close();
+		}
 		// Write shm
 		writeShm();
 	}
 
 	/**
 	 * Find and replace and simple fields of type date with type string
+	 * 
 	 * @param orign
 	 * @return
 	 */
 	private Schema dbfModify(Schema orign) {
 		boolean foundDate = false;
-		for(SimpleField field : orign.getFields()) {
-			if (field.getType().equals(SimpleField.Type.DATE))
-			{
+		for (SimpleField field : orign.getFields()) {
+			if (field.getType().equals(SimpleField.Type.DATE)) {
 				foundDate = true;
 				break;
 			}
 		}
-		if (! foundDate) {
+		if (!foundDate) {
 			return orign;
 		}
 		Schema rval = new Schema();
-		for(SimpleField field : orign.getFields()) {
-			if (field.getType().equals(SimpleField.Type.DATE))
-			{	
+		for (SimpleField field : orign.getFields()) {
+			if (field.getType().equals(SimpleField.Type.DATE)) {
 				SimpleField copy = new SimpleField(field.getName());
 				copy.setAliasName(field.getAliasName());
 				copy.setDisplayName(field.getDisplayName());
@@ -303,70 +318,73 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			return;
 
 		OutputStream stream = new FileOutputStream(shmFile);
-        try {
-            XMLOutputFactory factory = XMLOutputFactory.newInstance();
-            XMLStreamWriter writer = factory.createXMLStreamWriter(stream);
-            writer.writeStartDocument();
-            writer.writeStartElement("org.mitre.forensics.util.BaseLayerMetaData");
-            writer.writeStartElement("renderer__info");
+		try {
+			XMLOutputFactory factory = XMLOutputFactory.newInstance();
+			XMLStreamWriter writer = factory.createXMLStreamWriter(stream);
+			writer.writeStartDocument();
+			writer
+					.writeStartElement("org.mitre.forensics.util.BaseLayerMetaData");
+			writer.writeStartElement("renderer__info");
 
-            writer.writeStartElement("symbol__class");
-            writer.writeCharacters("point");
-            writer.writeEndElement();
+			writer.writeStartElement("symbol__class");
+			writer.writeCharacters("point");
+			writer.writeEndElement();
 
-            writer.writeStartElement("symbol__type");
-            writer.writeCharacters(Short.toString(mapper.getMarker(new URL(style
-                    .getIconUrl()))));
-            writer.writeEndElement();
+			writer.writeStartElement("symbol__type");
+			writer.writeCharacters(Short.toString(mapper.getMarker(new URL(
+					style.getIconUrl()))));
+			writer.writeEndElement();
 
-            if (style.getIconColor() != null) {
-                writer.writeStartElement("symbol__color");
-                StringBuilder sb = new StringBuilder(8);
-                Formatter formatter = new Formatter(sb, Locale.US);
-                Color color = style.getIconColor();
-                formatter.format("0x%02x%02x%02x%02x", color.getAlpha(), color
-                        .getBlue(), color.getGreen(), color.getRed());
-                writer.writeCharacters(sb.toString());
-                writer.writeEndElement();
-            }
+			if (style.getIconColor() != null) {
+				writer.writeStartElement("symbol__color");
+				StringBuilder sb = new StringBuilder(8);
+				Formatter formatter = new Formatter(sb, Locale.US);
+				Color color = style.getIconColor();
+				formatter.format("0x%02x%02x%02x%02x", color.getAlpha(), color
+						.getBlue(), color.getGreen(), color.getRed());
+				writer.writeCharacters(sb.toString());
+				writer.writeEndElement();
+			}
 
-            writer.writeStartElement("has__labelling");
-            writer.writeCharacters("false");
-            writer.writeEndElement();
+			writer.writeStartElement("has__labelling");
+			writer.writeCharacters("false");
+			writer.writeEndElement();
 
-            writer.writeStartElement("point__size");
-            int size = (int) (style.getIconScale() * 15.0);
-            writer.writeCharacters(Integer.toString(size));
-            writer.writeEndElement();
+			writer.writeStartElement("point__size");
+			int size = (int) (style.getIconScale() * 15.0);
+			writer.writeCharacters(Integer.toString(size));
+			writer.writeEndElement();
 
-            writer.writeStartElement("outer-class");
-            writer.writeAttribute("reference", "../..");
-            writer.writeEndElement();
+			writer.writeStartElement("outer-class");
+			writer.writeAttribute("reference", "../..");
+			writer.writeEndElement();
 
-            writer.writeEndElement();
-            writer.writeEndDocument();
-            writer.close();
-        } finally {
-            IOUtils.closeQuietly(stream);
-        }
+			writer.writeEndElement();
+			writer.writeEndDocument();
+			writer.close();
+		} finally {
+			IOUtils.closeQuietly(stream);
+		}
 	}
 
 	/**
 	 * Output the features. As the features are output, track the bounding box
 	 * information and check for consistent geometry usage. After all the
 	 * features are written we reopen the shapefile to output the header.
-	 *
+	 * 
 	 * @param callback
-	 *
-	 * @throws IOException if an error occurs
+	 * 
+	 * @throws IOException
+	 *             if an error occurs
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
-	 * @throws CancellationException if callback is provided and forces a cancellation
+	 * @throws CancellationException
+	 *             if callback is provided and forces a cancellation
 	 */
-	private void outputFeatures(ICancelable callback) throws IOException, ClassNotFoundException,
-			InstantiationException, IllegalAccessException {
-		BinaryOutputStream shxbos = null;
+	private void outputFeatures(ICancelable callback) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
 		int recordNumber = 1;
 		Geodetic2DBounds bbox = null;
 		int shapeAll = NULL_TYPE;
@@ -376,16 +394,16 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		// geo. After all the geo is written contains the length
 		// of the file
 		int offset = 50;
-		try {
-			bos = new BinaryOutputStream(new FileOutputStream(shpFile));
-			shxbos = new BinaryOutputStream(new FileOutputStream(shxFile));
+		int ioffset = 50;
+		FileOutputStream shfos = null;
+		FileOutputStream shxfos = null;
 
-			// Skip enough bytes to write the header later in the
-			// shp and shx files
-			for (int i = 0; i < offset; i++) {
-				bos.writeShort(0);
-				shxbos.writeShort(0);
-			}
+		try {
+			shfos = new FileOutputStream(shpFile);
+			shxfos = new FileOutputStream(shxFile);
+			FileChannel channel = shfos.getChannel();
+			FileChannel xchannel = shxfos.getChannel();
+
 			IDataSerializable ser = buffer.read();
 			while (ser != null) {
 				if (callback != null && callback.isCanceled()) {
@@ -408,28 +426,31 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				if (bbox == null) {
 					bbox = geo.getBoundingBox(); // 3d or not depending on the
 					// must make copy of the bounding box
-					bbox = bbox instanceof Geodetic3DBounds ? new Geodetic3DBounds((Geodetic3DBounds)bbox)
-							: new Geodetic2DBounds(bbox); 
+					bbox = bbox instanceof Geodetic3DBounds ? new Geodetic3DBounds(
+							(Geodetic3DBounds) bbox)
+							: new Geodetic2DBounds(bbox);
 					// geo
 				} else {
 					bbox.include(geo.getBoundingBox());
 				}
 				int len = getRecLen(geo);
-				outputGeometry(geo, is3D, shape, recordNumber, len);
-				outputIndex(shxbos, offset, len);
+				outputGeometry(channel, offset, geo, is3D, shape, recordNumber,
+						len);
+				outputIndex(xchannel, ioffset, offset, len);
 				// Records have additional 4 words of info at the start of the
 				// record
 				offset += len + 4;
+				ioffset += 4;
 				recordNumber++;
 				ser = buffer.read();
 			}
 			// Write header
-			putShapeHeader(bos, offset, shapeAll, is3D, bbox);
+			putShapeHeader(channel, offset, shapeAll, is3D, bbox);
 			int shxlen = 50 + (recordNumber - 1) * 4;
-			putShapeHeader(shxbos, shxlen, shapeAll, is3D, bbox);
+			putShapeHeader(xchannel, shxlen, shapeAll, is3D, bbox);
 		} finally {
-			IOUtils.closeQuietly(shxbos);
-			IOUtils.closeQuietly(bos);
+			IOUtils.closeQuietly(shfos);
+			IOUtils.closeQuietly(shxfos);
 		}
 	}
 
@@ -445,10 +466,13 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		return tv.getType();
 	}
 
-	private void outputIndex(BinaryOutputStream bos, int offset, int length)
-			throws IOException {
-		bos.writeInt(offset, ByteOrder.BIG_ENDIAN);
-		bos.writeInt(length, ByteOrder.BIG_ENDIAN);
+	private void outputIndex(FileChannel xchannel, int offset, int recoffset,
+			int length) throws IOException {
+		ByteBuffer buffer = ByteBuffer.allocate(8);
+		writeInt(buffer, recoffset, ByteOrder.BIG_ENDIAN);
+		writeInt(buffer, length, ByteOrder.BIG_ENDIAN);
+		buffer.flip();
+		xchannel.write(buffer, offset * 2);
 	}
 
 	@Override
@@ -474,24 +498,18 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 */
 	private void outputLines(Geometry geo) {
 		/*
-			A PolyLineZ consists of one or more parts. A part is a connected sequence of two or
-			more points. Parts may or may not be connected to one another. Parts may or may not
-			intersect one another.
-			PolyLineZ
-			{
-				Double[4] Box // Bounding Box
-				Integer NumParts // Number of Parts
-				Integer NumPoints // Total Number of Points
-				Integer[NumParts] Parts // Index to First Point in Part
-				Point[NumPoints] Points // Points for All Parts
-				Double[2] Z Range // Bounding Z Range
-				Double[NumPoints] Z Array // Z Values for All Points
-				Double[2] M Range // Bounding Measure Range
-				Double[NumPoints] M Array // Measures
-			}
+		 * A PolyLineZ consists of one or more parts. A part is a connected
+		 * sequence of two or more points. Parts may or may not be connected to
+		 * one another. Parts may or may not intersect one another. PolyLineZ {
+		 * Double[4] Box // Bounding Box Integer NumParts // Number of Parts
+		 * Integer NumPoints // Total Number of Points Integer[NumParts] Parts
+		 * // Index to First Point in Part Point[NumPoints] Points // Points for
+		 * All Parts Double[2] Z Range // Bounding Z Range Double[NumPoints] Z
+		 * Array // Z Values for All Points Double[2] M Range // Bounding
+		 * Measure Range Double[NumPoints] M Array // Measures }
 		 */
 		try {
-			putBBox(bos, geo.getBoundingBox());
+			putBBox(geo.getBoundingBox());
 			putPartCount(geo);
 			putPartsVector(geo);
 			putPointsXY(geo.getPoints());
@@ -514,21 +532,21 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		try {
 			PointOffsetVisitor pv = new PointOffsetVisitor();
 			rings.accept(pv);
-			putBBox(bos, rings.getBoundingBox());
-			bos.writeInt(pv.getPartCount(), ByteOrder.LITTLE_ENDIAN); 
-			bos.writeInt(pv.getTotal(), ByteOrder.LITTLE_ENDIAN);
-			for(Integer offset : pv.getOffsets()) {
-				bos.writeInt(offset, ByteOrder.LITTLE_ENDIAN);	
+			putBBox(rings.getBoundingBox());
+			writeInt(obuf, pv.getPartCount(), ByteOrder.LITTLE_ENDIAN);
+			writeInt(obuf, pv.getTotal(), ByteOrder.LITTLE_ENDIAN);
+			for (Integer offset : pv.getOffsets()) {
+				writeInt(obuf, offset, ByteOrder.LITTLE_ENDIAN);
 			}
-			for(LinearRing ring : rings.getLinearRings()) {
+			for (LinearRing ring : rings.getLinearRings()) {
 				putPolyPointsXY(ring);
 			}
 			if (rings.is3D()) {
-				bos.writeDouble(pv.getZmin(), ByteOrder.LITTLE_ENDIAN);
-				bos.writeDouble(pv.getZmax(), ByteOrder.LITTLE_ENDIAN);
-				for(LinearRing ring : rings.getLinearRings()) {
-					putPolyPointsZ(ring);
-				}	
+				writeDouble(obuf, pv.getZmin(), ByteOrder.LITTLE_ENDIAN);
+				writeDouble(obuf, pv.getZmax(), ByteOrder.LITTLE_ENDIAN);
+				for (LinearRing ring : rings.getLinearRings()) {
+					putPartPointsZ(ring);
+				}
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
@@ -540,26 +558,26 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		try {
 			PointOffsetVisitor pv = new PointOffsetVisitor();
 			polygons.accept(pv);
-			putBBox(bos, polygons.getBoundingBox());
-			bos.writeInt(pv.getPartCount(), ByteOrder.LITTLE_ENDIAN); 
-			bos.writeInt(pv.getTotal(), ByteOrder.LITTLE_ENDIAN);
-			for(Integer offset : pv.getOffsets()) {
-				bos.writeInt(offset, ByteOrder.LITTLE_ENDIAN);	
+			putBBox(polygons.getBoundingBox());
+			writeInt(obuf, pv.getPartCount(), ByteOrder.LITTLE_ENDIAN);
+			writeInt(obuf, pv.getTotal(), ByteOrder.LITTLE_ENDIAN);
+			for (Integer offset : pv.getOffsets()) {
+				writeInt(obuf, offset, ByteOrder.LITTLE_ENDIAN);
 			}
-			for(Polygon poly : polygons.getPolygons()) {
+			for (Polygon poly : polygons.getPolygons()) {
 				putPolyPointsXY(poly.getOuterRing());
-				for(LinearRing ring : poly.getLinearRings()) {
+				for (LinearRing ring : poly.getLinearRings()) {
 					putPolyPointsXY(ring);
 				}
 			}
 			if (polygons.is3D()) {
-				bos.writeDouble(pv.getZmin(), ByteOrder.LITTLE_ENDIAN);
-				bos.writeDouble(pv.getZmax(), ByteOrder.LITTLE_ENDIAN);
-				for(Polygon poly : polygons.getPolygons()) {
-					putPolyPointsZ(poly.getOuterRing());
-					for(LinearRing ring : poly.getLinearRings()) {
-						putPolyPointsZ(ring);
-					}	
+				writeDouble(obuf, pv.getZmin(), ByteOrder.LITTLE_ENDIAN);
+				writeDouble(obuf, pv.getZmax(), ByteOrder.LITTLE_ENDIAN);
+				for (Polygon poly : polygons.getPolygons()) {
+					putPartPointsZ(poly.getOuterRing());
+					for (LinearRing ring : poly.getLinearRings()) {
+						putPartPointsZ(ring);
+					}
 				}
 			}
 		} catch (IOException e) {
@@ -574,8 +592,9 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	private void outputPolygon(Geometry geo, int partcount) {
 		try {
-			putBBox(bos, geo.getBoundingBox());
-			bos.writeInt(partcount, ByteOrder.LITTLE_ENDIAN);
+			putBBox(geo.getBoundingBox());
+			writeInt(obuf, partcount, ByteOrder.LITTLE_ENDIAN);
+			// This call writes out the point count and the parts vector
 			putPartsVector(geo);
 			putPolyPointsXY(geo);
 			if (geo.is3D()) {
@@ -589,23 +608,17 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	@Override
 	public void visit(MultiPoint multiPoint) {
 		/*
-		A MultiPointZ represents a set of PointZs, as follows:
-		MultiPointZ
-		{
-			Double[4] Box // Bounding Box
-			Integer NumPoints // Number of Points
-			Point[NumPoints] Points // The Points in the Set
-			Double[2] Z Range // Bounding Z Range
-			Double[NumPoints] Z Array // Z Values
-			Double[2] M Range // Bounding Measure Range
-			Double[NumPoints] M Array // Measures
-		}
-		The Bounding Box is stored in the order Xmin, Ymin, Xmax, Ymax.
-		The bounding Z Range is stored in the order Zmin, Zmax. Bounding M Range is stored
-		in the order Mmin, Mmax
+		 * A MultiPointZ represents a set of PointZs, as follows: MultiPointZ {
+		 * Double[4] Box // Bounding Box Integer NumPoints // Number of Points
+		 * Point[NumPoints] Points // The Points in the Set Double[2] Z Range //
+		 * Bounding Z Range Double[NumPoints] Z Array // Z Values Double[2] M
+		 * Range // Bounding Measure Range Double[NumPoints] M Array // Measures
+		 * } The Bounding Box is stored in the order Xmin, Ymin, Xmax, Ymax. The
+		 * bounding Z Range is stored in the order Zmin, Zmax. Bounding M Range
+		 * is stored in the order Mmin, Mmax
 		 */
 		try {
-			putBBox(bos, multiPoint.getBoundingBox());
+			putBBox(multiPoint.getBoundingBox());
 			putPointCount(multiPoint);
 			putPointsXY(multiPoint.getPoints());
 			if (multiPoint.is3D()) {
@@ -622,19 +635,34 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		try {
 			putPoint(point);
 			if (point.is3D()) {
-				putPointZ(point);
+				putPointZ(point, true);
 			}
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private void outputGeometry(Geometry geom, boolean is3D, int shape,
-			int rnumber, int rlength) throws IOException {
-		bos.writeInt(rnumber, ByteOrder.BIG_ENDIAN);
-		bos.writeInt(rlength, ByteOrder.BIG_ENDIAN);
-		bos.writeInt(shape, ByteOrder.LITTLE_ENDIAN);
-		geom.accept(this);
+	private void outputGeometry(FileChannel channel, int offset, Geometry geom,
+			boolean is3D, int shape, int rnumber, int rlength)
+			throws IOException {
+		ByteBuffer hbuffer = ByteBuffer.allocate(12);
+		writeInt(hbuffer, rnumber, ByteOrder.BIG_ENDIAN);
+		writeInt(hbuffer, rlength, ByteOrder.BIG_ENDIAN);
+		writeInt(hbuffer, shape, ByteOrder.LITTLE_ENDIAN);
+		hbuffer.flip();
+		channel.write(hbuffer, offset * 2);
+		obuf = ByteBuffer.allocate(rlength * 2);
+		try {
+			geom.accept(this);
+		} catch (BufferOverflowException bfe) {
+			logger.error("Overflow at having allocated " + rlength * 2
+					+ " bytes for geometry " + geom + " having "
+					+ geom.getNumPoints() + " points and " + geom.getNumParts() + " parts" );
+			throw bfe;
+		}
+		obuf.flip();
+		channel.write(obuf, offset * 2 + 12);
+		obuf = null;
 	}
 
 	/**
@@ -646,8 +674,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 */
 	private void putPointsZ(Collection<Point> points) throws IOException {
 		if (points == null || points.size() == 0) {
-			bos.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN);
-			bos.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN);
+			writeDouble(obuf, 0.0, ByteOrder.LITTLE_ENDIAN);
+			writeDouble(obuf, 0.0, ByteOrder.LITTLE_ENDIAN);
 		} else {
 			Point first = points.iterator().next();
 			if (first.is3D()) {
@@ -659,17 +687,18 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 					min = Math.min(pt.getElevation(), min);
 					max = Math.min(pt.getElevation(), max);
 				}
-				bos.writeDouble(min, ByteOrder.LITTLE_ENDIAN);
-				bos.writeDouble(max, ByteOrder.LITTLE_ENDIAN);
+				writeDouble(obuf, min, ByteOrder.LITTLE_ENDIAN);
+				writeDouble(obuf, max, ByteOrder.LITTLE_ENDIAN);
 				for (Point point : points) {
 					pt = (Geodetic3DPoint) point.getCenter();
-					bos.writeDouble(pt.getElevation(), ByteOrder.LITTLE_ENDIAN);
+					writeDouble(obuf, pt.getElevation(),
+							ByteOrder.LITTLE_ENDIAN);
 				}
 			} else {
-				bos.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN);
-				bos.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN);
+				writeDouble(obuf, 0.0, ByteOrder.LITTLE_ENDIAN);
+				writeDouble(obuf, 0.0, ByteOrder.LITTLE_ENDIAN);
 				for (int i = 0; i < points.size(); i++) {
-					bos.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN);
+					writeDouble(obuf, 0.0, ByteOrder.LITTLE_ENDIAN);
 				}
 			}
 		}
@@ -679,14 +708,15 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output point count and indices to each part in the point vector.
 	 * 
 	 * @param geom
-	 * @throws IOException if an error occurs
+	 * @throws IOException
+	 *             if an error occurs
 	 */
 	private void putPartsVector(Geometry geom) throws IOException {
 		PointOffsetVisitor pov = new PointOffsetVisitor();
 		geom.accept(pov);
-		bos.writeInt(pov.getTotal(), ByteOrder.LITTLE_ENDIAN);
+		writeInt(obuf, pov.getTotal(), ByteOrder.LITTLE_ENDIAN);
 		for (Integer offset : pov.getOffsets()) {
-			bos.writeInt(offset, ByteOrder.LITTLE_ENDIAN);
+			writeInt(obuf, offset, ByteOrder.LITTLE_ENDIAN);
 		}
 	}
 
@@ -704,10 +734,11 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Output each poly point's XY paying attention to the need to close the
-	 * figure. 
+	 * figure.
 	 * 
 	 * @param geom
-	 * @throws IOException if an error occurs
+	 * @throws IOException
+	 *             if an error occurs
 	 */
 	private void putPolyPointsXY(Geometry geom) throws IOException {
 		for (int j = 0; j < geom.getNumParts(); j++) {
@@ -715,6 +746,11 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			int count = part.getNumPoints();
 			if (count > 0) {
 				putPointsXY(part.getPoints());
+				Point first = part.getPoints().get(0);
+				Point last = part.getPoints().get(count - 1);
+				if (!first.equals(last)) {
+					putPoint(first); // Dupl the first point to close the figure
+				}
 			}
 		}
 	}
@@ -725,7 +761,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * first point into the list again.
 	 * 
 	 * @param geom
-	 * @throws IOException if an error occurs
+	 * @throws IOException
+	 *             if an error occurs
 	 */
 	private void putPolyPointsZ(Geometry geom) throws IOException {
 		double zmax = 0.0, zmin = 0.0;
@@ -746,21 +783,31 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				}
 			}
 		}
-		bos.writeDouble(zmin, ByteOrder.LITTLE_ENDIAN);
-		bos.writeDouble(zmax, ByteOrder.LITTLE_ENDIAN);
+		writeDouble(obuf, zmin, ByteOrder.LITTLE_ENDIAN);
+		writeDouble(obuf, zmax, ByteOrder.LITTLE_ENDIAN);
 
+		putPartPointsZ(geom);
+	}
+
+	/**
+	 * Output Z points for a given geometry for each of the geometry's parts
+	 * in order. This is really just used for a ring or poly's geometry
+	 * @param geom the geometry
+	 * @throws IOException
+	 */
+	private void putPartPointsZ(Geometry geom) throws IOException {
 		for (int j = 0; j < geom.getNumParts(); j++) {
 			Geometry part = geom.getPart(j);
 			int count = part.getNumPoints();
 			if (count > 0) {
 				List<Point> pts = part.getPoints();
-				for(Point pt : pts) {
-					putPointZ(pt);
+				for (Point pt : pts) {
+					putPointZ(pt, false);
 				}
 				Point first = pts.get(0);
 				Point last = pts.get(count - 1);
 				if (!first.equals(last)) {
-					putPointZ(first);
+					putPointZ(first, false);
 				}
 			}
 		}
@@ -770,20 +817,22 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output point count for the given geometry
 	 * 
 	 * @param geom
-	 * @throws IOException if an error occurs
+	 * @throws IOException
+	 *             if an error occurs
 	 */
 	private void putPointCount(Geometry geom) throws IOException {
-		bos.writeInt(geom.getNumPoints(), ByteOrder.LITTLE_ENDIAN);
+		writeInt(obuf, geom.getNumPoints(), ByteOrder.LITTLE_ENDIAN);
 	}
 
 	/**
 	 * Output part count for the given geometry
 	 * 
 	 * @param geom
-	 * @throws IOException if an error occurs
+	 * @throws IOException
+	 *             if an error occurs
 	 */
 	private void putPartCount(Geometry geom) throws IOException {
-		bos.writeInt(geom.getNumParts(), ByteOrder.LITTLE_ENDIAN);
+		writeInt(obuf, geom.getNumParts(), ByteOrder.LITTLE_ENDIAN);
 	}
 
 	/**
@@ -791,14 +840,15 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * 
 	 * @param points
 	 *            the points
-	 * @throws IOException if an error occurs
+	 * @throws IOException
+	 *             if an error occurs
 	 */
 	private void putPointsXY(Collection<Point> points) throws IOException {
 		if (points != null && points.size() > 0) {
 			for (Point p : points) {
-				bos.writeDouble(p.getCenter().getLongitude().inDegrees(),
+				writeDouble(obuf, p.getCenter().getLongitude().inDegrees(),
 						ByteOrder.LITTLE_ENDIAN);
-				bos.writeDouble(p.getCenter().getLatitude().inDegrees(),
+				writeDouble(obuf, p.getCenter().getLatitude().inDegrees(),
 						ByteOrder.LITTLE_ENDIAN);
 			}
 		}
@@ -827,7 +877,21 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		int nParts, nPoints;
 		int type = getEsriShapeType(geom);
 		int base;
-		nParts = geom.getNumParts();
+		if (geom instanceof MultiPolygons) {
+			MultiPolygons mp = (MultiPolygons) geom;
+			nParts = 0;
+			for(Polygon p : mp.getPolygons()) {
+				nParts += p.getNumParts();
+			}
+		} else if (geom instanceof MultiLinearRings) {
+			MultiLinearRings mp = (MultiLinearRings) geom;
+			nParts = 0;
+			for(LinearRing r : mp.getLinearRings()) {
+				nParts += r.getNumParts();
+			}
+		} else {
+			nParts = geom.getNumParts();
+		}
 		nPoints = geom.getNumPoints();
 		int bytesPerPnt = 16;
 		int bytesPerPart = 0;
@@ -884,12 +948,12 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * private helper method to write out X-Y bounding box
 	 * 
-	 * @param stream
+	 * @param
 	 * @param bbox
-	 * @throws IOException if an error occurs
+	 * @throws IOException
+	 *             if an error occurs
 	 */
-	private void putBBox(BinaryOutputStream stream, Geodetic2DBounds bbox)
-			throws IOException {
+	private void putBBox(Geodetic2DBounds bbox) throws IOException {
 		double westLonDeg = bbox.westLon.inDegrees();
 		double southLatDeg = bbox.southLat.inDegrees();
 		double eastLonDeg = bbox.eastLon.inDegrees();
@@ -901,89 +965,120 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			westLonDeg = -180.0;
 			eastLonDeg = +180.0;
 		}
-		stream.writeDouble(westLonDeg, ByteOrder.LITTLE_ENDIAN); // X min
-		stream.writeDouble(southLatDeg, ByteOrder.LITTLE_ENDIAN); // Y min
-		stream.writeDouble(eastLonDeg, ByteOrder.LITTLE_ENDIAN); // X max
-		stream.writeDouble(northLatDeg, ByteOrder.LITTLE_ENDIAN); // Y max
+		writeDouble(obuf, westLonDeg, ByteOrder.LITTLE_ENDIAN); // X min
+		writeDouble(obuf, southLatDeg, ByteOrder.LITTLE_ENDIAN); // Y min
+		writeDouble(obuf, eastLonDeg, ByteOrder.LITTLE_ENDIAN); // X max
+		writeDouble(obuf, northLatDeg, ByteOrder.LITTLE_ENDIAN); // Y max
 	}
 
 	/**
 	 * Write the shapefile header, containing fileLen, shapeType and Bounding
 	 * Box
 	 * 
-	 * @param stream
+	 * @param channel
 	 * @param fileLen
 	 * @param shapeType
 	 * @param is3D
 	 * @param bbox
-	 * @throws IOException if an error occurs
+	 * @throws IOException
+	 *             if an error occurs
 	 */
-	private void putShapeHeader(BinaryOutputStream stream, int fileLen,
+	private void putShapeHeader(FileChannel channel, int fileLen,
 			int shapeType, boolean is3D, Geodetic2DBounds bbox)
 			throws IOException {
-		stream.flush(); // Make sure everything's written
-		FileOutputStream os = (FileOutputStream) stream.getWrappedStream();
-		os.getChannel().position(0); // Reposition to the start of the file
-		try {
-			// Write the shapefile signature (should be 9994)
-			stream.writeInt(SIGNATURE, ByteOrder.BIG_ENDIAN);
-			// fill unused bytes in header with zeros
-			for (int i = 0; i < 5; i++)
-				stream.writeInt(0, ByteOrder.BIG_ENDIAN);
-			// Write the file length (total number of 2-byte words, including
-			// header)
-			stream.writeInt(fileLen, ByteOrder.BIG_ENDIAN);
-			// Write the shapefile version (should be 1000)
-			stream.writeInt(VERSION, ByteOrder.LITTLE_ENDIAN);
-			// Write the shapeType
-			stream.writeInt(shapeType, ByteOrder.LITTLE_ENDIAN);
-			// Write the overall X-Y bounding box to the shapefile header
-			putBBox(stream, bbox);
-			// In Shapefiles, Z and M bounds are usually separated from X-Y
-			// bounds
-			// (and instead grouped with their arrays of data), except for in
-			// the
-			// header
-			double zMin = (is3D) ? ((Geodetic3DBounds) bbox).minElev : 0.0;
-			double zMax = (is3D) ? ((Geodetic3DBounds) bbox).maxElev : 0.0;
-			stream.writeDouble(zMin, ByteOrder.LITTLE_ENDIAN); // Z min
-			stream.writeDouble(zMax, ByteOrder.LITTLE_ENDIAN); // Z max
-			stream.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN); // M min (not
-			// supported)
-			stream.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN); // M max (not
-			// supported)
-		} finally {
-			stream.close();
-		}
+		ByteBuffer buffer = ByteBuffer.allocate(100);
+		// Write the shapefile signature (should be 9994)
+		writeInt(buffer, SIGNATURE, ByteOrder.BIG_ENDIAN);
+		// fill unused bytes in header with zeros
+		for (int i = 0; i < 5; i++)
+			writeInt(buffer, 0, ByteOrder.BIG_ENDIAN);
+		// Write the file length (total number of 2-byte words, including
+		// header)
+		writeInt(buffer, fileLen, ByteOrder.BIG_ENDIAN);
+		// Write the shapefile version (should be 1000)
+		writeInt(buffer, VERSION, ByteOrder.LITTLE_ENDIAN);
+		// Write the shapeType
+		writeInt(buffer, shapeType, ByteOrder.LITTLE_ENDIAN);
+		// Write the overall X-Y bounding box to the shapefile header
+		obuf = buffer;
+		putBBox(bbox);
+		obuf = null;
+		// In Shapefiles, Z and M bounds are usually separated from X-Y
+		// bounds
+		// (and instead grouped with their arrays of data), except for in
+		// the
+		// header
+		double zMin = (is3D) ? ((Geodetic3DBounds) bbox).minElev : 0.0;
+		double zMax = (is3D) ? ((Geodetic3DBounds) bbox).maxElev : 0.0;
+		writeDouble(buffer, zMin, ByteOrder.LITTLE_ENDIAN); // Z min
+		writeDouble(buffer, zMax, ByteOrder.LITTLE_ENDIAN); // Z max
+		writeDouble(buffer, 0.0, ByteOrder.LITTLE_ENDIAN); // M min (not
+		// supported)
+		writeDouble(buffer, 0.0, ByteOrder.LITTLE_ENDIAN); // M max (not
+		// supported)
+		buffer.flip();
+		channel.write(buffer, 0);
 	}
 
 	/**
 	 * Write a single X/Y point
 	 * 
 	 * @param pt
-	 * @throws IOException if an error occurs
+	 * @throws IOException
+	 *             if an error occurs
 	 */
 	private void putPoint(Point pt) throws IOException {
 		Geodetic2DPoint gp = pt.asGeodetic2DPoint();
-		bos.writeDouble(gp.getLongitude().inDegrees(), ByteOrder.LITTLE_ENDIAN);
-		bos.writeDouble(gp.getLatitude().inDegrees(), ByteOrder.LITTLE_ENDIAN);
+		writeDouble(obuf, gp.getLongitude().inDegrees(),
+				ByteOrder.LITTLE_ENDIAN);
+		writeDouble(obuf, gp.getLatitude().inDegrees(), ByteOrder.LITTLE_ENDIAN);
 	}
 
 	/**
 	 * Put out the elevation value
 	 * 
 	 * @param pt
-	 * @throws IOException if an error occurs
+	 * @param writeM <code>true</code> if we should write the measure value
+	 * @throws IOException
+	 *             if an error occurs
 	 */
-	private void putPointZ(Point pt) throws IOException {
+	private void putPointZ(Point pt, boolean writeM) throws IOException {
 		Geodetic2DPoint gp = pt.asGeodetic2DPoint();
 		if (gp instanceof Geodetic3DPoint) {
-			bos.writeDouble(((Geodetic3DPoint) gp).getElevation(),
+			writeDouble(obuf, ((Geodetic3DPoint) gp).getElevation(),
 					ByteOrder.LITTLE_ENDIAN);
 		} else {
-			bos.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN);
+			writeDouble(obuf, 0.0, ByteOrder.LITTLE_ENDIAN);
 		}
-		// measure value M not used
-		bos.writeDouble(0.0, ByteOrder.LITTLE_ENDIAN);
+		if (writeM) {
+			// measure value M not used
+			writeDouble(obuf, 0.0, ByteOrder.LITTLE_ENDIAN);
+		}
+	}
+
+	/**
+	 * Helper which sets the byte order and then writes the datum to the byte
+	 * buffer
+	 * 
+	 * @param buffer
+	 * @param datum
+	 * @param order
+	 */
+	private void writeInt(ByteBuffer buffer, int datum, ByteOrder order) {
+		buffer.order(order);
+		buffer.putInt(datum);
+	}
+
+	/**
+	 * Helper which sets the byte order and then writes the datum to the byte
+	 * buffer
+	 * 
+	 * @param buffer
+	 * @param datum
+	 * @param order
+	 */
+	private void writeDouble(ByteBuffer buffer, double datum, ByteOrder order) {
+		buffer.order(order);
+		buffer.putDouble(datum);
 	}
 }

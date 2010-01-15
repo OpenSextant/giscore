@@ -563,7 +563,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         		poly = polyList.get(0);
         	}
         	// If this has only an outer ring then return just that
-        	if (poly.getLinearRings() == null) 
+        	if (poly.getLinearRings().size() == 0) 
         		return poly.getOuterRing();
         	else
         		return poly;

@@ -4,8 +4,8 @@
 	<property name="repository.dir" value="${user.home}/.ivy2"/>
 	<property name="repository.server" value="http://maven-proxy/artifactory" />
 	<settings defaultResolver="chained"/>
-	<credentials host="maven-proxy" realm="Artifactory Realm" username="${mapsrv-user}"
-		passwd="${mapsrv-passwd}"/>
+	<credentials host="maven-proxy" realm="Artifactory Realm" username="${maven-proxy-user}"
+		passwd="${maven-proxy-passwd}"/>
 	<namespaces>
 		<namespace name="m2">
 			<rule>
