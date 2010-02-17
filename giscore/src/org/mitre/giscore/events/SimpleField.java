@@ -193,7 +193,7 @@ public class SimpleField implements IDataSerializable {
 	/**
 	 * @param name
 	 *            the name to set
-     * @throws IllegalArgumentException if <code>name</code> is null 
+	 * @throws IllegalArgumentException if <code>name</code> is null or empty string
 	 */
 	public void setName(String name) {
 		if (name != null) {

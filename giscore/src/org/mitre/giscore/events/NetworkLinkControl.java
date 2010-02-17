@@ -13,7 +13,7 @@ import java.util.Date;
  *
  * <h4>Notes/Limitations:</h4>
  *
- * Holder for NetworkLinkControl but does not yet hold the Update contents
+ * TODO: Holder for NetworkLinkControl but does not yet hold the Update contents
  *
  * @author Jason Mathews, MITRE Corp.
  * Date: May 20, 2009 3:47:51 PM
