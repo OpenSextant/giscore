@@ -63,7 +63,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			new SimpleDateFormat("dd-MMM-yyyy"), dateFormat };
 	private final DecimalFormat decimalFormat = new DecimalFormat(
 			"+###############0.################;-###############0.################");
-	private final SafeDateFormat isoDateFormat = new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+	private final SafeDateFormat isoDateFormat = new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 	
 	static {
 		for(int i = 0; i < blankpad.length; i++) {
