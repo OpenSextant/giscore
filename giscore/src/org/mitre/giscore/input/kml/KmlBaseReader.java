@@ -302,12 +302,16 @@ public abstract class KmlBaseReader implements IKml {
                 // if compressed amd relative link then need special encoded kmz URI
 				// if parent other than baseUrl then use explicit parent
 				URL baseUrl = parent == null ? this.baseUrl : parent.getURL();
-                if (compressed) {
+                //if (parent != null) System.out.format("XXX: parent=%s uisKmz=%b%n", parent, parent.isKmz());//debug
+                if (compressed || (parent != null && parent.getURL().getFile().endsWith(".kmz"))) {
+                    //System.out.println("XXX: compressed: base="+ baseUrl);//debug
                     // if relative link and parent is KMZ file (compressed=true)
                     // then need to keep track of parent URL in addition
                     // to the relative link to match against the KMZ file entries.
                     uri = new UrlRef(baseUrl, href).getURI();
                 } else {
+                    //System.out.println("XXX: uncompressed: base="+ baseUrl);//debug
+                    // what if from networklink that was compressed??
                     uri = new URL(baseUrl, href).toURI();
                 }
             }
