@@ -266,7 +266,7 @@ public class UrlRef {
     }
 
 	/**
-	 * @return the internal URI of the UrlRef
+	 * @return the internal URI of the UrlRef, never {@code null}
 	 */
 	public URI getURI() {
         return uri;
@@ -277,7 +277,7 @@ public class UrlRef {
 	 * URL will be returned same as the URI. If internal "kmz"
 	 * URI (e.g. kmzhttp://server/test.kmz?file=kml/include.kml)
 	 * then URL returned is <code>http://server/test.kmz</code>.  
-	 * @return original external URL
+	 * @return original external URL, never {@code null}
 	 */
 	public URL getURL() {
         return url;
@@ -289,7 +289,7 @@ public class UrlRef {
 	 * etc.) in a KMZ file.  For example this would be how the Link href was
 	 * explicitly defined in a NetworkLink, IconStyle, or GroundOverlay.
 	 *
-	 * @return relative path to the KMZ resource otherwise null
+	 * @return relative path to the KMZ resource otherwise {@code null}
 	 */
 	public String getKmzRelPath() {
         return kmzRelPath;
