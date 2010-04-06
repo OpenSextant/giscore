@@ -19,6 +19,10 @@ import org.slf4j.LoggerFactory;
  * URL rewriting logic extracted from KmlReader handles low-level rewriting
  * URL href if relative link along with some other helper methods.
  *
+ * Makes best effort to resolve relative URLs but has some limitations such as if
+ * KML has nested chain of network links with mix of KML and KMZ resources.
+ * KMZ files nested inside KMZ files are not supported.
+ *
  * @author Jason Mathews, MITRE Corp.
  * Date: Mar 30, 2009 12:04:01 PM
  */
@@ -303,6 +307,13 @@ public abstract class KmlBaseReader implements IKml {
 				// if parent other than baseUrl then use explicit parent
 				URL baseUrl = parent == null ? this.baseUrl : parent.getURL();
                 //if (parent != null) System.out.format("XXX: parent=%s uisKmz=%b%n", parent, parent.isKmz());//debug
+                /*
+                    make best effort to resolve relative URLs but note limitations:
+                    if for example parent KML includes networkLink to KMZ
+                    which in turn links a KML which in turn has relative link to image overlay
+                    then parent of overlay URI will not be compressed/kmz
+                    and will fail to get inputStream to the image within KMZ file...
+                */
                 if (compressed || (parent != null && parent.getURL().getFile().endsWith(".kmz"))) {
                     //System.out.println("XXX: compressed: base="+ baseUrl);//debug
                     // if relative link and parent is KMZ file (compressed=true)
