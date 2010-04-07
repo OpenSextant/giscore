@@ -156,9 +156,9 @@
 			<dynamicImportPackage name="*"/>
 			<autoexportpackage prefix="org.mitre.giscore" version="${ivy.new.revision}"/>
 		</bundle>
-		<zip destfile="${rel}/jars/giscore.jar" filesonly="true" update="true">
+		<!--zip destfile="${rel}/jars/giscore.jar" filesonly="true" update="true">
 			<zipfileset dir="resources" includes="license.txt" prefix="META-INF" />
-		</zip>
+		</zip-->
 	</target>
 
 	<target name="test" depends="compileTests" description="Run JUnit tests">
@@ -229,7 +229,7 @@
 	         author='false'
 		 public='true'
 		 classpathref="project.classpath"
-	         windowtitle='GisCore Package' doctitle='Giscore'
+	         windowtitle='GIScore Package' doctitle='GIScore'
 	         locale='en_US'>
 		 <bottom><![CDATA[<i>Copyright &#169; 2009 MITRE Corp. All Rights Reserved.</i>]]></bottom>
 		</javadoc>
