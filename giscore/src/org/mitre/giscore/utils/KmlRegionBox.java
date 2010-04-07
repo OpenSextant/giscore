@@ -104,6 +104,33 @@ public class KmlRegionBox {
 		}
 	}
 
+    /**
+     * Parse KML resource looking for Regions:
+     * <Region id="ID">
+          <LatLonAltBox> <!-- optional --> 
+            <north></north>                            <!-- required; kml:angle90 -->
+            <south></south>                            <!-- required; kml:angle90 -->
+            <east></east>                              <!-- required; kml:angle180 -->
+            <west></west>                              <!-- required; kml:angle180 -->
+            <minAltitude>0</minAltitude>               <!-- float -->
+            <maxAltitude>0</maxAltitude>               <!-- float -->
+            <altitudeMode>clampToGround</altitudeMode>
+                <!-- kml:altitudeModeEnum: [clampToGround], relativeToGround, or absolute -->
+                <!-- or, substitute gx:altitudeMode: clampToSeaFloor, relativeToSeaFloor -->
+          </LatLonAltBox>
+          <Lod>  <!-- optional -->
+            <minLodPixels>0</minLodPixels>             <!-- float -->
+            <maxLodPixels>-1</maxLodPixels>            <!-- float -->
+            <minFadeExtent>0</minFadeExtent>           <!-- float -->
+            <maxFadeExtent>0</maxFadeExtent>           <!-- float -->
+          </Lod>
+        </Region>
+     * 
+     * @param o
+     * @param source
+     * @throws FileNotFoundException
+     * @throws XMLStreamException
+     */
 	private void checkObject(IGISObject o, String source) throws FileNotFoundException, XMLStreamException {
 		if (o instanceof Common) {
 			Common f = (Common) o;
