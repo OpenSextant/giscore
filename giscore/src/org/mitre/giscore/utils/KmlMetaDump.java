@@ -54,8 +54,12 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  *  <li> Starting container tag with no matching end container (error)
  *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem) (warning)
  *  <li> Region has invalid LatLonAltBox (error)
+ *  <li> LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) (error)
+ *  <li> LatLonAltBox fails to satisfy constraint (altMode != clampToGround) (warn)
  *  <li> LatLonAltBox appears to be very small area (warning)
  *  <li> minLodPixels must be less than maxLodPixels in Lod (error)
+ *  <li> Camera altitudeMode cannot be clampToGround (error)
+ *  <li> Invalid LookAt values (error)
  *  <li> Invalid TimeSpan if begin later than end value (warning)
  *  <li> Feature inherits time from parent container (info)
  *  <li> Container start date is earlier than that of its ancestors (info)
@@ -541,7 +545,43 @@ public class KmlMetaDump implements IKml {
 
 		TaggedMap viewGroup = f.getViewGroup();
 		if (viewGroup != null) {
-            addTag(viewGroup.getTag()); // Camera or LookAt
+            String tag = viewGroup.getTag();
+            if (IKml.LOOK_AT.equals(tag)) {
+                addTag(tag); // LookAt
+                /*
+                    ATC 38: LookAt
+                    (1) if it is not a descendant of kml:Update, it contains all of the following child elements:
+                        kml:longitude, kml:latitude, and kml:range;
+                    (2) 0 <= kml:tilt <= 90;
+                    (3) if kml:altitudeMode does not have the value "clampToGround", then the kml:altitude element is present
+                */
+                double tilt = handleTaggedElement(IKml.TILT, viewGroup, 0, 180);
+                if (tilt < 0 || tilt > 90) {
+                    // (2) 0 <= kml:tilt <= 90;
+                    addTag(":Invalid LookAt values");
+                    if (verbose) System.out.println(" Error: Invalid tilt value in LookAt: " + tilt);
+                }
+               if (!"clampToGround".equals(viewGroup.get(IKml.ALTITUDE_MODE, "clampToGround")) &&
+                           viewGroup.get(IKml.ALTITUDE) == null) {
+                    // (3) if kml:altitudeMode does not have the value "clampToGround", then the kml:altitude element is present
+                    addTag(":Invalid LookAt values"); // error
+                    if (verbose) System.out.println(" Error: Missing altitude in LookAt");
+               }
+            } else if (IKml.CAMERA.equals(tag)) {
+                addTag(tag); // Camera
+                /*
+                    ATC 54: Camera
+                    (1) if it is not a descendant of kml:Update, then the following child elements are present:
+                        kml:latitude, kml:longitude, and kml:altitude;
+                    (2) the value of kml:altitudeMode is not "clampToGround".
+                */
+                if ("clampToGround".equals(viewGroup.get(IKml.ALTITUDE_MODE, "clampToGround"))) {
+                    // (2) the value of kml:altitudeMode is not "clampToGround".
+                    addTag(":Camera altitudeMode cannot be clampToGround"); // error                    
+               }
+            } else {
+                addTag(":Invalid ViewGroup tag: " + tag);
+            }            
 		}
 
 		checkRegion(f);
@@ -551,6 +591,19 @@ public class KmlMetaDump implements IKml {
             addTag(":Feature uses inline " + getClassName(lastObjClass)); // Style or StyleMap
 	}
 
+    /**
+     * Test ATC 8: Region/LatLonAltBox constraints. <p>
+     * Reference: OGC-07-147r2: cl. 9.15.2
+     *  
+     * Verify that content of a kml:LatLonAltBox element satisfies all of the following constraints:
+     * (1) kml:north > kml:south;
+     * (2) kml:east > kml:west;
+     * (3) kml:minAltitude <= kml:maxAltitude;
+     * (4) if kml:minAltitude and kml:maxAltitude are both present,
+     *     then kml:altitudeMode does not have the value "clampToGround".
+     *
+     * @param f Feature
+     */
 	private void checkRegion(Feature f) {
 		TaggedMap region = f.getRegion();
 		if (region == null) return;
@@ -569,47 +622,57 @@ public class KmlMetaDump implements IKml {
 				if (north != 0 || south != 0 || east != 0 || west != 0)
 					addTag(":LatLonAltBox appears to be very small area");
 			} else {
+                // Test ATC 8: Region - LatLonAltBox
 				// Check valid Region-LatLonAltBox values:
 				// 1. kml:north > kml:south; lat range: +/- 90
 				// 2. kml:east > kml:west;   lon range: +/- 180
-				// Test ATC 8: Region - LatLonAltBox
-				// Reference: OGC-07-147r2: cl. 9.15.2
 				if (north < south || east < west) {
 					addTag(":Region has invalid LatLonAltBox");
 					if (verbose) System.out.println(" Error: LatLonAltBox fails to satisfy constraints"); 
 				}
 			}
-			double minAlt = handleTaggedElement(IKml.MIN_ALTITUDE, region, 0, 0);
-			double maxAlt = handleTaggedElement(IKml.MAX_ALTITUDE, region, 0, 0);
-			// 3. kml:minAltitude <= kml:maxAltitude;
-			// 4. if kml:minAltitude and kml:maxAltitude are both present,
-			//    then kml:altitudeMode does not have the value "clampToGround".
+			double minAlt = handleTaggedElement(IKml.MIN_ALTITUDE, region, 0);
+			double maxAlt = handleTaggedElement(IKml.MAX_ALTITUDE, region, 0);
+            // check constraint: (3) kml:minAltitude <= kml:maxAltitude;
 			if (minAlt > maxAlt) {
 				addTag(":Region has invalid LatLonAltBox");
-				if (verbose) System.out.println(" Error: LatLonAltBox fails to satisfy Altitude constraints");
+				if (verbose) System.out.println(" Error: LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt)");
 			}
+            // check constraint: (4)
+            //  if kml:minAltitude and kml:maxAltitude are both present,
+			//  then kml:altitudeMode does not have the value "clampToGround".
+            if (region.get(IKml.MIN_ALTITUDE) != null && region.get(IKml.MAX_ALTITUDE) != null
+                    && "clampToGround".equals(region.get(IKml.ALTITUDE_MODE, "clampToGround"))) {
+                addTag(":Region has invalid LatLonAltBox");
+				if (verbose) System.out.println(" Warn: LatLonAltBox fails to satisfy constraint (altMode != clampToGround)");
+            }
 		} catch (NumberFormatException nfe) {
 			addTag(":Region has invalid LatLonAltBox");
 			if (verbose) System.out.println(" Error: " + nfe.getMessage());
 		}
 		
 		try {
-			double minLodPixels = handleTaggedElement(IKml.MIN_LOD_PIXELS, region, 0, 0);
-			double maxLodPixels = handleTaggedElement(IKml.MAX_LOD_PIXELS, region, -1, 0);
+            /*
+			    Test ATC 39: Lod constraint:
+			    kml:minLodPixels shall be less than kml:maxLodPixels (where a value of -1 = infinite).
+                It is also advised that kml:minFadeExtent + kml:maxFadeExtent is less than or equal to
+	    		kml:maxLodPixels - kml:minLodPixels.
+			*/
+			double minLodPixels = handleTaggedElement(IKml.MIN_LOD_PIXELS, region, 0);
+			double maxLodPixels = handleTaggedElement(IKml.MAX_LOD_PIXELS, region, -1);
 			if (maxLodPixels == -1) maxLodPixels = Integer.MAX_VALUE; // -1 = infinite
 			if (minLodPixels >= maxLodPixels) {
 				addTag(":minLodPixels must be less than maxLodPixels in Lod");
 			}
-			/*
-			kml:minLodPixels shall be less than kml:maxLodPixels (where a value of -1 = infinite).
-			It is also advised that kml:minFadeExtent + kml:maxFadeExtent is less than or equal to
-			kml:maxLodPixels - kml:minLodPixels.
-			*/
 		} catch (NumberFormatException nfe) {
 			addTag(":Region has invalid Lod");
 			if (verbose) System.out.println(" Error: " + nfe.getMessage());
 		}
 	}
+
+    private static double handleTaggedElement(String tag, TaggedMap region, int defaultValue) throws NumberFormatException {
+        return handleTaggedElement(tag, region, defaultValue, 0);
+    }
 
 	private static double handleTaggedElement(String tag, TaggedMap region, int defaultValue, int maxAbsValue) throws NumberFormatException {
 		String val = region.get(tag);
