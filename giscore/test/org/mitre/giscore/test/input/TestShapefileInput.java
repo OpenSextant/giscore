@@ -33,6 +33,7 @@ import org.mitre.giscore.IAcceptSchema;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.MultiLine;
@@ -41,6 +42,7 @@ import org.mitre.giscore.geometry.MultiPolygons;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.IGISInputStream;
+import org.mitre.giscore.input.shapefile.ShapefileInputStream;
 import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
 
 /**
@@ -50,6 +52,34 @@ import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
  */
 public class TestShapefileInput {
 	public static File shpdir = new File("data/shape");
+	
+	@Test public void testReadShpDirectly() throws Exception {
+		FileInputStream is = new FileInputStream(new File(shpdir, "afghanistan.shp"));
+		ShapefileInputStream sis = new ShapefileInputStream(is, null);
+		assertNotNull(sis);
+		IGISObject ob = null;
+		while((ob = sis.read()) != null) {
+			if (ob instanceof Feature) {
+				Feature f = (Feature) ob;
+				Geometry geo = f.getGeometry();
+				assertTrue(geo instanceof MultiPolygons);
+			}
+		}
+	}
+	
+	@Test public void testReadShpDirectly2() throws Exception {
+		FileInputStream is = new FileInputStream(new File(shpdir, "linez.shp"));
+		ShapefileInputStream sis = new ShapefileInputStream(is, null);
+		assertNotNull(sis);
+		IGISObject ob = null;
+		while((ob = sis.read()) != null) {
+			if (ob instanceof Feature) {
+				Feature f = (Feature) ob;
+				Geometry geo = f.getGeometry();
+				assertTrue(geo instanceof Line);
+			}
+		}
+	}	
 	
 	@Test public void testErrorcase1() throws Exception {
 		doTest("Point File Test_Point File Test", Point.class);

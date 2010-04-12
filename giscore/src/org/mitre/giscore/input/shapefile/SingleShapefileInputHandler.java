@@ -124,6 +124,13 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	private int fileOffset = 0;
 	
 	/**
+	 * The total length of the file, used to know if we are at the end of the
+	 * shp, in particular when we don't have an associated dbf but always useful
+	 * in case of some sort of error.
+	 */
+	private int fileLength = 0;
+	
+	/**
 	 * Holds the current record length, used to figure out if a geometry read
 	 * is overrunning the current written record for error detection purposes 
 	 */
@@ -146,10 +153,6 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 		shpFile = new File(inputDirectory, shapefilename + ".shp");
 		prjFile = new File(inputDirectory, shapefilename + ".prj");
 
-		if (!dbfFile.exists()) {
-			throw new IllegalArgumentException(
-					"DBF file missing for shapefile " + shapefilename);
-		}
 		if (!shpFile.exists()) {
 			throw new IllegalArgumentException(
 					"SHP file missing for shapefile " + shapefilename);
@@ -158,19 +161,21 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 			checkPrj(prjFile);
 		}
 
-		dbf = new DbfInputStream(dbfFile, null);
-		dbf.setRowClass(Feature.class);
-
-		// First thing in the dbf should be a schema
-		IGISObject ob = dbf.read();
-		if (ob instanceof Schema) {
-			schema = (Schema) ob;
-			addFirst(ob);
-		} else {
-			throw new IllegalStateException(
-					"Schema not the first thing returned from dbf");
+		if (dbfFile.exists()) {
+			dbf = new DbfInputStream(dbfFile, null);
+			dbf.setRowClass(Feature.class);
+	
+			// First thing in the dbf should be a schema
+			IGISObject ob = dbf.read();
+			if (ob instanceof Schema) {
+				schema = (Schema) ob;
+				addFirst(ob);
+			} else {
+				throw new IllegalStateException(
+						"Schema not the first thing returned from dbf");
+			}
 		}
-
+		
 		FileInputStream fis = new FileInputStream(shpFile);
 		channel = fis.getChannel();
 		readHeader();
@@ -244,7 +249,14 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	 * @throws IOException if an I/O error occurs 
 	 */
     private IGISObject readNext() throws IOException {
-    	Feature f = (Feature) dbf.read();
+    	if (fileOffset >= fileLength) return null;
+    	
+    	Feature f = null;
+    	if (dbf != null) {
+    		f = (Feature) dbf.read();
+    	} else {
+    		f = new Feature();
+    	}
     	boolean is3D = is3D(shpType);
     	boolean includeM = isM(shpType);
     	if (f != null) {
@@ -331,7 +343,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         // Skip over unused bytes in header
         for (int i = 0; i < 5; i++) readInt(buffer, ByteOrder.BIG_ENDIAN);
         // Read the file length (total number of 2-byte words, including header)
-        readInt(buffer, ByteOrder.BIG_ENDIAN);  // fileLen (not used)
+        fileLength = readInt(buffer, ByteOrder.BIG_ENDIAN);  // fileLen (not used)
         // Read and validate the shapefile version (should be 1000)
         int version = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
         if (version != VERSION)

@@ -18,6 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.shapefile;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
@@ -99,7 +100,7 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * @param type
 	 *            the type used
 	 * @param stream
-	 *            the stream containing a zip archive of the file gdb
+	 *            the stream containing a zip archive of the shapefile directory, or possibly a single shp file
 	 * @param accepter
 	 * 				a function that determines if a schema should be used, may be <code>null</code>
 	 * @throws IOException 
@@ -110,10 +111,22 @@ public class ShapefileInputStream extends GISInputStreamBase {
 					"stream should never be null");
 		}
 		
-		// The stream better point to zip data
 		ZipInputStream zipstream = null;
+		InputStream shapestream = null;
 		if (! (stream instanceof ZipInputStream)) {
-			zipstream = new ZipInputStream(stream);
+			BufferedInputStream bufferedstream = new BufferedInputStream(stream);
+			// Is this a .shp?
+			bufferedstream.mark(10);
+			byte header[] = new byte[4];
+			bufferedstream.read(header);
+			bufferedstream.reset();
+			if (header[0] == 0 && header[1] == 0 && header[2] == 047 && header[3] == 012) {
+				// SHP file
+				shapestream = bufferedstream;
+			} else if (header[0] == 'P' && header[1] == 'K' && header[2] == 003 && header[3] == 004) {
+				// ZIP file
+				zipstream = new ZipInputStream(bufferedstream);
+			}
 		} else {
 			zipstream = (ZipInputStream) stream;
 		}
@@ -121,16 +134,28 @@ public class ShapefileInputStream extends GISInputStreamBase {
 		File dir = new File(ms_tempDir, 
 				"temp" + ms_tempDirCounter.incrementAndGet());
 		dir.mkdirs();
+		// Remove existing content in the temp dir - important
+		for(File content : dir.listFiles()) {
+			content.delete();
+		}
 		usingTemp = true;
-		ZipEntry entry = zipstream.getNextEntry();
-		while(entry != null) {
-			String name = entry.getName().replace('\\', '/');
-			String parts[] = name.split("/");
-			File file = new File(dir, parts[parts.length - 1]);
-			FileOutputStream fos = new FileOutputStream(file);
-			IOUtils.copy(zipstream, fos);
+		if (zipstream != null) {
+			ZipEntry entry = zipstream.getNextEntry();
+			while(entry != null) {
+				String name = entry.getName().replace('\\', '/');
+				String parts[] = name.split("/");
+				File file = new File(dir, parts[parts.length - 1]);
+				FileOutputStream fos = new FileOutputStream(file);
+				IOUtils.copy(zipstream, fos);
+				IOUtils.closeQuietly(fos);
+				entry = zipstream.getNextEntry();
+			}
+		} else {
+			File shapefile = new File(dir, "input.shp");
+			FileOutputStream fos = new FileOutputStream(shapefile);
+			IOUtils.copy(shapestream, fos);
+			fos.flush();
 			IOUtils.closeQuietly(fos);
-			entry = zipstream.getNextEntry();
 		}
 		initialize(dir, accepter);
 	}
