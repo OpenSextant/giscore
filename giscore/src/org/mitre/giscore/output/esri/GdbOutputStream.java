@@ -35,7 +35,6 @@ import java.util.TimeZone;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.events.ContainerEnd;
@@ -185,7 +184,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/**
 	 * The output stream, used at the end to store away the generated file or
-	 * directory, initialized in the ctor and unchanging afterward.
+	 * directory, initialized in the ctor and unchanging afterward. 
 	 */
 	private OutputStream outputStream;
 
@@ -206,6 +205,13 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * The path to the file or directory being created by this stream.
 	 */
 	private File outputPath = null;
+	
+	/**
+	 * Delete the output path after close is called. <code>false</code> if
+	 * the path was passed in, <code>true</code> if the path was created and
+	 * is being managed by the stream.
+	 */
+	private boolean deleteOnClose = false;
 
 	/**
 	 * The container naming strategy. If not supplied in the ctor then
@@ -248,8 +254,23 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			throw new IllegalArgumentException("stream should never be null");
 		}
 		if (path == null || !path.getParentFile().exists()) {
-			throw new IllegalArgumentException(
-					"path should never be null and parent must exist");
+			path = null;
+			deleteOnClose = true;
+			File temp = new File(System.getProperty("java.io.tmpdir"));
+			long t = System.currentTimeMillis();
+			String name = "result" + t;
+			boolean makedir = true;
+			if (type.equals(DocumentType.FileGDB)) {
+				name += ".gdb";
+				makedir = false;
+			} 
+			while(path == null || path.exists()) {
+				path = new File(temp, name);
+				t++;
+			}
+			if (makedir) {
+				path.mkdirs();
+			}
 		}
 		if (containerNameStrategy == null) {
 			this.containerNameStrategy = new BasicContainerNameStrategy();
@@ -379,6 +400,25 @@ public class GdbOutputStream extends StreamVisitorBase implements
 				IOUtils.copy(is, outputStream);
 			} finally {
 				IOUtils.closeQuietly(is);
+			}
+		}
+		if (deleteOnClose) {
+			deleteDirContents(outputPath);
+			outputPath.delete();
+		}
+	}
+	
+	/**
+	 * delete dir content
+	 * @param directory
+	 */
+	private void deleteDirContents(File directory) {
+		if (directory != null) {
+			for(File file : directory.listFiles()) {
+				if (file.isDirectory()) {
+					deleteDirContents(file);
+				}
+				file.delete();
 			}
 		}
 	}

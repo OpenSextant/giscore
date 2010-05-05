@@ -19,6 +19,7 @@
 package org.mitre.giscore.geometry;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
@@ -35,7 +36,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
  * mediate package.
  */
 public abstract class Geometry implements VisitableGeometry, IGISObject,
-		IDataSerializable {
+		IDataSerializable, Serializable {
 	private static final long serialVersionUID = 1L;
 
 	// Instance variables are the responsibility of extending class to

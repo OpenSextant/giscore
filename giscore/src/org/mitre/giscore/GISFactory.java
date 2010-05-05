@@ -39,6 +39,8 @@ import org.mitre.giscore.output.esri.GdbOutputStream;
 import org.mitre.giscore.output.esri.XmlGdbOutputStream;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmzOutputStream;
+import org.mitre.giscore.output.remote.ClientOutputStream;
+import org.mitre.giscore.output.remote.RemoteOutputStream;
 import org.mitre.giscore.output.shapefile.PointShapeMapper;
 import org.mitre.giscore.output.shapefile.ShapefileOutputStream;
 
@@ -54,6 +56,8 @@ public class GISFactory {
 	 * in memory. Right now this is a per feature class buffer size.
 	 */
 	public final static AtomicInteger inMemoryBufferSize = new AtomicInteger(2000);
+	
+	private static IRemoteGISService remoteService = null;
 	
 	/**
 	 * Input stream factory
@@ -216,7 +220,7 @@ public class GISFactory {
 				case FileGDB:
 					checkArguments(new Class[] { File.class,
 							IContainerNameStrategy.class }, arguments,
-							new boolean[] { true, false });
+							new boolean[] { false, false });
 					strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
 							: null);
 					return new GdbOutputStream(type, outputStream,
@@ -248,6 +252,39 @@ public class GISFactory {
 			throw e2;
 		}
 	}
+	
+	/**
+	 * Output stream factory
+	 * 
+	 * @param type
+	 *            the type of the document to be written, never
+	 *            <code>null</code>.
+	 * @param outputStream
+	 *            the output stream used to save the generated GIS file or
+	 *            files. If target output is KMZ then <code>KmlWriter</code>
+	 *            should be used instead.
+	 * @param arguments
+	 *            the additional arguments needed by the constructor, the type
+	 *            or types depend on the constructor
+	 * @return a gis output stream, never <code>null</code>.
+	 * @throws IOException
+	 *             if an I/O error occurs
+	 * @see org.mitre.giscore.output.kml.KmlWriter
+	 */
+	public static IGISOutputStream getClientOutputStream(DocumentType type,
+			OutputStream outputStream, Object... arguments) 
+		throws IOException {
+		if (type == null) {
+			throw new IllegalArgumentException("type should never be null");
+		}
+		if (outputStream == null) {
+			throw new IllegalArgumentException(
+					"outputStream should never be null");
+		}
+		Long streamId = remoteService.makeGISOutputStream(type, arguments);
+		ClientOutputStream client = new ClientOutputStream(remoteService, streamId);
+		return new RemoteOutputStream(client, outputStream);
+	}	
 	
 	/**
 	 * Create an enterprise GDB output stream
@@ -359,7 +396,7 @@ public class GISFactory {
 	 *            <code>true</code> value is ignored, i.e. only leading
 	 *            arguments are considered required.
 	 */
-	private static void checkArguments(Class<? extends Object> types[],
+	protected static void checkArguments(Class<? extends Object> types[],
 			Object arguments[], boolean required[]) {
 		int nreq = 0;
 		for (boolean aRequired : required) {
@@ -393,5 +430,19 @@ public class GISFactory {
 				}
 			}
 		}
+	}
+
+	/**
+	 * @return the remoteService
+	 */
+	public IRemoteGISService getRemoteService() {
+		return remoteService;
+	}
+
+	/**
+	 * @param remoteService the remoteService to set
+	 */
+	public void setRemoteService(IRemoteGISService remoteService) {
+		GISFactory.remoteService = remoteService;
 	}
 }

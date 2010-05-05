@@ -3,6 +3,7 @@
 	<properties file="${user.home}/ivy.properties"/>
 	<property name="repository.dir" value="${user.home}/.ivy2"/>
 	<property name="repository.server" value="http://maven-proxy/artifactory" />
+	<property name="spring-version" value="2.5.6" />
 	<settings defaultResolver="chained"/>
 	<credentials host="maven-proxy" realm="Artifactory Realm" username="${maven-proxy-user}"
 		passwd="${maven-proxy-passwd}"/>

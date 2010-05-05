@@ -20,12 +20,16 @@
 	<property name="build.classes" value="${build}/classes" />
 	<property name="test.classes" value="${build}/test" />
 	<property name="testoutput" value="${basedir}/testOutput" />
+	<property name="testdeploy" value="C:/apache-tomcat-5.5.23-giscore-rmi/webapps/giscore" />
 
 	<path id="project.classpath">
 		<fileset dir="lib">
 			<include name="**/*.jar" />
 			<exclude name="**/*-sources.jar" />
 			<exclude name="**/*-javadoc.jar" />
+		</fileset>
+		<fileset dir="${basedir}/j2eelibs">
+			<include name="*.jar" />
 		</fileset>
 	</path>
 
@@ -79,7 +83,7 @@
 			</srcfileset>
 			<targetfilelist dir="${basedir}" files=".classpath" />
 		</dependset>
-
+		
 		<copy file=".classpath.src" tofile=".classpath" overwrite="false">
 			<filterchain>
 				<replacetokens>
@@ -90,6 +94,7 @@
 					<replacestring from="${basedir}" to="" />
 					<replacestring from="\" to="/" />
 					<replacestring from="/lib" to="lib" />
+					<replacestring from="/j2eelibs" to="j2eelibs" />
 				</tokenfilter>
 			</filterchain>
 		</copy>
@@ -119,8 +124,6 @@
 			</classpath>
 		</javac>
 	</target>
-
-	
 	
 	<target name="jar" depends="compile">
 		<ivy:cachepath pathid="kf.path" organisation="org.knopflerfish" 
@@ -161,6 +164,27 @@
 		</zip-->
 	</target>
 
+	<target name="war" depends="jar" description="make deployable war for remoting">
+		<war destfile="${rel}/giscore.war" webxml="${basedir}/web/WEB-INF/web.xml">
+			<webinf dir="${basedir}/web/WEB-INF">
+				<include name="application-config.xml" />
+			</webinf>
+			<lib dir="${lib}">
+				<include name="*.jar" />
+				<exclude name="junit*.jar" />
+				<exclude name="spring-test*.jar" />
+			</lib>
+			<lib dir="${rel}/jars">
+				<include name="giscore.jar" />
+			</lib>
+		</war>
+	</target>
+	
+	<target name="testdeploy" depends="war">
+		<delete dir="${testdeploy}" failonerror="false" />
+		<unwar src="${rel}/giscore.war" dest="${testdeploy}" />
+	</target>
+	
 	<target name="test" depends="compileTests" description="Run JUnit tests">
 		<mkdir dir="${testoutput}" />
 		<junit printsummary="yes" haltonfailure="no" maxmemory="512m" fork="yes">
@@ -179,7 +203,7 @@
 		</junit>
 	</target>
 
-	<target name="pom" depends="jar">
+	<target name="pom" depends="war">
 		<ivy:resolve revision="${ivy.new.revision}" file="${basedir}/ivy.xml" 
 			resolveid="ivyres" />
 		<ivy:deliver revision="${ivy.new.revision}" resolveid="ivyres" 
