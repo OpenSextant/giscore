@@ -249,7 +249,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	 * @throws IOException if an I/O error occurs 
 	 */
     private IGISObject readNext() throws IOException {
-    	if (fileOffset >= fileLength) return null;
+    	if (fileOffset >= (2 * fileLength)) return null;
     	
     	Feature f = null;
     	if (dbf != null) {
