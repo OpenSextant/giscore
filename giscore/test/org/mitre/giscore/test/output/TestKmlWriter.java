@@ -42,11 +42,6 @@ public class TestKmlWriter extends TestGISBase {
             System.out.println("Created temp output directory: " + tempKmlDir);
     }
 
-    @Test
-    public void test_read_write_Kml() {
-        checkDir(new File("data/kml"));
-    }
-
     private void checkDir(File dir) {
 		for (File file : dir.listFiles()) {
 			if (file.isDirectory()) checkDir(file);
@@ -126,6 +121,11 @@ public class TestKmlWriter extends TestGISBase {
 			KmlReader reader2 = new KmlReader(temp);
 			IGISObject o;
 			int features2 = 0;
+            /*
+            Note that at random times some KML files fail while reading with
+            ArrayIndexOutOfBoundsException or javax.xml.stream.XMLStreamException: ParseError
+            but running same test on same test files works some times and fails other times ???
+            */
 			while ((o = reader2.read()) != null) {
 				if (o instanceof Feature) features2++;
 			}
@@ -421,4 +421,12 @@ public class TestKmlWriter extends TestGISBase {
 			if (autoDelete && temp.exists()) temp.delete();
 		}
 	}
+
+    @Test
+    public void test_read_write_Kml() {
+        // try bulk tests on all KML/KMZ files found in test data directories
+        // read KML/KMZ and write out new file then re-read generated KML output
+        // and compare to original.
+        checkDir(new File("data/kml"));
+    }
 }
