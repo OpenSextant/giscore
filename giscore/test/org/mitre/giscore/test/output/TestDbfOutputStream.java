@@ -27,7 +27,6 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Random;
-import java.util.TimeZone;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
@@ -38,7 +37,6 @@ import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.input.dbf.DbfInputStream;
 import org.mitre.giscore.output.dbf.DbfOutputStream;
-
 
 /**
  * 
@@ -218,9 +216,9 @@ public class TestDbfOutputStream {
 				y2 = cal.get(Calendar.YEAR);
 				m2 = cal.get(Calendar.MONTH);
 				d2 = cal.get(Calendar.DAY_OF_MONTH);
-				assertEquals(y1, y2);
-				assertEquals(m1, m2);
-				assertEquals(d1, d2);
+				assertEquals("YEAR field", y1, y2);
+				assertEquals("MONTH field", m1, m2);
+				assertEquals("DAY_OF_MONTH field", d1, d2);
 			} else {
 				assertEquals(v1, v2);
 			}
