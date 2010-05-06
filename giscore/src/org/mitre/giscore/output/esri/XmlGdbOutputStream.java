@@ -19,27 +19,16 @@
 package org.mitre.giscore.output.esri;
 
 import java.io.EOFException;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collection;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
@@ -58,7 +47,6 @@ import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.FeatureSorter;
 import org.mitre.giscore.output.XmlOutputStreamBase;
 import org.mitre.giscore.utils.ObjectBuffer;
-import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 
 /**
@@ -199,7 +187,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * path and geometry type as a name. Not perfect, but at least it will
 	 * be somewhat meaningful.
 	 */
-	private Map<FeatureKey, String> datasets = new HashMap<FeatureKey, String>();
+	private final Map<FeatureKey, String> datasets = new HashMap<FeatureKey, String>();
 
 	/*
 	 * WGS wkid
@@ -221,10 +209,12 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * The following three fields are reused for each feature class that
 	 * contains geometry.
 	 */
-	private static SimpleField shape = null;
-	private static SimpleField shapeArea = null;
-	private static SimpleField shapeLength = null;
-	
+	private static SimpleField shape;
+	private static SimpleField shapeArea;
+	private static SimpleField shapeLength;
+
+    private static AtomicInteger ms_id = new AtomicInteger();
+
 	static {		
 		shape = new SimpleField("INT_SHAPE");
 		shape.setType(SimpleField.Type.GEOMETRY);
@@ -246,12 +236,20 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		shapeLength.setRequired(true);
 		shapeLength.setAliasName("INT_SHAPE_LENGTH");
 		shapeLength.setModelName("INT_SHAPE_LENGTH");
+
+        ISO_DATE_FMT.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
 	
-	private static AtomicInteger ms_id = new AtomicInteger();
-	
-	
-	
+    /**
+     * Ctor
+     *
+     * @param stream the underlying input stream.
+     * @throws XMLStreamException if there is an error with the underlying XML
+     */
+    public XmlGdbOutputStream(OutputStream stream) throws XMLStreamException {
+        super(stream);
+    }
+
 //	/* (non-Javadoc)
 //	 * @see org.mitre.giscore.output.XmlOutputStreamBase#createFactory()
 //	 */
@@ -291,16 +289,6 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 					"type should never be null or empty");
 		}
 		writer.writeAttribute(XSI_NS, TYPE_ATTR, "esri:" + type);
-	}
-	
-	/**
-	 * Ctor
-	 * 
-	 * @param stream
-	 * @throws XMLStreamException
-	 */
-	public XmlGdbOutputStream(OutputStream stream) throws XMLStreamException {
-		super(stream);
 	}
 
 	/*

@@ -86,7 +86,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     private final List<IGISObject> waitingElements = new ArrayList<IGISObject>();
 
     private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-    private SafeDateFormat dateFormatter;    
+    private transient SafeDateFormat dateFormatter;    
 
     /**
      * Ctor
@@ -283,9 +283,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	// Thread-safe date formatter helper method
     private SafeDateFormat getDateFormatter() {
         if (dateFormatter == null) {
-            SafeDateFormat thisDateFormatter = new SafeDateFormat(ISO_DATE_FMT);
-            thisDateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-            dateFormatter = thisDateFormatter;
+            dateFormatter = new SafeDateFormat(ISO_DATE_FMT);
         }
         return dateFormatter;
     }

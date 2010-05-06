@@ -25,6 +25,7 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 import java.util.Date;
 import java.util.Collection;
 import java.util.ArrayList;
@@ -64,13 +65,21 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 	private final DecimalFormat decimalFormat = new DecimalFormat(
 			"+###############0.################;-###############0.################");
 	private final SafeDateFormat isoDateFormat = new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+	{
+		// instance initialization
+		TimeZone tz = TimeZone.getTimeZone("UTC");
+		for (DateFormat sf : inputDateFormats) {
+			sf.setTimeZone(tz);
+		}
+	}
 	
 	static {
 		for(int i = 0; i < blankpad.length; i++) {
 			blankpad[i] = ' ';
 		}
 	}
-	
+
 	/**
 	 * Output stream, set in ctor.
 	 */

@@ -585,9 +585,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	// Thread-safe date formatter helper method
 	private SafeDateFormat getDateFormatter() {
 		if (dateFormatter == null) {
-			SafeDateFormat thisDateFormatter = new SafeDateFormat(ISO_DATE_FMT);
-			thisDateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
-			dateFormatter = thisDateFormatter;
+			dateFormatter = new SafeDateFormat(ISO_DATE_FMT);
 		}
 		return dateFormatter;
 	}

@@ -35,21 +35,45 @@ public class SafeDateFormat {
 	private ThreadLocal<SimpleDateFormat> ms_dateFormatter =
 		new ThreadLocal<SimpleDateFormat>();
 	
-	private String pattern = null;
-	
+	private String pattern;
+	private TimeZone timeZone;
+
+	/**
+	 * Constructs a <code>SafeDateFormat</code> using the given pattern
+	 * and UTC (aka GMT) as the default time zone.
+	 *  
+	 * @param pattern the pattern describing the date and time format
+	 * @throws IllegalArgumentException if pattern is empty string or null
+	 */
 	public SafeDateFormat(String pattern) {
+		this(pattern, null); // default time zone to UTC
+	}
+
+	/**
+	 * Constructs a <code>SafeDateFormat</code> using the given pattern and TimeZone.
+	 *  
+	 * @param pattern the pattern describing the date and time format
+	 * @param tz the given new time zone, if null UTC is used by default.
+	 * @throws IllegalArgumentException if pattern is empty string, blank or null
+	 */
+	public SafeDateFormat(String pattern, TimeZone tz) {
 		if (pattern == null || pattern.trim().length() == 0) {
 			throw new IllegalArgumentException(
 					"pattern should never be null or empty");
 		}
+		if (tz == null) tz = TimeZone.getTimeZone("UTC");
 		this.pattern = pattern;
+		this.timeZone = tz;
 	}
 	
 	private SimpleDateFormat getInstance() {
-		if (ms_dateFormatter.get() == null) {
-			ms_dateFormatter.set(new SimpleDateFormat(pattern));
+		SimpleDateFormat df = ms_dateFormatter.get();
+		if (df == null) {
+			df = new SimpleDateFormat(pattern);
+			df.setTimeZone(timeZone);
+			ms_dateFormatter.set(df);
 		}
-		return ms_dateFormatter.get();
+		return df;
 	}
 	
 	/**
@@ -65,16 +89,29 @@ public class SafeDateFormat {
 	 * Parse the value
 	 * @param value the value, never <code>null</code>
 	 * @return the parsed value, never <code>null</code>
-	 * @throws ParseException 
+	 * @exception ParseException if the beginning of the specified string
+     *            cannot be parsed. 
 	 */
 	public Date parse(String value) throws ParseException {
 		return getInstance().parse(value);
 	}
 
 	/**
-	 * @param timeZone
+	 * Sets the time zone for the calendar of this SafeDateFormat object.
+	 * 
+     * @param timeZone the given new time zone.
 	 */
 	public void setTimeZone(TimeZone timeZone) {
+		if (timeZone == null) timeZone = TimeZone.getTimeZone("UTC");
+		this.timeZone = timeZone;
 		getInstance().setTimeZone(timeZone);
+	}
+
+	/**
+     * Gets the time zone.
+     * @return the time zone associated with the calendar of this SafeDateFormat.
+     */
+	public TimeZone getTimeZone() {
+		return timeZone;
 	}
 }

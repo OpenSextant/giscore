@@ -28,6 +28,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Row;
@@ -37,6 +38,7 @@ import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.input.GISInputStreamBase;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.shapefile.BinaryInputStream;
+import org.mitre.giscore.utils.SafeDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,12 +63,12 @@ public class DbfInputStream extends GISInputStreamBase implements
 	/**
 	 * Stream reading in the dbf file
 	 */
-	private BinaryInputStream stream = null;
+	private BinaryInputStream stream;
 
 	/**
 	 * The schema, derived from the dbf file
 	 */
-	private Schema schema = null;
+	private Schema schema;
 
 	/**
 	 * The count of available records in the file
@@ -88,6 +90,8 @@ public class DbfInputStream extends GISInputStreamBase implements
 	 */
 	private byte[] dataBuffer;
 
+    private transient SimpleDateFormat dateFormatter;
+
 	/**
 	 * @param file
 	 * @param arguments
@@ -97,7 +101,7 @@ public class DbfInputStream extends GISInputStreamBase implements
 		if (file == null) {
 			throw new IllegalArgumentException("file should never be null");
 		}
-		if (file.exists() == false) {
+		if (!file.exists()) {
 			throw new IllegalArgumentException("file does not exist: " + file);
 		}
 		InputStream is = new FileInputStream(file);
@@ -328,8 +332,7 @@ public class DbfInputStream extends GISInputStreamBase implements
 				throw e2;
 			}
 		} else if (Type.DATE.equals(type)) {
-			final DateFormat df = new SimpleDateFormat(DATEFMT);
-			val = df.parse(valStr, new ParsePosition(0));
+			val = getDateFormatter().parse(valStr);
 		} else if (Type.BOOL.equals(type)) {
 			final char c = valStr.charAt(0);
 			// null value for boolean represented as '?'
@@ -349,4 +352,12 @@ public class DbfInputStream extends GISInputStreamBase implements
 	public void setRowClass(Class<? extends Row> rowClass) {
 		this.rowClass = rowClass;
 	}
+
+    private SimpleDateFormat getDateFormatter() {
+        if (dateFormatter == null) {
+            dateFormatter = new SimpleDateFormat(DATEFMT);
+            dateFormatter.setTimeZone(TimeZone.getTimeZone("UTC"));
+        }
+        return dateFormatter;
+    }
 }
