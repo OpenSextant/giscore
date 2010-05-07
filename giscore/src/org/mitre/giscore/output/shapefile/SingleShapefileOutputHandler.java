@@ -30,7 +30,6 @@ import java.nio.BufferOverflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
 import java.util.Collection;
 import java.util.Formatter;
 import java.util.List;
@@ -66,8 +65,6 @@ import org.mitre.itf.geodesy.Geodetic3DBounds;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.esri.arcgis.geoprocessing.tools.analysistools.MultipleRingBuffer;
 
 /**
  * Coordinate the output of a single buffer for writing the four shapefile
