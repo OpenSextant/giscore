@@ -293,8 +293,39 @@ public class TestShapefileOutput extends TestShapefileBase {
 
 		writeShapefile(schema, buffer, null, "ringz");
 	}
+
+    @Test public void testPolyOutput() throws Exception {
+        System.out.println("Test PolyOutput");
+        /**
+         * Note this test generates random points to create a polygon
+         * and occasionally the inner points overlap outer points
+         * creating an improper polygon. This triggers 'All inner rings in Polygon must be properly
+         * contained in outer ring' constraint exception so we run test multiple times
+         * in which a successful run means the test passed.
+         * TODO: re-write test so it doesn't fail under normal conditions.
+         */
+        Exception ex = null;
+        for (int i = 1; i <= 8; i++) {
+            try {
+                realPolyOutputTest("polys" + i);
+                return; // test successful
+            } catch (Exception e) {
+                System.out.println("*** warning: failed at polytest: " + i);
+                e.printStackTrace(System.out);
+                if (ex == null) ex = e; // save first failed test result
+            }
+        }
+        if (ex != null) {
+            // this means we failed all attempts so we really failed
+            throw ex;
+        }
+    }
 	
-	@Test public void testPolyOutput() throws Exception {
+	private void realPolyOutputTest(String filebase) throws Exception {
+        /**
+         * Note this test generates random points and occasionally the inner points overlap outer points
+         * creating an improper polygon.
+         */
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
 		id.setLength(10);
@@ -330,7 +361,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 			buffer.write(f);
 		}
 
-		writeShapefile(schema, buffer, null, "polys");
+		writeShapefile(schema, buffer, null, filebase);
 	}
 	
 	@Test public void testPolyZOutput() throws Exception {
