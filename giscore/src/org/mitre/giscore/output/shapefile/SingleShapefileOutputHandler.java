@@ -310,12 +310,12 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			return;
 
 		OutputStream stream = new FileOutputStream(shmFile);
+        XMLStreamWriter writer = null;
 		try {
 			XMLOutputFactory factory = XMLOutputFactory.newInstance();
-			XMLStreamWriter writer = factory.createXMLStreamWriter(stream);
+			writer = factory.createXMLStreamWriter(stream);
 			writer.writeStartDocument();
-			writer
-					.writeStartElement("org.mitre.forensics.util.BaseLayerMetaData");
+			writer.writeStartElement("org.mitre.forensics.util.BaseLayerMetaData");
 			writer.writeStartElement("renderer__info");
 
 			writer.writeStartElement("symbol__class");
@@ -353,10 +353,15 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 			writer.writeEndElement();
 			writer.writeEndDocument();
-			writer.close();
-		} finally {
-			IOUtils.closeQuietly(stream);
-		}
+        } finally {
+            if (writer != null)
+                try {
+                    writer.close();
+                } catch (XMLStreamException e) {
+                    logger.warn("Problem closing XMLStreamWriter", e);
+                }
+            IOUtils.closeQuietly(stream);
+        }
 	}
 
 	/**
