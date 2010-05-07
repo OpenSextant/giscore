@@ -220,11 +220,12 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	 * @throws RuntimeException if an I/O error occurs closing shp stream  
 	 */
 	public void close() {
+        RuntimeException channelCloseException = null;
 		if (channel != null) {
 			try {
 				channel.close();
 			} catch (IOException e) {
-				throw new RuntimeException("Problem closing shp stream", e);
+                channelCloseException = new RuntimeException("Problem closing shp stream", e);
 			}
 			channel = null;
 		}
@@ -232,6 +233,8 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 			dbf.close();
 			dbf = null;
 		}
+        // if failed closing channel then throw exception now
+        if (channelCloseException != null) throw channelCloseException;
 	}
 
 	public IGISObject read() throws IOException {
@@ -549,7 +552,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         			break;
         		}
         	}
-        	if (found == false) {
+        	if (!found) {
         		// If we don't find something then we'll treat the ring as a 
         		// poly itself
         		List<Point> rpts = new ArrayList<Point>();
@@ -566,7 +569,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	        for(PolyHolder holder : polyholders) {
 	        	polyList.add(holder.toPolygon());
 	        }
-	        return new MultiPolygons((ArrayList) polyList);
+	        return new MultiPolygons(polyList);
         } else if ((polyholders.size() + polyList.size()) == 1) {
         	Polygon poly;
         	if (polyholders.size() > 0) {
