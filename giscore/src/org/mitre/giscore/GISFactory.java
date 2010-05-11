@@ -433,6 +433,14 @@ public class GISFactory {
 	}
 
 	/**
+	 * @return <code>true</code> if the factory is configured to use a remote
+	 * service.
+	 */
+	public static boolean isRemotingConfigured() {
+		return remoteService != null;
+	}
+	
+	/**
 	 * @return the remoteService
 	 */
 	public IRemoteGISService getRemoteService() {
