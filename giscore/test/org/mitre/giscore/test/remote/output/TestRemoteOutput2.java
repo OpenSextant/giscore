@@ -34,9 +34,14 @@ import org.mitre.giscore.output.IGISOutputStream;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+/**
+ * Config file for this case goes to an actual remote server
+ * @author DRAND
+ *
+ */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "/org/mitre/giscore/test/remote/output/remote-output.xml" })
-public class TestRemoteOutput {
+@ContextConfiguration(locations = { "/org/mitre/giscore/test/remote/output/remote-output2.xml" })
+public class TestRemoteOutput2 {
 	@Test public void testRemote() throws Exception {
 		File test = File.createTempFile("test", ".zip");
 		FileOutputStream fos = new FileOutputStream(test);
@@ -55,4 +60,25 @@ public class TestRemoteOutput {
 		
 		System.out.println("File is " + test.getAbsolutePath());
 	}
+	
+	@Test public void testRemote2() throws Exception {
+		File test = File.createTempFile("test", ".zip");
+		FileOutputStream fos = new FileOutputStream(test);
+		
+		IGISOutputStream stream = GISFactory.getClientOutputStream(DocumentType.FileGDB, fos);
+		ContainerStart c = new ContainerStart("A_POINTS");
+		stream.write(c);
+		for(int i = 0; i < 100000; i++) {
+			Feature f = new Feature();
+			Point p = new Point(RandomUtils.nextDouble() * 20.0, RandomUtils.nextDouble() * 30.0);
+			f.setGeometry(p);
+			stream.write(f);
+		}
+		stream.write(new ContainerEnd());
+		stream.close();
+		
+		System.out.println("File is " + test.getAbsolutePath());
+	}
+	
+	
 }

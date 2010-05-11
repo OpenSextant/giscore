@@ -113,6 +113,14 @@ public class Point extends GeometryBase {
 		// for point feature just return the point
 		return pt;
 	}
+	
+	@Override
+	public Geodetic2DBounds getBoundingBox() {
+		if (bbox == null) {
+			bbox = new Geodetic2DBounds(pt);
+		}
+		return super.getBoundingBox();
+	}
 
 	/**
 	 * This method simply returns the Geodetic point object (modeled like a cast

@@ -31,7 +31,7 @@ import org.mitre.giscore.IStreamVisitor;
  *  
  * @author DRAND
  */
-public class ContainerEnd  implements IGISObject {
+public class ContainerEnd implements IGISObject {
 	
     public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);

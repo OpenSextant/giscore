@@ -18,6 +18,8 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.io.Serializable;
+
 import org.mitre.giscore.geometry.VisitableGeometry;
 
 /**
@@ -26,7 +28,7 @@ import org.mitre.giscore.geometry.VisitableGeometry;
  * 
  * @author DRAND
  */
-public interface IGISObject extends VisitableGeometry {
+public interface IGISObject extends VisitableGeometry, Serializable {
 	/**
 	 * The id of the style referenced by the given feature or container
 	 */
