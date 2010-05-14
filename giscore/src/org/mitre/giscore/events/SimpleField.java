@@ -19,6 +19,7 @@
 package org.mitre.giscore.events;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Date;
 
 import org.mitre.giscore.utils.IDataSerializable;
@@ -33,7 +34,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * 
  * @author DRAND
  */
-public class SimpleField implements IDataSerializable {
+public class SimpleField implements IDataSerializable, Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public static enum Type {

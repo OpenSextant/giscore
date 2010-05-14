@@ -29,6 +29,8 @@ import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.springframework.test.context.ContextConfiguration;
@@ -40,12 +42,15 @@ public class TestRemoteOutput {
 	@Test public void testRemote() throws Exception {
 		File test = File.createTempFile("test", ".zip");
 		FileOutputStream fos = new FileOutputStream(test);
-		
+		SimpleField x = new SimpleField("x");
+		SimpleField y = new SimpleField("y", Type.DOUBLE);
 		IGISOutputStream stream = GISFactory.getClientOutputStream(DocumentType.FileGDB, fos);
 		ContainerStart c = new ContainerStart("A_POINTS");
 		stream.write(c);
 		for(int i = 0; i < 100; i++) {
 			Feature f = new Feature();
+			f.putData(x, "data" + i);
+			f.putData(y, RandomUtils.nextDouble());
 			Point p = new Point(RandomUtils.nextDouble() * 20.0, RandomUtils.nextDouble() * 30.0);
 			f.setGeometry(p);
 			stream.write(f);

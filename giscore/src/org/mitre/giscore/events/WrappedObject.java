@@ -7,6 +7,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.giscore.utils.IDataSerializable;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * In reading a GISStream sometimes elements are sometimes out of order and a
@@ -18,7 +19,7 @@ import java.io.IOException;
  * @author Jason Mathews, MITRE Corp.
  * Date: Nov 4, 2009 8:54:09 AM
  */
-public class WrappedObject extends Comment implements IDataSerializable {
+public class WrappedObject extends Comment implements IDataSerializable, Serializable {
 
 	private static final long serialVersionUID = 1L;
 
