@@ -48,7 +48,7 @@ public class RemoteOutputStream implements IGISOutputStream {
 	private List<IGISObject> buffer = new ArrayList<IGISObject>();	
 	private IRemoteableGISOutputStream realStream;
 	private OutputStream outputStream;
-	private Thread retriever;
+	private Thread retriever = null;
 	
 	public RemoteOutputStream(IRemoteableGISOutputStream realStream, OutputStream outputStream) {
 		if (realStream == null) {
@@ -59,14 +59,15 @@ public class RemoteOutputStream implements IGISOutputStream {
 		}
 		this.realStream = realStream;
 		this.outputStream = outputStream;
-		
-		// Start the async retriever, which will run until we're done
-		RemoteAsyncRetriever ar = new RemoteAsyncRetriever(realStream, outputStream);
-		retriever = new Thread(ar, "asyncRetriever-" + threadCount.incrementAndGet());
-		retriever.start();
 	}
 
 	public void write(IGISObject object) {
+		if (retriever == null) {
+			// Start the async retriever, which will run until we're done
+			RemoteAsyncRetriever ar = new RemoteAsyncRetriever(realStream, outputStream);
+			retriever = new Thread(ar, "asyncRetriever-" + threadCount.incrementAndGet());
+			retriever.start();
+		}
 		try {
 			buffer.add(object);
 			if (buffer.size() > BUFFER_COUNT) {
@@ -85,12 +86,14 @@ public class RemoteOutputStream implements IGISOutputStream {
 			buffer.clear();
 		}
 		realStream.close(); 
-		
-		// Wait for the thread to complete
-		try {
-			retriever.join();
-		} catch (InterruptedException e) {
-			logger.warn("Retriever was interrupted");
+		// Wait for the thread to complete as long as the write method
+		// has been called at least once
+		if (retriever != null) {
+			try {
+				retriever.join();
+			} catch (InterruptedException e) {
+				logger.warn("Retriever was interrupted");
+			}
 		}
 	}
 }
