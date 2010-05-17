@@ -147,13 +147,20 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
                 break;
             }
         }
-        Geodetic2DPoint gp1 = pts.get(0).asGeodetic2DPoint();
+        pointList = pts;
+    }
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
+	 */
+	protected void computeBoundingBox() {
+        Geodetic2DPoint gp1 = pointList.get(0).asGeodetic2DPoint();
         bbox = is3D ? new Geodetic3DBounds((Geodetic3DPoint) gp1) : new Geodetic2DBounds(gp1);
 
         Geodetic2DPoint gp2;
         double lonRad1, lonRad2;
         idlWrap = false;
-        for (Point p : pts) {
+        for (Point p : pointList) {
             gp2 = p.asGeodetic2DPoint();
             bbox.include(gp2);
             // Test for Longitude wrap at International Date Line (IDL)
@@ -171,9 +178,8 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         }
 		// make bbox unmodifiable
 		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds)bbox)
-				: new UnmodifiableGeodetic2DBounds(bbox); 
-        pointList = pts;
-    }
+				: new UnmodifiableGeodetic2DBounds(bbox);
+	}
 
 	@Override
 	public int getNumParts() {

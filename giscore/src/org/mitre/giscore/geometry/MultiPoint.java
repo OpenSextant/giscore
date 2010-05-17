@@ -100,16 +100,24 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
                 break;
             }
         }
-        Geodetic2DPoint gp = pts.get(0).asGeodetic2DPoint();
-        bbox = is3D ? new Geodetic3DBounds((Geodetic3DPoint)gp) : new Geodetic2DBounds(gp);
-        for (Point p : pts) bbox.include(p.asGeodetic2DPoint());
-		// make bbox unmodifiable
-		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds)bbox)
-				: new UnmodifiableGeodetic2DBounds(bbox);
         pointList = pts;
 	}
 
-    /**
+    /* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
+	 */
+	protected void computeBoundingBox() {
+		Geodetic2DPoint gp = pointList.get(0).asGeodetic2DPoint();
+		bbox = is3D ? new Geodetic3DBounds((Geodetic3DPoint) gp)
+				: new Geodetic2DBounds(gp);
+		for (Point p : pointList)
+			bbox.include(p.asGeodetic2DPoint());
+		// make bbox unmodifiable
+		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds) bbox)
+				: new UnmodifiableGeodetic2DBounds(bbox);
+	}
+
+	/**
      * Tests whether this MultiPoint geometry is a container for otherGeom's type.
      *
      * @param otherGeom the geometry from which to test if this is a container for

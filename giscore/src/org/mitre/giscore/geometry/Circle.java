@@ -53,6 +53,13 @@ public class Circle extends Point {
     public double getRadius() {
         return radius;
     }
+    
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
+	 */
+	protected void computeBoundingBox() {
+		bbox = new Geodetic2DBounds(getCenter(), radius);
+	}
 
     /**
      * Set radius of circle in meters from center point.

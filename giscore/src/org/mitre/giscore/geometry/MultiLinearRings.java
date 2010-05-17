@@ -136,16 +136,23 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
         if (mixedDims) {
             log.info("LinearRings have mixed dimensionality: downgrading to 2d");
             is3D = false;
-        }            
-        bbox = null;
+        }           
+        ringList = rings;
+    }
+
+    /* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
+	 */
+	protected void computeBoundingBox() {
+		bbox = null;
         if (is3D) {
-            for (LinearRing rg : rings) {
+            for (LinearRing rg : ringList) {
                 Geodetic3DBounds bbox3 = (Geodetic3DBounds) rg.getBoundingBox();
                 if (bbox == null) bbox = new Geodetic3DBounds(bbox3);
                 else bbox.include(bbox3);
             }
         } else {
-            for (LinearRing rg : rings) {
+            for (LinearRing rg : ringList) {
                 Geodetic2DBounds bbox2 = rg.getBoundingBox();
                 if (bbox == null) bbox = new Geodetic2DBounds(bbox2);
                 else bbox.include(bbox2);
@@ -154,10 +161,9 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 		// make bbox unmodifiable
 		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds)bbox)
 				: new UnmodifiableGeodetic2DBounds(bbox);
-        ringList = rings;
-    }
+	}
 
-    /**
+	/**
      * Tests whether this MultiLinearRings geometry is a container for otherGeom's type.
      *
      * @param otherGeom the geometry from which to test if this is a container for

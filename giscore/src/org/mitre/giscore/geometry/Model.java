@@ -38,9 +38,16 @@ public class Model extends Geometry {
 
     public Geodetic2DPoint getLocation() {
         return location;
-    }
+    }    
 
-    public void setLocation(Geodetic2DPoint gp) {
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
+	 */
+	protected void computeBoundingBox() {
+		bbox = new Geodetic2DBounds(location);
+	}
+
+	public void setLocation(Geodetic2DPoint gp) {
         this.location = gp;
         if (gp != null) {
             if (gp instanceof Geodetic3DPoint) {

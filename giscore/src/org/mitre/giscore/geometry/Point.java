@@ -93,10 +93,8 @@ public class Point extends GeometryBase {
 			throw new IllegalArgumentException("Point must not be null");
 		if (gp instanceof Geodetic3DPoint) {
 			is3D = true;
-			bbox = new UnmodifiableGeodetic3DBounds((Geodetic3DPoint) gp);
 		} else if (gp instanceof Geodetic2DPoint) {
 			is3D = false;
-			bbox = new UnmodifiableGeodetic2DBounds((Geodetic2DPoint) gp);
 		} else
 			throw new IllegalArgumentException("Point must be in Geodetic form");
 		pt = (Geodetic2DPoint) gp;
@@ -114,12 +112,11 @@ public class Point extends GeometryBase {
 		return pt;
 	}
 	
-	@Override
-	public Geodetic2DBounds getBoundingBox() {
-		if (bbox == null) {
-			bbox = new Geodetic2DBounds(pt);
-		}
-		return super.getBoundingBox();
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
+	 */
+	protected void computeBoundingBox() {
+		bbox = new Geodetic2DBounds(pt);
 	}
 
 	/**

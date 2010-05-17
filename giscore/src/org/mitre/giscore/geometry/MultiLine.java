@@ -104,15 +104,23 @@ public class MultiLine extends Geometry implements Iterable<Line> {
         }
         if (mixedDims)
             log.info("MultiLine lines have mixed dimensionality: downgrading to 2d");
+        lineList = lines;
+	}
+	
+    /* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
+	 */
+	@Override
+	protected void computeBoundingBox() {
         bbox = null;
         if (is3D) {
-            for (Line ln : lines) {
+            for (Line ln : lineList) {
                 Geodetic3DBounds bbox3 = (Geodetic3DBounds) ln.getBoundingBox();
                 if (bbox == null) bbox = new Geodetic3DBounds(bbox3);
                 else bbox.include(bbox3);
             }
         } else {
-            for (Line ln : lines) {
+            for (Line ln : lineList) {
                 Geodetic2DBounds bbox2 = ln.getBoundingBox();
                 if (bbox == null) bbox = new Geodetic2DBounds(bbox2);
                 else bbox.include(bbox2);
@@ -121,10 +129,9 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 		// make bbox unmodifiable
 		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds)bbox)
 				: new UnmodifiableGeodetic2DBounds(bbox);
-        lineList = lines;
 	}
 
-    /**
+	/**
      * Tests whether this MultiLine geometry is a container for otherGeom's type.
      *
      * @param otherGeom the geometry from which to test if this is a container for

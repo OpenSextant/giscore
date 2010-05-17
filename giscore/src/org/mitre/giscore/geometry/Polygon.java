@@ -195,17 +195,24 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
             log.info("Rings have mixed dimensionality: downgrading Polygon to 2d");
             is3D = false;
         }
-        if (is3D) {
+        ringList = rings;
+    }
+
+    /* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
+	 */
+	protected void computeBoundingBox() {
+		if (is3D) {
             Geodetic3DBounds bbox3 = (Geodetic3DBounds) outerRing.getBoundingBox();
             bbox = new Geodetic3DBounds(bbox3);
-            for (LinearRing rg : rings) {
+            for (LinearRing rg : ringList) {
                 bbox3 = (Geodetic3DBounds) rg.getBoundingBox();
                 bbox.include(bbox3);
             }
         } else {
             Geodetic2DBounds bbox2 = outerRing.getBoundingBox();
             bbox = new Geodetic2DBounds(bbox2);
-            for (LinearRing rg : rings) {
+            for (LinearRing rg : ringList) {
                 bbox2 = rg.getBoundingBox();
                 bbox.include(bbox2);
             }
@@ -213,10 +220,9 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 		// make bbox unmodifiable
 		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds)bbox)
 				: new UnmodifiableGeodetic2DBounds(bbox);
-        ringList = rings;
-    }
+	}
 
-    /**
+	/**
      * Get outer ring of the polygon
      * 
      * @return outer ring.  This value cannot be null. 

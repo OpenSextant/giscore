@@ -16,16 +16,19 @@
 package org.mitre.giscore.geometry;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import org.mitre.giscore.IStreamVisitor;
-import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
-import org.mitre.itf.geodesy.*;
+import org.mitre.itf.geodesy.Geodetic2DBounds;
+import org.mitre.itf.geodesy.Geodetic2DPoint;
+import org.mitre.itf.geodesy.Geodetic3DBounds;
+import org.mitre.itf.geodesy.Geodetic3DPoint;
+import org.mitre.itf.geodesy.UnmodifiableGeodetic2DBounds;
+import org.mitre.itf.geodesy.UnmodifiableGeodetic3DBounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -104,13 +107,21 @@ public class Line extends GeometryBase implements Iterable<Point> {
                 break;
             }
         }
-        Geodetic2DPoint gp1 = pts.get(0).asGeodetic2DPoint();
+        pointList = pts;
+	}   
+
+    /* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
+	 */
+	@Override
+	protected void computeBoundingBox() {
+		Geodetic2DPoint gp1 = pointList.get(0).asGeodetic2DPoint();
         bbox = is3D ? new Geodetic3DBounds((Geodetic3DPoint) gp1) : new Geodetic2DBounds(gp1);
 
         Geodetic2DPoint gp2;
         double lonRad1, lonRad2;
         idlWrap = false;
-        for (Point p : pts) {
+        for (Point p : pointList) {
             gp2 = p.asGeodetic2DPoint();
             bbox.include(gp2);
             // Test for Longitude wrap at International Date Line (IDL)
@@ -129,10 +140,9 @@ public class Line extends GeometryBase implements Iterable<Point> {
 		// make bbox unmodifiable
 		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds)bbox)
 				: new UnmodifiableGeodetic2DBounds(bbox);
-        pointList = pts;
-	}   
+	}
 
-    /**
+	/**
      * This predicate method is used to tell if this Ring has positive Longitude points
      * that are part of segments which are clipped at the International Date Line (IDL)
      * (+/- 180 Longitude). If so, -180 values may need to be written as +180 by

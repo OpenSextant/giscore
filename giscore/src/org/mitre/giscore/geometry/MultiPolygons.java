@@ -108,7 +108,14 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
             log.info("Polygons have mixed dimensionality: downgrading MultiPolygon to 2d");
             is3D = false;
         }
-        bbox = null;
+        this.polygonList = polygonList; 
+	}
+
+    /* (non-Javadoc)
+	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
+	 */
+	protected void computeBoundingBox() {
+		bbox = null;
         if (is3D) {
             for (Polygon nr : polygonList) {
                 Geodetic3DBounds bbox3 = (Geodetic3DBounds) nr.getBoundingBox();
@@ -125,10 +132,9 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 		// make bbox unmodifiable
 		bbox = is3D ? new UnmodifiableGeodetic3DBounds((Geodetic3DBounds)bbox)
 				: new UnmodifiableGeodetic2DBounds(bbox);
-        this.polygonList = polygonList;
 	}
 
-    /**
+	/**
      * Tests whether this MultiPolygons geometry is a container for otherGeom's type.
      *
      * @param otherGeom the geometry from which to test if this is a container for

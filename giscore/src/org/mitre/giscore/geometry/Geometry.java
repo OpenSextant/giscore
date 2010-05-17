@@ -66,8 +66,20 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * @return Geodetic2DBounds object enclosing this Geometry object.
 	 */
 	public Geodetic2DBounds getBoundingBox() {
+		if (bbox == null) {
+			computeBoundingBox();
+		}
 		return bbox;
 	}
+
+	/**
+	 * Compute a bounding box from the data for this geometry object. This
+	 * is called if {@link #getBoundingBox()} is called and the bounding
+	 * box is not set. This may be <code>true</code> if the object is initialized
+	 * or if the object is copied over a network connection or has been otherwise
+	 * serialized.
+	 */
+	protected abstract void computeBoundingBox();
 
 	/**
 	 * This method returns the number of separate parts of the Geometry object.

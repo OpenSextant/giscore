@@ -75,10 +75,9 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.mitre.giscore.geometry.Geometry#getBoundingBox()
+	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
 	 */
-	@Override
-	public Geodetic2DBounds getBoundingBox() {	
+	protected void computeBoundingBox() {
 		Geodetic2DBounds rval = null;
 		for(Geometry geo : geometries) {
 			Geodetic2DBounds bounds = geo.getBoundingBox();
@@ -88,7 +87,10 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 				rval.include(bounds);
 			}
 		}
-		return rval;
+		if (rval != null) 
+			bbox = rval;
+		else 
+			bbox = new Geodetic2DBounds();
 	}
 
 	/* (non-Javadoc)
