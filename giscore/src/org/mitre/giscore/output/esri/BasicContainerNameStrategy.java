@@ -1,5 +1,6 @@
 package org.mitre.giscore.output.esri;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
@@ -11,9 +12,10 @@ import org.mitre.giscore.output.IContainerNameStrategy;
  * derive a name.
  */
 public class BasicContainerNameStrategy implements
-        IContainerNameStrategy {
+        IContainerNameStrategy, Serializable {
+	private static final long serialVersionUID = 1L;
 
-    /*
+	/*
        * (non-Javadoc)
        *
        * @see
