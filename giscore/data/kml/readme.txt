@@ -6,8 +6,11 @@ Other examples have been added to this collection to cover nearly all possible
 features of KML 2.2 as a validation test suite including those from older versions
 of KML (KML 2.0, KML 2.1) with deleted and deprecated features.
 
-e.g. http://kml-samples.googlecode.com/svn/trunk/kml/kmz/simple/big.kmz
+e.g. 
+     http://kml-samples.googlecode.com/svn/trunk/kml/Placemark/placemark.kml
+     http://kml-samples.googlecode.com/svn/trunk/kml/kmz/simple/big.kmz
      http://kml-samples.googlecode.com/svn/trunk/kml/kmz/simple/mimetype.kmz
+     http://kml-samples.googlecode.com/svn/trunk/kml/NetworkLink/visibility.kml
 
 See also http://kml-samples.googlecode.com/svn/trunk/morekml/
 
@@ -50,7 +53,13 @@ DEBUG [main] (KmlInputStream.java:427) - skip atom:link
 	Placemark            7
 	Point                7
 	Style                1
-	# features=11
+	# features=10
+
+data\kml\Baghdad.kml
+
+	LinearRing           1
+	Placemark            1
+	# features=1
 
 data\kml\balloon\balloonstyle-color-inline.kml
 
@@ -59,7 +68,7 @@ data\kml\balloon\balloonstyle-color-inline.kml
 	Placemark            1
 	Point                1
 	Style                1
-	# features=3
+	# features=2
 
 data\kml\balloon\balloonstyle-color-shared.kml
 
@@ -67,25 +76,25 @@ data\kml\balloon\balloonstyle-color-shared.kml
 	Placemark            1
 	Point                1
 	Style                1
-	# features=5
+	# features=4
 
 data\kml\balloon\default.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\balloon\iframe.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\balloon\noballoon.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\BalloonStyle\displayMode.kml
 
@@ -95,7 +104,7 @@ data\kml\BalloonStyle\displayMode.kml
 	Placemark            6
 	Point                6
 	Style                3
-	# features=16
+	# features=15
 
 data\kml\BalloonStyle\simpleBalloonStyles.kml
 
@@ -103,10 +112,17 @@ data\kml\BalloonStyle\simpleBalloonStyles.kml
 	Placemark            5
 	Point                5
 	Style                5
-	# features=13
+	# features=12
+
+data\kml\bbox.kml
+
+	LinearRing           12
+	Placemark            12
+	# features=14
 
 data\kml\Camera\golden-gate.kml
 
+	Camera altitudeMode cannot be clampToGround
 	Camera               10
 	Placemark            10
 	# features=13
@@ -115,12 +131,6 @@ data\kml\ExtendedData\data-ext-ns.kml
 DEBUG [main] (KmlInputStream.java:504) - skip {http://campsites.com}number
 DEBUG [main] (KmlInputStream.java:504) - skip {http://campsites.com}parkingSpaces
 DEBUG [main] (KmlInputStream.java:504) - skip {http://campsites.com}tentSites
-
-	Placemark            1
-	Point                1
-	# features=4
-
-data\kml\ExtendedData\data-ext.kml
 
 	Placemark            1
 	Point                1
@@ -147,7 +157,7 @@ data\kml\ExtendedData\mti-data.kmz
 	Point                31
 	Style                3
 	TimeStamp            33
-	# features=45
+	# features=44
 
 data\kml\ExtendedData\mti-schema-data.kmz
 
@@ -163,41 +173,42 @@ data\kml\ExtendedData\mti-schema-data.kmz
 	Schema               1
 	Style                3
 	TimeStamp            33
-	# features=46
+	# features=45
 
 data\kml\feature-anchor\eat-at-google.kml
 
 	LookAt               2
 	Placemark            2
 	Point                2
-	# features=5
+	# features=4
 
 data\kml\feature-anchor\feature-anchor-amp.kml
 
 	Placemark            7
 	Point                7
-	# features=10
+	# features=9
 
 data\kml\feature-anchor\feature-anchor-pipe.kml
 
 	Placemark            7
 	Point                7
-	# features=10
+	# features=9
 
 data\kml\feature-anchor\feature-anchor-rel-070531.kml
 
 	Placemark            6
 	Point                6
-	# features=9
+	# features=8
 
 data\kml\feature-anchor\feature-anchor-semi.kmz
 
 	Placemark            7
 	Point                7
-	# features=10
+	# features=9
 
 data\kml\FeatureType\life-of-a-feature-view-data.kml
 
+DEBUG [main] (KmlReader.java:166) - NetworkLink href is empty or missing
 	NetworkLink missing Link
 	Overlay missing icon
 	BalloonStyle         1
@@ -217,14 +228,14 @@ data\kml\GroundOverlay\empty.kml
 
 	GroundOverlay        1
 	LookAt               1
-	# features=2
+	# features=1
 
 data\kml\GroundOverlay\etna.kml
 
 	GroundOverlay        1
 	LatLonBox            1
 	LookAt               1
-	# features=2
+	# features=1
 
 data\kml\GroundOverlay\etna.kmz
 
@@ -238,51 +249,51 @@ data\kml\ItemIcon\kitchensink.kmz
 	Placemark            12
 	Point                12
 	Style                14
-	# features=31
+	# features=30
 
 data\kml\kmz\balloon\balloon-image-abs.kml
 
 	Placemark            1
 	Point                1
-	# features=4
+	# features=3
 
 data\kml\kmz\balloon\balloon-image-abs.kmz
 
 	Placemark            1
 	Point                1
-	# features=4
+	# features=3
 
 data\kml\kmz\balloon\balloon-image-rel.kml
 
 	Placemark            1
 	Point                1
-	# features=4
+	# features=3
 
 data\kml\kmz\balloon\balloon-image-rel.kmz
 
 	Placemark            1
 	Point                1
-	# features=4
+	# features=3
 
 data\kml\kmz\dir\balloon-image-abs.kml
 
 	Placemark            1
-	# features=4
+	# features=3
 
 data\kml\kmz\dir\balloon-image-abs.kmz
 
 	Placemark            1
-	# features=4
+	# features=3
 
 data\kml\kmz\dir\balloon-image-rel.kml
 
 	Placemark            1
-	# features=4
+	# features=3
 
 data\kml\kmz\dir\balloon-image-rel.kmz
 
 	Placemark            1
-	# features=4
+	# features=3
 
 data\kml\kmz\dir\content.kmz
 
@@ -290,7 +301,7 @@ data\kml\kmz\dir\content.kmz
 	NetworkLink          1
 	Placemark            2
 	Point                1
-	# features=7
+	# features=5
 
 data\kml\kmz\dir\UrlLink.kmz
 
@@ -298,7 +309,7 @@ data\kml\kmz\dir\UrlLink.kmz
 	NetworkLink          1
 	Placemark            1
 	Point                1
-	# features=4
+	# features=2
 
 data\kml\kmz\iconStyle\styled_placemark.kmz
 
@@ -309,33 +320,37 @@ data\kml\kmz\iconStyle\styled_placemark.kmz
 	Placemark            1
 	Point                1
 	Style                1
-	# features=3
+	# features=2
 
 data\kml\kmz\overlay\ground-overlay-abs.kml
 
 	GroundOverlay        1
-	# features=2
+	LatLonBox            1
+	# features=1
 
 data\kml\kmz\overlay\ground-overlay-abs.kmz
 
 	GroundOverlay        1
-	# features=2
+	LatLonBox            1
+	# features=1
 
 data\kml\kmz\overlay\ground-overlay.kml
 
 	GroundOverlay        1
-	# features=2
+	LatLonBox            1
+	# features=1
 
 data\kml\kmz\overlay\ground-overlay.kmz
 
 	GroundOverlay        1
-	# features=2
+	LatLonBox            1
+	# features=1
 
 data\kml\kmz\simple\big.kmz
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\kmz\simple\spaceInLink1.kmz
 
@@ -343,7 +358,7 @@ data\kml\kmz\simple\spaceInLink1.kmz
 	NetworkLink          1
 	Placemark            1
 	Point                1
-	# features=4
+	# features=2
 
 data\kml\kmz\simple\spaceInLink2.kmz
 
@@ -351,17 +366,18 @@ data\kml\kmz\simple\spaceInLink2.kmz
 	NetworkLink          1
 	Placemark            1
 	Point                1
-	# features=4
+	# features=2
 
 data\kml\LinkType\life-of-a-link-basic.kml
 
 	url=file:/C:/projects/giscore/data/kml/kmz/simple/big.kmz
 	GroundOverlay        1
+	LatLonBox            1
 	Model                1
 	NetworkLink          1
 	Placemark            2
 	Point                1
-	# features=8
+	# features=6
 
 data\kml\ListStyle\check-hide-children.kml
 
@@ -369,14 +385,14 @@ data\kml\ListStyle\check-hide-children.kml
 	Folder               2
 	Placemark            4
 	Style                1
-	# features=12
+	# features=11
 
 data\kml\ListStyle\check-off-only.kml
 
 	Placemark            4
 	Point                4
 	Style                1
-	# features=10
+	# features=9
 
 data\kml\ListStyle\check.kml
 
@@ -385,7 +401,7 @@ data\kml\ListStyle\check.kml
 	Placemark            4
 	Point                4
 	Style                1
-	# features=12
+	# features=11
 
 data\kml\ListStyle\item-icon-hotspot.kml
 
@@ -393,19 +409,19 @@ data\kml\ListStyle\item-icon-hotspot.kml
 	Placemark            1
 	Point                1
 	Style                1
-	# features=5
+	# features=4
 
 data\kml\ListStyle\more-stuff.kml
 
 	Placemark            2
 	Point                2
-	# features=5
+	# features=4
 
 data\kml\ListStyle\other-stuff.kml
 
 	Placemark            2
 	Point                2
-	# features=5
+	# features=4
 
 data\kml\ListStyle\radio-folder-vis.kml
 
@@ -414,7 +430,7 @@ data\kml\ListStyle\radio-folder-vis.kml
 	Placemark            4
 	Point                4
 	Style                1
-	# features=12
+	# features=11
 
 data\kml\ListStyle\radio-folder.kml
 
@@ -441,7 +457,7 @@ data\kml\listview\nosnippet.kml
 
 	Placemark            2
 	Point                2
-	# features=5
+	# features=4
 
 data\kml\Metadata\metadata-data.kml
 
@@ -449,7 +465,7 @@ data\kml\Metadata\metadata-data.kml
 	Placemark            3
 	Point                3
 	Style                1
-	# features=7
+	# features=6
 
 data\kml\Metadata\metadata-schemadata.kml
 
@@ -458,7 +474,7 @@ data\kml\Metadata\metadata-schemadata.kml
 	Point                3
 	Schema               1
 	Style                1
-	# features=8
+	# features=7
 
 data\kml\Metadata\metadata-yourstuff.kml
 
@@ -474,14 +490,14 @@ data\kml\Model\House.kmz
 	Model                1
 	Placemark            2
 	Style                1
-	# features=8
+	# features=7
 
 data\kml\Model\MackyBldg.kmz
 
 	LookAt               1
 	Model                1
 	Placemark            1
-	# features=2
+	# features=1
 
 data\kml\Model\SharedTextures.kmz
 
@@ -496,7 +512,7 @@ data\kml\MultiGeometry\emptyGeom.kml
 
 	Placemark            2
 	Point                1
-	# features=5
+	# features=4
 
 data\kml\MultiGeometry\multi-linestrings.kml
 
@@ -505,7 +521,7 @@ data\kml\MultiGeometry\multi-linestrings.kml
 	MultiGeometry        1
 	Placemark            1
 	Style                1
-	# features=7
+	# features=6
 
 data\kml\MultiGeometry\multi-rollover.kml
 
@@ -518,14 +534,14 @@ data\kml\MultiGeometry\multi-rollover.kml
 	Polygon              1
 	Style                2
 	StyleMap             1
-	# features=7
+	# features=6
 
 data\kml\MultiGeometry\MultiGeomLinearRings-Pentagon.kml
 
 	LinearRing           2
 	MultiGeometry        1
 	Placemark            1
-	# features=2
+	# features=1
 
 data\kml\MultiGeometry\MultiGeomMixed-Pentagon.kml
 
@@ -533,7 +549,7 @@ data\kml\MultiGeometry\MultiGeomMixed-Pentagon.kml
 	MultiGeometry        1
 	Placemark            1
 	Polygon              1
-	# features=2
+	# features=1
 
 data\kml\MultiGeometry\NestedMultiGeoms.kml
 
@@ -541,17 +557,19 @@ data\kml\MultiGeometry\NestedMultiGeoms.kml
 	MultiGeometry        1
 	Placemark            1
 	Point                2
-	# features=2
+	# features=1
 
 data\kml\MultiGeometry\polygon-point.kml
 
 	Feature uses inline Style
+	LineStyle            1
 	MultiGeometry        1
 	Placemark            1
 	Point                1
+	PolyStyle            1
 	Polygon              1
 	Style                1
-	# features=3
+	# features=2
 
 data\kml\MultiGeometry\testLayers.kml
 
@@ -564,7 +582,7 @@ data\kml\MultiGeometry\testLayers.kml
 	Placemark            8
 	Point                7
 	Polygon              3
-	# features=27
+	# features=26
 
 data\kml\NetworkLink\aliasing\2xnl.kml
 
@@ -572,13 +590,13 @@ data\kml\NetworkLink\aliasing\2xnl.kml
 	NetworkLink          2
 	Placemark            1
 	Point                1
-	# features=7
+	# features=5
 
 data\kml\NetworkLink\aliasing\a.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\NetworkLink\aliasing\nl+desc.kml
 
@@ -586,20 +604,20 @@ data\kml\NetworkLink\aliasing\nl+desc.kml
 	NetworkLink          1
 	Placemark            3
 	Point                1
-	# features=8
+	# features=6
 
 data\kml\NetworkLink\flyToView\d-lookat-p-lookat.kml
 
 	LookAt               1
 	Placemark            1
-	# features=4
+	# features=3
 
 data\kml\NetworkLink\flyToView\d-p-lookat.kml
 
 	LookAt               1
 	Placemark            2
 	Point                1
-	# features=5
+	# features=4
 
 data\kml\NetworkLink\flyToView\flyToView.kml
 
@@ -613,19 +631,19 @@ data\kml\NetworkLink\flyToView\flyToView.kml
 	NetworkLinkControl   2
 	Placemark            4
 	Point                1
-	# features=21
+	# features=16
 
 data\kml\NetworkLink\flyToView\nlc-lookat-p-lookat.kml
 
 	LookAt               1
 	NetworkLinkControl   1
 	Placemark            1
-	# features=3
+	# features=2
 
 data\kml\NetworkLink\flyToView\nlc-lookat.kml
 
 	NetworkLinkControl   1
-	# features=2
+	# features=1
 
 data\kml\NetworkLink\multiLevelNetworkLinks.kmz
 
@@ -634,7 +652,7 @@ data\kml\NetworkLink\multiLevelNetworkLinks.kmz
 	NetworkLink          2
 	Placemark            1
 	Point                1
-	# features=6
+	# features=3
 
 data\kml\NetworkLink\multiLevelNetworkLinks2.kmz
 
@@ -642,6 +660,7 @@ data\kml\NetworkLink\multiLevelNetworkLinks2.kmz
 	url=placemark.kml
 	url=sub1.kml
 	Document             2
+	IconStyle            3
 	NetworkLink          2
 	Placemark            3
 	Point                3
@@ -651,7 +670,7 @@ data\kml\NetworkLink\multiLevelNetworkLinks2.kmz
 data\kml\NetworkLink\nlc.kml
 
 	NetworkLinkControl   1
-	# features=2
+	# features=1
 
 data\kml\NetworkLink\placemark.kml
 
@@ -665,7 +684,7 @@ data\kml\NetworkLink\visibility.kml
 	NetworkLink          2
 	Placemark            1
 	Point                1
-	# features=7
+	# features=5
 
 data\kml\Placemark\AllElements.kml
 	DEBUG [main] (KmlInputStream.java:424) - skip atom:author
@@ -688,25 +707,25 @@ data\kml\Placemark\clippedAtDateLine.kml
 	Placemark            3
 	Point                1
 	Style                2
-	# features=8
+	# features=7
 
 data\kml\Placemark\LinearRing\polygon-lr-all-modes.kml
 
 	Placemark            1
 	Polygon              1
-	# features=2
+	# features=1
 
 data\kml\Placemark\LinearRing\polygon-lr-no-tessellate.kml
 
 	Placemark            1
 	Polygon              1
-	# features=2
+	# features=1
 
 data\kml\Placemark\LinearRing\polygon-lr-tessellate.kml
 
 	Placemark            1
 	Polygon              1
-	# features=2
+	# features=1
 
 data\kml\Placemark\LinearRing\polygon-tessellate-lr.kml
 
@@ -722,7 +741,7 @@ data\kml\Placemark\LineString\absolute-extruded.kml
 	Placemark            1
 	PolyStyle            1
 	Style                1
-	# features=5
+	# features=4
 
 data\kml\Placemark\LineString\extruded.kml
 
@@ -732,14 +751,14 @@ data\kml\Placemark\LineString\extruded.kml
 	Placemark            1
 	PolyStyle            1
 	Style                1
-	# features=5
+	# features=4
 
 data\kml\Placemark\LineString\straight.kml
 
 	Line                 1
 	LookAt               1
 	Placemark            1
-	# features=2
+	# features=1
 
 data\kml\Placemark\LineString\styled.kml
 
@@ -749,7 +768,7 @@ data\kml\Placemark\LineString\styled.kml
 	Placemark            1
 	PolyStyle            1
 	Style                1
-	# features=5
+	# features=4
 
 data\kml\Placemark\LineString\tessellate.kml
 
@@ -764,7 +783,7 @@ data\kml\Placemark\mixedDimsLines.kml
 	Line                 1
 	Placemark            4
 	Point                3
-	# features=7
+	# features=6
 
 data\kml\Placemark\placemark.kml
 
@@ -774,32 +793,36 @@ data\kml\Placemark\placemark.kml
 
 data\kml\Placemark\placemarks.kml
 
+	IconStyle            3
 	Placemark            4
 	Point                4
 	Style                3
-	# features=10
+	# features=9
 
 data\kml\Placemark\Point\altitude.kml
 
+	IconStyle            1
 	LookAt               1
 	Placemark            1
 	Point                1
 	Style                1
-	# features=5
+	# features=4
 
 data\kml\Placemark\Point\extruded.kml
 
+	IconStyle            1
+	LineStyle            1
 	LookAt               1
 	Placemark            1
 	Point                1
 	Style                1
-	# features=5
+	# features=4
 
 data\kml\Placemark\simple_placemark.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\Placemark\styled_placemark.kml
 
@@ -816,18 +839,20 @@ data\kml\Polygon\InnerBoundaryPoly-Pentagon.kml
 
 	Placemark            1
 	Polygon              1
-	# features=2
+	# features=1
 
 data\kml\Polygon\polyInnerBoundaries.kml
 
 	Placemark            1
 	Polygon              1
-	# features=2
+	# features=1
 
 data\kml\Polygon\treasureIsland.kml
 
 	Feature uses inline Style
+	LineStyle            1
 	Placemark            1
+	PolyStyle            1
 	Polygon              1
 	Style                1
 	# features=3
@@ -835,8 +860,9 @@ data\kml\Polygon\treasureIsland.kml
 data\kml\Region\GroundOverlay\usa-ca-sf.kmz
 
 	GroundOverlay        3
+	LatLonBox            3
 	Region               3
-	# features=6
+	# features=5
 
 data\kml\Region\minlodpixels.kml
 
@@ -844,7 +870,7 @@ data\kml\Region\minlodpixels.kml
 	Placemark            1
 	Region               8
 	ScreenOverlay        8
-	# features=14
+	# features=13
 
 data\kml\Region\minlodpixels.kmz
 
@@ -852,7 +878,7 @@ data\kml\Region\minlodpixels.kmz
 	Placemark            1
 	Region               8
 	ScreenOverlay        8
-	# features=14
+	# features=13
 
 data\kml\Region\polygon-fade.kml
 
@@ -860,8 +886,9 @@ data\kml\Region\polygon-fade.kml
 	Placemark            1
 	PolyStyle            1
 	Polygon              1
+	Region               1
 	Style                1
-	# features=3
+	# features=2
 
 data\kml\Region\polygon-min-max.kml
 
@@ -869,32 +896,41 @@ data\kml\Region\polygon-min-max.kml
 	Placemark            1
 	PolyStyle            1
 	Polygon              1
+	Region               1
 	Style                1
-	# features=3
+	# features=2
 
 data\kml\Region\polygon-simple.kml
 
 	Feature uses inline Style
 	Placemark            1
+	PolyStyle            1
 	Polygon              1
+	Region               1
 	Style                1
-	# features=3
+	# features=2
 
 data\kml\Region\polygon-swap-fade.kml
 
 	Feature uses inline Style
+	LineStyle            2
 	Placemark            2
+	PolyStyle            2
 	Polygon              2
+	Region               2
 	Style                2
-	# features=7
+	# features=6
 
 data\kml\Region\polygon-swap-pop.kml
 
 	Feature uses inline Style
+	LineStyle            2
 	Placemark            2
+	PolyStyle            2
 	Polygon              2
+	Region               2
 	Style                2
-	# features=7
+	# features=6
 
 data\kml\Region\screen-rulers.kml
 
@@ -904,7 +940,7 @@ data\kml\Region\screen-rulers.kml
 	Placemark            2
 	ScreenOverlay        8
 	Style                1
-	# features=18
+	# features=17
 
 data\kml\Region\ScreenOverlay\continents.kml
 
@@ -912,8 +948,9 @@ data\kml\Region\ScreenOverlay\continents.kml
 	Folder               2
 	Line                 4
 	Placemark            4
+	Region               8
 	ScreenOverlay        4
-	# features=15
+	# features=14
 
 data\kml\Region\ScreenOverlay\continents.kmz
 
@@ -921,8 +958,9 @@ data\kml\Region\ScreenOverlay\continents.kmz
 	Folder               2
 	Line                 4
 	Placemark            4
+	Region               8
 	ScreenOverlay        4
-	# features=15
+	# features=14
 
 data\kml\Region\simple-lod-demo.kml
 
@@ -930,7 +968,7 @@ data\kml\Region\simple-lod-demo.kml
 	Placemark            5
 	Point                4
 	Region               4
-	# features=8
+	# features=7
 
 data\kml\Schema\AllTypes.kml
 
@@ -956,14 +994,14 @@ data\kml\Schema\schemadata-trailhead.kml
 	Point                2
 	Schema               1
 	Style                1
-	# features=7
+	# features=6
 
 data\kml\Schema\SchemaOldStyle.kml
 
 	Placemark            3
 	Point                3
 	Schema               1
-	# features=9
+	# features=8
 
 data\kml\Schema\SchemaOldStyle2.kml
 
@@ -972,12 +1010,27 @@ data\kml\Schema\SchemaOldStyle2.kml
 	Schema               1
 	# features=9
 
+data\kml\Schema\sigint.kmz
+
+	BalloonStyle         1
+	Document             1
+	ExtendedData         42
+	Folder               4
+	IconStyle            8
+	LineStyle            8
+	Placemark            42
+	Point                42
+	Schema               1
+	Style                9
+	TimeSpan             42
+	# features=62
+
 data\kml\sky\leo.kml
 
 	LookAt               1
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\sloppy\badCoord.kml
  WARN [main] (KmlInputStream.java:1975) - comma found instead of whitespace between tuples before 4.0
@@ -1018,21 +1071,25 @@ java.lang.IllegalArgumentException: Angle 52.35987755982989 radians is too big
 	# features=40
 
 data\kml\sloppy\bluedevil20080812-short2.kml
-DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
-DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
-DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
- WARN [main] (KmlInputStream.java:1255) - Skip unexpected element: name
- INFO [main] (AltitudeModeEnumType.java:40) - Ignoring invalid altitudeMode value: clampedToGround
+	DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
+	DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
+	DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
+	WARN [main] (KmlInputStream.java:1255) - Skip unexpected element: name
+	INFO [main] (AltitudeModeEnumType.java:40) - Ignoring invalid altitudeMode value: clampedToGround
 
 	Feature uses inline Style
+	Out of order elements
 	Overlay missing icon
 	Document             1
 	Folder               2
+	IconStyle            3
+	LabelStyle           3
 	Line                 1
+	LineStyle            1
 	Placemark            2
 	Point                1
 	ScreenOverlay        1
-	Style                1
+	Style                4
 	TimeSpan             1
 	TimeStamp            1
 	# features=14
@@ -1049,12 +1106,14 @@ data\kml\sloppy\n.kml
 
 	Placemark            4
 	Point                4
-	# features=9
+	# features=8
 
 data\kml\sloppy\pred.kml
 	WARN [main] (KmlInputStream.java:1975) - comma found instead of whitespace between tuples before -81.9980316162109
 
 	Feature uses inline Style
+	BalloonStyle         1
+	IconStyle            1
 	Line                 1
 	Model                1
 	Placemark            3
@@ -1065,10 +1124,11 @@ data\kml\sloppy\pred.kml
 data\kml\Style\iconStyle.kmz
 
 	Feature uses inline Style
+	IconStyle            3
 	Placemark            3
 	Point                3
 	Style                3
-	# features=9
+	# features=8
 
 data\kml\Style\inline-stylemap.kml
 
@@ -1084,22 +1144,26 @@ data\kml\Style\noicon.kml
 	Placemark            1
 	Point                1
 	Style                1
-	# features=5
+	# features=4
 
 data\kml\Style\overrideStyles.kml
 
 	Feature uses inline Style
+	IconStyle            2
+	LabelStyle           1
 	Placemark            2
 	Point                2
 	Style                2
-	# features=7
+	# features=6
 
 data\kml\Style\SharedStyle.kml
 
+	BalloonStyle         1
 	IconStyle            1
 	LabelStyle           1
-	Placemark            1
-	Point                1
+	LineStyle            1
+	Placemark            2
+	Point                2
 	Style                1
 	# features=5
 
@@ -1121,32 +1185,38 @@ data\kml\Style\style-merging.kml
 data\kml\Style\styledLineString.kml
 
 	Line                 1
+	LineStyle            1
 	LookAt               1
 	Placemark            1
+	PolyStyle            1
 	Style                1
-	# features=5
+	# features=4
 
 data\kml\Style\styled_placemark.kml
 
 	Feature uses inline Style
+	BalloonStyle         1
+	IconStyle            1
+	LabelStyle           1
 	Placemark            1
 	Point                1
 	Style                1
-	# features=3
+	# features=2
 
 data\kml\Style\styles.kml
 
 	IconStyle            1
 	Style                2
-	# features=5
+	# features=4
 
 data\kml\time\080708_dirtdevil_test1.kml
 
+	IconStyle            1
 	Placemark            12
 	Point                12
 	Style                1
 	TimeStamp            12
-	# features=16
+	# features=15
 
 data\kml\time\dates.kml
 
@@ -1154,7 +1224,7 @@ data\kml\time\dates.kml
 	Point                4
 	TimeSpan             1
 	TimeStamp            3
-	# features=7
+	# features=6
 
 data\kml\time\multiNestedInherits.kml
 
@@ -1166,7 +1236,7 @@ data\kml\time\multiNestedInherits.kml
 	Point                2
 	Style                2
 	TimeSpan             2
-	# features=9
+	# features=8
 
 data\kml\time\multiNestedInheritsUnboundedSpans.kml
 
@@ -1177,7 +1247,7 @@ data\kml\time\multiNestedInheritsUnboundedSpans.kml
 	Point                2
 	Style                2
 	TimeSpan             2
-	# features=9
+	# features=8
 
 data\kml\time\nestedInherits.kml
 
@@ -1191,7 +1261,7 @@ data\kml\time\nestedInherits.kml
 	Point                6
 	Style                6
 	TimeSpan             3
-	# features=19
+	# features=18
 
 data\kml\time\time-inherit2.kml
 
@@ -1199,12 +1269,13 @@ data\kml\time\time-inherit2.kml
 	--
 	Document             1
 	Folder               5
+	IconStyle            3
 	Placemark            13
 	Point                13
 	Style                4
 	TimeSpan             1
 	TimeStamp            3
-	# features=30
+	# features=29
 
 data\kml\time\time-inherits.kml
 
@@ -1212,14 +1283,15 @@ data\kml\time\time-inherits.kml
 	--
 	Folder               4
 	GroundOverlay        6
-	# features=15
+	LatLonBox            6
+	# features=14
 
 data\kml\time\time-span-overlay.kml
 
 	GroundOverlay        12
 	LatLonBox            12
 	TimeSpan             12
-	# features=15
+	# features=14
 
 data\kml\time\time-stamp-point.kmz
 
@@ -1228,7 +1300,7 @@ data\kml\time\time-stamp-point.kmz
 	Point                361
 	Style                4
 	TimeStamp            361
-	# features=368
+	# features=367
 
 data\kml\time\timestamps.kml
 
@@ -1236,7 +1308,7 @@ data\kml\time\timestamps.kml
 	Point                11
 	TimeSpan             1
 	TimeStamp            10
-	# features=14
+	# features=13
 
 data\kml\time\TimeTest.kml
 
@@ -1247,7 +1319,7 @@ data\kml\time\TimeTest.kml
 	Style                6
 	TimeSpan             3
 	TimeStamp            2
-	# features=15
+	# features=14
 
 data\kml\time\YearDates.kml
 
@@ -1255,7 +1327,7 @@ data\kml\time\YearDates.kml
 	Point                3
 	TimeSpan             1
 	TimeStamp            2
-	# features=6
+	# features=5
 
 data\kml\time\YearMonthDates.kml
 
@@ -1263,53 +1335,53 @@ data\kml\time\YearMonthDates.kml
 	Point                4
 	TimeSpan             1
 	TimeStamp            3
-	# features=7
+	# features=6
 
 data\kml\xmlns\earth-google-com-kml-21.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\xmlns\earth-google-com-kml-22.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\xmlns\earth-google-com-kml-23.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\xmlns\earth-google-com-kml-30.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\xmlns\no-namespace.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\xmlns\opengis-net-kml-22.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\xmlns\opengis-net-kml-23.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\xmlns\opengis-net-kml-30.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
