@@ -158,10 +158,17 @@
 			     references from other bundles. -->
 			<dynamicImportPackage name="*"/>
 			<autoexportpackage prefix="org.mitre.giscore" version="${ivy.new.revision}"/>
+
+			<!-- Attributes can be added directly to the manifest
+			     of the generated jar. -->
+			<manifest>
+				<attribute name="Built-By" value="${user.name}" />
+				<attribute name="Build-Jdk" value="${ant.java.version}"/>
+			</manifest>
 		</bundle>
-		<!--zip destfile="${rel}/jars/giscore.jar" filesonly="true" update="true">
+		<zip destfile="${rel}/jars/giscore.jar" filesonly="true" update="true">
 			<zipfileset dir="resources" includes="license.txt" prefix="META-INF" />
-		</zip-->
+		</zip>
 	</target>
 
 	<target name="war" depends="jar" description="make deployable war for remoting">
