@@ -20,7 +20,6 @@ package org.mitre.giscore.geometry;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 
 import org.mitre.giscore.events.IGISObject;
@@ -102,25 +101,26 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 
 	/**
 	 * This method returns a <code>Geodetic2DPoint</code> or <code>Geodetic3DPoint</code>
-     * that is at the center of this Geometry object's Bounding Box or null if the
+     * that is at the center of this Geometry object's Bounding Box or {@code null} if the
      * bounding box is not defined.
 	 * 
 	 * @return <code>Geodetic2DPoint</code> or <code>Geodetic3DPoint</code> at the center of this Geometry object
 	 */
 	public Geodetic2DPoint getCenter() {
-		if (bbox == null)
+        final Geodetic2DBounds bounds = getBoundingBox();
+        if (bounds == null)
 			return null;
-		double wLonRad = bbox.westLon.inRadians();
-		double eLonRad = bbox.eastLon.inRadians();
+		double wLonRad = bounds.westLon.inRadians();
+		double eLonRad = bounds.eastLon.inRadians();
 		if (eLonRad < wLonRad)
 			eLonRad += (2.0 * Math.PI);
 		double cLonRad = wLonRad + ((eLonRad - wLonRad) / 2.0);
-		double sLatRad = bbox.southLat.inRadians();
-		double nLatRad = bbox.northLat.inRadians();
+		double sLatRad = bounds.southLat.inRadians();
+		double nLatRad = bounds.northLat.inRadians();
 		double cLatRad = sLatRad + ((nLatRad - sLatRad) / 2.0);
-        // can't assume if is3D == true that bbox == Geodetic3DBounds 
-        if (bbox instanceof Geodetic3DBounds) {
-            Geodetic3DBounds bbox3d = (Geodetic3DBounds)bbox;
+        // can't assume if is3D == true that bounds == Geodetic3DBounds
+        if (bounds instanceof Geodetic3DBounds) {
+            Geodetic3DBounds bbox3d = (Geodetic3DBounds)bounds;
             double cElev = (bbox3d.maxElev + bbox3d.minElev) / 2.0;
             return new Geodetic3DPoint(new Longitude(cLonRad),
 				    new Latitude(cLatRad), cElev);
