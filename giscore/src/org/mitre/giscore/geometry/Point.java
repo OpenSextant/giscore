@@ -82,6 +82,11 @@ public class Point extends GeometryBase {
 	/**
 	 * The Constructor takes a GeoPoint that is either a Geodetic2DPoint or a
 	 * Geodetic3DPoint and initializes a Geometry object for it.
+     * <P>
+     * Note {@code GeoPoint} object is copied by reference so caller must copy this
+     * point and/or construct a new {@code GeoPoint} object if need to modify its
+     * state after this constructor is invoked. Assumes GeoPoints are immutable
+     * if used in context of Point geometries.
 	 * 
 	 * @param gp
 	 *            GeoPoint to initialize this Point with (must be Geodetic form)
@@ -116,7 +121,9 @@ public class Point extends GeometryBase {
 	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
 	 */
 	protected void computeBoundingBox() {
-		bbox = new Geodetic2DBounds(pt);
+        // make bbox unmodifiable
+        bbox = is3D ? new UnmodifiableGeodetic3DBounds(new Geodetic3DBounds((Geodetic3DPoint) pt))
+                : new UnmodifiableGeodetic2DBounds(new Geodetic2DBounds(pt));
 	}
 
 	/**
