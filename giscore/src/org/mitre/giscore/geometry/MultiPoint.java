@@ -134,7 +134,7 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
      * @return String containing Geometry Object type, bounding coordintates, and number of parts.
      */
     public String toString() {
-        return "MultiPoint within " + bbox + " consists of " + pointList.size() + " Points";
+        return "MultiPoint within " + getBoundingBox() + " consists of " + pointList.size() + " Points";
     }
     
     public void accept(IStreamVisitor visitor) {

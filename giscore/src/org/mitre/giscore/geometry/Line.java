@@ -165,7 +165,7 @@ public class Line extends GeometryBase implements Iterable<Point> {
      * @return String containing Geometry Object type, bounding coordinates, and number of parts.
      */
     public String toString() {
-        return "Line within " + bbox + " consists of " + pointList.size() + " Points";
+        return "Line within " + getBoundingBox() + " consists of " + pointList.size() + " Points";
     }
 
     public void accept(IStreamVisitor visitor) {

@@ -151,7 +151,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
      * @return String containing Geometry Object type, bounding coordintates, and number of parts.
      */
     public String toString() {
-        return "Polygons within " + bbox + " consists of " +
+        return "Polygons within " + getBoundingBox() + " consists of " +
                 polygonList.size() + " Polygons";
 
     }

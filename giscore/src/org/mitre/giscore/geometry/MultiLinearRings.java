@@ -180,7 +180,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
      * @return String containing Geometry Object type, bounding coordintates, and number of parts.
      */
     public String toString() {
-        return "MultiLinearRings within " + bbox + " consists of " + ringList.size() + " Rings";
+        return "MultiLinearRings within " + getBoundingBox() + " consists of " + ringList.size() + " Rings";
     }
     
     public void accept(IStreamVisitor visitor) {

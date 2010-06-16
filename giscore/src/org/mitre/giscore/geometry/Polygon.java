@@ -234,10 +234,10 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
     /**
      * The toString method returns a String representation of this Object suitable for debugging
      *
-     * @return String containing Geometry Object type, bounding coordintates, and number of parts.
+     * @return String containing Geometry Object type, bounding coordinates, and number of parts.
      */
     public String toString() {
-        return "Polygon within " + bbox + " consists of " + ringList.size() + " inner rings";
+        return "Polygon within " + getBoundingBox() + " consists of " + ringList.size() + " inner rings";
     }
 
     public void accept(IStreamVisitor visitor) {

@@ -148,7 +148,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
      * @return String containing Geometry Object type, bounding coordintates, and number of parts.
      */
     public String toString() {
-        return "MultiLine within " + bbox + " consists of " + lineList.size() + " Lines";
+        return "MultiLine within " + getBoundingBox() + " consists of " + lineList.size() + " Lines";
     }
     
     public void accept(IStreamVisitor visitor) {

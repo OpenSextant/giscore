@@ -383,8 +383,8 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
      * @return String containing Geometry Object type, bounding coordintates, and number of parts
      */
     public String toString() {
-        if (bbox == null) computeBoundingBox();
-        return "LinearRing within " + bbox + " consists of " + (pointList == null ? 0 : pointList.size()) + " Points";
+        return "LinearRing within " + getBoundingBox() + " consists of " +
+                (pointList == null ? 0 : pointList.size()) + " Points";
     }
     
     public void accept(IStreamVisitor visitor) {
