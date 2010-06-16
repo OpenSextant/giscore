@@ -83,6 +83,9 @@ public class Line extends GeometryBase implements Iterable<Point> {
 	
     /**
      * The Constructor takes a list of points and initializes a Geometry Object for this Line.
+     * <P>
+     * Note list of points is copied by reference so caller must copy list if need to modify them after
+     * this constructor is invoked.
      *
      * @param pts List of Geodetic2DPoint point objects to use for the parts of this Line.
      * @throws IllegalArgumentException error if object is not valid.
@@ -151,6 +154,8 @@ public class Line extends GeometryBase implements Iterable<Point> {
      * @return boolean value indicating whether this ring is clipped at the IDL
      */
     public boolean clippedAtDateLine() {
+        // must calculate bounding box to set idlWrap
+        if (bbox == null) computeBoundingBox();
         return idlWrap;
     }
 

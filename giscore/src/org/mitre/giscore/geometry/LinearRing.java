@@ -236,10 +236,12 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
      * This Constructor takes a bounding box and initializes a Geometry Object
      * for it. This ring will be clockwise.
      *
-     * @param box the bounding box to represent as a ring
-     * @throws IllegalArgumentException if the bounding box is a point or a line
+     * @param box the bounding box to represent as a ring, never null.
+     * @throws IllegalArgumentException if the bounding box is null, a point or a line
      */
     public LinearRing(Geodetic2DBounds box) {
+        if (box == null)
+            throw new IllegalArgumentException("box must be non-null");
         if (box.getEastLon().inRadians() == box.getWestLon().inRadians())
             log.warn("Bounding box not a polygon - east and west points are the same.");
         if (box.getNorthLat().inRadians() == box.getSouthLat().inRadians())
@@ -264,6 +266,8 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
      * @return boolean value indicating whether this ring is clipped at the IDL
      */
     public boolean clippedAtDateLine() {
+        // must calculate bounding box to set idlWrap
+        if (bbox == null) computeBoundingBox();
         return idlWrap;
     }
 
