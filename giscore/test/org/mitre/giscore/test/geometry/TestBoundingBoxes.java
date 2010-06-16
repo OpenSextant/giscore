@@ -19,6 +19,8 @@
 package org.mitre.giscore.test.geometry;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,10 +50,18 @@ public class TestBoundingBoxes {
 	@Test public void testPointBB() throws Exception {
 		Point p = new Point(1.0, 1.0);
 		Geodetic2DBounds bbox = p.getBoundingBox();
+        assertNotNull(bbox);
 		assertEquals(1.0, bbox.getNorthLat().inDegrees(), EPSILON);
 		assertEquals(1.0, bbox.getSouthLat().inDegrees(), EPSILON);
 		assertEquals(1.0, bbox.getEastLon().inDegrees(), EPSILON);
 		assertEquals(1.0, bbox.getWestLon().inDegrees(), EPSILON);
+        // bounding box should be unmodifiable
+        try {
+            bbox.setEastLon(bbox.getWestLon());
+            fail("bounding should be unmodifiable");
+        } catch (UnsupportedOperationException e) {
+            // expected
+        }
 	}
 	
 	@Test public void testLineBB() throws Exception {
@@ -61,6 +71,7 @@ public class TestBoundingBoxes {
 		points.add(new Point(1.0, 0.0));
 		Line l = new Line(points); 
 		Geodetic2DBounds bbox = l.getBoundingBox();
+        assertNotNull(bbox);
 		assertEquals(1.0, bbox.getNorthLat().inDegrees(), EPSILON);
 		assertEquals(0.0, bbox.getSouthLat().inDegrees(), EPSILON);
 		assertEquals(1.0, bbox.getEastLon().inDegrees(), EPSILON);
@@ -71,6 +82,7 @@ public class TestBoundingBoxes {
 		Point p = new Point(1.0, 1.0);
 		Circle c = new Circle(p.getCenter(), 10000.0);
 		Geodetic2DBounds bbox = c.getBoundingBox();
+        assertNotNull(bbox);
 		assertEquals(1.0904366453343193, bbox.getNorthLat().inDegrees(), EPSILON);
 		assertEquals(0.9095633046406, bbox.getSouthLat().inDegrees(), EPSILON);
 		assertEquals(1.0898451206524653, bbox.getEastLon().inDegrees(), EPSILON);
@@ -87,6 +99,7 @@ public class TestBoundingBoxes {
 		pts.add(new Point(0.0, 0.0));
 		MultiPoint mp = new MultiPoint(pts);
 		Geodetic2DBounds bbox = mp.getBoundingBox();
+        assertNotNull(bbox);
 		assertEquals(2.0, bbox.getNorthLat().inDegrees(), EPSILON);
 		assertEquals(0.0, bbox.getSouthLat().inDegrees(), EPSILON);
 		assertEquals(2.0, bbox.getEastLon().inDegrees(), EPSILON);
@@ -101,8 +114,9 @@ public class TestBoundingBoxes {
 		pts.add(new Point(2.0, 1.0));
 		pts.add(new Point(1.0, 0.0));
 		pts.add(new Point(0.0, 0.0));
-		LinearRing geo = new LinearRing(pts);
+		LinearRing geo = new LinearRing(pts, true);
 		Geodetic2DBounds bbox = geo.getBoundingBox();
+        assertNotNull(bbox);
 		assertEquals(2.0, bbox.getNorthLat().inDegrees(), EPSILON);
 		assertEquals(0.0, bbox.getSouthLat().inDegrees(), EPSILON);
 		assertEquals(2.0, bbox.getEastLon().inDegrees(), EPSILON);
@@ -111,22 +125,24 @@ public class TestBoundingBoxes {
 		
 	@Test public void testPolyBB() throws Exception {
 		List<Point> pts = new ArrayList<Point>();
+        // Outer LinearRing in Polygon must be in clockwise point order
 		pts.add(new Point(0.0, 0.0));
-		pts.add(new Point(0.0, 1.0));
-		pts.add(new Point(1.0, 2.0));
-		pts.add(new Point(2.0, 1.0));
-		pts.add(new Point(1.0, 0.0));
-		pts.add(new Point(0.0, 0.0));
-		LinearRing or = new LinearRing(pts);
+        pts.add(new Point(1.0, 0.0));
+        pts.add(new Point(2.0, 1.0));
+        pts.add(new Point(1.0, 2.0));
+        pts.add(new Point(0.0, 1.0));
+        pts.add(new Point(0.0, 0.0));
+		LinearRing or = new LinearRing(pts, true);
 		pts = new ArrayList<Point>();
 		pts.add(new Point(0.2, 0.2));
 		pts.add(new Point(0.2, 0.8));
 		pts.add(new Point(0.8, 0.8));
 		pts.add(new Point(0.8, 0.2));
 		pts.add(new Point(0.2, 0.2));
-		LinearRing ir = new LinearRing(pts);
-		Polygon geo = new Polygon(or, Collections.singletonList(ir));
+		LinearRing ir = new LinearRing(pts, true);
+		Polygon geo = new Polygon(or, Collections.singletonList(ir), true);
 		Geodetic2DBounds bbox = geo.getBoundingBox();
+        assertNotNull(bbox);
 		assertEquals(2.0, bbox.getNorthLat().inDegrees(), EPSILON);
 		assertEquals(0.0, bbox.getSouthLat().inDegrees(), EPSILON);
 		assertEquals(2.0, bbox.getEastLon().inDegrees(), EPSILON);
@@ -144,6 +160,7 @@ public class TestBoundingBoxes {
 		LinearRing r1 = new LinearRing(pts);
 		MultiLinearRings geo = new MultiLinearRings(Collections.singletonList(r1));
 		Geodetic2DBounds bbox = geo.getBoundingBox();
+        assertNotNull(bbox);
 		assertEquals(2.0, bbox.getNorthLat().inDegrees(), EPSILON);
 		assertEquals(0.0, bbox.getSouthLat().inDegrees(), EPSILON);
 		assertEquals(2.0, bbox.getEastLon().inDegrees(), EPSILON);
@@ -169,6 +186,7 @@ public class TestBoundingBoxes {
 		Polygon p = new Polygon(or, Collections.singletonList(ir));
 		MultiPolygons geo = new MultiPolygons(Collections.singletonList(p));
 		Geodetic2DBounds bbox = geo.getBoundingBox();
+        assertNotNull(bbox);
 		assertEquals(2.0, bbox.getNorthLat().inDegrees(), EPSILON);
 		assertEquals(0.0, bbox.getSouthLat().inDegrees(), EPSILON);
 		assertEquals(2.0, bbox.getEastLon().inDegrees(), EPSILON);
@@ -185,6 +203,7 @@ public class TestBoundingBoxes {
 		geometries.add(new Line(points)); 
 		GeometryBag geo = new GeometryBag(geometries);
 		Geodetic2DBounds bbox = geo.getBoundingBox();
+        assertNotNull(bbox);
 		assertEquals(2.0, bbox.getNorthLat().inDegrees(), EPSILON);
 		assertEquals(0.0, bbox.getSouthLat().inDegrees(), EPSILON);
 		assertEquals(2.0, bbox.getEastLon().inDegrees(), EPSILON);
