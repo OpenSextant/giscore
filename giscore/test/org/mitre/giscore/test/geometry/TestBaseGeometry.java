@@ -14,12 +14,13 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 
 /**
- * Test base geometry classes.
+ * Test base geometry classes with geometry creation and various
+ * implementations of the Geometry base class.
  * 
  * @author Jason Mathews, MITRE Corp.
  * Date: Jun 16, 2010 Time: 10:50:19 AM
  */
-public class TestGeometry extends TestGISBase {
+public class TestBaseGeometry extends TestGISBase {
 
     private static final double EPSILON = 1E-5;
 
@@ -59,6 +60,8 @@ public class TestGeometry extends TestGISBase {
         for (int i=0; i < linePts.size(); i++) {
            assertEquals(linePts.get(i), multiPts.get(i));
         }
+
+        assertEquals(mp.getCenter(), line.getCenter());
     }
 
     @Test
@@ -141,31 +144,19 @@ public class TestGeometry extends TestGISBase {
         Geodetic2DPoint cp = geo.getCenter();
         assertEquals(lat, cp.getLatitude().inDegrees(), EPSILON);
         assertEquals(lon, cp.getLongitude().inDegrees(), EPSILON);
-        // changing Geodetic2DPoint after constructing Point doesn't change internal state of Point
-        // but Point is doing copy-by-reference.
+
+        // changing Geodetic2DPoint after constructing Point should not change internal state of Point
+        // but Point is doing copy-by-reference so side effects such as this do exist.
         pt.setLongitude(new Longitude(lon + 1, Angle.DEGREES));
         pt.setLatitude(new Latitude(lat + 1, Angle.DEGREES));
-        assertEquals(lat, cp.getLatitude().inDegrees(), EPSILON);
-        assertEquals(lon, cp.getLongitude().inDegrees(), EPSILON);
+
+        assertEquals(lat, cp.getLatitude().inDegrees(), EPSILON); // fails
+        assertEquals(lon, cp.getLongitude().inDegrees(), EPSILON); // fails
+        
+        // likewise if we add/remove points after bounding box is calculated then line/ring state
+        // will not be consistent.
     }
-    */
-
-    @Test
-    public void testClippedAtDateLine() throws Exception {
-        // create outline of Fiji which wraps international date line
-		List<Point> pts = new ArrayList<Point>();
-        final Point firstPt = new Point(-16.68226928264316, 179.900033693558);
-        pts.add(firstPt);
-        pts.add(new Point(-16.68226928264316, -180));
-		pts.add(new Point(-17.01144405215603, -180));
-		pts.add(new Point(-17.01144405215603, 179.900033693558));
-		pts.add(firstPt);
-        Line line = new Line(pts);
-        Assert.assertTrue(line.clippedAtDateLine());
-
-        LinearRing ring = new LinearRing(pts, true);
-        Assert.assertTrue(ring.clippedAtDateLine());
-     }
+    */    
 
     @Test
     public void testGeometryBag() throws Exception {
@@ -180,4 +171,21 @@ public class TestGeometry extends TestGISBase {
         assertEquals(2, geo.getNumParts());
         assertEquals(1 + points.size(), geo.getNumPoints());
     }
+
+    @Test
+    public void testClippedAtDateLine() throws Exception {
+        // create outline of Fiji islands which wrap international date line
+		List<Point> pts = new ArrayList<Point>();
+        final Point firstPt = new Point(-16.68226928264316, 179.900033693558);
+        pts.add(firstPt);
+        pts.add(new Point(-16.68226928264316, -180));
+		pts.add(new Point(-17.01144405215603, -180));
+		pts.add(new Point(-17.01144405215603, 179.900033693558));
+		pts.add(firstPt);
+        Line line = new Line(pts);
+        Assert.assertTrue(line.clippedAtDateLine());
+
+        LinearRing ring = new LinearRing(pts, true);
+        Assert.assertTrue(ring.clippedAtDateLine());
+     }
 }
