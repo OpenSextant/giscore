@@ -189,7 +189,8 @@ public class TestGdbSupport extends TestGISBase {
 				.getResourceAsStream("KML_sample1.kml");
 		doKmlTest(s, "", true, DocumentType.Shapefile);
 	}
-
+	
+	/** Multi geometry is not supported by FileGDB 
 	@Test
 	public void test5() throws Exception {
 		InputStream s = new FileInputStream(base_path
@@ -203,6 +204,8 @@ public class TestGdbSupport extends TestGISBase {
 				+ "MultiGeometry/multi-linestrings.kml");
 		doKmlTest(s, "", true, DocumentType.FileGDB);
 	}
+	*/
+	
 	@Test
 	public void test6s() throws Exception {
 		InputStream s = new FileInputStream(base_path

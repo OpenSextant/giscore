@@ -72,6 +72,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		for (DateFormat sf : inputDateFormats) {
 			sf.setTimeZone(tz);
 		}
+		dateFormat.setTimeZone(tz);
 	}
 	
 	static {

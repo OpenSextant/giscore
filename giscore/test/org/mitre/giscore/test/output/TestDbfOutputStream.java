@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Random;
+import java.util.TimeZone;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
@@ -196,7 +197,7 @@ public class TestDbfOutputStream {
 	}
 
 	private void compare(Schema s, Schema readschema, Row origrow, Row readrow) {
-		Calendar cal = new GregorianCalendar();
+		Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
 		assertNotNull(readrow);
 		assertEquals(origrow.getFields().size(), readrow.getFields().size());
 		for(String key : s.getKeys()) {
