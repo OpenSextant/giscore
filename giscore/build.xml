@@ -203,9 +203,10 @@
 			<formatter type="plain" />
 
 			<batchtest fork="yes" todir="${testoutput}">
-				<fileset dir="${test}">
-					<exclude name="**/TestGISBase.java"/>
-				</fileset>
+				<fileset dir="${test}"
+					excludes="**/TestGISBase.java
+						**/TestShapefileBase.java"
+				/>
 			</batchtest>
 		</junit>
 	</target>
