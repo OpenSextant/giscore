@@ -35,7 +35,7 @@ import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
-import org.mitre.itf.geodesy.Geodetic2DPoint;
+import org.mitre.itf.geodesy.*;
 
 /**
  * The base class provides a series of features of various kinds, used to feed
@@ -340,6 +340,26 @@ public class TestGISBase {
 		double dx = magnitude * Math.cos(theta);
 		return new Point(lat + dy, lon + dx);
 	}
+
+    /**
+     * This method is used to generate a random Geodetic3DPoint
+     * that is near the surface of the earth (between -12,000 and +26,000 meters
+     * from the surface of the Elliposoid earth model).
+     *
+     * @return a random Geodetic3DPoint
+     */
+    protected static Geodetic3DPoint random3dGeoPoint() {
+        double maxBelow = 12000.0; // deeper than max ocean depth (Marianas Trench)
+        double maxAbove = 26000.0; // higher than max altitude of SR-71 spy plane
+
+        // Define a random Geodetic point
+        double lonDeg = (RandomUtils.nextDouble() * 360.0) - 180.0;  // lonDeg
+        Longitude lon = new Longitude(lonDeg, Angle.DEGREES);
+        double latDeg = (RandomUtils.nextDouble() * 180.0) - 90.0;  // latDeg
+        Latitude lat = new Latitude(latDeg, Angle.DEGREES);
+        double elev = RandomUtils.nextDouble() * ((RandomUtils.nextBoolean()) ? maxAbove : -maxBelow);
+        return new Geodetic3DPoint(lon, lat, elev);
+    }
 
     private static Feature addFeature(Geometry g) {
         Feature f = new Feature();
