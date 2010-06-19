@@ -1,6 +1,7 @@
 package org.mitre.giscore.test.geometry;
 
 import org.junit.*;
+import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.test.TestGISBase;
 import org.mitre.itf.geodesy.*;
@@ -40,11 +41,13 @@ public class TestBaseGeometry extends TestGISBase {
         MultiPoint mp = new MultiPoint(pts);
         assertEquals(pts.size(), mp.getNumParts());
         assertEquals(pts.size(), mp.getNumPoints());
+        assertFalse(mp.is3D());
 
         // construct Line
         Line line = new Line(new ArrayList<Point>(pts));
         assertEquals(1, line.getNumParts());
         assertEquals(pts.size(), line.getNumPoints());
+        assertFalse(line.is3D());
 
         Iterator<Point> it1 = line.iterator();
         Iterator<Point> it2 = mp.iterator();
@@ -69,6 +72,7 @@ public class TestBaseGeometry extends TestGISBase {
         Point pt = getRandomPoint();
 		Circle c = new Circle(pt.getCenter(), 10000.0);
         assertEquals(pt.asGeodetic2DPoint(), c.getCenter());
+        assertFalse(c.is3D());
     }
 
     @Test
@@ -83,6 +87,7 @@ public class TestBaseGeometry extends TestGISBase {
 		LinearRing geo = new LinearRing(pts, true);
         assertEquals(1, geo.getNumParts());
         assertEquals(pts.size(), geo.getNumPoints());
+        assertFalse(geo.is3D());
         // center: (1° 0' 0" E, 1° 0' 0" N)
         Geodetic2DPoint center = geo.getCenter();
         assertEquals(1.0, center.getLatitude().inDegrees(), EPSILON);
@@ -111,6 +116,7 @@ public class TestBaseGeometry extends TestGISBase {
         Polygon geo = new Polygon(ring, true);
         assertEquals(1, geo.getNumParts());
         assertEquals(pts.size(), geo.getNumPoints());
+        assertFalse(geo.is3D());
         Geodetic2DPoint cp = geo.getCenter();
         // center: (1° 0' 0" E, 1° 0' 0" N)
         assertEquals(1.0, cp.getLatitude().inDegrees(), EPSILON);
@@ -170,7 +176,28 @@ public class TestBaseGeometry extends TestGISBase {
 		GeometryBag geo = new GeometryBag(geometries);
         assertEquals(2, geo.getNumParts());
         assertEquals(1 + points.size(), geo.getNumPoints());
+        assertFalse(geo.is3D());
+
+        // center = (1° 15' 0" E, 1° 15' 0" N)
+        final Geodetic2DPoint cp = geo.getCenter();
+        assertEquals(1.25, cp.getLatitude().inDegrees(), EPSILON);
+        assertEquals(1.25, cp.getLongitude().inDegrees(), EPSILON);
     }
+
+    @Test
+    public void testModel() throws Exception {
+         Model model = new Model();
+         final Geodetic2DPoint pt = random3dGeoPoint();
+         model.setLocation(pt);
+         model.setAltitudeMode(AltitudeModeEnumType.absolute);
+         assertEquals(pt, model.getCenter());
+         assertEquals(1, model.getNumParts());
+         assertEquals(1, model.getNumPoints());
+         Assert.assertTrue(model.is3D());
+         Geodetic2DBounds bounds = model.getBoundingBox();
+         Assert.assertTrue(bounds.contains(pt));
+         assertEquals(pt, bounds.getCenter());
+     }
 
     @Test
     public void testClippedAtDateLine() throws Exception {
