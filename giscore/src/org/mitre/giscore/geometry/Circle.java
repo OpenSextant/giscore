@@ -1,7 +1,11 @@
 package org.mitre.giscore.geometry;
 
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.*;
 import org.mitre.giscore.IStreamVisitor;
+
+import java.io.IOException;
 
 /**
  * The Circle class represents a circular region containing three coordinates (centerpoint
@@ -49,6 +53,14 @@ public class Circle extends Point {
         super(center);
         this.radius = radius;
     }
+
+    /**
+	 * Empty ctor only for object IO.  Constructor must be followed by call to {@code readData()}
+     * to initialize the object instance otherwise object is invalid.
+	 */
+	public Circle() {
+		//
+	}
 
     public double getRadius() {
         return radius;
@@ -138,4 +150,31 @@ public class Circle extends Point {
 		visitor.visit(this);
 	}
 
+    /*
+	 * (non-Javadoc)
+	 *
+	 * @see
+	 * org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.
+	 * SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+        radius = in.readDouble();
+    }
+
+    /*
+	 * (non-Javadoc)
+	 *
+	 * @see
+	 * org.mitre.giscore.geometry.Geometry#writeData(org.mitre.giscore.utils
+	 * .SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+        out.writeDouble(radius);
+    }
 }
