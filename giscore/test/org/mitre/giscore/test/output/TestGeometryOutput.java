@@ -1,8 +1,9 @@
 package org.mitre.giscore.test.output;
 
+import org.junit.Assert;
 import org.junit.Test;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.test.TestGISBase;
@@ -20,7 +21,7 @@ import static junit.framework.Assert.assertEquals;
  * @author Jason Mathews, MITRE Corp.
  * Date: Oct 5, 2009 3:12:57 PM
  */
-public class TestGeometry extends TestGISBase {
+public class TestGeometryOutput extends TestGISBase {
 
 	@Test
 	public void testPointCreation() throws Exception {
@@ -60,4 +61,22 @@ public class TestGeometry extends TestGISBase {
 		ring2.readData(is);
 		assertEquals(ring, ring2);
 	}
+
+    @Test
+	public void testGeometryBagCreation() throws Exception {
+        List<Feature> geoms = getMultiGeometries();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        SimpleObjectOutputStream os = new SimpleObjectOutputStream(bos);
+        GeometryBag geo = new GeometryBag();
+        for (Feature f : geoms) {
+            final Geometry geom = f.getGeometry();
+            if (geom != null) geo.add(geom);
+        }
+        geo.writeData(os);
+
+        SimpleObjectInputStream is = new SimpleObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
+        GeometryBag geo2 = new GeometryBag();
+        geo2.readData(is);
+        assertEquals(geo, geo2);
+    }
 }
