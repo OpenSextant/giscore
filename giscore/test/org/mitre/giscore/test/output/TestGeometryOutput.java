@@ -1,6 +1,5 @@
 package org.mitre.giscore.test.output;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.events.Feature;
@@ -8,7 +7,6 @@ import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.test.TestGISBase;
-import org.mitre.itf.geodesy.Geodetic2DPoint;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -67,9 +65,23 @@ public class TestGeometryOutput extends TestGISBase {
     @Test
     public void testModelCreation() throws Exception {
         Model model = new Model();
-        final Geodetic2DPoint pt = random3dGeoPoint();
-        model.setLocation(pt);
+        model.setLocation(random3dGeoPoint());
         model.setAltitudeMode(AltitudeModeEnumType.absolute);
+        testModel(model);
+
+        // test with AltitudeMode = null, location = 2d point
+        AltitudeModeEnumType altMode = null;
+        model.setLocation(getRandomPoint().asGeodetic2DPoint());
+        model.setAltitudeMode(altMode);
+        testModel(model);
+
+        // test with location = null
+        model.setLocation(null);
+        model.setAltitudeMode(AltitudeModeEnumType.relativeToGround);
+        testModel(model);
+    }
+
+    private void testModel(Model model) throws Exception {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         SimpleObjectOutputStream os = new SimpleObjectOutputStream(bos);
         model.writeData(os);
@@ -78,7 +90,7 @@ public class TestGeometryOutput extends TestGISBase {
         Model geo2 = new Model();
         geo2.readData(is);
         assertEquals(model, geo2);
-     }
+    }
 
     @Test
 	public void testGeometryBagCreation() throws Exception {
