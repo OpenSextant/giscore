@@ -23,10 +23,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.InputStream;
-import java.io.FileInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.Collection;
 import java.util.List;
 import java.util.Date;
@@ -55,13 +52,15 @@ import org.mitre.itf.geodesy.*;
 import org.apache.commons.io.IOUtils;
 
 /**
- * @author DRAND
+ * Test KMLInputStream and helper date parsing methods.
  * 
+ * @author DRAND
+ * @author Mathews
  */
 public class TestKmlInputStream {
 
 	@Test
-	public void testTinySample() throws Exception {
+	public void testTinySample() throws IOException {
 		InputStream stream = getStream("7084.kml");
 		try {
 			IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
@@ -88,11 +87,12 @@ public class TestKmlInputStream {
 	}
 
 	/**
-	 * Test calling close() multiple times does not throw an exception
-	 * @throws Exception
+	 * Test calling close() multiple times does not throw an exception.
+     * 
+     * @throws IOException  if an I/O error occurs
 	 */
 	@Test
-	public void testClose() throws Exception {
+	public void testClose() throws IOException {
 		InputStream stream = getStream("7084.kml");
 		try {
 			IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
@@ -108,7 +108,7 @@ public class TestKmlInputStream {
 		}
 	}
 
-	@Test public void testLargerSample() throws Exception {
+	@Test public void testLargerSample() throws IOException {
 		InputStream stream = getStream("KML_sample1.kml");
 		try {
 			IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
@@ -123,7 +123,7 @@ public class TestKmlInputStream {
 		}
 	}
 
-	@Test public void testSchemaSample() throws Exception {
+	@Test public void testSchemaSample() throws IOException {
 		InputStream stream = getStream("schema_example.kml");
 		try {
 			IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
@@ -317,11 +317,11 @@ public class TestKmlInputStream {
 
 	private void checkCoordString(String coord, Geodetic2DPoint[] geoPoints) {
 		List<Point> list = KmlInputStream.parseCoord(coord);
-		if (list.size() == 0 && geoPoints.length == 0) return;
+		if (list.isEmpty() && geoPoints.length == 0) return;
 		if (list.size() != geoPoints.length) {
 			System.out.println("Coord = "+ coord);
 			System.out.println("actual list:");
-			if (list.size() == 0)
+			if (list.isEmpty())
 				System.out.println("\t*empty*");
 			else
 				for (Point point : list) {
