@@ -64,11 +64,11 @@ public class TestGeometryOutput extends TestGISBase {
 
     @Test
 	public void testGeometryBagCreation() throws Exception {
-        List<Feature> geoms = getMultiGeometries();
+        List<Feature> features = getMultiGeometries();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         SimpleObjectOutputStream os = new SimpleObjectOutputStream(bos);
         GeometryBag geo = new GeometryBag();
-        for (Feature f : geoms) {
+        for (Feature f : features) {
             final Geometry geom = f.getGeometry();
             if (geom != null) geo.add(geom);
         }
