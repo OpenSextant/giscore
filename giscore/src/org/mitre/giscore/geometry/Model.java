@@ -1,11 +1,14 @@
 package org.mitre.giscore.geometry;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.AltitudeModeEnumType;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.*;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -128,6 +131,59 @@ public class Model extends Geometry {
 	@Override
 	public int hashCode() {
 		return HashCodeBuilder.reflectionHashCode(this);
+	}
+
+    	/*
+	 * (non-Javadoc)
+	 *
+	 * @see
+	 * org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.
+	 * SimpleObjectInputStream)
+	 */
+	@Override
+	public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+        boolean isNull = in.readBoolean();
+        if (!isNull) {
+            boolean is3d = in.readBoolean();
+            double elevation = 0.0;
+            if (is3d) {
+                elevation = in.readDouble();
+            }
+            Angle lat = readAngle(in);
+            Angle lon = readAngle(in);
+            if (is3d)
+                location = new Geodetic3DPoint(new Longitude(lon), new Latitude(lat), elevation);
+            else
+                location = new Geodetic2DPoint(new Longitude(lon), new Latitude(lat));
+        }
+        String s = in.readString();
+        altitudeMode = s == null ? null : AltitudeModeEnumType.getNormalizedMode(s);  
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see
+	 * org.mitre.giscore.geometry.Geometry#writeData(org.mitre.giscore.utils
+	 * .SimpleObjectOutputStream)
+	 */
+	@Override
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+        out.writeBoolean(location == null);
+        if (location != null) {
+            boolean is3d = location instanceof Geodetic3DPoint;
+            out.writeBoolean(is3d);
+            if (is3d) {
+                out.writeDouble(((Geodetic3DPoint) location).getElevation());
+            }
+            writeAngle(out, location.getLatitude());
+            writeAngle(out, location.getLongitude());
+        }
+        out.writeString(altitudeMode == null ? null : altitudeMode.toString());
 	}
 
 	/**
