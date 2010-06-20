@@ -244,6 +244,11 @@ public final class Namespace {
         return uri.hashCode();
     }
 
+    /**
+     * Key for storing a namespace representation in a map. (JDOM 1.1)
+     *
+     * @version $Revision: 1.2 $, $Date: 2007/11/10 05:28:59 $
+     */
     private static class NamespaceKey {
 
         private String prefix;
