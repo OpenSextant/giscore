@@ -48,9 +48,10 @@ import java.util.zip.ZipOutputStream;
 import java.net.URI;
 
 /**
- * Test the output stream
+ * Test the KML output stream.
  * 
  * @author DRAND
+ * @author Mathews
  * 
  */
 public class TestKmlOutputStream extends TestGISBase {
@@ -58,27 +59,28 @@ public class TestKmlOutputStream extends TestGISBase {
     private boolean autoDelete = !Boolean.getBoolean("keepTempFiles");
 
     @Test
-	public void testSimpleCase() throws Exception {
+	public void testSimpleCase() throws IOException {
 		doTest(getStream("7084.kml"));
 	}
 	
 	/**
 	 * Note, this test fails due to some sort of issue with geodesy, but the
 	 * actual output kml is fine.
-	 * @throws Exception
+     * 
+	 * @throws IOException
 	 */
 	@Test
-	public void testCase2() throws Exception {
+	public void testCase2() throws IOException {
 		doTest(getStream("KML_sample1.kml"));
 	}
 	
 	@Test
-	public void testCase3() throws Exception {
+	public void testCase3() throws IOException {
 		doTest(getStream("schema_example.kml"));
 	}
 
 	@Test
-	public void testRingOutput() throws Exception {
+	public void testRingOutput() throws IOException {
 		File file = createTemp("testRings", ".kml");
 		OutputStream fs = null;
 		try {
@@ -132,7 +134,7 @@ public class TestKmlOutputStream extends TestGISBase {
 	}
 
 	@Test
-	public void testPolyOutput() throws Exception {
+	public void testPolyOutput() throws IOException {
 		File file = createTemp("testPolys", ".kml");
 		OutputStream fs = null;
 		try {
@@ -285,7 +287,7 @@ public class TestKmlOutputStream extends TestGISBase {
 		kis.close();
 	}
 
-	public void doTest(InputStream fs) throws Exception {
+	public void doTest(InputStream fs) throws IOException {
         File temp = null;
         try {
             IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
