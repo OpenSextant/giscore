@@ -2,11 +2,13 @@ package org.mitre.giscore.test.output;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.test.TestGISBase;
+import org.mitre.itf.geodesy.Geodetic2DPoint;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -63,20 +65,37 @@ public class TestGeometryOutput extends TestGISBase {
 	}
 
     @Test
+    public void testModelCreation() throws Exception {
+        Model model = new Model();
+        final Geodetic2DPoint pt = random3dGeoPoint();
+        model.setLocation(pt);
+        model.setAltitudeMode(AltitudeModeEnumType.absolute);
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        SimpleObjectOutputStream os = new SimpleObjectOutputStream(bos);
+        model.writeData(os);
+
+        SimpleObjectInputStream is = new SimpleObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
+        Model geo2 = new Model();
+        geo2.readData(is);
+        assertEquals(model, geo2);
+     }
+
+    @Test
 	public void testGeometryBagCreation() throws Exception {
+        // create GeometryBag containing: MultiPoint, MultiLine, MultiLinearRings, MultiPolygons, and GeometryBag geometries 
         List<Feature> features = getMultiGeometries();
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
         SimpleObjectOutputStream os = new SimpleObjectOutputStream(bos);
-        GeometryBag geo = new GeometryBag();
+        GeometryBag bag = new GeometryBag();
         for (Feature f : features) {
-            final Geometry geom = f.getGeometry();
-            if (geom != null) geo.add(geom);
+            final Geometry g = f.getGeometry();
+            if (g != null) bag.add(g);
         }
-        geo.writeData(os);
+        bag.writeData(os);
 
         SimpleObjectInputStream is = new SimpleObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
         GeometryBag geo2 = new GeometryBag();
         geo2.readData(is);
-        assertEquals(geo, geo2);
+        assertEquals(bag, geo2);
     }
 }
