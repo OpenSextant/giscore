@@ -187,7 +187,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			stream.writeInt((int) buffer.count(), ByteOrder.LITTLE_ENDIAN);
 			stream.writeShort((short) ((schema.getKeys().size() * 32) + 33),
 					ByteOrder.LITTLE_ENDIAN);
-			stream.writeShort((short) getRecordLength(), ByteOrder.LITTLE_ENDIAN);
+			stream.writeShort( getRecordLength(), ByteOrder.LITTLE_ENDIAN);
 
 			// Fill in reserved and unused header fields we don't care about
 			// with
