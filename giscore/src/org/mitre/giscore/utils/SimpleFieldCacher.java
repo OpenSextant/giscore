@@ -41,12 +41,23 @@ public class SimpleFieldCacher implements IObjectCacher {
 	 */
 	private AtomicLong counter = new AtomicLong();
 
+    /**
+     * Add SimpleField to cache.
+     *
+     * @param field
+     * @throws IllegalArgumentException if field is not SimpleField instance
+     * @throws IllegalStateException if field is already in the collection  
+     */
 	@Override
 	public void addToCache(Object field) {
-		if (fields.containsKey(field)) {
+        if (!(field instanceof SimpleField)) {
+            throw new IllegalArgumentException("Field is not SimpleField");
+        }
+        final SimpleField sf = (SimpleField)field;
+		if (fields.containsKey(sf)) {
 			throw new IllegalStateException("Field is already in the collection");
 		}
-		fields.put((SimpleField) field, new Long(counter.incrementAndGet()));
+		fields.put(sf, new Long(counter.incrementAndGet()));
 	}
 
 	@Override
