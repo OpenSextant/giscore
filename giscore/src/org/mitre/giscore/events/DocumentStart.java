@@ -34,6 +34,9 @@ import org.mitre.giscore.IStreamVisitor;
  *
  */
 public class DocumentStart implements IGISObject {
+
+    private static final long serialVersionUID = 1L;
+
 	private DocumentType type;
 
 	/**
