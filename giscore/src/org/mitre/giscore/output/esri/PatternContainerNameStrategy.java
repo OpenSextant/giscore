@@ -33,6 +33,9 @@ import org.mitre.giscore.output.FeatureKey;
  * @author DRAND
  */
 public class PatternContainerNameStrategy extends BasicContainerNameStrategy {
+
+    private static final long serialVersionUID = 1L;
+
 	private static final String DEFAULT = "{0}{1}{2}";
 	private Map<Class<? extends Geometry>, String> patterns;
 	private char pathdelim;
