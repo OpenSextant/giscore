@@ -39,11 +39,20 @@ public class TestKmlReader extends TestCase {
 		KmlReader reader = new KmlReader(file);
 		List<IGISObject> features = reader.readAll();
 		assertEquals(5, features.size());
+
+        IGISObject o = features.get(2);
+		assertTrue(o instanceof NetworkLink);
+        NetworkLink link = (NetworkLink)o;
+        final URI linkUri = KmlReader.getLinkUri(link);
+        assertNotNull(linkUri);
+        // href = kmzfile:/C:/giscoreHome/data/kml/kmz/dir/content.kmz?file=kml/hi.kml
+        assertTrue(linkUri.toString().endsWith("content.kmz?file=kml/hi.kml"));
+        
 		List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
 		List<URI> networkLinks = reader.getNetworkLinks();
 		assertEquals(1, networkLinks.size());
 		assertEquals(2, linkedFeatures.size());
-		IGISObject o = linkedFeatures.get(1);
+		o = linkedFeatures.get(1);
 		assertTrue(o instanceof Feature);
 		Feature ptFeat = (Feature)o;
 		Geometry geom = ptFeat.getGeometry();
