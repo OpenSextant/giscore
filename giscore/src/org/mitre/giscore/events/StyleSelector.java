@@ -10,7 +10,9 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * @author Jason Mathews, MITRE Corp.
  * Date: Jul 9, 2009 11:48:04 AM
  */
-public abstract class StyleSelector extends AbstractObject {	
+public abstract class StyleSelector extends AbstractObject {
+
+    private static final long serialVersionUID = 1L;
 
     /* (non-Javadoc)
 	 * @see java.lang.Object#equals(java.lang.Object)

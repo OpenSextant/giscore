@@ -51,6 +51,8 @@ import org.mitre.giscore.IStreamVisitor;
  */
 public class Style extends StyleSelector {
 
+    private static final long serialVersionUID = 1L;
+
 	public enum ColorMode { NORMAL, RANDOM }
 	
 	private boolean hasIconStyle = false;

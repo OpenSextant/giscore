@@ -46,6 +46,8 @@ import org.mitre.giscore.events.SimpleField.Type;
  * @author DRAND
  */
 public class Schema implements IGISObject {
+    private static final long serialVersionUID = 1L;
+
 	// Numeric id, used for GDB XML and to create an initial name
 	private final static AtomicInteger ms_idgen = new AtomicInteger();
 	

@@ -34,6 +34,8 @@ import org.mitre.giscore.IStreamVisitor;
  * @author DRAND
  */
 public class StyleMap extends StyleSelector {
+
+    private static final long serialVersionUID = 1L;
 	
 	private final Map<String, String> mappings = new HashMap<String, String>();
 

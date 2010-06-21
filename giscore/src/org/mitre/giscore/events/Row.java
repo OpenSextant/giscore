@@ -40,6 +40,8 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * @author DRAND
  */
 public class Row extends AbstractObject implements IDataSerializable {
+    private static final long serialVersionUID = 1L;
+    
 	protected URI schema;
 	protected final Map<SimpleField, Object> extendedData = new LinkedHashMap<SimpleField, Object>();
 
