@@ -33,16 +33,9 @@ import java.util.List;
 
 import org.junit.Test;
 import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.MultiLine;
-import org.mitre.giscore.geometry.MultiLinearRings;
-import org.mitre.giscore.geometry.MultiPolygons;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
-import org.mitre.giscore.utils.SimpleObjectInputStream;
-import org.mitre.giscore.utils.SimpleObjectOutputStream;
+import org.mitre.giscore.geometry.*;
+import org.mitre.giscore.test.TestGISBase;
+import org.mitre.giscore.utils.*;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 
@@ -226,32 +219,63 @@ public class TestObjectPersistence {
 		
 		ContainerStart cs = new ContainerStart("folder");
 		soos.writeObject(cs);
+
+        Model mo = new Model();
+        mo.setLocation(TestGISBase.random3dGeoPoint());
+        mo.setAltitudeMode(AltitudeModeEnumType.absolute);
+        soos.writeObject(mo);
 		
 		soos.close();
 
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+        Feature  f2 = (Feature) sois.readObject();
+        assertEquals(pt, f2);
 
-		Feature  f2 = (Feature) sois.readObject();
-		assertEquals(pt, f2);
-		
-		GroundOverlay g2 = (GroundOverlay) sois.readObject();
-		assertEquals(go, g2);
-		
-		PhotoOverlay p2 = (PhotoOverlay) sois.readObject();
-		assertEquals(po, p2);
-		
-		ScreenOverlay s2 = (ScreenOverlay) sois.readObject();
-		assertEquals(so, s2);
-		
-		NetworkLink n2 = (NetworkLink) sois.readObject();
-		assertEquals(nl, n2);
-		
-		ContainerStart c2 = (ContainerStart) sois.readObject();
-		assertEquals(cs, c2);
+        GroundOverlay g2 = (GroundOverlay) sois.readObject();
+        assertEquals(go, g2);
 
-		sois.close();
+        PhotoOverlay p2 = (PhotoOverlay) sois.readObject();
+        assertEquals(po, p2);
+
+        ScreenOverlay s2 = (ScreenOverlay) sois.readObject();
+        assertEquals(so, s2);
+
+        NetworkLink n2 = (NetworkLink) sois.readObject();
+        assertEquals(nl, n2);
+
+        ContainerStart c2 = (ContainerStart) sois.readObject();
+        assertEquals(cs, c2);
+
+        Model m2 = (Model) sois.readObject();
+        assertEquals(mo, m2);
+        sois.close();
 	}
+
+    @Test
+	public void testWrapper() throws Exception {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+		final int count = 4;
+		System.out.println("testWrapper");
+        List<IDataSerializable> objects = new ArrayList<IDataSerializable>(count);
+		for (int i=0; i < count; i++) {
+			Feature f = makePointFeature();
+			f.setName(Integer.toString(i));
+            WrappedObject obj = new WrappedObject(f);
+            objects.add(obj);
+			soos.writeObject(obj);
+        }
+        soos.close();
+        
+        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+        SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+        for (IDataSerializable o1 : objects) {
+            WrappedObject o2 = (WrappedObject) sois.readObject();
+            assertEquals(o1, o2);
+        }
+        sois.close();
+    }
 
 	private Feature makePointFeature() {
 		Feature f = new Feature();
