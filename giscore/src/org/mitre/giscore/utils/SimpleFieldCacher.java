@@ -57,7 +57,7 @@ public class SimpleFieldCacher implements IObjectCacher {
 		if (fields.containsKey(sf)) {
 			throw new IllegalStateException("Field is already in the collection");
 		}
-		fields.put(sf, new Long(counter.incrementAndGet()));
+        fields.put(sf, counter.incrementAndGet());
 	}
 
 	@Override
