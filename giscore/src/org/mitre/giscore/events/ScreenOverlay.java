@@ -31,7 +31,10 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * 
  * @author DRAND
  */
-public class ScreenOverlay extends Overlay {	
+public class ScreenOverlay extends Overlay {
+    
+    private static final long serialVersionUID = 1L;
+
 	private ScreenLocation overlay;      // overlayXY
 	private ScreenLocation screen;       // screenXY
 	private ScreenLocation rotation;     // rotationXY

@@ -20,6 +20,8 @@ import java.util.Date;
  */
 public class NetworkLinkControl implements IGISObject {
 
+    private static final long serialVersionUID = 1L;
+
 	private Double minRefreshPeriod;
 	private Double maxSessionLength;
 	private String cookie;

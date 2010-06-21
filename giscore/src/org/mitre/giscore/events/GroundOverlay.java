@@ -38,6 +38,8 @@ import org.mitre.itf.geodesy.*;
  */
 public class GroundOverlay extends Overlay {
 
+    private static final long serialVersionUID = 1L;
+
     //private static final Logger log = LoggerFactory.getLogger(GroundOverlay.class);
 
 	private Double north, south, east, west, rotation, altitude;

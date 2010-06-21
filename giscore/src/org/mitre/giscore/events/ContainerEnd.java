@@ -32,6 +32,8 @@ import org.mitre.giscore.IStreamVisitor;
  * @author DRAND
  */
 public class ContainerEnd implements IGISObject {
+
+    private static final long serialVersionUID = 1L;
 	
     public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);

@@ -13,6 +13,8 @@ import org.mitre.giscore.IStreamVisitor;
  */
 public class NullObject implements IGISObject {
 
+    private static final long serialVersionUID = 1L;
+
     private static final NullObject NULL_OBJECT = new NullObject();
 
     private NullObject() {
