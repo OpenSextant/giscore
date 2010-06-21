@@ -60,7 +60,7 @@ public class TestKmlWriter extends TestGISBase {
     private void checkKmlFile(File file) throws IOException {
         System.out.println("Testing " + file);
         KmlReader reader = new KmlReader(file);
-		List<IGISObject> objs = reader.readAll();
+		List<IGISObject> objs = reader.readAll(); // implicit close
         System.out.format("features = %d%n", objs.size());
 		normalizeUrls(objs);
 		List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
@@ -77,15 +77,19 @@ public class TestKmlWriter extends TestGISBase {
             if (suff.length() < 3) suff = "x" + suff;
             temp = createTemp(suff + "-", reader.isCompressed() ? ".kmz" : ".kml", tempKmlDir);
         }
+        KmlReader reader2 = null;
 		try {
 			System.out.println(">create " + temp);
 			KmlWriter writer = new KmlWriter(temp);
-			int features = 0;
-			for (IGISObject o : objs) {
-				if (o instanceof Feature) features++;
-				writer.write(o);
-			}
-			writer.close();
+            int features = 0;
+            try {
+                for (IGISObject o : objs) {
+                    if (o instanceof Feature) features++;
+                    writer.write(o);
+                }
+            } finally {
+			    writer.close();
+            }
 			// Filter original list such that it will match the re-imported list
 			/*
 			List<IGISObject> objs2 = new ArrayList<IGISObject>();
@@ -118,7 +122,7 @@ public class TestKmlWriter extends TestGISBase {
 			}
 			objs = objs2;
 			*/
-			KmlReader reader2 = new KmlReader(temp);
+			reader2 = new KmlReader(temp);
 			IGISObject o;
 			int features2 = 0;
             /*
@@ -153,6 +157,9 @@ public class TestKmlWriter extends TestGISBase {
 			assertEquals(objs.size(), elements.size());
 			*/
 		} finally {
+            if (reader2 != null) {
+                reader2.close();
+            }
 			// delete temp file
 			if (autoDelete && temp.exists()) temp.delete();
 		}
@@ -185,38 +192,40 @@ public class TestKmlWriter extends TestGISBase {
 		ZipFile zf = null;
 		try {
 			KmlWriter writer = new KmlWriter(temp);
-            assertTrue(writer.isCompressed());
+            try { 
+                assertTrue(writer.isCompressed());
 
-			NetworkLink nl = new NetworkLink();
-			TaggedMap link = new TaggedMap(IKml.LINK);
-			link.put(IKml.HREF, "kml/link.kml");
-			nl.setName("NetworkLink Test");
-			nl.setLink(link);
-			writer.write(nl);
+                NetworkLink nl = new NetworkLink();
+                TaggedMap link = new TaggedMap(IKml.LINK);
+                link.put(IKml.HREF, "kml/link.kml");
+                nl.setName("NetworkLink Test");
+                nl.setLink(link);
+                writer.write(nl);
 
-			// add linked KML entry to KMZ file as "kml/link.kml"
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			KmlOutputStream kos = new KmlOutputStream(bos);
-			kos.write(new DocumentStart(DocumentType.KML));
-			/*
-			 could fill out completed GroundOverlay with icon href to image here
-			 (see data/kml/groundoverlay/etna.kml) but doesn't change the test
-			 results so just write out a simple Placemark.
-			*/
-			// GroundOverlay o = new GroundOverlay();
-			Feature f = new Feature();
-			f.setGeometry(new Point(42.504733587704, -71.238861602674));
-			f.setName("test");
-			f.setDescription("this is a test placemark");
-			kos.write(f);
-			kos.close();
-			writer.write(new ByteArrayInputStream(bos.toByteArray()), "kml/link.kml");
+                // add linked KML entry to KMZ file as "kml/link.kml"
+                ByteArrayOutputStream bos = new ByteArrayOutputStream();
+                KmlOutputStream kos = new KmlOutputStream(bos);
+                kos.write(new DocumentStart(DocumentType.KML));
+                /*
+                 could fill out completed GroundOverlay with icon href to image here
+                 (see data/kml/groundoverlay/etna.kml) but doesn't change the test
+                 results so just write out a simple Placemark.
+                */
+                // GroundOverlay o = new GroundOverlay();
+                Feature f = new Feature();
+                f.setGeometry(new Point(42.504733587704, -71.238861602674));
+                f.setName("test");
+                f.setDescription("this is a test placemark");
+                kos.write(f);
+                kos.close();
+                writer.write(new ByteArrayInputStream(bos.toByteArray()), "kml/link.kml");
 
-			// added image entry to KMZ file
-			File file = new File("data/kml/GroundOverlay/etna.jpg");
-			writer.write(file, "images/etna.jpg");
-
-			writer.close();
+                // added image entry to KMZ file
+                File file = new File("data/kml/GroundOverlay/etna.jpg");
+                writer.write(file, "images/etna.jpg");
+            } finally {
+			    writer.close();
+            }
 
 			KmlReader reader = new KmlReader(temp);
 			List<IGISObject> objs = reader.readAll();
