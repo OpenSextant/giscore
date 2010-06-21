@@ -190,10 +190,10 @@ public class TestKmlWriter extends TestGISBase {
 		ZipFile zf = null;
 		try {
 			KmlWriter writer = new KmlWriter(temp);
+            NetworkLink nl = new NetworkLink();
+            Feature f = null;
             try { 
                 assertTrue(writer.isCompressed());
-
-                NetworkLink nl = new NetworkLink();
                 TaggedMap link = new TaggedMap(IKml.LINK);
                 link.put(IKml.HREF, "kml/link.kml");
                 nl.setName("NetworkLink Test");
@@ -210,7 +210,7 @@ public class TestKmlWriter extends TestGISBase {
                  results so just write out a simple Placemark.
                 */
                 // GroundOverlay o = new GroundOverlay();
-                Feature f = new Feature();
+                f = new Feature();
                 f.setGeometry(new Point(42.504733587704, -71.238861602674));
                 f.setName("test");
                 f.setDescription("this is a test placemark");
@@ -239,7 +239,7 @@ public class TestKmlWriter extends TestGISBase {
 			TestKmlOutputStream.checkApproximatelyEquals(nl, objs.get(1));
 
 			List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
-			List<URI> links =  reader.getNetworkLinks();
+			List<URI> links = reader.getNetworkLinks();
 			//System.out.println("linkedFeature=" + linkedFeatures);
 			//System.out.println("links=" + links);
 			assertEquals(2, linkedFeatures.size());
