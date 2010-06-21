@@ -79,9 +79,26 @@ public class Point extends GeometryBase {
 						Angle.DEGREES)));
 	}
 
+    /**
+     * This constructor takes a Longitude, Latitude, and an elevation value in meters.
+     * The default elevation reference point (vertical datum) is the tangent surface plane
+     * touching the WGS84 Ellipsoid at the given longitude and latitude.
+	 *
+	 * @param lat
+	 *            the latitude in degrees
+	 * @param lon
+	 *            the longitude in degrees
+	 * @param elevation
+     *              elevation in meters from the assumed reference point
+	 */
+	public Point(double lat, double lon, double elevation) {
+        this(new Geodetic3DPoint(new Longitude(lon, Angle.DEGREES),
+				new Latitude(lat, Angle.DEGREES), elevation));
+    }
+
 	/**
-	 * The Constructor takes a GeoPoint that is either a Geodetic2DPoint or a
-	 * Geodetic3DPoint and initializes a Geometry object for it.
+	 * The Constructor takes a GeoPoint that is either a {@code Geodetic2DPoint} or a
+	 * {@code Geodetic3DPoint} and initializes a Geometry object for it.
      * <P>
      * Note {@code GeoPoint} object is copied by reference so caller must copy this
      * point and/or construct a new {@code GeoPoint} object if need to modify its
