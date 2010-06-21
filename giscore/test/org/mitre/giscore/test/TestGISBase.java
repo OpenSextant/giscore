@@ -348,7 +348,7 @@ public class TestGISBase {
      *
      * @return a random Geodetic3DPoint
      */
-    protected static Geodetic3DPoint random3dGeoPoint() {
+    public static Geodetic3DPoint random3dGeoPoint() {
         double maxBelow = 12000.0; // deeper than max ocean depth (Marianas Trench)
         double maxAbove = 26000.0; // higher than max altitude of SR-71 spy plane
 
