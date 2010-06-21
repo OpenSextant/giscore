@@ -8,8 +8,8 @@ import org.mitre.giscore.IStreamVisitor;
 import java.io.IOException;
 
 /**
- * The Circle class represents a circular region containing three coordinates (centerpoint
- * latitude, centerpoint longitude, circle radius) with latitude and longitude
+ * The Circle class represents a circular region containing three coordinates (center-point
+ * latitude, center-point longitude, circle radius) with latitude and longitude
  * in the WGS84 coordinate reference system and radius in meters.
  *
  * For reference see gml:CircleByCenterPoint or georss:circle definitions.
@@ -70,16 +70,16 @@ public class Circle extends Point {
 	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
 	 */
 	protected void computeBoundingBox() {
-		bbox = new Geodetic2DBounds(getCenter(), radius);
+        final Geodetic2DBounds bounds = new Geodetic2DBounds(getCenter(), radius);
+        if (is3D) {
+            double elev = ((Geodetic3DPoint)getCenter()).getElevation();
+            Geodetic3DPoint westCoord = new Geodetic3DPoint(bounds.getWestLon(), bounds.getNorthLat(), elev);
+            Geodetic3DPoint eastCoord = new Geodetic3DPoint(bounds.getEastLon(), bounds.getSouthLat(), elev);
+            bbox = new UnmodifiableGeodetic3DBounds(new Geodetic3DBounds(westCoord, eastCoord));
+        } else {
+            bbox = new UnmodifiableGeodetic2DBounds(bounds);
+        }
 	}
-
-    /**
-     * Set radius of circle in meters from center point.
-     * @param radius
-     */
-    public void setRadius(double radius) {
-        this.radius = radius;
-    }
 
     /**
      * Get hint of how circle should be handled
