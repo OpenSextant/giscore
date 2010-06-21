@@ -185,6 +185,42 @@ public class TestBaseGeometry extends TestGISBase {
     }
 
     @Test
+    public void testMultiLine() throws Exception {
+        List<Line> lines = new ArrayList<Line>();
+        List<Point> pts = new ArrayList<Point>();
+        for (int i = 0; i < 10; i++) {
+			pts.add(new Point(i * .01 + 0.1, i * .01 + 0.1, true)); // sets 0.0 elevation
+		}
+        Line line = new Line(pts);
+        line.setTessellate(false);
+        line.setAltitudeMode(AltitudeModeEnumType.clampToGround);
+        lines.add(line);
+        pts = new ArrayList<Point>();
+		for (int i = 0; i < 10; i++) {
+			pts.add(new Point(i * .02 + 0.2, i * .02 + 0.2, 100));
+		}
+        line = new Line(pts);
+        line.setTessellate(true);
+        lines.add(line);
+		MultiLine geo = new MultiLine(lines);
+        assertEquals(2, geo.getNumParts());
+        assertEquals(20, geo.getNumPoints());
+        Assert.assertTrue(geo.is3D());
+
+        // (0° 14' 24" E, 0° 14' 24" N) @ 0m
+        final Geodetic2DPoint cp = geo.getCenter();
+        System.out.println(cp);
+        assertEquals(0.24, cp.getLatitude().inDegrees(), EPSILON);
+        assertEquals(0.24, cp.getLongitude().inDegrees(), EPSILON);
+
+        List<Point> points = geo.getPoints(); // all 20 points
+        assertEquals(20, points.size());
+        for (int i=0; i < 10; i++) {
+            assertEquals(pts.get(i), points.get(i+10));
+        }
+    }
+
+    @Test
     public void testModel() throws Exception {
          Model model = new Model();
          final Geodetic2DPoint pt = random3dGeoPoint();
