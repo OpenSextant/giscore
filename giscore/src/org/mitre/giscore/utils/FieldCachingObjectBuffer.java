@@ -26,6 +26,7 @@ import org.mitre.giscore.GISFactory;
  * @author DRAND
  */
 public class FieldCachingObjectBuffer extends ObjectBuffer {
+    
 	/**
 	 * Ctor
 	 */
@@ -35,8 +36,9 @@ public class FieldCachingObjectBuffer extends ObjectBuffer {
 	
 	/**
 	 * Ctor
-	 */
+     * @param size Number of elements in object buffer
+     */
 	public FieldCachingObjectBuffer(int size) {
-		super(size , new SimpleFieldCacher());
+		super(size, new SimpleFieldCacher());
 	}
 }
