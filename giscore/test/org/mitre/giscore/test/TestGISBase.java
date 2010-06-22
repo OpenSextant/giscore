@@ -319,13 +319,13 @@ public class TestGISBase {
         return feats;
     }
 
-	protected static Point getRandomPoint(double radius) {
+	public static Point getRandomPoint(double radius) {
 		double lat = 40.0 + (radius * RandomUtils.nextDouble());
 		double lon = 40.0 + (radius * RandomUtils.nextDouble());
 		return new Point(lat, lon);
 	}
 
-	protected static Point getRandomPoint() {
+	public static Point getRandomPoint() {
 		double lat = 40.0 + (5.0 * RandomUtils.nextDouble());
 		double lon = 40.0 + (5.0 * RandomUtils.nextDouble());
 		return new Point(lat, lon);
