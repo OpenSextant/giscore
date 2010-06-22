@@ -13,6 +13,7 @@ import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 
 /**
  * Test base geometry classes with geometry creation and various
@@ -66,6 +67,23 @@ public class TestBaseGeometry extends TestGISBase {
 
         assertEquals(mp.getCenter(), line.getCenter());
     }
+
+	/**
+	 * Create mixed dimension (2d + 3d pts) MultiPoint which downgrades to 2d
+	 */
+	@Test
+	public void testMixedMultiPoint() {
+		Point pt2d = getRandomPoint();
+		Point pt3d = new Point(random3dGeoPoint());
+		List<Point> pts = new ArrayList<Point>();
+		pts.add(pt2d);
+		pts.add(pt3d);
+
+        MultiPoint mp = new MultiPoint(pts);
+        assertEquals(pts.size(), mp.getNumParts());
+        assertEquals(pts.size(), mp.getNumPoints());
+        assertFalse(mp.is3D());
+	}
 
     @Test
     public void testCircle() throws Exception {
@@ -205,7 +223,7 @@ public class TestBaseGeometry extends TestGISBase {
 		MultiLine geo = new MultiLine(lines);
         assertEquals(2, geo.getNumParts());
         assertEquals(20, geo.getNumPoints());
-        Assert.assertTrue(geo.is3D());
+        assertTrue(geo.is3D());
 
         // (0° 14' 24" E, 0° 14' 24" N) @ 0m
         final Geodetic2DPoint cp = geo.getCenter();
@@ -220,6 +238,35 @@ public class TestBaseGeometry extends TestGISBase {
         }
     }
 
+	/**
+	 * Construct mixed dimension MultiLine (2d + 3d Lines) which downgrades to 2d.
+	 */
+	@Test
+    public void testMixedMultiLine() {
+        List<Line> lines = new ArrayList<Line>();
+        List<Point> pts = new ArrayList<Point>();
+        for (int i = 0; i < 10; i++) {
+			pts.add(new Point(i * .01 + 0.1, i * .01 + 0.1, 500));
+		}
+        Line line = new Line(pts);
+		line.setAltitudeMode(AltitudeModeEnumType.absolute);
+		line.setTessellate(true);
+		assertTrue(line.is3D());
+		lines.add(line);
+
+		pts = new ArrayList<Point>();
+        for (int i = 0; i < 10; i++) {
+			pts.add(new Point(i * .03 + 0.3, i * .03 + 0.3)); // 2-d points
+		}
+		line = new Line(pts);
+        line.setTessellate(false);
+        lines.add(line);
+		MultiLine geo = new MultiLine(lines);
+        assertEquals(2, geo.getNumParts());
+        assertEquals(20, geo.getNumPoints());
+        assertFalse(geo.is3D());
+	}
+
     @Test
     public void testModel() throws Exception {
          Model model = new Model();
@@ -229,9 +276,9 @@ public class TestBaseGeometry extends TestGISBase {
          assertEquals(pt, model.getCenter());
          assertEquals(1, model.getNumParts());
          assertEquals(1, model.getNumPoints());
-         Assert.assertTrue(model.is3D());
+         assertTrue(model.is3D());
          Geodetic2DBounds bounds = model.getBoundingBox();
-         Assert.assertTrue(bounds.contains(pt));
+         assertTrue(bounds.contains(pt));
          assertEquals(pt, bounds.getCenter());
      }
 
@@ -246,9 +293,9 @@ public class TestBaseGeometry extends TestGISBase {
 		pts.add(new Point(-17.01144405215603, 179.900033693558));
 		pts.add(firstPt);
         Line line = new Line(pts);
-        Assert.assertTrue(line.clippedAtDateLine());
+        assertTrue(line.clippedAtDateLine());
 
         LinearRing ring = new LinearRing(pts, true);
-        Assert.assertTrue(ring.clippedAtDateLine());
+        assertTrue(ring.clippedAtDateLine());
      }
 }
