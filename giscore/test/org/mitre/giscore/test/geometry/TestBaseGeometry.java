@@ -225,7 +225,7 @@ public class TestBaseGeometry extends TestGISBase {
         line = new Line(pts);
         line.setTessellate(true);
         lines.add(line);
-		MultiLine geo = new MultiLine(lines);
+		Geometry geo = new MultiLine(lines);
         assertEquals(2, geo.getNumParts());
         assertEquals(20, geo.getNumPoints());
         assertTrue(geo.is3D());
@@ -241,6 +241,13 @@ public class TestBaseGeometry extends TestGISBase {
         for (int i=0; i < 10; i++) {
             assertEquals(pts.get(i), points.get(i+10));
         }
+
+        List<Geometry> geometries = new ArrayList<Geometry>();
+        geometries.add(pts.get(0));
+        geometries.add(line);
+		geo = new GeometryBag(geometries);
+        assertEquals(2, geo.getNumParts());
+        assertTrue(geo.is3D());
     }
 
 	/**
