@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -46,13 +47,17 @@ import org.apache.commons.lang.builder.ToStringStyle;
  * 
  */
 public class TestObjectPersistence {
-	@Test
+    
+    @Test
 	public void testSimpleGeometries() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
 		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 
 		Point p = new Point(.30, .42);
 		soos.writeObject(p);
+
+        Point p3d = new Point(30, 42, 200);
+		soos.writeObject(p3d);
 
 		List<Point> pts = new ArrayList<Point>();
 		for (int i = 0; i < 10; i++) {
@@ -78,6 +83,9 @@ public class TestObjectPersistence {
 		Geometry g = (Geometry) sois.readObject();
 		assertEquals(p, g);
 
+        g = (Geometry) sois.readObject();
+		assertEquals(p3d, g);
+
 		g = (Geometry) sois.readObject();
 		assertEquals(l.getNumPoints(), g.getNumPoints());
 		assertEquals(l.getBoundingBox(), g.getBoundingBox());
@@ -88,6 +96,32 @@ public class TestObjectPersistence {
 
 		sois.close();
 	}
+
+	@Test
+    public void testMixedMultiPoint() throws Exception {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+
+        Point pt2d = TestGISBase.getRandomPoint();
+        Point pt3d = new Point(TestGISBase.random3dGeoPoint());
+        List<Point> pts = new ArrayList<Point>();
+        pts.add(pt2d);
+        pts.add(pt3d);
+        MultiPoint g = new MultiPoint(pts);
+        soos.writeObject(g);
+
+        soos.close();
+
+        ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+        SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+
+        MultiPoint ml = (MultiPoint) sois.readObject();
+        assertEquals(2, ml.getNumParts());
+        assertEquals(pt2d, ml.getPart(0));
+        assertEquals(pt3d, ml.getPart(1));
+
+        sois.close();
+    }
 
 	@Test
 	public void testMultiGeometries() throws Exception {
