@@ -131,7 +131,10 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
         is3D = rings.get(0).is3D();
         boolean mixedDims = false;
         for (LinearRing rg : rings) {
-            if (is3D != rg.is3D()) mixedDims = true;
+            if (is3D != rg.is3D()) {
+				mixedDims = true;
+				break;
+			}
         }
         if (mixedDims) {
             log.info("LinearRings have mixed dimensionality: downgrading to 2d");

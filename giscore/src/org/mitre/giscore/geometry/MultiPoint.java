@@ -150,7 +150,7 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 			IllegalAccessException {
 		super.readData(in);
 		int pcount = in.readInt();
-		ArrayList<Point> plist = new ArrayList<Point>();
+		List<Point> plist = new ArrayList<Point>();
 		for(int i = 0; i < pcount; i++) {
 			plist.add((Point) in.readObject());
 		}

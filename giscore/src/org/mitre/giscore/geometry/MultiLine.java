@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
  * @author Paul Silvey
  */
 public class MultiLine extends Geometry implements Iterable<Line> {
+	
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiLine.class);
 
@@ -83,16 +84,17 @@ public class MultiLine extends Geometry implements Iterable<Line> {
      * @throws IllegalArgumentException error if object is not valid.
      */
     public MultiLine(List<Line> lines) throws IllegalArgumentException {
-        if (lines == null || lines.size() < 1)
-            throw new IllegalArgumentException("MultiLine must contain at least 1 Line");
         init(lines);
     }
 
     /**
      * Initialize
      * @param lines
+	 * @throws IllegalArgumentException error if object is not valid.
      */
 	private void init(List<Line> lines) {
+		if (lines == null || lines.size() < 1)
+            throw new IllegalArgumentException("MultiLine must contain at least 1 Line");
 		// Make sure all the lines have the same number of dimensions (2D or 3D)
         is3D = lines.get(0).is3D();
         boolean mixedDims = false;
@@ -100,6 +102,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
             if (is3D != ln.is3D()) {
                 mixedDims = true;
                 is3D = false;
+				break;
             }
         }
         if (mixedDims)
@@ -163,8 +166,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException, IllegalAccessException {
 		super.readData(in);
-		List<Line> llist = (List<Line>) in.readObjectCollection();
-		if (llist == null) llist = Collections.emptyList();
+		List<Line> llist = (List<Line>) in.readObjectCollection();		
 		init(llist);
 	}
 

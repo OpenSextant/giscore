@@ -83,7 +83,10 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
         is3D = polygonList.get(0).is3D();
         boolean mixedDims = false;
         for (Polygon nr : polygonList) {
-            if (is3D != nr.is3D()) mixedDims = true;
+            if (is3D != nr.is3D()) {
+				mixedDims = true;
+				break;
+			}
         }
         if (mixedDims) {
             log.info("Polygons have mixed dimensionality: downgrading MultiPolygon to 2d");
