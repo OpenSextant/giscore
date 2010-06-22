@@ -48,30 +48,10 @@ import org.slf4j.LoggerFactory;
  * @author Paul Silvey
  */
 public class MultiPolygons extends Geometry implements Iterable<Polygon> {
+	
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiPolygons.class);
     private List<Polygon> polygonList;
-
-    /**
-     * This method returns an iterator for cycling through the Polygons in this Object.
-     * This class supports use of Java 'for each' syntax to cycle through the Polygons.
-     *
-     * @return Iterator over Polygons objects.
-     */
-    public Iterator<Polygon> iterator() {
-        return Collections.unmodifiableCollection(polygonList).iterator();
-    }
-
-	/**
-	 * This method returns the {@code Polygon}s in this {@code MultiPolygons}.
-	 * <br/>
-	 * The returned collection is unmodifiable.
-	 *
-	 * @return Collection of the {@code Polygon} objects.
-	 */
-	public Collection<Polygon> getPolygons() {
-		return Collections.unmodifiableCollection(polygonList);
-	}
 
 	/**
 	 * Empty ctor for object io
@@ -81,23 +61,24 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	}
 	
     /**
-     * The Constructor takes a list of Polygon Objects to initialize this MultiPolygons object.
+     * The Constructor takes a list of Polygon Objects to initialize this {@code MultiPolygons} object.
      *
      * @param polygonList List of Polygons objects which define the parts of this MultiPolygons.
      * @throws IllegalArgumentException error if object is not valid.
      */
     public MultiPolygons(List<Polygon> polygonList) throws IllegalArgumentException {
-        if (polygonList == null || polygonList.size() < 1)
-            throw new IllegalArgumentException("MultiPolygons must contain " +
-                    "at least 1 Polygons object");
         init(polygonList);
     }
 
     /**
      * Initialize
      * @param polygonList
+	 * @throws IllegalArgumentException error if object is not valid.
      */
 	private void init(List<Polygon> polygonList) {
+		if (polygonList == null || polygonList.size() < 1)
+            throw new IllegalArgumentException("MultiPolygons must contain " +
+                    "at least 1 Polygons object");
 		// Make sure all the polygons have the same number of dimensions (2D or 3D)
         is3D = polygonList.get(0).is3D();
         boolean mixedDims = false;
@@ -110,6 +91,27 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
         }
         this.polygonList = polygonList; 
 	}
+
+	/**
+	 * This method returns an iterator for cycling through the Polygons in this Object.
+	 * This class supports use of Java 'for each' syntax to cycle through the Polygons.
+	 *
+	 * @return Iterator over Polygons objects.
+	 */
+	public Iterator<Polygon> iterator() {
+		return Collections.unmodifiableCollection(polygonList).iterator();
+	}
+
+	/**
+	 * This method returns the {@code Polygon}s in this {@code MultiPolygons}.
+	 * <br/>
+	 * The returned collection is unmodifiable.
+	 *
+	 * @return Collection of the {@code Polygon} objects.
+	 */
+	public Collection<Polygon> getPolygons() {
+		return Collections.unmodifiableCollection(polygonList);
+	}	
 
     /* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
