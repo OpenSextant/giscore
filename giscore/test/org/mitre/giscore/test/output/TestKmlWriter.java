@@ -226,7 +226,7 @@ public class TestKmlWriter extends TestGISBase {
             }
 
 			KmlReader reader = new KmlReader(temp);
-			List<IGISObject> objs = reader.readAll();
+			List<IGISObject> objs = reader.readAll(); // implicit close
 			// System.out.println(objs);
 			/*
 			for(Object o : objs) {
@@ -268,7 +268,7 @@ public class TestKmlWriter extends TestGISBase {
 		File temp = createTemp("TestTimeTest", ".kml", tempKmlDir);
 		try {
 			KmlReader reader = new KmlReader(input);
-			List<IGISObject> objs = reader.readAll();
+			List<IGISObject> objs = reader.readAll(); // implicit close
 
 			//System.out.println(features);
 			//System.out.println("# features=" + features.size());
@@ -349,7 +349,7 @@ public class TestKmlWriter extends TestGISBase {
 			writer.close();
 
 			reader = new KmlReader(temp);
-			List<IGISObject> objs2 = reader.readAll();
+			List<IGISObject> objs2 = reader.readAll(); // implicit close
 			assertEquals(objs.size(), objs2.size());
 			for (int i = 0; i < objs.size(); i++) {
 				TestKmlOutputStream.checkApproximatelyEquals(objs.get(i), objs2.get(i));
@@ -380,7 +380,7 @@ public class TestKmlWriter extends TestGISBase {
 		File temp = createTemp("testTimestamps", ".kml", tempKmlDir);
 		try {
 			KmlReader reader = new KmlReader(input);
-			List<IGISObject> objs = reader.readAll();
+			List<IGISObject> objs = reader.readAll(); // implicit close
 
 			//System.out.println(objs);
 			//System.out.println("# features=" + objs.size());
@@ -419,7 +419,7 @@ public class TestKmlWriter extends TestGISBase {
 			writer.close();
 
 			reader = new KmlReader(temp);
-			List<IGISObject> objs2 = reader.readAll();
+			List<IGISObject> objs2 = reader.readAll(); // implicit close
 			assertEquals(14, objs2.size());
 			for (int i = 0; i < objs.size(); i++) {
 				TestKmlOutputStream.checkApproximatelyEquals(objs.get(i), objs2.get(i));

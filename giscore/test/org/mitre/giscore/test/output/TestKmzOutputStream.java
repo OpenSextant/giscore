@@ -80,7 +80,7 @@ public class TestKmzOutputStream {
 			kmzos.close();
 
 			KmlReader reader = new KmlReader(temp);
-			List<IGISObject> objs = reader.readAll();
+			List<IGISObject> objs = reader.readAll(); // implicit close
 			// System.out.println(objs);
 			/*
 			for(Object o : objs) {

@@ -180,7 +180,7 @@ public class TestKmlOutputStream extends TestGISBase {
 			os.close();
 
 			KmlReader reader = new KmlReader(file);
-            List<IGISObject> objs = reader.readAll();
+            List<IGISObject> objs = reader.readAll(); // implicit close
             // imported features should be DocumentStart, Container, Schema, followed by Features
             assertEquals(9, objs.size());
             checkApproximatelyEquals(firstFeature, objs.get(3));
@@ -216,7 +216,7 @@ public class TestKmlOutputStream extends TestGISBase {
             IOUtils.closeQuietly(zoS);
             zoS = null;
             KmlReader reader = new KmlReader(file);
-            List<IGISObject> objs = reader.readAll();
+            List<IGISObject> objs = reader.readAll(); // implicit close
             // imported features should be DocumentStart followed by Feature 
             assertEquals(2, objs.size());
             checkApproximatelyEquals(f, objs.get(1));

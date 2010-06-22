@@ -37,7 +37,7 @@ public class TestKmlReader extends TestCase {
 	public void testKmzNetworkLinks() throws IOException {
 		File file = new File("data/kml/kmz/dir/content.kmz");
 		KmlReader reader = new KmlReader(file);
-		List<IGISObject> features = reader.readAll();
+		List<IGISObject> features = reader.readAll(); // implicit close
 		assertEquals(5, features.size());
 
         IGISObject o = features.get(2);
@@ -81,7 +81,7 @@ public class TestKmlReader extends TestCase {
 	public void testMultiLevelNetworkLinks() throws IOException {
 		File file = new File("data/kml/NetworkLink/multiLevelNetworkLinks2.kmz");
 		KmlReader reader = new KmlReader(file);
-		List<IGISObject> objs = reader.readAll();
+		List<IGISObject> objs = reader.readAll(); // implicit close
 		assertEquals(6, objs.size());
 		List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
 		List<URI> networkLinks = reader.getNetworkLinks();
@@ -106,7 +106,7 @@ public class TestKmlReader extends TestCase {
 	public void testMultiLevelNetworkLinksWithCallback() throws IOException {
 		File file = new File("data/kml/NetworkLink/multiLevelNetworkLinks2.kmz");
 		KmlReader reader = new KmlReader(file);
-		List<IGISObject> objs = reader.readAll();
+		List<IGISObject> objs = reader.readAll(); // implicit close
 		assertEquals(6, objs.size());
 		final List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
             reader.importFromNetworkLinks(new KmlReader.ImportEventHandler() {
@@ -145,7 +145,7 @@ public class TestKmlReader extends TestCase {
 	}
 
 	private void checkGroundOverlay(KmlReader reader) throws Exception {
-		List<IGISObject> features = reader.readAll();
+		List<IGISObject> features = reader.readAll(); // implicit close
 		assertEquals(2, features.size());
 		IGISObject obj = features.get(1);
 		assertTrue(obj instanceof GroundOverlay);
