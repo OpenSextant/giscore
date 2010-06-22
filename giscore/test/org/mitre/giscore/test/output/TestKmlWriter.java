@@ -174,13 +174,16 @@ public class TestKmlWriter extends TestGISBase {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		KmlOutputStream kos = new KmlOutputStream(bos);
 		KmlWriter writer = new KmlWriter(kos);
-		kos.write(new DocumentStart(DocumentType.KML));
-		Feature f = new Feature();
-		f.setGeometry(new Point(42.504733587704, -71.238861602674));
-		f.setName("test");
-		f.setDescription("this is a test placemark");
-		writer.write(f);
-		writer.close();
+        try {
+            kos.write(new DocumentStart(DocumentType.KML));
+            Feature f = new Feature();
+            f.setGeometry(new Point(42.504733587704, -71.238861602674));
+            f.setName("test");
+            f.setDescription("this is a test placemark");
+            writer.write(f);
+        } finally {
+		    writer.close();
+        }
 		assertTrue(bos.toString().contains("this is a test placemark"));
 	}
 
@@ -342,11 +345,14 @@ public class TestKmlWriter extends TestGISBase {
 			}
 
 			KmlWriter writer = new KmlWriter(temp);
-            assertFalse(writer.isCompressed());
-			for (IGISObject o : objs) {
-				writer.write(o);
-			}
-			writer.close();
+            try {
+                assertFalse(writer.isCompressed());
+                for (IGISObject o : objs) {
+                    writer.write(o);
+                }
+            } finally {
+			    writer.close();
+            }
 
 			reader = new KmlReader(temp);
 			List<IGISObject> objs2 = reader.readAll(); // implicit close
