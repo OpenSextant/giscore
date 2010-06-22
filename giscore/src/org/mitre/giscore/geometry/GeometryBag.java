@@ -48,7 +48,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	private final List<Geometry> geometries = new ArrayList<Geometry>();
 
 	/**
-	 * Empty ctor for object io
+	 * Empty ctor for object io.	  
 	 */
 	public GeometryBag() {
 		// 
@@ -64,7 +64,9 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 			throw new IllegalArgumentException(
 					"geometries should never be null");
 		}
-		this.geometries.addAll(geometries);
+		if (!geometries.isEmpty()) {
+			this.geometries.addAll(geometries);
+		}
 	}
 
 	/* (non-Javadoc)

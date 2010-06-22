@@ -53,6 +53,29 @@ public class Line extends GeometryBase implements Iterable<Point> {
     private List<Point> pointList;
     private boolean idlWrap;  // International Date Line Wrap
 
+	/**
+	 * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
+     * to initialize the object instance otherwise object is invalid.
+	 */
+	public Line() {
+		//
+	}
+
+    /**
+     * The Constructor takes a list of points and initializes a Geometry Object for this Line.
+     * <P>
+     * Note list of points is copied by reference so caller must copy list if need to modify them after
+     * this constructor is invoked.
+     *
+     * @param pts List of Geodetic2DPoint point objects to use for the parts of this Line.
+     * @throws IllegalArgumentException error if object is not valid.
+     */
+    public Line(List<Point> pts) throws IllegalArgumentException {
+        if (pts == null || pts.size() < 2)
+            throw new IllegalArgumentException("Line must contain at least 2 Points");
+        init(pts);
+    }
+
     /**
      * This method returns an iterator for cycling through the Points in this Line.
      * This class supports use of Java 'for each' syntax to cycle through the Points.
@@ -73,28 +96,6 @@ public class Line extends GeometryBase implements Iterable<Point> {
 	public List<Point> getPoints() {
 		return  Collections.unmodifiableList(pointList);
 	}
-
-	/**
-	 * Empty ctor for object io
-	 */
-	public Line() {
-		//
-	}
-	
-    /**
-     * The Constructor takes a list of points and initializes a Geometry Object for this Line.
-     * <P>
-     * Note list of points is copied by reference so caller must copy list if need to modify them after
-     * this constructor is invoked.
-     *
-     * @param pts List of Geodetic2DPoint point objects to use for the parts of this Line.
-     * @throws IllegalArgumentException error if object is not valid.
-     */
-    public Line(List<Point> pts) throws IllegalArgumentException {
-        if (pts == null || pts.size() < 2)
-            throw new IllegalArgumentException("Line must contain at least 2 Points");
-        init(pts);
-    }
 
     /**
      * Initialize given a set of points

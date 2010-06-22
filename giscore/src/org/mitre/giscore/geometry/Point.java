@@ -41,7 +41,10 @@ public class Point extends GeometryBase {
 	private Geodetic2DPoint pt; // or extended Geodetic3DPoint
 
 	/**
-	 * Empty ctor only for object IO
+	 * Empty ctor only for object IO.  Constructor must be followed by call to {@code readData()}
+     * to initialize the object instance otherwise object is invalid.
+	 * @see SimpleObjectInputStream
+	 * @see SimpleObjectOutputStream
 	 */
 	public Point() {
 		// 

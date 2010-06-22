@@ -61,7 +61,8 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
     private List<LinearRing> ringList;
 
     /**
-     * Empty ctor for object io
+     * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
+     * to initialize the object instance otherwise object is invalid.
      */
     public Polygon() {
     	// 

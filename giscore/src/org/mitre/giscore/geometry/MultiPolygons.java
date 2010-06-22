@@ -54,7 +54,8 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
     private List<Polygon> polygonList;
 
 	/**
-	 * Empty ctor for object io
+	 * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
+     * to initialize the object instance otherwise object is invalid.
 	 */
 	public MultiPolygons() {
 		//

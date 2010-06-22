@@ -68,7 +68,8 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	}
 	
 	/**
-	 * Empty ctor for object io
+	 * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
+     * to initialize the object instance otherwise object is invalid.
 	 */
 	public MultiPoint() {
 		//

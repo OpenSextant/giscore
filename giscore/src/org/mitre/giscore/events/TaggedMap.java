@@ -47,7 +47,8 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
 	private String tag;
 	
 	/**
-	 * Empty ctor for IO only
+	 * Empty ctor for IO only.  Constructor must be followed by call to {@code readData()}
+     * to initialize the object instance otherwise object is invalid.
 	 */
 	public TaggedMap() {
 		// 

@@ -54,13 +54,15 @@ import org.slf4j.LoggerFactory;
  * @author Paul Silvey
  */
 public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
+	
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiLinearRings.class);
 
     private List<LinearRing> ringList;
 
     /**
-     * Empty ctor for object io
+     * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
+     * to initialize the object instance otherwise object is invalid.
      */
     public MultiLinearRings() {
     	//

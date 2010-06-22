@@ -38,7 +38,8 @@ public class ContainerStart extends Common {
 	private String type;
 
     /**
-	 * Empty ctor for data IO
+	 * Empty ctor for data IO.  Constructor must be followed by call to {@code readData()}
+     * to initialize the object instance otherwise object is invalid.
 	 */
 	public ContainerStart() {
 		// 

@@ -59,6 +59,73 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
     private List<Point> pointList;
     private boolean idlWrap;  // International Date Line Wrap
 
+	/**
+     * This Constructor takes a list of points and initializes a Geometry Object for this Ring. By
+     * default, it does not do topology validation.  To do validation, use alternate constructor.
+     * <P>
+     * Note points are copied by reference (assuming multiple geometries may share the same
+     * list of points for smaller memory footprint) so modifications to point list after
+     * constructor called will change the internal state of this instance which may leave
+     * object in inconsistent state. Make copy of list if need to modify contents after
+     * constructing a {@code LinearRing} instance.
+     *
+     * @param pts List of Geodetic2DPoint point objects to use for the vertices of this Ring
+     * @throws IllegalArgumentException error if point list is empty
+     *          or number of points is less than 4
+     */
+    public LinearRing(List<Point> pts) throws IllegalArgumentException {
+        init(pts, false);
+    }
+
+    /**
+     * This Constructor takes a list of points and initializes a Geometry Object for this Ring,
+     * performing topology validation if requested.
+     * <P>
+     * Note points are copied by reference so caller must copy lists if need to modify them after
+     * this constructor is invoked.
+     *
+     * @param pts              List of Geodetic2DPoint objects to use as Ring vertices
+     * @param validateTopology boolean flag indicating that Ring topology should be validated
+     * @throws IllegalArgumentException error if point list is empty
+     *          or number of points is less than 4
+     */
+    public LinearRing(List<Point> pts, boolean validateTopology) throws IllegalArgumentException {
+        init(pts, validateTopology);
+    }
+
+    /**
+     * This Constructor takes a bounding box and initializes a Geometry Object
+     * for it. This ring will be clockwise.
+     *
+     * @param box the bounding box to represent as a ring, never null.
+     * @throws IllegalArgumentException if the bounding box is null, a point or a line
+     */
+    public LinearRing(Geodetic2DBounds box) {
+        if (box == null)
+            throw new IllegalArgumentException("box must be non-null");
+        if (box.getEastLon().inRadians() == box.getWestLon().inRadians())
+            log.warn("Bounding box not a polygon - east and west points are the same.");
+        if (box.getNorthLat().inRadians() == box.getSouthLat().inRadians())
+            log.warn("Bounding box not a polygon - north and south points are the same.");
+
+        final List<Point> points = new ArrayList<Point>(5);
+        final Point firstPt = new Point(new Geodetic2DPoint(box.getWestLon(), box.getSouthLat()));
+        points.add(firstPt);
+        points.add(new Point(new Geodetic2DPoint(box.getWestLon(), box.getNorthLat())));
+        points.add(new Point(new Geodetic2DPoint(box.getEastLon(), box.getNorthLat())));
+        points.add(new Point(new Geodetic2DPoint(box.getEastLon(), box.getSouthLat())));
+        points.add(firstPt);
+        init(points, false);
+    }
+
+	/**
+	 * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
+	 * to initialize the object instance otherwise object is invalid.
+	 */
+	public LinearRing() {
+		//
+	}
+
     /**
      * This method returns an iterator for cycling through the Points in this Ring.
      * This class supports use of Java 'for each' syntax to cycle through the Points.
@@ -190,72 +257,6 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
 	public int getNumPoints() {
 		return pointList != null ? pointList.size() : 0;
 	}
-	
-    /**
-     * This Constructor takes a list of points and initializes a Geometry Object for this Ring. By
-     * default, it does not do topology validation.  To do validation, use alternate constructor.
-     * <P>
-     * Note points are copied by reference (assuming multiple geometries may share the same
-     * list of points for smaller memory footprint) so modifications to point list after
-     * constructor called will change the internal state of this instance which may leave
-     * object in inconsistent state. Make copy of list if need to modify contents after
-     * constructing a {@code LinearRing} instance.
-     *
-     * @param pts List of Geodetic2DPoint point objects to use for the vertices of this Ring
-     * @throws IllegalArgumentException error if point list is empty
-     *          or number of points is less than 4
-     */
-    public LinearRing(List<Point> pts) throws IllegalArgumentException {
-        init(pts, false);
-    }
-
-    /**
-     * This Constructor takes a list of points and initializes a Geometry Object for this Ring,
-     * performing topology validation if requested.
-     * <P>
-     * Note points are copied by reference so caller must copy lists if need to modify them after
-     * this constructor is invoked.  
-     *
-     * @param pts              List of Geodetic2DPoint objects to use as Ring vertices
-     * @param validateTopology boolean flag indicating that Ring topology should be validated
-     * @throws IllegalArgumentException error if point list is empty
-     *          or number of points is less than 4
-     */
-    public LinearRing(List<Point> pts, boolean validateTopology) throws IllegalArgumentException {
-        init(pts, validateTopology);
-    }
-
-    /**
-     * Empty ctor for object io
-     */
-    public LinearRing() {
-    	// 
-    }
-    
-    /**
-     * This Constructor takes a bounding box and initializes a Geometry Object
-     * for it. This ring will be clockwise.
-     *
-     * @param box the bounding box to represent as a ring, never null.
-     * @throws IllegalArgumentException if the bounding box is null, a point or a line
-     */
-    public LinearRing(Geodetic2DBounds box) {
-        if (box == null)
-            throw new IllegalArgumentException("box must be non-null");
-        if (box.getEastLon().inRadians() == box.getWestLon().inRadians())
-            log.warn("Bounding box not a polygon - east and west points are the same.");
-        if (box.getNorthLat().inRadians() == box.getSouthLat().inRadians())
-            log.warn("Bounding box not a polygon - north and south points are the same.");
-
-        final List<Point> points = new ArrayList<Point>(5);
-        final Point firstPt = new Point(new Geodetic2DPoint(box.getWestLon(), box.getSouthLat()));
-        points.add(firstPt);
-        points.add(new Point(new Geodetic2DPoint(box.getWestLon(), box.getNorthLat())));
-        points.add(new Point(new Geodetic2DPoint(box.getEastLon(), box.getNorthLat())));
-        points.add(new Point(new Geodetic2DPoint(box.getEastLon(), box.getSouthLat())));
-        points.add(firstPt);
-        init(points, false);
-    }
 
     /**
      * This predicate method is used to tell if this Ring has positive Longitude points
