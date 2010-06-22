@@ -164,6 +164,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 			ClassNotFoundException, InstantiationException, IllegalAccessException {
 		super.readData(in);
 		List<Line> llist = (List<Line>) in.readObjectCollection();
+		if (llist == null) llist = Collections.emptyList();
 		init(llist);
 	}
 
