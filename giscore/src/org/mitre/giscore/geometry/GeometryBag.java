@@ -45,7 +45,7 @@ import org.mitre.itf.geodesy.Longitude;
 public class GeometryBag extends Geometry implements Collection<Geometry> {
 	private static final long serialVersionUID = 1L;
 	
-	List<Geometry> geometries = new ArrayList<Geometry>();
+	private final List<Geometry> geometries = new ArrayList<Geometry>();
 
 	/**
 	 * Empty ctor for object io
@@ -57,13 +57,14 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/**
 	 * Ctor
 	 * @param geometries List of Geometry objects to include in the bag
+	 * @throws IllegalArgumentException error if geometries is null.
 	 */
 	public GeometryBag(List<Geometry> geometries) {
 		if (geometries == null) {
 			throw new IllegalArgumentException(
 					"geometries should never be null");
 		}
-		this.geometries = geometries;
+		this.geometries.addAll(geometries);
 	}
 
 	/* (non-Javadoc)
@@ -128,7 +129,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	
 	@Override
 	public Geometry getPart(int i) {
-		return geometries != null ? geometries.get(i) : null;
+		return geometries.get(i);
 	}
 
 	/* (non-Javadoc)
@@ -276,7 +277,10 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException, IllegalAccessException {
 		super.readData(in);
-		geometries = (List<Geometry>) in.readObjectCollection();
+		List<Geometry> list = (List<Geometry>) in.readObjectCollection();
+		if (!geometries.isEmpty()) geometries.clear();
+		if (list != null && !list.isEmpty())
+			geometries.addAll(list);
 	}
 
 	/* (non-Javadoc)
