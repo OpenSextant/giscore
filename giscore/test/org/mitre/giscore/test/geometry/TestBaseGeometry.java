@@ -91,6 +91,11 @@ public class TestBaseGeometry extends TestGISBase {
 		Circle c = new Circle(pt.getCenter(), 10000.0);
         assertEquals(pt.asGeodetic2DPoint(), c.getCenter());
         assertFalse(c.is3D());
+
+        pt = new Point(random3dGeoPoint());
+		c = new Circle(pt.getCenter(), 10000.0);
+        assertEquals(pt.asGeodetic2DPoint(), c.getCenter());
+        assertTrue(c.is3D());
     }
 
     @Test
