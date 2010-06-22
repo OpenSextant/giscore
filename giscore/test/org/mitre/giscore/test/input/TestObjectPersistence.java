@@ -59,6 +59,15 @@ public class TestObjectPersistence {
         Point p3d = new Point(30, 42, 200);
 		soos.writeObject(p3d);
 
+        Circle c = new Circle(p.getCenter(), 10);
+        c.setExtrude(true);
+        c.setAltitudeMode("absolute");
+        soos.writeObject(c);
+
+        Circle c3d = new Circle(p3d.getCenter(), 10);
+        c3d.setTessellate(true);
+        soos.writeObject(c3d);
+
 		List<Point> pts = new ArrayList<Point>();
 		for (int i = 0; i < 10; i++) {
 			pts.add(new Point(i * .01, i * .01));
@@ -85,6 +94,12 @@ public class TestObjectPersistence {
 
         g = (Geometry) sois.readObject();
 		assertEquals(p3d, g);
+
+        g = (Geometry) sois.readObject();
+		assertEquals(c, g);
+
+        g = (Geometry) sois.readObject();
+		assertEquals(c3d, g);
 
 		g = (Geometry) sois.readObject();
 		assertEquals(l.getNumPoints(), g.getNumPoints());
