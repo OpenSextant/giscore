@@ -91,11 +91,16 @@ public class TestBaseGeometry extends TestGISBase {
 		Circle c = new Circle(pt.getCenter(), 10000.0);
         assertEquals(pt.asGeodetic2DPoint(), c.getCenter());
         assertFalse(c.is3D());
+        Geodetic2DBounds bounds = c.getBoundingBox();
+        Assert.assertNotNull(bounds);
 
         pt = new Point(random3dGeoPoint());
 		c = new Circle(pt.getCenter(), 10000.0);
         assertEquals(pt.asGeodetic2DPoint(), c.getCenter());
         assertTrue(c.is3D());
+        bounds = c.getBoundingBox();
+        assertTrue(bounds instanceof Geodetic3DBounds);
+        assertTrue(bounds.contains(pt.asGeodetic2DPoint()));
     }
 
     @Test
@@ -197,7 +202,8 @@ public class TestBaseGeometry extends TestGISBase {
 		points.add(new Point(1.0, 0.0));
 		geometries.add(new Line(points));
 		GeometryBag geo = new GeometryBag(geometries);
-        assertEquals(2, geo.getNumParts());
+        assertEquals(2, geo.size()); // number of geometries
+        assertEquals(2, geo.getNumParts()); // aggregate parts of all geometries
         assertEquals(1 + points.size(), geo.getNumPoints());
         assertFalse(geo.is3D());
 
@@ -229,6 +235,10 @@ public class TestBaseGeometry extends TestGISBase {
         assertEquals(2, geo.getNumParts());
         assertEquals(20, geo.getNumPoints());
         assertTrue(geo.is3D());
+        Geodetic2DBounds bounds = geo.getBoundingBox();
+        assertTrue(bounds instanceof Geodetic3DBounds);
+        // bounding box of MultiLine must contain bounding box for each of its lines
+        assertTrue(bounds.contains(line.getBoundingBox()));
 
         // (0° 14' 24" E, 0° 14' 24" N) @ 0m
         final Geodetic2DPoint cp = geo.getCenter();
