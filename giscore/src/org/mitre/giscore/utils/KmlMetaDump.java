@@ -484,7 +484,7 @@ public class KmlMetaDump implements IKml {
 		//if (geom instanceof Line && (((Line)geom).clippedAtDateLine())) System.out.println(":clipped");
 		//else if (geom instanceof LinearRing && (((LinearRing)geom).clippedAtDateLine())) System.out.println(":clipped");
 		// see http://www.cadmaps.com/gisblog/?cat=10
-		if (bbox.westLon.inDegrees() > bbox.eastLon.inDegrees()) {
+		if (bbox.getWestLon().inDegrees() > bbox.getEastLon().inDegrees()) {
 			//System.out.println(geom.getClass().getName());
 			addTag(":Geometry spans -180/+180 longtiude line");
 			// such geometries must be sub-divided to render correctly

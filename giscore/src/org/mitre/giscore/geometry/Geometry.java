@@ -110,13 +110,13 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
         final Geodetic2DBounds bounds = getBoundingBox();
         if (bounds == null)
 			return null;
-		double wLonRad = bounds.westLon.inRadians();
-		double eLonRad = bounds.eastLon.inRadians();
+		double wLonRad = bounds.getWestLon().inRadians();
+		double eLonRad = bounds.getEastLon().inRadians();
 		if (eLonRad < wLonRad)
 			eLonRad += (2.0 * Math.PI);
 		double cLonRad = wLonRad + ((eLonRad - wLonRad) / 2.0);
-		double sLatRad = bounds.southLat.inRadians();
-		double nLatRad = bounds.northLat.inRadians();
+		double sLatRad = bounds.getSouthLat().inRadians();
+		double nLatRad = bounds.getNorthLat().inRadians();
 		double cLatRad = sLatRad + ((nLatRad - sLatRad) / 2.0);
         // can't assume if is3D == true that bounds == Geodetic3DBounds
         if (bounds instanceof Geodetic3DBounds) {

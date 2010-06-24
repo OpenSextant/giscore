@@ -948,10 +948,10 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 *             if an error occurs
 	 */
 	private void putBBox(Geodetic2DBounds bbox) throws IOException {
-		double westLonDeg = bbox.westLon.inDegrees();
-		double southLatDeg = bbox.southLat.inDegrees();
-		double eastLonDeg = bbox.eastLon.inDegrees();
-		double northLatDeg = bbox.northLat.inDegrees();
+		double westLonDeg = bbox.getWestLon().inDegrees();
+		double southLatDeg = bbox.getSouthLat().inDegrees();
+		double eastLonDeg = bbox.getEastLon().inDegrees();
+		double northLatDeg = bbox.getNorthLat().inDegrees();
 		// Correct for ESRI tools dislike for bounding wrapping bounding boxes
 		if (eastLonDeg == -180.0)
 			eastLonDeg = +180.0;
