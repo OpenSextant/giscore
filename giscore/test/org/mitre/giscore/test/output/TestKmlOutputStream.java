@@ -35,7 +35,6 @@ import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.XmlOutputStreamBase;
 import org.mitre.giscore.output.kml.KmlOutputStream;
-import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.giscore.test.TestGISBase;
 
 import javax.xml.stream.XMLStreamException;
@@ -45,7 +44,6 @@ import java.util.List;
 import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
-import java.net.URI;
 
 /**
  * Test the KML output stream.
