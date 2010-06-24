@@ -466,7 +466,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		writeInt(buffer, recoffset, ByteOrder.BIG_ENDIAN);
 		writeInt(buffer, length, ByteOrder.BIG_ENDIAN);
 		buffer.flip();
-		xchannel.write(buffer, offset * 2);
+		xchannel.write(buffer, offset * 2L);
 	}
 
 	@Override
@@ -644,7 +644,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		writeInt(hbuffer, rlength, ByteOrder.BIG_ENDIAN);
 		writeInt(hbuffer, shape, ByteOrder.LITTLE_ENDIAN);
 		hbuffer.flip();
-		channel.write(hbuffer, offset * 2);
+		channel.write(hbuffer, offset * 2L);
 		obuf = ByteBuffer.allocate(rlength * 2);
 		try {
 			geom.accept(this);
