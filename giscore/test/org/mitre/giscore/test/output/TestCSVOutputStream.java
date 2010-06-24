@@ -95,12 +95,13 @@ public class TestCSVOutputStream {
 				break;
 			if (obj instanceof Schema) {
 				Schema a = (Schema) iter.next();
-				if (obj instanceof Schema) {
+				// review logic here: instanceof will always return true
+				//if (obj instanceof Schema) {
 					Schema b = (Schema) obj;
 					assertEquals(a.getKeys(), b.getKeys());
-				} else {
-					is.read(); // Need to even off the stream - we had a schema in only one
-				}
+				//} else {
+					//is.read(); // Need to even off the stream - we had a schema in only one
+				//}
 			} else {
 				Row a = (Row) iter.next();
 				Row b = (Row) obj;
