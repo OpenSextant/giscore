@@ -56,7 +56,7 @@ import org.mitre.giscore.output.SortingOutputStream;
  */
 public class TestSorterOutputStream extends TestGISBase {
 	
-	private static SimpleField ms_type = new SimpleField("reportType", Type.STRING);
+	private final static SimpleField ms_type = new SimpleField("reportType", Type.STRING);
 
 	/**
 	 * @author DRAND
@@ -149,7 +149,7 @@ public class TestSorterOutputStream extends TestGISBase {
 		}
 	}
 
-	private static String types[] = { "orange", "cherry", "apple" };
+	private final static String types[] = { "orange", "cherry", "apple" };
 
 	/**
 	 * @param i
