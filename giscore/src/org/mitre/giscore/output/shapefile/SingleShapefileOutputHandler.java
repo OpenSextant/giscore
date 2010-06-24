@@ -923,6 +923,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			break;
 		case 15: // PolygonZ
 			nPoints = getPolyPntCount(geom);
+            // fall through to PolyLineZ case
 		case 13: // PolyLineZ
 			base = 60;
 			bytesPerPart = 4;
