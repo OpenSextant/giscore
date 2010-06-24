@@ -30,13 +30,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.TimeZone;
 import java.util.Queue;
 import java.text.ParseException;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.IOUtils;
 import org.mitre.giscore.events.*;

@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
-import java.util.TimeZone;
 import java.util.zip.ZipOutputStream;
 
 import org.apache.commons.io.IOUtils;
