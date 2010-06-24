@@ -25,9 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.io.IOUtils;
 import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.impl.BlockInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.IRemoteableGISOutputStream;
 import org.slf4j.Logger;
