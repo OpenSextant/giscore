@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.junit.Test;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.utils.IDataSerializable;
@@ -76,9 +77,14 @@ public class TestSimpleObjectIO {
 		public boolean equals(Object obj) {
 			return EqualsBuilder.reflectionEquals(this, obj);
 		}
-		
-		
-		
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return HashCodeBuilder.reflectionHashCode(this);
+		}
 	}
 	
 	public static class TestClass implements IDataSerializable {
@@ -110,6 +116,14 @@ public class TestSimpleObjectIO {
 		@Override
 		public boolean equals(Object obj) {
 			return EqualsBuilder.reflectionEquals(this, obj);
+		}
+
+		/* (non-Javadoc)
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			return HashCodeBuilder.reflectionHashCode(this);
 		}
 	}
 	
@@ -298,9 +312,9 @@ public class TestSimpleObjectIO {
 		
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
-		for(int i = 0; i < fields.length; i++) {
+		for (SimpleField field : fields) {
 			SimpleField test = (SimpleField) sois.readObject();
-			assertEquals(fields[i], test);
+			assertEquals(field, test);
 		}
 		sois.close();
 	}
