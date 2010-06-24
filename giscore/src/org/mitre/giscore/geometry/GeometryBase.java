@@ -78,7 +78,6 @@ public abstract class GeometryBase extends Geometry {
      * @throws IllegalAccessException
      * @exception IllegalArgumentException if enumerated AltitudeMode value is invalid
      */
-    @SuppressWarnings("unchecked")
 	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
