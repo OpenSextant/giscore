@@ -25,9 +25,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.net.URI;
 import java.util.Date;
-import java.util.TimeZone;
 
-import org.apache.commons.lang.ObjectUtils;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Row;
