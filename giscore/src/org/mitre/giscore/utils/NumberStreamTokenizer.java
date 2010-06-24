@@ -8,7 +8,7 @@
 package org.mitre.giscore.utils;
 
 import java.io.IOException;
-import java.io.InputStream;
+//import java.io.InputStream;
 import java.io.Reader;
 
 /**

@@ -26,10 +26,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

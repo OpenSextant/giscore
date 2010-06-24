@@ -24,11 +24,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteOrder;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.TimeZone;
 
 import org.mitre.giscore.events.IGISObject;
@@ -39,7 +36,6 @@ import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.input.GISInputStreamBase;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.shapefile.BinaryInputStream;
-import org.mitre.giscore.utils.SafeDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
