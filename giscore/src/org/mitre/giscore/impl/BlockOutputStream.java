@@ -36,9 +36,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  */
 public class BlockOutputStream extends OutputStream implements Serializable, IBlockOutputStream {
+	
 	private static final long serialVersionUID = 1L;
-	private final int MAX_BUFFER_SIZE = 65536;
-	private final int CAPACITY = 10;
+	private static final int MAX_BUFFER_SIZE = 65536;
+	private static final int CAPACITY = 10;
 	
 	/**
 	 * Each buffer holds up to MAX_BUFFER_SIZE bytes of data. The buffers are
