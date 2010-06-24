@@ -55,8 +55,8 @@ import java.io.Reader;
 public class NumberStreamTokenizer {
 
     /* Only one of these will be non-null */
-    private Reader reader = null;
-    private InputStream input = null;
+    private Reader reader;
+    //private InputStream input = null;
 
     private char buf[] = new char[20];
 
@@ -460,8 +460,8 @@ public class NumberStreamTokenizer {
     private int read() throws IOException {
 	if (reader != null)
 	    return reader.read();
-	else if (input != null)
-	    return input.read();
+	//else if (input != null)
+	    //return input.read();
 	else
 	    throw new IllegalStateException();
     }
