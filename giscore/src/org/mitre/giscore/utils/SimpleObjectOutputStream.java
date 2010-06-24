@@ -94,7 +94,6 @@ public class SimpleObjectOutputStream implements Closeable {
 	 * @param object
 	 * @throws IOException if an I/O error occurs
 	 */
-	@SuppressWarnings("unchecked")
 	public void writeObject(IDataSerializable object) throws IOException {
 		if (object == null) {
 			writeShort(NULL);
