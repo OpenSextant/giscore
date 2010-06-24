@@ -55,13 +55,14 @@ import org.mitre.giscore.output.SortingOutputStream;
  * 
  */
 public class TestSorterOutputStream extends TestGISBase {
-	static SimpleField ms_type = new SimpleField("reportType", Type.STRING);
+	
+	private static SimpleField ms_type = new SimpleField("reportType", Type.STRING);
 
 	/**
 	 * @author DRAND
 	 * 
 	 */
-	public class TestCNS implements IContainerNameStrategy,
+	public static class TestCNS implements IContainerNameStrategy,
 			ICategoryNameExtractor {
 		/*
 		 * (non-Javadoc)
@@ -70,7 +71,6 @@ public class TestSorterOutputStream extends TestGISBase {
 		 * org.mitre.giscore.output.IContainerNameStrategy#deriveContainerName
 		 * (java.util.List, org.mitre.giscore.output.FeatureKey)
 		 */
-		@Override
 		public String deriveContainerName(List<String> path, FeatureKey feature) {
 			String fullpath = StringUtils.join(path, '-');
 			if (feature.getGeoclass() != null) {
@@ -86,7 +86,6 @@ public class TestSorterOutputStream extends TestGISBase {
 		 * org.mitre.giscore.ICategoryNameExtractor#extractCategoryName(org.
 		 * mitre.giscore.events.Row)
 		 */
-		@Override
 		public String extractCategoryName(Row row) {
 			return row.getData(ms_type).toString();
 		}
