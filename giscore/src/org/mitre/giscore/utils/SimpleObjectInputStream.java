@@ -94,7 +94,6 @@ public class SimpleObjectInputStream implements Closeable {
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 */
-	@SuppressWarnings("unchecked")
 	public Object readObject() throws ClassNotFoundException, IOException,
 			InstantiationException, IllegalAccessException {
 		try {
