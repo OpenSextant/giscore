@@ -37,7 +37,7 @@ public enum AltitudeModeEnumType {
             try {
                 return AltitudeModeEnumType.valueOf(altitudeMode);
             } catch (IllegalArgumentException e) {
-                log.info("Ignoring invalid altitudeMode value: " + altitudeMode); // use default value
+                log.warn("Ignoring invalid altitudeMode value: " + altitudeMode); // use default value
             }
         return null;
     }
