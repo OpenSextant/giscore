@@ -19,7 +19,9 @@
 package org.mitre.giscore.events;
 
 import java.io.IOException;
+import java.io.Serializable;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -27,6 +29,8 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents a specific point on the screen, either measure in a percentage
@@ -36,7 +40,12 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * @author DRAND
  *
  */
-public class ScreenLocation implements IDataSerializable {
+public class ScreenLocation implements IDataSerializable, Serializable {
+
+	private static final long serialVersionUID = 1L;
+
+	private static final Logger log = LoggerFactory.getLogger(ScreenLocation.class);
+
 	public enum UNIT {
         PIXELS("pixels"), 
 		FRACTION("fraction"), 
@@ -45,7 +54,17 @@ public class ScreenLocation implements IDataSerializable {
 			kmlValue = v;
 		}
 		public String kmlValue;
-    }
+
+		public static UNIT normalize(String s) {
+			if (StringUtils.isNotBlank(s))
+				try {
+					return valueOf(s);
+				} catch (IllegalArgumentException e) {
+					log.warn("Ignoring invalid unit value: " + s); // use default value
+				}
+			return FRACTION; // default value
+		}
+	}
     
     public double x;
 	public UNIT xunit = UNIT.FRACTION;
@@ -83,9 +102,9 @@ public class ScreenLocation implements IDataSerializable {
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
 		x = in.readDouble();
-		xunit = UNIT.valueOf(in.readString());
+		xunit = UNIT.normalize(in.readString());
 		y = in.readDouble();
-		yunit = UNIT.valueOf(in.readString());
+		yunit = UNIT.normalize(in.readString());
 	}
 
 	/* (non-Javadoc)
@@ -93,8 +112,8 @@ public class ScreenLocation implements IDataSerializable {
 	 */
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		out.writeDouble(x);
-		out.writeString(xunit.name());
+		out.writeString(xunit == null ? null : xunit.name());
 		out.writeDouble(y);
-		out.writeString(yunit.name());
+		out.writeString(yunit == null ? null : yunit.name());
 	}	
 }
