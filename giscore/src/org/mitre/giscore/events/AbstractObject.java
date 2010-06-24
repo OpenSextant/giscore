@@ -15,6 +15,8 @@ import java.io.IOException;
  */
 public abstract class AbstractObject implements IDataSerializable, IGISObject {
 
+	private static final long serialVersionUID = 1L;
+
     private String id;
 
     /**

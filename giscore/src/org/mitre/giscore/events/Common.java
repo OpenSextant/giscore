@@ -33,6 +33,9 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * 
  */
 public abstract class Common extends Row {
+	
+	private static final long serialVersionUID = 1L;
+	
 	protected String name;
 	protected String description;
 	private Boolean visibility;
