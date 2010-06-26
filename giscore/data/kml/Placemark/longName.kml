@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- 
+ This KML example has a very long placename to test limits of applications rendering KML metadata whether text is wrapped, truncated, or
+ window scrolls off the dimensions of the screen.  Length of placemark name is 600 characters.
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Placemark>
+    <name>Home of Mr. Wolfeschlegelsteinhausenbergerdorffvoralternwarengewissenhaftschaferswesenchafewarenwholgepflegeundsorgfaltigkeitbeschutzenvonangereifenduchihrraubgiriigfeindewelchevorralternzwolftausendjahresvorandieerscheinenbanderersteerdeemmeshedrraumschiffgebrauchlichtalsseinursprungvonkraftgestartseinlangefahrthinzwischensternartigraumaufdersuchenachdiesternwelshegehabtbewohnbarplanetenkreisedrehensichundwohinderneurassevanverstandigmenshlichkeittkonntevortpflanzenundsicherfreunanlebenslamdlichfreudeundruhemitnichteinfurchtvorangreifenvonandererintlligentgeschopfsvonhinzwischensternartigraum</name>
+    <description>Longest name for a person belongs to a German immigrant to Philadelphia, PA.
+	For details see http://everything2.com/title/Longest+names</description>
+    <Point>
+	<coordinates>-75.17406565521328,39.95732797866965,0</coordinates>
+    </Point>
+  </Placemark>
+</kml>
