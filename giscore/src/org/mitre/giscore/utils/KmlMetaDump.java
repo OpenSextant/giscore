@@ -188,7 +188,7 @@ public class KmlMetaDump implements IKml {
      * @param name Name part of KML file or URL
      */
 	private void processKmlSource(KmlReader reader, File file, String name) {
-		KmlWriter writer = getWriter(file, name);
+		KmlWriter writer = getWriter(name);
 		features = 0;
 		try {
 			IGISObject gisObj;
@@ -253,7 +253,7 @@ public class KmlMetaDump implements IKml {
 		containerEndDate = null;
 	}
 
-	private KmlWriter getWriter(File file, String name) {
+	private KmlWriter getWriter(String name) {
 		if (outPath != null) {
 			if (!outPathCheck) {
 				if (!outPath.exists() && !outPath.mkdirs()) {
