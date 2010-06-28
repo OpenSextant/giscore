@@ -92,7 +92,7 @@ public class KmlMetaDump implements IKml {
 	private boolean outPathCheck;
 	private int features;
 	private boolean verbose;
-	private Class lastObjClass;
+	private Class<? extends IGISObject> lastObjClass;
 	
 	private boolean inheritsTime;
 	private Date containerStartDate;
@@ -307,15 +307,15 @@ public class KmlMetaDump implements IKml {
 		return null;
 	}
 
-	private void checkObject(IGISObject gisObj) {
-		if (gisObj instanceof WrappedObject) {
-			// unwrap wrapped gis objects
-			gisObj = ((WrappedObject)gisObj).getObject();
-			addTag(":Out of order elements");
-		}
+    private void checkObject(IGISObject gisObj) {
+        if (gisObj instanceof WrappedObject) {
+            // unwrap wrapped gis objects
+            gisObj = ((WrappedObject) gisObj).getObject();
+            addTag(":Out of order elements");
+        }
         if (verbose) System.out.println(gisObj);
-        Class cl = gisObj.getClass();
-	if (cl == DocumentStart.class) return; // ignore always present DocumentStart root element
+        Class<? extends IGISObject> cl = gisObj.getClass();
+        if (cl == DocumentStart.class) return; // ignore always present DocumentStart root element
         features++;
         if (cl == Feature.class) {
             Feature f = (Feature) gisObj;
@@ -324,7 +324,7 @@ public class KmlMetaDump implements IKml {
             checkFeature(f);
             if (geom != null) {
                 checkGeometry(geom);
-                Class geomClass = geom.getClass();
+                Class<? extends Geometry> geomClass = geom.getClass();
                 if (geomClass == GeometryBag.class) {
                     addTag(MULTI_GEOMETRY);
                     checkBag((GeometryBag) geom);
@@ -465,7 +465,7 @@ public class KmlMetaDump implements IKml {
 	private void checkBag(GeometryBag geometryBag) {
 		for (Geometry g : geometryBag) {
 			if (g != null) {
-				Class gClass = g.getClass();
+				Class<?extends Geometry> gClass = g.getClass();
 				if (gClass == GeometryBag.class)
 					checkBag((GeometryBag)g);
 				else
@@ -514,42 +514,42 @@ public class KmlMetaDump implements IKml {
 			addTag(":NetworkLink missing Link");
 	}
 
-	private void checkFeature(Feature f) {
-		Date startTime = f.getStartTime();
-		Date endTime = f.getEndTime();
-		if (startTime != null || endTime != null) {
-			if (startTime != null && startTime.equals(endTime)) {
-				// if start == stop then assume timestamp/when -- no way to determine if TimeSpan was used with start=end=timestamp
-				addTag(TIME_STAMP);
-			} else {
-				// otherwise timespan used with start and/or end dates
-				addTag(TIME_SPAN);
-				if (startTime != null && endTime != null && startTime.compareTo(endTime) > 0) {
-					// assertion: the begin value is earlier than the end value.
-					// if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
-					addTag(":Invalid time range: start > end");
-					if (verbose) System.out.println(" Error: Invalid time range: start > end\n");
-				}
-			}
-		} else if (containerStartDate != null || containerEndDate != null) {
-			/*
-			   Features with no time properties inherit the time
-			   of its ancestors if they have time constraints.
-			 */
-			addTag(":Feature inherits container time");
-		}
-		// otherwise feature doesn't have timeStamp or timeSpans
+    private void checkFeature(Feature f) {
+        Date startTime = f.getStartTime();
+        Date endTime = f.getEndTime();
+        if (startTime != null || endTime != null) {
+            if (startTime != null && startTime.equals(endTime)) {
+                // if start == stop then assume timestamp/when -- no way to determine if TimeSpan was used with start=end=timestamp
+                addTag(TIME_STAMP);
+            } else {
+                // otherwise timespan used with start and/or end dates
+                addTag(TIME_SPAN);
+                if (startTime != null && endTime != null && startTime.compareTo(endTime) > 0) {
+                    // assertion: the begin value is earlier than the end value.
+                    // if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
+                    addTag(":Invalid time range: start > end");
+                    if (verbose) System.out.println(" Error: Invalid time range: start > end\n");
+                }
+            }
+        } else if (containerStartDate != null || containerEndDate != null) {
+            /*
+              Features with no time properties inherit the time
+              of its ancestors if they have time constraints.
+            */
+            addTag(":Feature inherits container time");
+        }
+        // otherwise feature doesn't have timeStamp or timeSpans
 
-		if (f.hasExtendedData()) {
-			addTag(EXTENDED_DATA);
-			if (maximalSet != null)
-				for (SimpleField sf : f.getFields()) {
-					maximalSet.add(sf.getName());
-				}
-		}
+        if (f.hasExtendedData()) {
+            addTag(EXTENDED_DATA);
+            if (maximalSet != null)
+                for (SimpleField sf : f.getFields()) {
+                    maximalSet.add(sf.getName());
+                }
+        }
 
-		TaggedMap viewGroup = f.getViewGroup();
-		if (viewGroup != null) {
+        TaggedMap viewGroup = f.getViewGroup();
+        if (viewGroup != null) {
             String tag = viewGroup.getTag();
             if (IKml.LOOK_AT.equals(tag)) {
                 addTag(tag); // LookAt
@@ -698,14 +698,14 @@ public class KmlMetaDump implements IKml {
 		return defaultValue;
 	}
 
-	private void addTag(Class aClass) {
+	private void addTag(Class<? extends IGISObject> aClass) {
         String tag = getClassName(aClass);
         if (tag != null) addTag(tag);
 	}
 
-    private static String getClassName(Class aClass) {
-        if (aClass != null) {
-			String name = aClass.getName();
+    private static String getClassName(Class<? extends IGISObject> aGClass) {
+        if (aGClass != null) {
+			String name = aGClass.getName();
 			int ind = name.lastIndexOf('.');
 			if (ind > 0) {
 				name = name.substring(ind + 1);
