@@ -149,7 +149,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private static final Set<String> ms_attributes = new HashSet<String>();
 	private static final Set<String> ms_geometries = new HashSet<String>();
 	private Map<String, String> schemaAliases;
-	private Map<String, Schema> schemata = new HashMap<String, Schema>();
+	private final Map<String, Schema> schemata = new HashMap<String, Schema>();
 
 	// stores current altitudeMode value for last geometry parsed 
 	//private transient String altitudeMode;
@@ -276,16 +276,17 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 					if (e == null) {
 						return null;
 					}
-					switch (e.getEventType()) {
-					case XMLStreamReader.START_ELEMENT:
+					int type = e.getEventType();
+                    if (XMLStreamReader.START_ELEMENT == type) {
 						IGISObject se = handleStartElement(e);
 						if (se == NullObject.getInstance())
 							break;
 						return se; // start element is GISObject or null (indicating EOF)
-					case XMLStreamReader.END_ELEMENT:
+                    } else if (XMLStreamReader.END_ELEMENT == type) {
 						IGISObject rval = handleEndElement(e);
 						if (rval != null)
 							return rval;
+                    }
                     /*
                     // saving comments messes up the junit tests so comment out for now
                     break;
@@ -294,7 +295,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 						if (comment != null)
 							return comment;
 					*/
-                    }
 				}
 			} catch (NoSuchElementException e) {
 				return null;
@@ -383,7 +383,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 */
 	private boolean handleProperties(Common feature, XMLEvent ee,
 			QName name) {
-		String localname = name.getLocalPart();
+		String localname = name.getLocalPart(); // never null
         try {
             if (localname.equals(NAME)) {
                 feature.setName(getNonEmptyElementText());
@@ -980,8 +980,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		// xsd:boolean· can have the following legal literals {true, false, 1, 0}.
 		if (val != null) {
 			val = val.trim();                   
-			if (val.equals("1")) return true;
-			else if (val.equals("0")) return false;
+			if ("1".equals(val)) return true;
+			else if ("0".equals(val)) return false;
 			return val.equalsIgnoreCase("true");
 		}
 		return false;
@@ -1258,9 +1258,9 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				return new WrappedObject(handleStyleMap(null, se, name));
 			} else {
 				// Look for next start element and recurse
-				e = stream.nextTag();
-				if (e != null && e.getEventType() == XMLEvent.START_ELEMENT) {
-					return handleStartElement(e);
+				XMLEvent next = stream.nextTag();
+				if (next != null && next.getEventType() == XMLEvent.START_ELEMENT) {
+					return handleStartElement(next);
 				}                
 			}
 		} catch (XMLStreamException e1) {
@@ -1300,7 +1300,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				QName qname = se.getName();
-				String tag = qname.getLocalPart();
+				String tag = qname.getLocalPart(); // never-null
 				if (updateFlag) {
 					if (tag.equals("targetHref")) {
 						String val = getNonEmptyElementText();
@@ -1801,7 +1801,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				}
 			}
             // if no valid geometries then return null 
-            if (geometries.size() == 0) {
+            if (geometries.isEmpty()) {
                 log.debug("No valid geometries in MultiGeometry");
                 return null;
             }
