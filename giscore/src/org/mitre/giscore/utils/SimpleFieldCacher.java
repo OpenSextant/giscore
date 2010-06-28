@@ -34,12 +34,12 @@ public class SimpleFieldCacher implements IObjectCacher {
 	/**
 	 * Cached fields
 	 */
-	private Map<SimpleField, Long> fields = new HashMap<SimpleField, Long>();
+	private final Map<SimpleField, Long> fields = new HashMap<SimpleField, Long>();
 
 	/**
 	 * Counter
 	 */
-	private AtomicLong counter = new AtomicLong();
+	private final AtomicLong counter = new AtomicLong();
 
     /**
      * Add SimpleField to cache.
@@ -48,7 +48,6 @@ public class SimpleFieldCacher implements IObjectCacher {
      * @throws IllegalArgumentException if field is not SimpleField instance
      * @throws IllegalStateException if field is already in the collection  
      */
-	@Override
 	public void addToCache(Object field) {
         if (!(field instanceof SimpleField)) {
             throw new IllegalArgumentException("Field is not SimpleField");
@@ -60,17 +59,14 @@ public class SimpleFieldCacher implements IObjectCacher {
         fields.put(sf, counter.incrementAndGet());
 	}
 
-	@Override
 	public Long getObjectOutputReference(Object field) {
 		return fields.get(field);
 	}
 
-	@Override
 	public boolean hasBeenCached(Object field) {
-		return fields.containsKey(field);
+		return field instanceof SimpleField && fields.containsKey(field);
 	}
 
-	@Override
 	public boolean shouldCache(Object field) {
 		return field instanceof SimpleField;
 	}
