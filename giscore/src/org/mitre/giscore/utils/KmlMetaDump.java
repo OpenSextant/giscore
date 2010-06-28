@@ -762,7 +762,7 @@ public class KmlMetaDump implements IKml {
 				sources.add(arg);
 		}
 
-		if (sources.size() == 0) usage();
+		if (sources.isEmpty()) usage();
 
 		for (String arg : sources) {
 			try {
@@ -775,7 +775,7 @@ public class KmlMetaDump implements IKml {
 						try {
 							f = f.getCanonicalFile();
 						} catch (IOException e) {
-							// ignore
+							e.printStackTrace();
 						}
 						app.checkSource(f);
 					}
