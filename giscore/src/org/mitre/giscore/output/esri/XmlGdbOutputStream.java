@@ -175,12 +175,12 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * The feature sorter takes care of the details of storing features for
 	 * later retrieval by schema.
 	 */
-	private FeatureSorter sorter = new FeatureSorter();
+	private final FeatureSorter sorter = new FeatureSorter();
 	
 	/**
 	 * Tracks the path - useful for naming collections
 	 */
-	private Stack<String> path = new Stack<String>();
+	private final Stack<String> path = new Stack<String>();
 	
 	/**
 	 * The first time we find a particular feature key, we store away the 
