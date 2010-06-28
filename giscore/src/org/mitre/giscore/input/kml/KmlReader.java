@@ -241,7 +241,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	private List<IGISObject> _importFromNetworkLinks(ImportEventHandler handler) {
 		if (iStream != null) throw new IllegalArgumentException("reader must first be closed");
 		List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
-		if (gisNetworkLinks.size() == 0) return linkedFeatures;
+		if (gisNetworkLinks.isEmpty()) return linkedFeatures;
 
 		// keep track of URLs visited to prevent revisits
 		List<URI> visited = new ArrayList<URI>();
@@ -334,7 +334,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 			try {
 				zf.close();
 			} catch (Exception e) {
-				// ignore
+                log.warn("failed to close ZipFile stream", e);
 			}
 			zf = null;
 		}
