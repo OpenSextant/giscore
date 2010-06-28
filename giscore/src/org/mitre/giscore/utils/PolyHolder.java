@@ -51,12 +51,12 @@ public class PolyHolder {
 	/**
 	 * The current outer ring, must contain the inner rings
 	 */
-	private LinearRing outerRing = null;
+	private LinearRing outerRing;
 
 	/**
 	 * Zero or more inner rings that are contained by the outer ring.
 	 */
-	private List<LinearRing> innerRings = new ArrayList<LinearRing>();
+	private final List<LinearRing> innerRings = new ArrayList<LinearRing>();
 
 	/**
 	 * Empty ctor
@@ -106,7 +106,7 @@ public class PolyHolder {
 	 * their points in a counter clockwise direction.
 	 */
 	public Polygon toPolygon() {
-		if (outerRing.clockwise() == false) {
+		if (!outerRing.clockwise()) {
 			List<Point> pts = new ArrayList<Point>();
 			pts.addAll(outerRing.getPoints());
 			Collections.reverse(pts);
@@ -114,7 +114,7 @@ public class PolyHolder {
 		}
 		for(int i = 0; i < innerRings.size(); i++) {
 			LinearRing ring = innerRings.get(i);
-			if (ring.clockwise() == true) {
+			if (ring.clockwise()) {
 				List<Point> pts = new ArrayList<Point>();
 				pts.addAll(ring.getPoints());
 				Collections.reverse(pts);
