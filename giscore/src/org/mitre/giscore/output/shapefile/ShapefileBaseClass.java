@@ -1,32 +1,7 @@
 package org.mitre.giscore.output.shapefile;
 
-import org.mitre.giscore.IStreamVisitor;
-import org.mitre.giscore.events.Comment;
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
 import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.GroundOverlay;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.NetworkLinkControl;
-import org.mitre.giscore.events.PhotoOverlay;
-import org.mitre.giscore.events.Row;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.ScreenOverlay;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.events.StyleMap;
-import org.mitre.giscore.geometry.Circle;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.GeometryBag;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.Model;
-import org.mitre.giscore.geometry.MultiLine;
-import org.mitre.giscore.geometry.MultiLinearRings;
-import org.mitre.giscore.geometry.MultiPoint;
-import org.mitre.giscore.geometry.MultiPolygons;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.output.StreamVisitorBase;
 
 /**
  * Common methods and constants for use with both input and output of shapefiles
@@ -36,7 +11,8 @@ import org.mitre.giscore.geometry.Polygon;
  * @author DRAND
  * 
  */
-public abstract class ShapefileBaseClass implements IStreamVisitor {
+public abstract class ShapefileBaseClass extends StreamVisitorBase {
+    
     // Constants
     protected static final int SIGNATURE = 9994;
     protected static final int VERSION = 1000;
@@ -55,7 +31,7 @@ public abstract class ShapefileBaseClass implements IStreamVisitor {
      * @return
      */
     protected boolean is3D(int shapeType) {
-        return (shapeType > 10);
+        return shapeType > 10;
     }
     
     /**
@@ -82,176 +58,8 @@ public abstract class ShapefileBaseClass implements IStreamVisitor {
         throw new IllegalArgumentException("Invalid ESRI Shape Type " + esriShapeType);
     }
     
-
-    /**
-     * Visting a row causes an error for non-row oriented output streams
-     * @param row
-     */
-    public void visit(Row row) {
-    	throw new UnsupportedOperationException("Can't output a tabular row");
-    }
-
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.NetworkLink)
-	 */
-	public void visit(NetworkLink link) {
-		visit((Feature) link);
-	}
-
-	/**
-	 * Visit NetworkLinkControl.
-	 * Default behavior ignores NetworkLinkControls 
-	 * @param networkLinkControl
-	 */
-	public void visit(NetworkLinkControl networkLinkControl) {
-		// Ignored by default
-	}
-
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.PhotoOverlay)
-	 */
-	public void visit(PhotoOverlay overlay) {
-		visit((Feature) overlay);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.IStreamVisitor#visit(org.mitre.giscore.events.ScreenOverlay)
-	 */
-	public void visit(ScreenOverlay overlay) {
-		visit((Feature) overlay);
-	}
-
-	/**
-     * @param overlay
-     */
-    public void visit(GroundOverlay overlay) {
-    	visit((Feature) overlay);
-    } 
-
-	
-    /**
-	 * @param point
-	 */
-	public void visit(Point point) {
-		// do nothing
-	}
-
-    /**
-     * @param multiPoint
-     */
-    public void visit(MultiPoint multiPoint) {
-        for (Point point : multiPoint) {
-            point.accept(this);
-        }
-    }
-
-    /**
-     * @param line
-     */
-    public void visit(Line line) {
-        for (Point pt : line) {
-            pt.accept(this);
-        }
-	}
-
-    /**
-     * @param geobag a geometry bag
-     */
-    public void visit(GeometryBag geobag) {
-    	for(Geometry geo : geobag) {
-    		geo.accept(this);
-    	}
-    }
-    
-	/**
-	 * @param multiLine
-	 */
-	public void visit(MultiLine multiLine) {
-        for (Line line : multiLine) {
-            line.accept(this);
-        }
-	}
-
-	/**
-	 * @param ring
-	 */
-	public void visit(LinearRing ring) {
-        for (Point pt : ring) {
-            pt.accept(this);
-        }
-	}
-
-    /**
-     * @param rings
-     */
-    public void visit(MultiLinearRings rings) {
-        for (LinearRing ring : rings) {
-            ring.accept(this);
-        }
-    }
-
-    /**
-	 * @param polygon
-	 */
-	public void visit(Polygon polygon) {
-        polygon.getOuterRing().accept(this);
-        for (LinearRing ring : polygon.getLinearRings()) {
-            ring.accept(this);
-        }
-	}
-
-    /**
-     * @param polygons
-     */
-    public void visit(MultiPolygons polygons) {
-        for (Polygon polygon : polygons) {
-            polygon.accept(this);
-        }
-    }
-
-	public void visit(Comment comment) {
-		// Ignored by default
-	}
-
-    public void visit(Model model) {
-        // Ignored by default
-    }
-
-	/**
-     * Handle the output of a Circle
-     *
-     * @param circle the circle
-     */
-    public void visit(Circle circle) {
-        // treat as Point by default
-        visit((Point)circle);
-    }
-    
-	public void visit(DocumentStart documentStart) {
-		// Ignore
-	}
-
-	public void visit(ContainerStart containerStart) {
-		// Ignore		
-	}
-
-	public void visit(StyleMap styleMap) {
-		// Ignore		
-	}
-
-	public void visit(Style style) {
-		// Ignore
-	}
-
-	public void visit(Schema schema) {
-		// Ignore
-	}
-
 	public void visit(Feature feature) {
 		// Ignore
 	}
 
-	public void visit(ContainerEnd containerEnd) {
-		// Ignore
-	}
 }
