@@ -280,7 +280,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
                     if (XMLStreamReader.START_ELEMENT == type) {
 						IGISObject se = handleStartElement(e);
 						if (se == NullObject.getInstance())
-							break;
+							continue;
 						return se; // start element is GISObject or null (indicating EOF)
                     } else if (XMLStreamReader.END_ELEMENT == type) {
 						IGISObject rval = handleEndElement(e);
