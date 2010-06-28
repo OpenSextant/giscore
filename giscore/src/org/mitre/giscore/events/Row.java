@@ -145,7 +145,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 	 * @return true of Row has ExtendedData, false otherwise.
 	 */
 	public boolean hasExtendedData() {
-		return extendedData.size() > 0;
+		return !extendedData.isEmpty();
 	}
 
 	/**
