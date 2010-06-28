@@ -29,6 +29,7 @@ public class WrappedObject extends Comment implements IDataSerializable, Seriali
 	 * Empty ctor for data IO
 	 */
 	public WrappedObject() {
+        super();
 	}
 
 	public WrappedObject(IGISObject obj) {

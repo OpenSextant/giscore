@@ -84,6 +84,7 @@ public class Style extends StyleSelector {
 	 * Ctor
 	 */
 	public Style() {
+        super();
 	}
 
 	/**
