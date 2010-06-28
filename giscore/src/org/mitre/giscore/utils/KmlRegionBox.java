@@ -58,7 +58,7 @@ public class KmlRegionBox {
 		} else {
 			System.out.println(file.getAbsolutePath());
 			String name = file.getName();
-			if (name.equals("doc.kml")) {
+			if ("doc.kml".equals(name)) {
 				File parent = file.getParentFile();
 				if (parent != null)
 					name = parent.getName() + "/" + name;
@@ -79,7 +79,7 @@ public class KmlRegionBox {
 
 		if (followLinks) {
 			List<URI> networkLinks = reader.getNetworkLinks();
-			if (networkLinks.size() != 0) {
+			if (!networkLinks.isEmpty()) {
 				reader.importFromNetworkLinks(new KmlReader.ImportEventHandler() {
                     private URI last;
 					public boolean handleEvent(UrlRef ref, IGISObject gisObj) {
@@ -226,16 +226,16 @@ public class KmlRegionBox {
 
 		List<String> sources = new ArrayList<String>();
 		for (String arg : args) {
-			if (arg.equals("-f"))
+			if ("-f".equals(arg))
 				app.followLinks = true;
-			else if (arg.startsWith("-o"))
+			else if ("-o".equals(arg))
 				app.outFile = arg.substring(2);
 			else if (!arg.startsWith("-"))
 				sources.add(arg);
 			//System.out.println("Invalid argument: " + arg);
 		}
 
-		if (sources.size() == 0) {
+		if (sources.isEmpty()) {
 			System.out.println("Must specify file and/or URL");
 			//usage();
 			return;
@@ -252,7 +252,7 @@ public class KmlRegionBox {
 						try {
 							f = f.getCanonicalFile();
 						} catch (IOException e) {
-							// ignore
+							e.printStackTrace();
 						}
 						app.checkSource(f);
 					} else
