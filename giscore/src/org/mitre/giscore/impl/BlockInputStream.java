@@ -37,9 +37,9 @@ public class BlockInputStream extends InputStream {
 	/**
 	 * The input buffer
 	 */
-	private byte[] buffer = null;
+	private byte[] buffer;
 	
-	private IBlockOutputStream blockOutputStream;
+	private final IBlockOutputStream blockOutputStream;
 	
 	public BlockInputStream(IBlockOutputStream blockOutputStream) {
 		if (blockOutputStream == null) {
