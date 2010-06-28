@@ -32,7 +32,7 @@ import java.util.TimeZone;
  * @author DRAND
  */
 public class SafeDateFormat {
-	private ThreadLocal<SimpleDateFormat> ms_dateFormatter =
+	private final ThreadLocal<SimpleDateFormat> ms_dateFormatter =
 		new ThreadLocal<SimpleDateFormat>();
 	
 	private String pattern;
