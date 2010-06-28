@@ -57,7 +57,7 @@ public class SimpleObjectInputStream implements Closeable {
 	
 	private final DataInputStream stream;
 	@SuppressWarnings("unchecked")
-	private final Map<Integer, Class> classMap = new HashMap<Integer, Class>();
+	private final Map<Integer, Class<IDataSerializable>> classMap = new HashMap<Integer, Class<IDataSerializable>>();
 	
 	/**
 	 * Objects that are references in the input stream. Used to reduce small
@@ -88,7 +88,8 @@ public class SimpleObjectInputStream implements Closeable {
 	/**
 	 * Read the next object from the stream
 	 * 
-	 * @return the next object, or <code>null</code> if the stream is empty
+	 * @return the next object, or <code>null</code> if the stream is empty.
+	 * 
 	 * @throws ClassNotFoundException
 	 * @throws IOException if an I/O error occurs
 	 * @throws IllegalAccessException
@@ -132,13 +133,15 @@ public class SimpleObjectInputStream implements Closeable {
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
 		boolean classref = readBoolean();
-		Class clazz = null;
+		Class<IDataSerializable> clazz;
 		if (classref) {
 			int refid = readInt();
 			if (refid == 0) {
 				return null;
 			} else {
 				clazz = classMap.get(refid);
+				// clazz may be null if reference is bogus
+				if (clazz == null) return null;
 			}
 		} else {
 			String className = readString();
@@ -146,8 +149,7 @@ public class SimpleObjectInputStream implements Closeable {
 			clazz = (Class<IDataSerializable>) Class.forName(className);
 			classMap.put(refid, clazz);
 		}
-		IDataSerializable rval = (IDataSerializable) clazz.newInstance();
-		return rval;
+		return clazz.newInstance();
 	}
 
 	/**
