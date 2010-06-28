@@ -51,12 +51,12 @@ public class BlockOutputStream extends OutputStream implements Serializable, IBl
 	 * input stream to start reading data before allowing the local process to 
 	 * continue to output more data.
 	 */
-	private BlockingQueue<byte[]> queue = new ArrayBlockingQueue<byte[]>(CAPACITY);
+	private final BlockingQueue<byte[]> queue = new ArrayBlockingQueue<byte[]>(CAPACITY);
 	
 	/**
 	 * The current buffer
 	 */
-	private byte[] current = null;
+	private byte[] current;
 	
 	/**
 	 * The current insert position into the current buffer. After the buffer
@@ -68,7 +68,7 @@ public class BlockOutputStream extends OutputStream implements Serializable, IBl
 	/**
 	 * Set to true when the buffer is closed
 	 */
-	private AtomicBoolean closed = new AtomicBoolean(false);
+	private final AtomicBoolean closed = new AtomicBoolean(false);
 	
 	public BlockOutputStream() {
 		newBuffer();
@@ -158,7 +158,7 @@ public class BlockOutputStream extends OutputStream implements Serializable, IBl
 				try {
 					wait(500);
 				} catch (InterruptedException e) {
-					throw new RuntimeException("getNextBuffer interrupted while waiting to close");
+					throw new RuntimeException("getNextBuffer interrupted while waiting to close", e);
 				}
 			}
 		}
@@ -169,7 +169,7 @@ public class BlockOutputStream extends OutputStream implements Serializable, IBl
 			try {
 				return queue.poll(0, TimeUnit.SECONDS);
 			} catch (InterruptedException e) {
-				throw new RuntimeException("getNextBuffer interrupted while polling");
+				throw new RuntimeException("getNextBuffer interrupted while polling", e);
 			}
 		}
 	}
