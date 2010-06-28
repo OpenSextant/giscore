@@ -36,16 +36,6 @@ public class PhotoOverlay extends Overlay {
 		return IKml.PHOTO_OVERLAY;
 	}
 	
-	/**
-	 * The approximately equals method checks all the fields for equality with
-	 * the exception of the geometry.
-	 * 
-	 * @param tf
-	 */
-	public boolean approximatelyEquals(Feature tf) {
-		return super.approximatelyEquals(tf);
-	}
-	
     public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
     }
