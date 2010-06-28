@@ -25,7 +25,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +37,6 @@ import org.mitre.giscore.IAcceptSchema;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.input.GISInputStreamBase;
-import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.dbf.DbfInputStream;
 
 import com.esri.arcgis.interop.AutomationException;
@@ -64,14 +62,14 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * then this will be removed when close is called. If not it belongs to the
 	 * caller and will be left alone.
 	 */
-	private File workingDir = null;
+	private File workingDir;
 	
 	/**
 	 * Shapefiles found in the working directory. This will have all the found
 	 * shapefiles. Shapefiles will actually be read based on the accepter if
 	 * one is defined.
 	 */
-	private File shapefiles[] = null;
+	private File shapefiles[];
 	
 	/**
 	 * The current shapefile being read. When we are done this will be set
@@ -87,7 +85,7 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * against the accepter to decide if the shapefile will be used or not. If
 	 * it won't then we will move onto the next shapefile.
 	 */
-	private SingleShapefileInputHandler handler = null;
+	private SingleShapefileInputHandler handler;
 	
 	/**
 	 * This tracks if we're using a temp directory
@@ -97,13 +95,11 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	/**
 	 * Ctor
 	 * 
-	 * @param type
-	 *            the type used
 	 * @param stream
 	 *            the stream containing a zip archive of the shapefile directory, or possibly a single shp file
 	 * @param accepter
 	 * 				a function that determines if a schema should be used, may be <code>null</code>
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs 
 	 */
 	public ShapefileInputStream(InputStream stream, IAcceptSchema accepter) throws IOException {
 		if (stream == null) {
@@ -118,14 +114,17 @@ public class ShapefileInputStream extends GISInputStreamBase {
 			// Is this a .shp?
 			bufferedstream.mark(10);
 			byte header[] = new byte[4];
-			bufferedstream.read(header);
+			if (bufferedstream.read(header) < 4)
+				throw new IOException("not a shape file: invalid header");
 			bufferedstream.reset();
 			if (header[0] == 0 && header[1] == 0 && header[2] == 047 && header[3] == 012) {
 				// SHP file
 				shapestream = bufferedstream;
-			} else if (header[0] == 'P' && header[1] == 'K' && header[2] == 003 && header[3] == 004) {
+			} else if (header[0] == 'P' && header[1] == 'K' && header[2] == 0x03 && header[3] == 0x04) {
 				// ZIP file
 				zipstream = new ZipInputStream(bufferedstream);
+			} else {
+				throw new IOException("not a shape file: invalid header");
 			}
 		} else {
 			zipstream = (ZipInputStream) stream;
@@ -151,6 +150,7 @@ public class ShapefileInputStream extends GISInputStreamBase {
 				entry = zipstream.getNextEntry();
 			}
 		} else {
+			// otherwise shapestream != null 
 			File shapefile = new File(dir, "input.shp");
 			FileOutputStream fos = new FileOutputStream(shapefile);
 			IOUtils.copy(shapestream, fos);
@@ -167,12 +167,11 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 *            the location of the the shapefile
 	 * @param accepter
 	 * 				a function that determines if a schema should be used,
-	 * may be <code>null</code>
-	 * @throws IOException
-	 * @throws UnknownHostException
+	 * 				may be <code>null</code>
+	 * @throws IOException if an I/O error occurs
 	 */
 	public ShapefileInputStream(File file, IAcceptSchema accepter)
-			throws UnknownHostException, IOException {
+			throws IOException {
 		if (file == null) {
 			throw new IllegalArgumentException(
 					"file should never be null");
@@ -185,24 +184,22 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * Initialize the input stream
 	 * @param dir
 	 * @param accepter
-	 * @throws IOException
-	 * @throws UnknownHostException
+	 *
+	 * @throws IOException if an I/O error occurs
 	 * @throws AutomationException
 	 */
 	private void initialize(File dir, IAcceptSchema accepter)
-			throws IOException, UnknownHostException, AutomationException {	
+			throws IOException, AutomationException {
 		workingDir = dir;
 		this.accepter = accepter;
 		
 		shapefiles = workingDir.listFiles(new FileFilter() {
-			@Override
 			public boolean accept(File pathname) {
 				return pathname.getName().endsWith(".shp");
 			}
 		});
 	}
 
-	@Override
 	public void close() {
 		if (handler != null) {
 			handler.close();
@@ -215,7 +212,6 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	@Override
 	public Iterator<Schema> enumerateSchemata() throws IOException {
 		File[] dbfs = workingDir.listFiles(new FileFilter() {
-			@Override
 			public boolean accept(File pathname) {
 				return pathname.getName().endsWith(".dbf");
 			}
@@ -228,8 +224,7 @@ public class ShapefileInputStream extends GISInputStreamBase {
 		}
 		return schemata.iterator();
 	}
-
-	@Override
+	
 	public IGISObject read() throws IOException {
 		IGISObject rval = null;
 		while(rval == null && currentShapefile < shapefiles.length) {
@@ -259,7 +254,7 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * new shapefile.
 	 * 
 	 * @throws URISyntaxException
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	private void handleNewShapefile() throws IOException {
 		try {

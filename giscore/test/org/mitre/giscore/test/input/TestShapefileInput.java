@@ -18,9 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.input;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URISyntaxException;
 import java.util.zip.ZipInputStream;
 
@@ -66,7 +64,7 @@ public class TestShapefileInput {
 			}
 		}
 	}
-	
+
 	@Test public void testReadShpDirectly2() throws Exception {
 		FileInputStream is = new FileInputStream(new File(shpdir, "linez.shp"));
 		ShapefileInputStream sis = new ShapefileInputStream(is, null);
@@ -79,8 +77,26 @@ public class TestShapefileInput {
 				assertTrue(geo instanceof Line);
 			}
 		}
-	}	
-	
+	}
+
+	@Test public void testBadStream() throws Exception {
+		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[0]);
+		try {
+			new ShapefileInputStream(bis, null);
+			fail("constructor should fail");
+		} catch (IOException e) {
+			// this is expected result
+		}
+		
+		bis = new ByteArrayInputStream("not a shape file".getBytes());
+		try {
+			new ShapefileInputStream(bis, null);
+			fail("constructor should fail");
+		} catch (IOException e) {
+			// this is expected result
+		}
+	}
+
 	@Test public void testErrorcase1() throws Exception {
 		doTest("Point File Test_Point File Test", Point.class);
 	}
