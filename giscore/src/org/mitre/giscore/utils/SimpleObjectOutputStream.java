@@ -52,8 +52,8 @@ public class SimpleObjectOutputStream implements Closeable {
 	/**
 	 * Tracks the correspondence between a generated id and the class
 	 */
-	@SuppressWarnings("unchecked")
-	private final Map<Class, Integer> classMap = new HashMap<Class, Integer>();
+	private final Map<Class<?extends IDataSerializable>,Integer> classMap = new HashMap<Class<?extends IDataSerializable>,Integer>();
+
 	/**
 	 * Current class id value, incremented for each additional class. Zero
 	 * is reserved for <code>null</code> objects.
@@ -132,7 +132,7 @@ public class SimpleObjectOutputStream implements Closeable {
 	 * @throws IOException
 	 */
 	private void writeClass(IDataSerializable object) throws IOException {
-		Class clazz = object.getClass();
+		Class<? extends IDataSerializable> clazz = object.getClass();
 		Integer classid = classMap.get(clazz);
 		if (classid != null) {
 			writeBoolean(true);
