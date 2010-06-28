@@ -59,14 +59,14 @@ public class CsvOutputStream extends StreamVisitorBase implements
      * The writer used to output the data, never <code>null</code> after
      * construction
      */
-    private Writer writer = null;
+    private final Writer writer;
 
     /**
      * The schema, may or may not be included. If included it must be the
      * first thing seen by the writer before any Row or Row subclass is
      * encountered. If it is not then an exception will be thrown.
      */
-    private Schema schema = null;
+    private Schema schema;
 
     /**
      * Set to <code>true</code> after a row has been written for the first time.
