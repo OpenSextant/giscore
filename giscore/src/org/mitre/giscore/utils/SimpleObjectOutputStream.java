@@ -47,13 +47,13 @@ public class SimpleObjectOutputStream implements Closeable {
 	
 	private final DataOutputStream stream;
 	
-	private IObjectCacher cacher = null;
+	private IObjectCacher cacher;
 	
 	/**
 	 * Tracks the correspondence between a generated id and the class
 	 */
 	@SuppressWarnings("unchecked")
-	private Map<Class, Integer> classMap = new HashMap<Class, Integer>();
+	private final Map<Class, Integer> classMap = new HashMap<Class, Integer>();
 	/**
 	 * Current class id value, incremented for each additional class. Zero
 	 * is reserved for <code>null</code> objects.
@@ -106,7 +106,7 @@ public class SimpleObjectOutputStream implements Closeable {
 			} else {
 				caching = false;
 			}
-			if (caching == true) {
+			if (caching) {
 				if (!cacher.hasBeenCached(object)) {
 					cacher.addToCache(object);
 				}
