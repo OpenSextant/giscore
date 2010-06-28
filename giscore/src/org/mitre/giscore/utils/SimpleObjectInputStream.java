@@ -89,11 +89,16 @@ public class SimpleObjectInputStream implements Closeable {
 	 * Read the next object from the stream
 	 * 
 	 * @return the next object, or <code>null</code> if the stream is empty.
-	 * 
-	 * @throws ClassNotFoundException
-	 * @throws IOException if an I/O error occurs
-	 * @throws IllegalAccessException
-	 * @throws InstantiationException
+	 *
+	 * @exception IOException if an I/O error occurs
+	 * @exception ClassNotFoundException if the class cannot be located
+	 * @exception  IllegalAccessException  if the class or its nullary
+     *               constructor is not accessible.
+     * @exception  InstantiationException
+     *               if this <code>Class</code> represents an abstract class,
+     *               an interface, an array class, a primitive type, or void;
+     *               or if the class has no nullary constructor;
+     *               or if the instantiation fails for some other reason.
 	 */
 	public Object readObject() throws ClassNotFoundException, IOException,
 			InstantiationException, IllegalAccessException {
