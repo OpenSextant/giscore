@@ -30,7 +30,6 @@ import java.util.Date;
 import java.util.Collection;
 import java.util.ArrayList;
 
-import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
