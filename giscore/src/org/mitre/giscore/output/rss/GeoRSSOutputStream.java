@@ -97,7 +97,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
         //writeNamespace(GML_NS);
 
         // dump all user-defined namespaces
-        if (namespaceMap != null && namespaceMap.size() != 0) {
+        if (namespaceMap != null && !namespaceMap.isEmpty()) {
             List<Namespace> visited = new ArrayList<Namespace>();
             visited.add(GEORSS_NS);
             //visited.add(GML_NS);
@@ -459,7 +459,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
         if (geoms.size() == 1) {
             visit(geoms.get(0));
         }
-        else if (geoms.size() != 0) {
+        else if (!geoms.isEmpty()) {
             // check if we have two geometries and one is point.
             // drop it it it's the center point of the other.
             /*

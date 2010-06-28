@@ -667,7 +667,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * @throws IOException
 	 */
 	private void putPointsZ(Collection<Point> points) throws IOException {
-		if (points == null || points.size() == 0) {
+		if (points == null || points.isEmpty()) {
 			writeDouble(obuf, 0.0, ByteOrder.LITTLE_ENDIAN);
 			writeDouble(obuf, 0.0, ByteOrder.LITTLE_ENDIAN);
 		} else {
@@ -838,7 +838,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 *             if an error occurs
 	 */
 	private void putPointsXY(Collection<Point> points) throws IOException {
-		if (points != null && points.size() > 0) {
+		if (points != null && !points.isEmpty()) {
 			for (Point p : points) {
 				writeDouble(obuf, p.getCenter().getLongitude().inDegrees(),
 						ByteOrder.LITTLE_ENDIAN);
