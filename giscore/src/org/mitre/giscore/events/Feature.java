@@ -47,6 +47,7 @@ public class Feature extends Common {
      * In KML this represents a Placemark.
      */
     public Feature() {
+        super();
     }
 
 	/*
