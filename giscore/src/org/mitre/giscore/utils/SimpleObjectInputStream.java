@@ -56,7 +56,7 @@ public class SimpleObjectInputStream implements Closeable {
 	private static final short REF = 3;
 	
 	private final DataInputStream stream;
-	@SuppressWarnings("unchecked")
+	
 	private final Map<Integer, Class<IDataSerializable>> classMap = new HashMap<Integer, Class<IDataSerializable>>();
 	
 	/**
