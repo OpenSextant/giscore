@@ -1259,7 +1259,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @return true if there are any elements on the waitingElements list
      */
     public boolean isWaiting() {
-        return waitingElements.size() != 0;
+        return !waitingElements.isEmpty();
     }
 
 }
