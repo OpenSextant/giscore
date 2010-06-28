@@ -98,9 +98,9 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	/*
 	 * Files that hold the essential information for the shapefile.
 	 */
-	private File dbfFile;
-	private File shpFile;
-	private File prjFile;
+	//private final File dbfFile;
+	//private final File shpFile;
+	//private final File prjFile;
 
 	/**
 	 * Generates to be returned features, which are decorated with the geo data
@@ -130,11 +130,11 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	 */
 	private int fileLength = 0;
 	
-	/**
+	/*
 	 * Holds the current record length, used to figure out if a geometry read
 	 * is overrunning the current written record for error detection purposes 
 	 */
-	private int recLen;
+	// private int recLen;
 
 	public SingleShapefileInputHandler(File inputDirectory, String shapefilename)
 			throws URISyntaxException, IOException {
@@ -149,9 +149,9 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 		URI uri = new URI("urn:org:mitre:giscore:schema:"
 				+ UUID.randomUUID().toString());
 		schema = new Schema(uri);
-		dbfFile = new File(inputDirectory, shapefilename + ".dbf");
-		shpFile = new File(inputDirectory, shapefilename + ".shp");
-		prjFile = new File(inputDirectory, shapefilename + ".prj");
+		File dbfFile = new File(inputDirectory, shapefilename + ".dbf");
+		File shpFile = new File(inputDirectory, shapefilename + ".shp");
+		File prjFile = new File(inputDirectory, shapefilename + ".prj");
 
 		if (!shpFile.exists()) {
 			throw new IllegalArgumentException(
@@ -202,8 +202,8 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 				Object v1 = geogcs.getValues().get(0);
 				if (v1 instanceof String) {
 					String datum = (String) v1;
-					if (! datum.equals("GCS_WGS_1984")) {
-						logger.warn("Shapefile is not a WGS 84 datum");
+					if (! "GCS_WGS_1984".equals(datum)) {
+						logger.warn("Shapefile is not a WGS 84 datum: " + datum);
 					}
 				}
 			}
@@ -280,7 +280,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         if (contentLen <= 4)
             throw new IOException("Shapefile contains badly formatted record");
         Geometry geomObj = null;
-        recLen = contentLen * 2;
+        int recLen = contentLen * 2;
         buffer = channel.map(MapMode.READ_ONLY, fileOffset + 8, recLen);
         int recShapeType = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
         if (recShapeType != NULL_TYPE) {
@@ -578,7 +578,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         		poly = polyList.get(0);
         	}
         	// If this has only an outer ring then return just that
-        	if (poly.getLinearRings().size() == 0) 
+        	if (poly.getLinearRings().isEmpty()) 
         		return poly.getOuterRing();
         	else
         		return poly;
@@ -614,8 +614,8 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     /**
      * Set the order and read the next double from the buffer
      * @param buffer
-     * @param littleEndian
-     * @return
+     * @param order
+     * @return  The double value at the buffer's current position
      */
     private double readDouble(ByteBuffer buffer, ByteOrder order) {
     	buffer.order(order);
