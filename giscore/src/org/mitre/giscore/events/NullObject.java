@@ -11,7 +11,7 @@ import org.mitre.giscore.IStreamVisitor;
  * @author Jason Mathews, MITRE Corp.
  * Date: Mar 6, 2009 2:17:03 PM
  */
-public class NullObject implements IGISObject {
+public final class NullObject implements IGISObject {
 
     private static final long serialVersionUID = 1L;
 

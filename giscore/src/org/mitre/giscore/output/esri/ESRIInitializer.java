@@ -38,7 +38,7 @@ import com.esri.arcgis.system.esriLicenseStatus;
  * @author DRAND
  *
  */
-public class ESRIInitializer {
+public final class ESRIInitializer {
 	private static final String TEST_DLL = "ntvinv";
 
 	private static Logger logger = LoggerFactory.getLogger(ESRIInitializer.class);
