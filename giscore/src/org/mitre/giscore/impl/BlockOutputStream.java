@@ -152,13 +152,13 @@ public class BlockOutputStream extends OutputStream implements Serializable, IBl
 	 * @return the next buffer
 	 */
 	public byte[] getNextBuffer() {
-		while(closed.get() == false && queue.peek() == null) {
+		while(!closed.get() && queue.peek() == null) {
 			// Block while open and no data in the queue
 			synchronized(this) {
 				try {
 					wait(500);
 				} catch (InterruptedException e) {
-					throw new RuntimeException("getNextBuffer interrupted while waiting to close", e);
+					throw new RuntimeException("getNextBuffer interrupted while waiting to close");
 				}
 			}
 		}
@@ -169,7 +169,7 @@ public class BlockOutputStream extends OutputStream implements Serializable, IBl
 			try {
 				return queue.poll(0, TimeUnit.SECONDS);
 			} catch (InterruptedException e) {
-				throw new RuntimeException("getNextBuffer interrupted while polling", e);
+				throw new RuntimeException("getNextBuffer interrupted while polling");
 			}
 		}
 	}
