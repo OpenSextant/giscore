@@ -22,7 +22,9 @@ public class Comment implements IGISObject, Serializable {
 	/**
      * Default, no-args constructor for implementations to use if needed.
      */
-    protected Comment() {}
+    protected Comment() {
+        // empty constructor
+    }
 
 	/**
 	 * This creates the comment with the supplied text.

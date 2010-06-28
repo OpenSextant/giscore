@@ -35,5 +35,6 @@ public final class NullObject implements IGISObject {
      * @param visitor the visitor to dispatch to, never <code>null</code>
      */
     public void accept(IStreamVisitor visitor) {
+        // do nothing
     }
 }

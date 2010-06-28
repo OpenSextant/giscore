@@ -59,6 +59,7 @@ public class NetworkLinkControl implements IGISObject {
 	 */
 
 	public NetworkLinkControl() {
+        // empty constructor
 	}
 
 	public Double getMinRefreshPeriod() {

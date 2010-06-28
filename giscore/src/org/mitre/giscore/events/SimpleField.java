@@ -160,7 +160,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 	 * which are required non-null fields.
 	 */
 	public SimpleField() {
-
+        // empty constructor
 	}
 
 	/**

@@ -34,6 +34,7 @@ public class Model extends Geometry {
 	 * Construct a Model Geometry object.
 	 */
 	public Model() {
+        // empty constructor
 	}
 
     public Geodetic2DPoint getLocation() {
