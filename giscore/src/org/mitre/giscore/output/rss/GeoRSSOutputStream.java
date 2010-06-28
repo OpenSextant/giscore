@@ -424,7 +424,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
              * remove by convention.
              */
             Geometry firstGeom = geoms.get(0); // items cannot be null
-            Class firstClass = firstGeom.getClass(); // class cannot be null
+            Class<? extends Geometry> firstClass = firstGeom.getClass(); // class cannot be null
             if (firstClass == Point.class) {
                 Geodetic2DBounds bbox = null;
                 int n = geoms.size();
