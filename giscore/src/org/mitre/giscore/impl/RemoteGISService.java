@@ -52,8 +52,7 @@ public class RemoteGISService extends GISFactory implements IRemoteGISService  {
 		}
 		try {
 			IContainerNameStrategy strategy;
-			switch(type) {
-			case FileGDB:
+			if(type == DocumentType.FileGDB) {
 				checkArguments(new Class[] { File.class,
 						IContainerNameStrategy.class }, arguments,
 						new boolean[] { false, false });
@@ -66,7 +65,7 @@ public class RemoteGISService extends GISFactory implements IRemoteGISService  {
 						(File) null, strategy), bos, zos);
 				activeStreams.put(id, stream);
 				return id;
-			default:
+            } else {
 				throw new RemoteException("Unsupported document type " + type.name());
 			}
 		} catch (IOException e) {
