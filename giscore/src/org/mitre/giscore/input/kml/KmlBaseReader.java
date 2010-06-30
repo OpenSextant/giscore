@@ -293,6 +293,9 @@ public abstract class KmlBaseReader implements IKml {
                 href = href.replace(" ", "%20"); // escape all whitespace otherwise new URI() throws an exception
                 //log.debug("Escape whitespace in URL: " + href);
             }
+            // check for '$' e.g. http://mw1.google.com/mw-earth-vectordb/kml-samples/gp/seattle/gigapxl/$[level]/r$[y]_c$[x].jpg
+            // this would throws URISyntaxException
+            href = href.replace("$", "%24");
             // check if URL is absolute otherwise its relative to base URL if defined
             if (absUrlPattern.matcher(href).lookingAt()) {
                 // absolute URL (e.g. http://host/path/x.kml)
