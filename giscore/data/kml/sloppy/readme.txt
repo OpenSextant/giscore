@@ -5,6 +5,8 @@ features in these examples as if they were valid KML. Treats KML as does Google 
 Valid KML documents wrt XML Schema
  FolderSharedStyle.kml
  badCoord.kml
+ badTime.kml
+ badform2.kml
 
 Well-formed XML documents (fail schema validation)
  bluedevil20080812-short2.kml

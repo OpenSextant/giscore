@@ -777,6 +777,12 @@ data\kml\Placemark\LineString\tessellate.kml
 	Placemark            1
 	# features=2
 
+data\kml\Placemark\longName.kml
+
+	Placemark            1
+	Point                1
+	# features=1
+
 data\kml\Placemark\mixedDimsLines.kml
  INFO [main] (Line.java:107) - Line points have mixed dimensionality: downgrading line to 2d
 
@@ -1024,6 +1030,11 @@ data\kml\Schema\sigint.kmz
 	Style                9
 	TimeSpan             42
 	# features=62
+
+data\kml\ScreenOverlay\centered-icon.kml
+
+	ScreenOverlay        1
+	# features=1
 
 data\kml\sky\leo.kml
 
