@@ -153,6 +153,7 @@
 			</importClasspath>
 
 			<fileset dir="${build.classes}" />
+			<zipfileset dir="resources" includes="license.txt" prefix="META-INF" />
 			<autoimportpackage prefix="javax.xml.stream"/>
 			<!-- The SimpleObjectInputStream may require this to read in class
 			     references from other bundles. -->
@@ -166,9 +167,6 @@
 				<attribute name="Build-Jdk" value="${ant.java.version}"/>
 			</manifest>
 		</bundle>
-		<zip destfile="${rel}/jars/giscore.jar" filesonly="true" update="true">
-			<zipfileset dir="resources" includes="license.txt" prefix="META-INF" />
-		</zip>
 	</target>
 
 	<target name="war" depends="jar" description="make deployable war for remoting">
