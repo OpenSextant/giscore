@@ -320,7 +320,7 @@ public class DbfInputStream extends GISInputStreamBase implements
 			val = valStr;
 		} else if (Type.DOUBLE.equals(type)) {
 			try {
-				val = valStr.contains(".") ? new Double(valStr) : new Long(
+				val = (valStr.contains("+") || valStr.contains(".")) ? new Double(valStr) : new Long(
 						valStr);
 			} catch (NumberFormatException e) {
 				final ParseException e2 = new ParseException(
