@@ -3,11 +3,11 @@
   <Document>
     <Style id="pushpin">
       <IconStyle id="myiconstyle">
+        <color>ffffffff</color>
+        <scale>1.0</scale>
         <Icon>
           <href>http://maps.google.com/mapfiles/kml/pushpin/ylw-pushpin.png</href>
         </Icon>
-        <scale>1.0</scale>
-        <color>ffffffff</color>
       </IconStyle>
       <LabelStyle id="mylabelstyle">
         <color>ffffffff</color>
@@ -30,15 +30,15 @@
 
         <!-- Fly to the view of the placemark in 5.2 seconds. -->
         <gx:FlyTo>
-          <gx:flyToMode>bounce</gx:flyToMode>
           <gx:duration>5.2</gx:duration>
+          <gx:flyToMode>bounce</gx:flyToMode>
           <LookAt>
             <longitude>-78.19074499027175</longitude>
             <latitude>35.31730443852049</latitude>
-             <altitude>0</altitude>
-            <range>10704.41142132794</range>
-            <tilt>58.57687432675979</tilt>
+            <altitude>0</altitude>
             <heading>-76.75532143327891</heading>
+            <tilt>58.57687432675979</tilt>
+            <range>10704.41142132794</range>
             <altitudeMode>relativeToGround</altitudeMode>
           </LookAt>
         </gx:FlyTo>
