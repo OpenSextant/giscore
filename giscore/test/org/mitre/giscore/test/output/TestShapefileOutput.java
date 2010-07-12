@@ -309,7 +309,7 @@ public class TestShapefileOutput extends TestShapefileBase {
             try {
                 realPolyOutputTest("polys" + i);
                 return; // test successful
-            } catch (Exception e) {
+            } catch (IllegalArgumentException e) {
                 System.out.println("*** warning: failed at polytest: " + i);
                 e.printStackTrace(System.out);
                 if (ex == null) ex = e; // save first failed test result
