@@ -23,11 +23,7 @@ import java.util.zip.ZipFile;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.TaggedMap;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
@@ -60,16 +56,17 @@ public class TestKmzOutputStream {
 			// added KML entry to KMZ file
 			KmlOutputStream kos = new KmlOutputStream(kmzos.addEntry("kml/link.kml"));
 			kos.write(new DocumentStart(DocumentType.KML));
-			/*
-			 could fill out completed GroundOverlay with icon href to image here
-			 (see data/kml/groundoverlay/etna.kml) but doesn't change the test
-			 results so just write out a simple Placemark.
-			*/
-			// GroundOverlay o = new GroundOverlay();
-			Feature f = new Feature();
-			f.setGeometry(new Point(42.504733587704, -71.238861602674));
+			GroundOverlay f = new GroundOverlay();
+            // note that Overlays don't have geometries so setting a geometry gets discarded in KmlOutputStream.
+            // Setting a Geometry makes equality test fail if reading back GroundOverlay from saved KML file. 
+			// f.setGeometry(new Point(42.504733587704, -71.238861602674));
 			f.setName("test");
 			f.setDescription("this is a test placemark");
+			// fill out completed GroundOverlay with icon href to image here
+			// (see data/kml/groundoverlay/etna.kml)
+			TaggedMap icon = new TaggedMap("Icon");
+			icon.put("href", "images/etna.jpg");
+			f.setIcon(icon);
 			kos.write(f);
 			kos.close();
 
@@ -98,7 +95,12 @@ public class TestKmzOutputStream {
 			//System.out.println("links=" + links);
 			Assert.assertEquals(2, linkedFeatures.size());
 			Assert.assertEquals(1, links.size());
-			TestKmlOutputStream.checkApproximatelyEquals(f, linkedFeatures.get(1));
+            System.out.println("XXX: check groundOverlay");
+            IGISObject go = linkedFeatures.get(1);
+            Assert.assertTrue(go instanceof GroundOverlay);
+            // note icon href gets rewritten in KmlWriter so need to skip this test
+            ((GroundOverlay)go).setIcon(icon);
+            TestKmlOutputStream.checkApproximatelyEquals(f, go);
 
 			zf = new ZipFile(temp);
 			Assert.assertEquals(3, zf.size());
