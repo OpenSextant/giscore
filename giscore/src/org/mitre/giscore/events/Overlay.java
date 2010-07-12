@@ -22,6 +22,9 @@ import java.awt.Color;
 import java.io.IOException;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
+import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
@@ -103,10 +106,9 @@ public abstract class Overlay extends Feature {
 			return false;
 
 		Overlay other = (Overlay) tf;
-
 		EqualsBuilder eb = new EqualsBuilder();
-		return eb.append(color, other.color).append(drawOrder, other.drawOrder)
-				.append(icon, other.icon).isEquals();
+        return eb.append(color, other.color).append(drawOrder, other.drawOrder)
+                .append(icon, other.icon).isEquals();
 	}
 
 	/* (non-Javadoc)
@@ -140,6 +142,11 @@ public abstract class Overlay extends Feature {
 		}
 		out.writeInt(drawOrder);
 		out.writeObject(icon);
-		
+	}
+
+    @Override
+    public String toString() {
+		return ToStringBuilder.reflectionToString(this,
+				ToStringStyle.MULTI_LINE_STYLE);
 	}
 }
