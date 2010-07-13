@@ -157,7 +157,8 @@ public class UrlRef {
      * <code>InputStream</code> for reading from that connection.
 	 * 
 	 * @return     an input stream for reading from the resource represented by the <code>UrlRef</code>.
-	 * @throws FileNotFoundException if referenced link was not found in the parent KMZ file
+	 * @throws FileNotFoundException if referenced link was not found in the parent KMZ resource
+     *          nor outside the KMZ at the same base context.
 	 * @throws IOException if an I/O error occurs
 	 */
 	public InputStream getInputStream() throws IOException {
@@ -173,15 +174,31 @@ public class UrlRef {
             kmzPath = kmzPath.replace("%20", " "); // unescape all escaped whitespace chars
         }
         ZipInputStream zis = new ZipInputStream(url.openStream());
-        ZipEntry entry;
-        while ((entry = zis.getNextEntry()) != null) {
-            String name = entry.getName();
-            if (ind != -1)
-                name = name.replace("%20", " "); // unescape all escaped whitespace chars
-            // find matching KML file in archive
-            if (kmzPath.equals(name)) {
-                return zis;
+        boolean closeOnExit = true;
+        try {
+            ZipEntry entry;
+            while ((entry = zis.getNextEntry()) != null) {
+                String name = entry.getName();
+                if (ind != -1)
+                    name = name.replace("%20", " "); // unescape all escaped whitespace chars
+                // find matching KML file in archive
+                if (kmzPath.equals(name)) {
+                    closeOnExit = false;
+                    return zis;
+                }
             }
+        } finally {
+            // must close ZipInputStream if failed to find entry
+            if (closeOnExit)
+                IOUtils.closeQuietly(zis);
+        }
+        // If href does not exist in KMZ then try with respect to parent context.
+        // check if target exists outside of KMZ file in same context (file system or URL root).
+        // e.g. http://kml-samples.googlecode.com/svn/trunk/kml/kmz/networklink/hier.kmz
+        try {
+            return getInputStream(new URL(url, kmzRelPath));
+        } catch (IOException ioe) {
+            // attempt to find target at same context of parent failed
         }
         throw new FileNotFoundException("Relative URL not found in KMZ: " + kmzPath);
     }
@@ -203,7 +220,7 @@ public class UrlRef {
         // Open the connection
         URLConnection conn = url.openConnection();
 
-        // Set HTTP headers to simulate a typical Google Earth client
+        // Set HTTP headers to emulate a typical Google Earth client
         //
         // Examples:
 		//
@@ -217,8 +234,9 @@ public class UrlRef {
         if (conn instanceof HttpURLConnection) {
             HttpURLConnection httpConn = (HttpURLConnection)conn;
             httpConn.setRequestProperty("Accept", ACCEPT_STRING);
+            // todo: when gx elements is supported update user-agent
             httpConn.setRequestProperty("User-Agent",
-                        "GoogleEarth/4.3.7284.3916(Windows;Microsoft Windows XP;en-US;kml:2.2;client:Free;type:default)"); 
+                        "GoogleEarth/5.0.11337.1968(Windows;Microsoft Windows XP (Service Pack 3);en-US;kml:2.2;client:Free;type:default)"); 
         }
 
         // Connect to get the response headers
@@ -227,8 +245,9 @@ public class UrlRef {
         // Note: just looking at file extension may not be enough to indicate its KMZ vs KML (misnamed, etc.)
         // proper way might be to use PushbackInputStream and check first characters of stream.
         // KMZ/ZIP header should be PK\003\004
-        
-        if (MIMETYPE_KMZ.equals(conn.getContentType()) || url.getFile().toLowerCase().endsWith(".kmz")) {
+        String contentType = conn.getContentType();
+        // contentType could end with mime parameters (e.g. application/vnd.google-earth.kmz; encoding=...) 
+        if (contentType != null && contentType.startsWith(MIMETYPE_KMZ) || url.getFile().toLowerCase().endsWith(".kmz")) {
             // kmz file requires special handling
             boolean closeOnExit = true;
             InputStream is = null;
