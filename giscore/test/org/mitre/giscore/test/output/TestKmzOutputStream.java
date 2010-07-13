@@ -24,9 +24,9 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
+import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmzOutputStream;
 
@@ -95,13 +95,13 @@ public class TestKmzOutputStream {
 			//System.out.println("links=" + links);
 			Assert.assertEquals(2, linkedFeatures.size());
 			Assert.assertEquals(1, links.size());
-            System.out.println("XXX: check groundOverlay");
             IGISObject go = linkedFeatures.get(1);
             Assert.assertTrue(go instanceof GroundOverlay);
-            // note icon href gets rewritten in KmlWriter so need to skip this test
-            ((GroundOverlay)go).setIcon(icon);
+            // note icon href gets rewritten in KmlWriter so need to normalize the URL
+	        KmlWriter.normalizeUrls(go);
             TestKmlOutputStream.checkApproximatelyEquals(f, go);
 
+            // there should be 3 entries in our created KMZ files
 			zf = new ZipFile(temp);
 			Assert.assertEquals(3, zf.size());
 		} finally {
