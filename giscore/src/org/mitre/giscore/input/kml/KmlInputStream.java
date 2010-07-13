@@ -109,7 +109,7 @@ import org.slf4j.LoggerFactory;
  *  open, phoneNumber, Snippet, snippet}. 
  * These tags are consumed but discarded.
  * <p>
- * gx extensions (e.g. Tour, Playlist, etc.) are ignored, however, {@code gx:altitudeMode}
+ * gx extensions (e.g. Track, MultiTrack, Tour, etc.) are ignored, however, {@code gx:altitudeMode}
  * is stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry, or
  * GroundOverlay,
  * <p> 
@@ -128,8 +128,8 @@ import org.slf4j.LoggerFactory;
  * Limited support for {@code NetworkLinkControl} which creates an object wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
  * <p>
- * Allow timestamps to omit seconds field. Strict XML schema validation requires seconds field
- * in the dateTime ({@code YYYY-MM-DDThh:mm:ssZ}) format but Google Earth is lax in its rules.
+ * Allows timestamps to omit seconds field as does Google Earth. Strict XML schema validation requires
+ * seconds field in the dateTime ({@code YYYY-MM-DDThh:mm:ssZ}) format but Google Earth is lax in its rules.
  * Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC.
  *
  * @author DRAND
