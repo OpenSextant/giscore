@@ -66,9 +66,10 @@ public class UrlRef {
     private final URL url;
     private final String kmzRelPath;
 
-    private static final String MIMETYPE_KMZ = "application/vnd.google-earth.kmz";
-    private static final String MIMETYPE_KML = "application/vnd.google-earth.kml+xml";
-    private static final String ACCEPT_STRING = MIMETYPE_KML + ", " + MIMETYPE_KMZ + ", image/*, */*";
+    public static final String MIME_TYPE_KMZ = "application/vnd.google-earth.kmz";
+    public static final String MIME_TYPE_KML = "application/vnd.google-earth.kml+xml";
+    
+    private static final String ACCEPT_STRING = MIME_TYPE_KML + ", " + MIME_TYPE_KMZ + ", image/*, */*";
 
     /**
      * Convert URL to "kmz" URI with URL of parent KMZ and the kmz file path
@@ -247,7 +248,7 @@ public class UrlRef {
         // KMZ/ZIP header should be PK\003\004
         String contentType = conn.getContentType();
         // contentType could end with mime parameters (e.g. application/vnd.google-earth.kmz; encoding=...) 
-        if (contentType != null && contentType.startsWith(MIMETYPE_KMZ) || url.getFile().toLowerCase().endsWith(".kmz")) {
+        if (contentType != null && contentType.startsWith(MIME_TYPE_KMZ) || url.getFile().toLowerCase().endsWith(".kmz")) {
             // kmz file requires special handling
             boolean closeOnExit = true;
             InputStream is = null;
