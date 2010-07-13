@@ -146,7 +146,7 @@ public abstract class KmlBaseReader implements IKml {
 			Issues following URL fetch via HTTP GET
 			baseUrl?client=5.0.11337.1968,2.2,Google+Earth,en&BBOX=0,0,0,0;CAMERA=0,0,0,0,0;VIEW=0,0,0,0,0;LOOKAT=0,0,0
 			if '?' is in the href URL then '&' is appended before httpQuery and/or viewFormat arguments
-			Any spaces in httpQuery or viewformat are encoded as %20. Other []'s are encoded as %5B%5D
+			Any spaces in httpQuery or viewFormat are encoded as %20. Other []'s are encoded as %5B%5D
 
 			seamap.kml with LookAt
 
@@ -171,7 +171,7 @@ public abstract class KmlBaseReader implements IKml {
 				<altitudeMode>relativeToGround</altitudeMode>
 			</LookAt>
 
-			GET /placemark.kml?client2=Google+Earth,5.0.11337.1968,2.2,Google+Earth,en,%5Bfoobar%5D&
+			GET /placemark.kml?client=Google+Earth,5.0.11337.1968,2.2,Google+Earth,en,%5Bfoobar%5D&
 			BBOX=-180,-56.92725201297682,180,90;
 			CAMERA=-40.00123907841759,25.00029463919559,-21474836.48,0,0;
 			VIEW=60,54.921,751,676,1;
@@ -390,6 +390,12 @@ public abstract class KmlBaseReader implements IKml {
         return newVal;
     }
 
+    /**
+     * Gets non-empty for named value in TaggedMap or null if not found (or empty/blank string).
+     * @param map TaggedMap (never null)
+     * @param name
+     * @return non-empty value if found otherwise <tt>null</tt>
+     */
     protected static String getTrimmedValue(TaggedMap map, String name) {
         String val = map.get(name);
         if (val != null) {
@@ -399,6 +405,11 @@ public abstract class KmlBaseReader implements IKml {
         return val;
     }
 
+    /**
+     * Gets href value as URI if present otherwise <tt>null</tt> 
+     * @param link NetworkLink (never null)
+     * @return NetworkLink link as URI or <tt>null</tt> if not present 
+     */
     public static URI getLinkUri(NetworkLink link) {
         TaggedMap links = link.getLink();
         if (links != null) {
