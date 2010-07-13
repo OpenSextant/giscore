@@ -322,6 +322,21 @@ data\kml\kmz\iconStyle\styled_placemark.kmz
 	Style                1
 	# features=2
 
+data\kml\kmz\networklink\hier.kmz
+DEBUG [main] (KmlReader.java:262) - Parse networkLink: file:/C:/projects/giscore/data/kml/kmz/networklink/hier.kmz/within.kml
+DEBUG [main] (KmlReader.java:262) - Parse networkLink: file:/C:/projects/giscore/data/kml/kmz/networklink/hier.kmz/outside.kml
+
+        url=outside.kml
+        url=within.kml
+        NetworkLink          2
+        Placemark            2
+        # features=6
+
+data\kml\kmz\networklink\outside.kml
+
+        Placemark            1
+        # features=1
+
 data\kml\kmz\overlay\ground-overlay-abs.kml
 
 	GroundOverlay        1
@@ -947,16 +962,6 @@ data\kml\Region\screen-rulers.kml
 	ScreenOverlay        8
 	Style                1
 	# features=17
-
-data\kml\Region\ScreenOverlay\continents.kml
-
-	Document             1
-	Folder               2
-	Line                 4
-	Placemark            4
-	Region               8
-	ScreenOverlay        4
-	# features=14
 
 data\kml\Region\ScreenOverlay\continents.kmz
 
