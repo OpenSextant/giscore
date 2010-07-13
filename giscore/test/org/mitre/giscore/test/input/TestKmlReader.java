@@ -71,6 +71,49 @@ public class TestKmlReader extends TestCase {
 		TestKmlOutputStream.checkApproximatelyEquals(ptFeat, linkedFeatures2.get(1));
 	}
 
+    /**
+     * Targets of NetworkLinks may exist inside a KMZ as well as outside at
+     * the same context as the KMZ resource itself so test such a KMZ file.
+     *
+     * @throws IOException if an I/O error occurs
+     */
+    @Test
+	public void testKmzOutsideNetworkLinks() throws IOException {
+        File file = new File("data/kml/kmz/networklink/hier.kmz");
+        // e.g. http://kml-samples.googlecode.com/svn/trunk/kml/kmz/networklink/hier.kmz
+        KmlReader reader = new KmlReader(file);
+        List<IGISObject> features = reader.readAll(); // implicit close
+        /*
+        for(IGISObject obj : features) {
+            if (obj instanceof NetworkLink) {
+                NetworkLink nl = (NetworkLink)obj;
+                URI linkUri = KmlReader.getLinkUri(nl);
+                assertNotNull(linkUri);
+                UrlRef urlRef = new UrlRef(linkUri);
+                InputStream is = null;
+                try {
+                    is = urlRef.getInputStream();
+                } finally {
+                    IOUtils.closeQuietly(is);
+                }
+            }
+        }
+        */
+        List<URI> networkLinks = reader.getNetworkLinks();
+        assertEquals(2, networkLinks.size());
+
+        List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
+        assertEquals(4, linkedFeatures.size());
+        
+        // System.out.println("linkedFeatures=" + linkedFeatures);
+        // within.kml ->  <name>within.kml</name>
+        // outside.kml -> name>outside.kml</name>
+        IGISObject o1 = linkedFeatures.get(1);
+        assertTrue(o1 instanceof Feature && "within.kml".equals(((Feature)o1).getName()));
+        IGISObject o3 = linkedFeatures.get(3);
+        assertTrue(o3 instanceof Feature && "outside.kml".equals(((Feature)o3).getName()));
+    }
+
 	/**
      * Test loading KMZ file with 2 levels of network links
 	 * recursively loading each NetworkLink.
