@@ -84,7 +84,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
           Map<String, Object> channelMap) throws XMLStreamException {
         super(stream, encoding);
         // use "ISO-8859-1" encoding if using any non-UTF-8 characters in content
-        dateFormatter.setTimeZone(java.util.TimeZone.getTimeZone("GMT"));
+        dateFormatter.setTimeZone(java.util.TimeZone.getTimeZone("UTC"));
         this.namespaceMap = namespaceMap;
         if (StringUtils.isBlank(encoding))
             writer.writeStartDocument(); // use default encoding
