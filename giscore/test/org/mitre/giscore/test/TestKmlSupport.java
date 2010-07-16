@@ -108,6 +108,10 @@ public class TestKmlSupport extends TestGISBase {
 	@Test public void testNetworkLink() throws Exception {
 		runTestsOnDir("NetworkLink");
 	}
+
+	@Test public void testPhotoOverlay() throws Exception {
+		runTestsOnDir("PhotoOverlay");
+	}
 	
 	@Test public void testPlacemark() throws Exception {
 		runTestsOnDir("Placemark");
@@ -119,11 +123,15 @@ public class TestKmlSupport extends TestGISBase {
 	
 	@Test public void testRegion() throws Exception {
 		runTestsOnDir("Region");
-	}	
+	}
 	
 	@Test public void testSchema() throws Exception {
 		runTestsOnDir("Schema");
-	}	
+	}
+
+	@Test public void testScreenOverlay() throws Exception {
+		runTestsOnDir("ScreenOverlay");
+	}
 	
 	@Test public void testsky() throws Exception {
 		runTestsOnDir("sky");
@@ -138,7 +146,7 @@ public class TestKmlSupport extends TestGISBase {
 	}	
 
 	@Test public void testXmlns() throws Exception {
-		runTestsOnDir("Xmlns");
+		runTestsOnDir("xmlns");
 	}	
 	
 	/**
