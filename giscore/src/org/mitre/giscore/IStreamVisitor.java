@@ -153,4 +153,9 @@ public interface IStreamVisitor {
      * @param circle
      */
     public void visit(Circle circle);
+    
+    /**
+     * @param element
+     */
+    public void visit(Element element);
 }

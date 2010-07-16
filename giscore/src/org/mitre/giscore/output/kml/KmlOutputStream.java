@@ -28,8 +28,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.text.ParseException;
 
@@ -78,13 +80,13 @@ import org.slf4j.LoggerFactory;
  * @author J.Mathews
  */
 public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
-
 	private static final Logger log = LoggerFactory.getLogger(KmlOutputStream.class);
 
     private final List<IGISObject> waitingElements = new ArrayList<IGISObject>();
 
     private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-    private transient SafeDateFormat dateFormatter;    
+    private transient SafeDateFormat dateFormatter;   
+    private Map<String,String> namespaces = new HashMap<String, String>();
 
     /**
      * Ctor
@@ -102,7 +104,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         writer.writeCharacters("\n");
         writer.writeStartElement(KML);
         writer.writeDefaultNamespace(KML_NS);
-        writer.writeCharacters("\n");
     }
 
     /**
@@ -161,6 +162,23 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     public void closeStream()  {
         IOUtils.closeQuietly(stream);
     }
+    
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.DocumentStart)
+	 */
+	@Override
+	public void visit(DocumentStart documentStart) {
+		try {
+			// Add any additional namespaces to the most proximate containing element
+			for(Namespace ns : documentStart.getNamespaces()) {
+				writer.writeNamespace(ns.getPrefix(), ns.getName().toASCIIString());
+				namespaces.put(ns.getPrefix(), ns.getName().toASCIIString());
+			}
+			writer.writeCharacters("\n");
+		} catch (XMLStreamException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
     /*
      * (non-Javadoc)
@@ -192,6 +210,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
             writer.writeStartElement(tag);
             handleAttributes(containerStart, tag);
+            for(Element el : containerStart.getElements()) {
+            	handleElement(el);
+            }            
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
@@ -460,6 +481,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             } else if (feature instanceof NetworkLink) {
                 handleNetworkLink((NetworkLink) feature);
             }
+            for(Element el : feature.getElements()) {
+            	handleElement(el);
+            }
             writer.writeEndElement();
             writer.writeCharacters("\n");
         } catch (XMLStreamException e) {
@@ -468,6 +492,46 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     }
 
     /**
+     * Write an element
+     * @param el
+     * @throws XMLStreamException 
+     */
+    private void handleElement(Element el) throws XMLStreamException {
+    	if (StringUtils.isNotBlank(el.getPrefix())) {
+    		String ns = namespaces.get(el.getPrefix());
+    		if (StringUtils.isNotBlank(ns)) {
+    			writer.writeStartElement(ns, el.getName());
+    		} else {
+    			throw new XMLStreamException("Unknown namespace prefix found " + el.getPrefix());
+    		}
+    	} else {
+    		writer.writeStartElement(el.getName());
+    	}
+    	for(Map.Entry<String, String> attr : el.getAttributes().entrySet()) {
+    		String key = attr.getKey();
+    		String val = attr.getValue();
+    		String parts[] = key.split(":");
+    		if (parts.length == 2) {
+    			String prefix = parts[0];
+    			String ns = namespaces.get(prefix);
+    			if (ns == null) {
+    				throw new XMLStreamException("Unknown namespace prefix found " + prefix);
+    			}
+    			writer.writeAttribute(prefix, ns, parts[1], val);
+    		} else {
+    			writer.writeAttribute(key, val);
+    		}
+    	}
+    	for(Element child : el.getChildren()) {
+    		handleElement(child);
+    	}
+    	if (StringUtils.isNotBlank(el.getText())) {
+    		writer.writeCharacters(el.getText());
+    	}
+    	writer.writeEndElement();
+	}
+
+	/**
      * Handle elements specific to a network link feature.
      *
      * @param link NetworkLink to be handled

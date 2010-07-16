@@ -8,7 +8,7 @@
 	http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd'>
 	
 	<bean id="gisRemoteService" class="org.springframework.remoting.rmi.RmiProxyFactoryBean">
-	    <property name="serviceUrl" value="rmi://localhost:1199/GISCoreRemoteService"/>
+	    <property name="serviceUrl" value="rmi://xfusion2win.mitre.org:1199/GISCoreRemoteService"/>
 	    <property name="serviceInterface" value="org.mitre.giscore.IRemoteGISService"/>
 	</bean>
 	

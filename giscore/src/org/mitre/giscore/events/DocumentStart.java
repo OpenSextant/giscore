@@ -18,6 +18,9 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -38,6 +41,7 @@ public class DocumentStart implements IGISObject {
     private static final long serialVersionUID = 1L;
 
 	private DocumentType type;
+	private List<Namespace> namespaces = new ArrayList<Namespace>(); 
 
 	/**
 	 * Ctor
@@ -61,7 +65,14 @@ public class DocumentStart implements IGISObject {
 		this.type = type;
 	}
 	
-    public void accept(IStreamVisitor visitor) {
+    /**
+	 * @return the namespaces
+	 */
+	public List<Namespace> getNamespaces() {
+		return namespaces;
+	}
+
+	public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
     }
     

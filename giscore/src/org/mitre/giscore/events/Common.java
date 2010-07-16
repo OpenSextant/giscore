@@ -19,7 +19,9 @@
 package org.mitre.giscore.events;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -44,6 +46,7 @@ public abstract class Common extends Row {
 	protected String styleUrl;
 	private TaggedMap viewGroup;
 	private TaggedMap region;
+	private List<Element> elements = new ArrayList<Element>();
 
 	/**
 	 * @return the name
@@ -158,6 +161,20 @@ public abstract class Common extends Row {
     public void setVisibility(Boolean visibility) {
         this.visibility = visibility;
     }
+    
+	/**
+	 * @return the elements
+	 */
+	public List<Element> getElements() {
+		return elements;
+	}
+
+	/**
+	 * @param elements the elements to set
+	 */
+	public void setElements(List<Element> elements) {
+		this.elements = elements;
+	}
 
 	/**
 	 * Read object from the data stream.
@@ -188,6 +205,10 @@ public abstract class Common extends Row {
 		viewGroup = (TaggedMap) in.readObject();
 		region = (TaggedMap) in.readObject();
 		visibility = (Boolean) in.readScalar();
+		elements = (List<Element>) in.readObjectCollection();
+		if (elements == null) {
+			elements = new ArrayList<Element>();
+		}
 	}
 
 	/**
@@ -212,62 +233,102 @@ public abstract class Common extends Row {
 		out.writeObject(viewGroup);
 		out.writeObject(region);
 		out.writeScalar(visibility);
+		out.writeObjectCollection(elements);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.lang.Object#equals(java.lang.Object)
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		return EqualsBuilder.reflectionEquals(this, obj);
-	}
-
-	/*
-	 * (non-Javadoc)
-	 * 
+	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
-	@Override
 	public int hashCode() {
-		return HashCodeBuilder.reflectionHashCode(this);
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((description == null) ? 0 : description.hashCode());
+		result = prime * result
+				+ ((elements == null) ? 0 : elements.hashCode());
+		result = prime * result + ((endTime == null) ? 0 : endTime.hashCode());
+		result = prime * result + ((name == null) ? 0 : name.hashCode());
+		result = prime * result + ((region == null) ? 0 : region.hashCode());
+		result = prime * result
+				+ ((startTime == null) ? 0 : startTime.hashCode());
+		result = prime * result
+				+ ((styleUrl == null) ? 0 : styleUrl.hashCode());
+		result = prime * result
+				+ ((viewGroup == null) ? 0 : viewGroup.hashCode());
+		result = prime * result
+				+ ((visibility == null) ? 0 : visibility.hashCode());
+		return result;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Common other = (Common) obj;
+		if (description == null) {
+			if (other.description != null)
+				return false;
+		} else if (!description.equals(other.description))
+			return false;
+		if (elements == null) {
+			if (other.elements != null)
+				return false;
+		} else if (!elements.equals(other.elements))
+			return false;
+		if (endTime == null) {
+			if (other.endTime != null)
+				return false;
+		} else if (!endTime.equals(other.endTime))
+			return false;
+		if (name == null) {
+			if (other.name != null)
+				return false;
+		} else if (!name.equals(other.name))
+			return false;
+		if (region == null) {
+			if (other.region != null)
+				return false;
+		} else if (!region.equals(other.region))
+			return false;
+		if (startTime == null) {
+			if (other.startTime != null)
+				return false;
+		} else if (!startTime.equals(other.startTime))
+			return false;
+		if (styleUrl == null) {
+			if (other.styleUrl != null)
+				return false;
+		} else if (!styleUrl.equals(other.styleUrl))
+			return false;
+		if (viewGroup == null) {
+			if (other.viewGroup != null)
+				return false;
+		} else if (!viewGroup.equals(other.viewGroup))
+			return false;
+		if (visibility == null) {
+			if (other.visibility != null)
+				return false;
+		} else if (!visibility.equals(other.visibility))
+			return false;
+		return true;
+	}
+
+	/* (non-Javadoc)
 	 * @see java.lang.Object#toString()
 	 */
 	@Override
 	public String toString() {
-		StringBuilder b = new StringBuilder(super.toString());
-        if (name != null) {
-		    b.append(" name = ");
-		    b.append(name);
-            b.append('\n');
-        }
-        if (description != null) {
-		    b.append(" description = ");
-		    b.append(description);
-		    b.append('\n');
-        }
-        if (startTime != null) {
-		    b.append(" startTime = ");
-		    b.append(startTime);
-		    b.append('\n');
-        }
-        if (endTime != null) {
-    		b.append(" endTime = ");
-    		b.append(endTime);
-    		b.append('\n');
-        }
-        if (styleUrl != null) {
-		    b.append(" styleUrl = ");
-		    b.append(styleUrl);
-		    b.append('\n');
-        }
-        return b.toString();
+		return "Common [name=" + name + ", description=" + description
+				+ ", visibility=" + visibility + ", startTime=" + startTime
+				+ ", endTime=" + endTime + ", styleUrl=" + styleUrl
+				+ ", viewGroup=" + viewGroup + ", region=" + region
+				+ ", elements=" + elements + "]";
 	}
 
 }

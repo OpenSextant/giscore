@@ -35,7 +35,10 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.EndElement;
+import javax.xml.stream.events.Namespace;
+import javax.xml.stream.events.StartDocument;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
@@ -140,6 +143,19 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
     private static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
 
+    private static final Set<String> ms_kml_ns = new HashSet<String>();
+    
+    static {
+    	ms_kml_ns.add("http://earth.google.com/kml/2.1");
+    	ms_kml_ns.add("http://earth.google.com/kml/2.2");
+    	ms_kml_ns.add("http://earth.google.com/kml/2.3");
+    	ms_kml_ns.add("http://earth.google.com/kml/3.0");
+    	
+    	ms_kml_ns.add("http://www.opengis.net/kml/2.2");
+    	ms_kml_ns.add("http://www.opengis.net/kml/2.3");
+    	ms_kml_ns.add("http://www.opengis.net/kml/3.0");
+    }
+    
     private InputStream is;
     private XMLEventReader stream;
 
@@ -224,12 +240,42 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			throw new IllegalArgumentException("input should never be null");
 		}
 		is = input;
-		addLast(new DocumentStart(DocumentType.KML));
 		try {
 			stream = ms_fact.createXMLEventReader(is);
 		} catch (XMLStreamException e) {
 			throw new IOException(e);
 		}
+		DocumentStart ds = new DocumentStart(DocumentType.KML); 
+		addLast(ds);
+		try {
+			XMLEvent ev = stream.peek();
+			while(! ev.isStartElement()) {
+				ev = stream.nextEvent(); // Actually advance
+				ev = stream.peek();
+			}
+			// The first start element may be a KML element, which isn't
+			// handled by the rest of the code. We'll handle it here to obtain the
+			// namespaces
+			StartElement first = ev.asStartElement();
+			String nstr = first.getName().getNamespaceURI(); 
+			if (ms_kml_ns.contains(nstr) &&	first.getName().getLocalPart().equalsIgnoreCase("kml")) {
+				stream.nextEvent(); // Consume event
+			}
+			@SuppressWarnings("unchecked")
+			Iterator<Namespace> niter = first.getNamespaces();
+			while(niter.hasNext()) {
+				Namespace ns = niter.next();
+				if (StringUtils.isBlank(ns.getPrefix())) continue;
+				org.mitre.giscore.events.Namespace gnamespace = 
+					new org.mitre.giscore.events.Namespace(ns.getPrefix(), new URI(ns.getNamespaceURI()));
+				ds.getNamespaces().add(gnamespace);
+			}
+		} catch (XMLStreamException e) {
+			throw new IOException(e);
+		} catch (URISyntaxException e) {
+			throw new IOException(e);
+		}
+		
 	}
 
 	/**
@@ -434,8 +480,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				// skip known non-KML namespace elements. what about unknown ones?
 				String ns = name.getNamespaceURI();
 				if (ns != null && (ns.startsWith("http://www.w3.org/") || ns.startsWith("http://www.google.com/kml/ext/"))) {
-					log.debug("skip " + name.getPrefix() + ":" + localname);
-					skipNextElement(stream, name);
+					try {
+						Element el = (Element) getForeignElement(ee.asStartElement());
+						feature.getElements().add(el);
+					} catch (Exception e) {
+						log.error("Problem getting element", e);
+					}
 					return true;
 				}
 				//System.out.println("*** skip other: " + localname + " sl=" + sl + " name=" + name.getNamespaceURI());
@@ -1205,17 +1255,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		// check if element is from extension namespace
 		String ns = name.getNamespaceURI();
 		if (ns != null && ns.startsWith("http://www.google.com/kml/ext/")) {
-			// if extension namespace then skip it (e.g. http://www.google.com/kml/ext/2.2)
-			// see http://code.google.com/apis/kml/documentation/kmlreference.html#kmlextensions
-			log.debug("skip " + name.getPrefix() + ":" + name.getLocalPart());
-			try {
-				skipNextElement(stream, name);
-			} catch (XMLStreamException xe) {
-				final IOException e2 = new IOException();
-				e2.initCause(xe);
-				throw e2;
-			}
-			return NullObject.getInstance();
+			return getForeignElement(se);
 		}
 
 		String localname = name.getLocalPart();
@@ -1251,17 +1291,21 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				// we return as WrappedObject which forces caller to either do special handling
 				// or treat as a Comment.
 				return new WrappedObject(handleStyle(null, se, name));
-			}
-			else if (STYLE_MAP.equals(localname)) {
+			} else if (STYLE_MAP.equals(localname)) {
 				log.debug("Out of order element: " + localname);
 				// this messes up the way Style+StyleMap are added to last Feature written
 				return new WrappedObject(handleStyleMap(null, se, name));
 			} else {
-				// Look for next start element and recurse
-				XMLEvent next = stream.nextTag();
-				if (next != null && next.getEventType() == XMLEvent.START_ELEMENT) {
-					return handleStartElement(next);
-				}                
+				String namespace = se.getName().getNamespaceURI();
+				if (ms_kml_ns.contains(namespace)) {
+					// Look for next start element and recurse
+					XMLEvent next = stream.nextTag();
+					if (next != null && next.getEventType() == XMLEvent.START_ELEMENT) {
+						return handleStartElement(next);
+					}  
+				} else {
+					return getForeignElement(se);
+				}
 			}
 		} catch (XMLStreamException e1) {
 			log.warn("Skip unexpected element: " + localname);
@@ -1270,6 +1314,48 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 		// return non-null NullObject to skip but not end parsing...
 		return NullObject.getInstance();
+	}
+	
+	/**
+	 * Unrecognized elements are packaged and returned as {@link Element} objects
+	 * which hold their text and attribute data. These can be processed by 
+	 * consumers and may be output by the output side of XML based processors.
+	 * @param se the start tag, never <code>null</code>
+	 * @return the element, never <code>null</code>
+	 * @throws XMLStreamException
+	 * @throws IOException
+	 * @throws AutomationException
+	 */
+	private IGISObject getForeignElement(StartElement se)
+			throws XMLStreamException, IOException {
+		Element el = new Element();
+		el.setName(se.getName().getLocalPart());
+		el.setPrefix(se.getName().getPrefix());
+		@SuppressWarnings("unchecked")
+		Iterator<Attribute> aiter = se.getAttributes();
+		while(aiter.hasNext()) {
+			Attribute attr = aiter.next();
+			String aname;
+			if (StringUtils.isBlank(attr.getName().getPrefix())) {
+				aname = attr.getName().getLocalPart();
+			} else {
+				aname = attr.getName().getPrefix() + ":" + attr.getName().getLocalPart();
+			}
+			el.getAttributes().put(aname, attr.getValue());
+		}
+		XMLEvent nextel = stream.nextEvent();
+		while(true) {
+			if (nextel instanceof Characters) {
+				Characters text = (Characters) nextel;
+				el.setText(text.getData());
+			} else if (nextel.isStartElement()) {
+				el.getChildren().add((Element) getForeignElement(nextel.asStartElement()));
+			} else if (nextel.isEndElement()) {
+				break;
+			}
+			nextel = stream.nextEvent();
+		}
+		return el;
 	}
 
 	/**

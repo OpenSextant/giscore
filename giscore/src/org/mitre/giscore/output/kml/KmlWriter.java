@@ -98,7 +98,6 @@ public class KmlWriter implements IGISOutputStream {
 			e2.initCause(e);
 			throw e2;
         }
-        kos.write(new DocumentStart(DocumentType.KML));
 		// TODO: consider adding KmlWriter(InputStream is, boolean compress) constructor
     }
 

@@ -228,4 +228,7 @@ public class StreamVisitorBase implements IStreamVisitor {
         visit((Point)circle);
     }
 
+    public void visit(Element element) {
+    	// Ignored by default
+    }
 }
