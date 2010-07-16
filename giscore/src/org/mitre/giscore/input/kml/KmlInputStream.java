@@ -258,7 +258,8 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			// namespaces
 			StartElement first = ev.asStartElement();
 			String nstr = first.getName().getNamespaceURI(); 
-			if (ms_kml_ns.contains(nstr) &&	first.getName().getLocalPart().equalsIgnoreCase("kml")) {
+			if ((StringUtils.isBlank(nstr) || ms_kml_ns.contains(nstr)) &&
+					first.getName().getLocalPart().equalsIgnoreCase("kml")) {
 				stream.nextEvent(); // Consume event
 			}
 			@SuppressWarnings("unchecked")
