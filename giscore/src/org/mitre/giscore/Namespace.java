@@ -70,13 +70,6 @@ public final class Namespace {
     // XXX May want to use weak references to keep the maps from growing
     // large with extended use
 
-    // XXX We may need to make the namespaces HashMap synchronized with
-    // reader/writer locks or perhaps make Namespace no longer a flyweight.
-    // As written, multiple put() calls may happen from different threads
-    // concurrently and cause a ConcurrentModificationException. See
-    // http://lists.denveronline.net/lists/jdom-interest/2000-September/003009.html.
-    // No one has ever reported this over the many years, so don't worry yet.
-
     /** 
      * Factory list of namespaces.
      * Keys are <i>prefix</i>&amp;<i>URI</i>.
@@ -98,7 +91,7 @@ public final class Namespace {
     private String uri;
 
     /**
-     * This static initializer acts as a factory contructor.
+     * This static initializer acts as a factory constructor.
      * It sets up storage and required initial values.
      */
     static {
@@ -136,7 +129,10 @@ public final class Namespace {
         // have been placed in this.  Thus we can do this test before
         // verifying the URI and prefix.
         NamespaceKey lookup = new NamespaceKey(prefix, uri);
-        Namespace preexisting = namespaces.get(lookup);
+        Namespace preexisting;
+        synchronized (namespaces) {
+            preexisting = namespaces.get(lookup);
+        }
         if (preexisting != null) {
             return preexisting;
         }
@@ -157,7 +153,9 @@ public final class Namespace {
         
         // Finally, store and return
         Namespace ns = new Namespace(prefix, uri);
-        namespaces.put(lookup, ns);
+        synchronized (namespaces) {
+            namespaces.put(lookup, ns);
+        }
         return ns;
     }
 
