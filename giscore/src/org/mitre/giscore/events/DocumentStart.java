@@ -41,7 +41,7 @@ public class DocumentStart implements IGISObject {
     private static final long serialVersionUID = 1L;
 
 	private DocumentType type;
-	private List<Namespace> namespaces = new ArrayList<Namespace>(); 
+	private final List<Namespace> namespaces = new ArrayList<Namespace>(); 
 
 	/**
 	 * Ctor
