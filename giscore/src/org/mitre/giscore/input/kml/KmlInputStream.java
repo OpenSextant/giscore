@@ -142,7 +142,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
     private static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
 
-    private static final Set<String> ms_kml_ns = new HashSet<String>();
+    private static final Set<String> ms_kml_ns = new HashSet<String>(7);
     
     static {
     	ms_kml_ns.add("http://earth.google.com/kml/2.1");
@@ -258,8 +258,12 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			// namespaces
 			StartElement first = ev.asStartElement();
 			String nstr = first.getName().getNamespaceURI(); 
-			if ((StringUtils.isBlank(nstr) || ms_kml_ns.contains(nstr)) &&
-					first.getName().getLocalPart().equals("kml")) {
+			if ("kml".equals(first.getName().getLocalPart())) {
+                if (StringUtils.isNotBlank(nstr) && !ms_kml_ns.contains(nstr)) {
+                    // KML namespace not registered
+                    log.info("Registering unrecognized KML namespace: " + nstr);
+                    ms_kml_ns.add(nstr);
+                }
 				stream.nextEvent(); // Consume event
 			}
 			@SuppressWarnings("unchecked")
