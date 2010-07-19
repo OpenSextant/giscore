@@ -21,6 +21,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -34,6 +36,7 @@ import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.input.shapefile.ShapefileInputStream;
 import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
+import org.mitre.giscore.output.atom.GeoAtomOutputStream;
 import org.mitre.giscore.output.csv.CsvOutputStream;
 import org.mitre.giscore.output.esri.GdbOutputStream;
 import org.mitre.giscore.output.esri.XmlGdbOutputStream;
@@ -242,6 +245,12 @@ public class GISFactory {
 							arguments,
 							new boolean[] { false, false, false, false });
 					return new CsvOutputStream(outputStream, arguments);
+				case GeoAtom:
+					checkArguments(new Class[] { Date.class, String.class, 
+							String.class, String.class, List.class },
+							arguments,
+							new boolean[] { true, true, false, false, false });
+					return new GeoAtomOutputStream(outputStream, arguments);
 				default:
 					throw new UnsupportedOperationException(
 							"Cannot create an output stream for type " + type);

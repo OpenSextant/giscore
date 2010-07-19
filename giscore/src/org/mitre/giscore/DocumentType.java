@@ -45,6 +45,8 @@ public enum DocumentType {
 	CSV(false,false),
     /* GeoRSS-Simple Format */
 	GeoRSS(false,false),
+	/* GeoAtom with embedded extended data */
+	GeoAtom(false,false)
 	;
 	
 	private boolean requiresZipStream;

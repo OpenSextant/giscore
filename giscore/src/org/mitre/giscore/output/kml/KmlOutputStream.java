@@ -39,6 +39,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.IOUtils;
+import org.mitre.giscore.Namespace;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.*;
@@ -86,7 +87,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     private transient SafeDateFormat dateFormatter;   
-    private Map<String,String> namespaces = new HashMap<String, String>();
+    
 
     /**
      * Ctor
@@ -171,8 +172,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		try {
 			// Add any additional namespaces to the most proximate containing element
 			for(Namespace ns : documentStart.getNamespaces()) {
-				writer.writeNamespace(ns.getPrefix(), ns.getName().toASCIIString());
-				namespaces.put(ns.getPrefix(), ns.getName().toASCIIString());
+				writer.writeNamespace(ns.getPrefix(), ns.getURI());
+				namespaces.put(ns.getPrefix(), ns.getURI());
 			}
 			writer.writeCharacters("\n");
 		} catch (XMLStreamException e) {
@@ -211,7 +212,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             writer.writeStartElement(tag);
             handleAttributes(containerStart, tag);
             for(Element el : containerStart.getElements()) {
-            	handleElement(el);
+            	handleXmlElement(el);
             }            
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
@@ -482,7 +483,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleNetworkLink((NetworkLink) feature);
             }
             for(Element el : feature.getElements()) {
-            	handleElement(el);
+            	handleXmlElement(el);
             }
             writer.writeEndElement();
             writer.writeCharacters("\n");
@@ -490,46 +491,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             throw new RuntimeException(e);
         }
     }
-
-    /**
-     * Write an element
-     * @param el
-     * @throws XMLStreamException 
-     */
-    private void handleElement(Element el) throws XMLStreamException {
-    	if (StringUtils.isNotBlank(el.getPrefix())) {
-    		String ns = namespaces.get(el.getPrefix());
-    		if (StringUtils.isNotBlank(ns)) {
-    			writer.writeStartElement(ns, el.getName());
-    		} else {
-    			throw new XMLStreamException("Unknown namespace prefix found " + el.getPrefix());
-    		}
-    	} else {
-    		writer.writeStartElement(el.getName());
-    	}
-    	for(Map.Entry<String, String> attr : el.getAttributes().entrySet()) {
-    		String key = attr.getKey();
-    		String val = attr.getValue();
-    		String parts[] = key.split(":");
-    		if (parts.length == 2) {
-    			String prefix = parts[0];
-    			String ns = namespaces.get(prefix);
-    			if (ns == null) {
-    				throw new XMLStreamException("Unknown namespace prefix found " + prefix);
-    			}
-    			writer.writeAttribute(prefix, ns, parts[1], val);
-    		} else {
-    			writer.writeAttribute(key, val);
-    		}
-    	}
-    	for(Element child : el.getChildren()) {
-    		handleElement(child);
-    	}
-    	if (StringUtils.isNotBlank(el.getText())) {
-    		writer.writeCharacters(el.getText());
-    	}
-    	writer.writeEndElement();
-	}
 
 	/**
      * Handle elements specific to a network link feature.

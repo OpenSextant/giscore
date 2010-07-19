@@ -18,6 +18,8 @@ package org.mitre.giscore.output;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -25,6 +27,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.mitre.giscore.events.Element;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Comment;
 import org.mitre.giscore.Namespace;
@@ -42,6 +45,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     protected OutputStream stream;
 	protected XMLStreamWriter writer;
 	protected XMLOutputFactory factory;
+	protected Map<String,String> namespaces = new HashMap<String, String>();
 
     // common encoding to use which allows special characters such as degrees character
     // that is included in Geometry.toString() output but is not part of the UTF-8 character set.
@@ -206,6 +210,46 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
         }
         writer.writeCharacters("\n");
     }
+	
+    /**
+     * Write an element
+     * @param el
+     * @throws XMLStreamException 
+     */
+    protected void handleXmlElement(Element el) throws XMLStreamException {
+    	if (StringUtils.isNotBlank(el.getPrefix())) {
+    		String ns = namespaces.get(el.getPrefix());
+    		if (StringUtils.isNotBlank(ns)) {
+    			writer.writeStartElement(ns, el.getName());
+    		} else {
+    			throw new XMLStreamException("Unknown namespace prefix found " + el.getPrefix());
+    		}
+    	} else {
+    		writer.writeStartElement(el.getName());
+    	}
+    	for(Map.Entry<String, String> attr : el.getAttributes().entrySet()) {
+    		String key = attr.getKey();
+    		String val = attr.getValue();
+    		String parts[] = key.split(":");
+    		if (parts.length == 2) {
+    			String prefix = parts[0];
+    			String ns = namespaces.get(prefix);
+    			if (ns == null) {
+    				throw new XMLStreamException("Unknown namespace prefix found " + prefix);
+    			}
+    			writer.writeAttribute(prefix, ns, parts[1], val);
+    		} else {
+    			writer.writeAttribute(key, val);
+    		}
+    	}
+    	for(Element child : el.getChildren()) {
+    		handleXmlElement(child);
+    	}
+    	if (StringUtils.isNotBlank(el.getText())) {
+    		writer.writeCharacters(el.getText());
+    	}
+    	writer.writeEndElement();
+	}
 
     /**
      * Handles simple element with a namespace.

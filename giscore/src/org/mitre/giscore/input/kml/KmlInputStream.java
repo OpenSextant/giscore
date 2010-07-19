@@ -24,7 +24,19 @@ import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.TimeZone;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -44,10 +56,39 @@ import javax.xml.stream.events.XMLEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.utils.NumberStreamTokenizer;
-import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.*;
+import org.mitre.giscore.events.Comment;
+import org.mitre.giscore.events.Common;
+import org.mitre.giscore.events.ContainerEnd;
+import org.mitre.giscore.events.ContainerStart;
+import org.mitre.giscore.events.DocumentStart;
+import org.mitre.giscore.events.Element;
+import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.events.GroundOverlay;
+import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.NetworkLink;
+import org.mitre.giscore.events.NetworkLinkControl;
+import org.mitre.giscore.events.NullObject;
+import org.mitre.giscore.events.Overlay;
+import org.mitre.giscore.events.PhotoOverlay;
+import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.ScreenLocation;
+import org.mitre.giscore.events.ScreenOverlay;
+import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.events.Style;
+import org.mitre.giscore.events.StyleMap;
+import org.mitre.giscore.events.TaggedMap;
+import org.mitre.giscore.events.WrappedObject;
+import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.geometry.GeometryBag;
+import org.mitre.giscore.geometry.GeometryBase;
+import org.mitre.giscore.geometry.Line;
+import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.Model;
+import org.mitre.giscore.geometry.MultiPoint;
+import org.mitre.giscore.geometry.Point;
+import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.GISInputStreamBase;
+import org.mitre.giscore.utils.NumberStreamTokenizer;
 import org.mitre.itf.geodesy.Angle;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
@@ -55,6 +96,8 @@ import org.mitre.itf.geodesy.Latitude;
 import org.mitre.itf.geodesy.Longitude;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.esri.arcgis.interop.AutomationException;
 
 /**
  * Read a KML/KMZ file in as an input stream. Each time the read method is called,
@@ -271,15 +314,10 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			while(niter.hasNext()) {
 				Namespace ns = niter.next();
 				if (StringUtils.isBlank(ns.getPrefix())) continue;
-                try {
-                    org.mitre.giscore.events.Namespace gnamespace = new org.mitre.giscore.events.Namespace(
-                            ns.getPrefix(), new URI(ns.getNamespaceURI()));
-                    // assumes no duplicates in namespace prefixes which would violate the
-                    // XML duplicate attribute constraint
-                    ds.getNamespaces().add(gnamespace);
-                } catch (URISyntaxException e) {
-                    log.warn("Invalid namespace", e);
-                }
+
+				org.mitre.giscore.Namespace gnamespace = 
+					org.mitre.giscore.Namespace.getNamespace(ns.getPrefix(), ns.getNamespaceURI());
+				ds.getNamespaces().add(gnamespace);
 			}
 		} catch (XMLStreamException e) {
 			throw new IOException(e);

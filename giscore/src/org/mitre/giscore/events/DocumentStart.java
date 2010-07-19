@@ -27,6 +27,7 @@ import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.IStreamVisitor;
+import org.mitre.giscore.Namespace;
 
 /**
  * This tags the document with the source information of what format it came
