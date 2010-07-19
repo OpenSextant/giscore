@@ -21,6 +21,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Properties;
@@ -246,8 +247,8 @@ public class GISFactory {
 							new boolean[] { false, false, false, false });
 					return new CsvOutputStream(outputStream, arguments);
 				case GeoAtom:
-					checkArguments(new Class[] { Date.class, String.class, 
-							String.class, String.class, List.class },
+					checkArguments(new Class[] { Date.class, URL.class, 
+							URL.class, String.class, List.class },
 							arguments,
 							new boolean[] { true, true, false, false, false });
 					return new GeoAtomOutputStream(outputStream, arguments);

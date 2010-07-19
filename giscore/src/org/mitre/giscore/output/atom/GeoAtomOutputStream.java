@@ -20,6 +20,7 @@ package org.mitre.giscore.output.atom;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.URL;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -74,9 +75,9 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 			String title, String link, List<String> authors) */
 		super(outputStream);
 		Date updateDTM = (Date) arguments[0];
-		String id = (String) arguments[1];
+		URL id = (URL) arguments[1];
 		String title = (String) ((arguments.length > 3) ? arguments[3] : null);
-		String link = (String) ((arguments.length > 2) ? arguments[2] : null);
+		URL link = (URL) ((arguments.length > 2) ? arguments[2] : null);
 		@SuppressWarnings("unchecked")
 		List<String> authors = (List<String>) ((arguments.length > 4) ? arguments[4] : null);
 		if (updateDTM == null) {
@@ -89,11 +90,11 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 		writer.writeDefaultNamespace("http://www.w3.org/2005/Atom");
 		writer.writeNamespace("ext", EXT_DATA_NS);
 		writer.writeNamespace("geo", GIS_NS);
-		handleSimpleElement("id", id);
+		handleSimpleElement("id", id.toExternalForm());
 		handleSimpleElement("title", title);
 		handleSimpleElement("updated", fmt.format(updateDTM));
 		writer.writeStartElement("link");
-		writer.writeAttribute("href", link);
+		writer.writeAttribute("href", link.toExternalForm());
 		writer.writeEndElement();
 		if (authors != null && authors.size() > 0) {
 			writer.writeStartElement("author");

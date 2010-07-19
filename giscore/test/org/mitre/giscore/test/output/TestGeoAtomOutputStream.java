@@ -20,6 +20,7 @@ package org.mitre.giscore.test.output;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -52,8 +53,8 @@ public class TestGeoAtomOutputStream {
 		FileOutputStream os = new FileOutputStream(temp);
 		IGISOutputStream gisos = GISFactory.getOutputStream(
 				DocumentType.GeoAtom, os, new Date(), 
-					"http://www.fake.mitre.org/12412412412512123123", 
-					"http://www.fake.mitre.org/atomfakefeed/id=xyzzy/123");
+					new URL("http://www.fake.mitre.org/12412412412512123123"), 
+					new URL("http://www.fake.mitre.org/atomfakefeed/id=xyzzy/123"));
 
 		for (int i = 0; i < 25; i++) {
 			gisos.write(randomFeature());
