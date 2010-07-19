@@ -38,7 +38,6 @@ import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.Namespace;
-import javax.xml.stream.events.StartDocument;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
@@ -249,17 +248,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		addLast(ds);
 		try {
 			XMLEvent ev = stream.peek();
-			while(! ev.isStartElement()) {
+			while(ev != null && ! ev.isStartElement()) {
 				ev = stream.nextEvent(); // Actually advance
 				ev = stream.peek();
 			}
+            if (ev == null) return;
 			// The first start element may be a KML element, which isn't
 			// handled by the rest of the code. We'll handle it here to obtain the
 			// namespaces
 			StartElement first = ev.asStartElement();
 			String nstr = first.getName().getNamespaceURI(); 
 			if ((StringUtils.isBlank(nstr) || ms_kml_ns.contains(nstr)) &&
-					first.getName().getLocalPart().equalsIgnoreCase("kml")) {
+					first.getName().getLocalPart().equals("kml")) {
 				stream.nextEvent(); // Consume event
 			}
 			@SuppressWarnings("unchecked")
@@ -267,16 +267,19 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			while(niter.hasNext()) {
 				Namespace ns = niter.next();
 				if (StringUtils.isBlank(ns.getPrefix())) continue;
-				org.mitre.giscore.events.Namespace gnamespace = 
-					new org.mitre.giscore.events.Namespace(ns.getPrefix(), new URI(ns.getNamespaceURI()));
-				ds.getNamespaces().add(gnamespace);
+                try {
+                    org.mitre.giscore.events.Namespace gnamespace = new org.mitre.giscore.events.Namespace(
+                            ns.getPrefix(), new URI(ns.getNamespaceURI()));
+                    // assumes no duplicates in namespace prefixes which would violate the
+                    // XML duplicate attribute constraint
+                    ds.getNamespaces().add(gnamespace);
+                } catch (URISyntaxException e) {
+                    log.warn("Invalid namespace", e);
+                }
 			}
 		} catch (XMLStreamException e) {
 			throw new IOException(e);
-		} catch (URISyntaxException e) {
-			throw new IOException(e);
 		}
-		
 	}
 
 	/**
