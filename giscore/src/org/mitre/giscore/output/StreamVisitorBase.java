@@ -231,4 +231,8 @@ public class StreamVisitorBase implements IStreamVisitor {
     public void visit(Element element) {
     	// Ignored by default
     }
+    
+    public void visit(AtomHeader header) {
+    	// Ignored by default
+    }
 }

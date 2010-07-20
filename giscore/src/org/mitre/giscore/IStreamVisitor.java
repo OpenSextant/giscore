@@ -158,4 +158,9 @@ public interface IStreamVisitor {
      * @param element
      */
     public void visit(Element element);
+    
+    /**
+     * @param header
+     */
+    public void visit(AtomHeader header);
 }

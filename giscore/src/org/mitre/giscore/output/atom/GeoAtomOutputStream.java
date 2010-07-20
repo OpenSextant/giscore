@@ -34,6 +34,9 @@ import java.util.UUID;
 import javax.xml.stream.XMLStreamException;
 
 import org.mitre.giscore.Namespace;
+import org.mitre.giscore.events.AtomAuthor;
+import org.mitre.giscore.events.AtomHeader;
+import org.mitre.giscore.events.AtomLink;
 import org.mitre.giscore.events.Element;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Row;
@@ -65,6 +68,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 		ms_builtinFields.add(LINK_ATTR);
 		ms_builtinFields.add(TITLE_ATTR);
 		ms_builtinFields.add(UPDATED_ATTR);
+		ms_builtinFields.add(AUTHOR_ATTR);
 	}
 	private static Namespace gns = Namespace.getNamespace("geo", GIS_NS);
 
@@ -73,36 +77,13 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	throws XMLStreamException {
 	    /* GeoAtomOutputStream(OutputStream stream, Date updateDTM,
 			String title, String link, List<String> authors) */
-		super(outputStream);
-		Date updateDTM = (Date) arguments[0];
-		URL id = (URL) arguments[1];
-		String title = (String) ((arguments.length > 3) ? arguments[3] : null);
-		URL link = (URL) ((arguments.length > 2) ? arguments[2] : null);
-		@SuppressWarnings("unchecked")
-		List<String> authors = (List<String>) ((arguments.length > 4) ? arguments[4] : null);
-		if (updateDTM == null) {
-			throw new IllegalArgumentException(
-					"updateDTM should never be null");
-		}		
+		super(outputStream);	
 		
 		writer.writeStartDocument();
 		writer.writeStartElement("feed");
 		writer.writeDefaultNamespace("http://www.w3.org/2005/Atom");
 		writer.writeNamespace("ext", EXT_DATA_NS);
 		writer.writeNamespace("geo", GIS_NS);
-		handleSimpleElement("id", id.toExternalForm());
-		handleSimpleElement("title", title);
-		handleSimpleElement("updated", fmt.format(updateDTM));
-		writer.writeStartElement("link");
-		writer.writeAttribute("href", link.toExternalForm());
-		writer.writeEndElement();
-		if (authors != null && authors.size() > 0) {
-			writer.writeStartElement("author");
-			for (String author : authors) {
-				handleSimpleElement("name", author);
-			}
-			writer.writeEndElement();
-		}
 		handleSimpleElement("generator", "ITF giscore library");
 
 		dfmt = new DecimalFormat("##.#####");
@@ -122,6 +103,69 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.AtomHeader)
+	 */
+	@Override
+	public void visit(AtomHeader header) {
+		try {
+			handleSimpleElement("id", header.getId().toExternalForm());
+			handleSimpleElement("title", header.getTitle());
+			handleSimpleElement("updated", fmt.format(header.getUpdated()));
+			handleLink(header.getSelflink());
+			if (header.getRelatedlinks() != null) {
+				for(AtomLink rel : header.getRelatedlinks()) {
+					handleLink(rel);
+				}
+			}
+			if (header.getAuthors() != null && header.getAuthors().size() > 0) {
+				for (AtomAuthor author : header.getAuthors()) {
+					handleAuthor(author);
+				}
+			}
+		} catch (XMLStreamException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Handle an author
+	 * @param author
+	 * @throws XMLStreamException 
+	 */
+	private void handleAuthor(AtomAuthor author) throws XMLStreamException {
+		writer.writeStartElement("author");
+		handleSimpleElement("name", author.getName());
+		if (author.getUri() != null) {
+			handleSimpleElement("uri", author.getUri());
+		}
+		handleSimpleElement("email", author.getEmail());
+		writer.writeEndElement();
+	}
+
+
+	/**
+	 * Handle a link
+	 * @param link link data
+	 * @throws XMLStreamException 
+	 */
+	private void handleLink(AtomLink link) throws XMLStreamException {
+		writer.writeStartElement("link");
+		writer.writeAttribute("href", link.getHref().toExternalForm());
+		if (link.getHreflang() != null) {
+			writer.writeAttribute("hreflang", link.getHreflang());
+		}
+		if (link.getType() != null) {
+			writer.writeAttribute("type", link.getType().toString());
+		}
+		if (link.getRel() != null) {
+			writer.writeAttribute("rel", link.getRel());
+		}
+		writer.writeEndElement();
 	}
 
 

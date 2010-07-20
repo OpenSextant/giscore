@@ -29,6 +29,9 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.events.AtomAuthor;
+import org.mitre.giscore.events.AtomHeader;
+import org.mitre.giscore.events.AtomLink;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Row;
@@ -52,17 +55,23 @@ public class TestGeoAtomOutputStream {
 		File temp = File.createTempFile("test", ".xml");
 		FileOutputStream os = new FileOutputStream(temp);
 		IGISOutputStream gisos = GISFactory.getOutputStream(
-				DocumentType.GeoAtom, os, new Date(), 
-					new URL("http://www.fake.mitre.org/12412412412512123123"), 
-					new URL("http://www.fake.mitre.org/atomfakefeed/id=xyzzy/123"));
-
+				DocumentType.GeoAtom, os);
+		AtomHeader header = new AtomHeader(new URL(
+				"http://www.fake.mitre.org/12412412412512123123"),
+				new AtomLink(new URL(
+						"http://www.fake.mitre.org/atomfakefeed/id=xyzzy/123"),
+						"self"), "dummy title", new Date());
+		header.getAuthors().add(new AtomAuthor("Joe Shmoe","joe@mitre.org"));
+		header.getRelatedlinks().add(new AtomLink(new URL("http://www.yahoo.com"), "related"));
+		gisos.write(header);
+		
 		for (int i = 0; i < 25; i++) {
 			gisos.write(randomFeature());
 		}
 		for (int i = 0; i < 10; i++) {
 			gisos.write(randomRow());
 		}
-		
+
 		gisos.close();
 	}
 
@@ -111,7 +120,8 @@ public class TestGeoAtomOutputStream {
 				"Random Title " + RandomUtils.nextInt(100));
 		rval.putData(X, RandomUtils.nextDouble());
 		rval.putData(Y, RandomUtils.nextDouble());
-		rval.putData(IAtomConstants.AUTHOR_ATTR, "author a" + RandomUtils.nextInt(5));
+		rval.putData(IAtomConstants.AUTHOR_ATTR,
+				"author a" + RandomUtils.nextInt(5));
 	}
 
 	private IGISObject randomRow() {

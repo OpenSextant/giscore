@@ -247,10 +247,9 @@ public class GISFactory {
 							new boolean[] { false, false, false, false });
 					return new CsvOutputStream(outputStream, arguments);
 				case GeoAtom:
-					checkArguments(new Class[] { Date.class, URL.class, 
-							URL.class, String.class, List.class },
+					checkArguments(new Class[] { },
 							arguments,
-							new boolean[] { true, true, false, false, false });
+							new boolean[] {  });
 					return new GeoAtomOutputStream(outputStream, arguments);
 				default:
 					throw new UnsupportedOperationException(
