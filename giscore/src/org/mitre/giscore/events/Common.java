@@ -324,11 +324,48 @@ public abstract class Common extends Row {
 	 */
 	@Override
 	public String toString() {
-		return "Common [name=" + name + ", description=" + description
-				+ ", visibility=" + visibility + ", startTime=" + startTime
-				+ ", endTime=" + endTime + ", styleUrl=" + styleUrl
-				+ ", viewGroup=" + viewGroup + ", region=" + region
-				+ ", elements=" + elements + "]";
+        StringBuilder b = new StringBuilder(super.toString());
+        if (name != null) {
+            b.append(" name = ");
+            b.append(name);
+            b.append('\n');
+        }
+        if (description != null) {
+            b.append(" description = ");
+            b.append(description);
+            b.append('\n');
+        }
+        if (startTime != null) {
+            b.append(" startTime = ");
+            b.append(startTime);
+            b.append('\n');
+        }
+        if (endTime != null) {
+            b.append(" endTime = ");
+            b.append(endTime);
+            b.append('\n');
+        }
+        if (styleUrl != null) {
+            b.append(" styleUrl = ");
+            b.append(styleUrl);
+            b.append('\n');
+        }
+        if (viewGroup != null && !viewGroup.isEmpty()) {
+            b.append(" viewGroup = ");
+            b.append(viewGroup);
+            b.append('\n');
+        }
+        if (region != null && !region.isEmpty()) {
+            b.append(" region = ");
+            b.append(region);
+            b.append('\n');
+        }
+        if (elements != null && !elements.isEmpty()) {
+            b.append(" elements = ");
+            b.append(elements);
+            b.append('\n');
+        }
+        return b.toString();
 	}
 
 }
