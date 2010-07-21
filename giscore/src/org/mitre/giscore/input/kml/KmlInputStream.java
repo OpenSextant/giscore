@@ -313,11 +313,18 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 			Iterator<Namespace> niter = first.getNamespaces();
 			while(niter.hasNext()) {
 				Namespace ns = niter.next();
-				if (StringUtils.isBlank(ns.getPrefix())) continue;
-
-				org.mitre.giscore.Namespace gnamespace = 
-					org.mitre.giscore.Namespace.getNamespace(ns.getPrefix(), ns.getNamespaceURI());
-				ds.getNamespaces().add(gnamespace);
+                String prefix = ns.getPrefix();
+                if (StringUtils.isBlank(prefix)) continue;
+                // assuming that namespace prefixes are unique in the source KML document since it would violate
+                // the XML unique attribute constraint and not even load in Google Earth.
+                try {
+                    org.mitre.giscore.Namespace gnamespace = 
+                        org.mitre.giscore.Namespace.getNamespace(prefix, ns.getNamespaceURI());
+                    ds.getNamespaces().add(gnamespace);
+                } catch (IllegalArgumentException e) {
+                    // ignore invalid namespaces since often namespaces may not even be used in the document itself
+                    log.warn("ignore invalid namespace " + prefix + "=" + ns.getNamespaceURI());
+                }
 			}
 		} catch (XMLStreamException e) {
 			throw new IOException(e);
