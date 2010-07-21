@@ -29,9 +29,11 @@ import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.Namespace;
 import org.mitre.giscore.events.AtomAuthor;
 import org.mitre.giscore.events.AtomHeader;
 import org.mitre.giscore.events.AtomLink;
+import org.mitre.giscore.events.Element;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Row;
@@ -45,6 +47,7 @@ import org.mitre.giscore.output.atom.IAtomConstants;
 import static org.junit.Assert.*;
 
 public class TestGeoAtomOutputStream {
+	private static final String OPENSEARCH = "opensearch";
 	private static final SimpleField X = new SimpleField("X",
 			SimpleField.Type.DOUBLE);
 	private static final SimpleField Y = new SimpleField("Y",
@@ -63,6 +66,16 @@ public class TestGeoAtomOutputStream {
 						"self"), "dummy title", new Date());
 		header.getAuthors().add(new AtomAuthor("Joe Shmoe","joe@mitre.org"));
 		header.getRelatedlinks().add(new AtomLink(new URL("http://www.yahoo.com"), "related"));
+		
+		header.getNamespaces().add(
+				Namespace.getNamespace(OPENSEARCH, "http://a9.com/-/spec/opensearch/1.1/"));
+		Element results = new Element(OPENSEARCH, "totalResults");
+		results.setText("1000");
+		Element startIndex = new Element(OPENSEARCH, "startIndex");
+		startIndex.setText("1");
+		
+		header.getElements().add(results);
+		header.getElements().add(startIndex);
 		gisos.write(header);
 		
 		for (int i = 0; i < 25; i++) {

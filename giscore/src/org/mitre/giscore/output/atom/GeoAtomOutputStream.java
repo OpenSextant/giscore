@@ -71,21 +71,14 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 		ms_builtinFields.add(AUTHOR_ATTR);
 	}
 	private static Namespace gns = Namespace.getNamespace("geo", GIS_NS);
-
+	private boolean headerwritten = false;
 
 	public GeoAtomOutputStream(OutputStream outputStream, Object[] arguments)  
 	throws XMLStreamException {
 	    /* GeoAtomOutputStream(OutputStream stream, Date updateDTM,
 			String title, String link, List<String> authors) */
 		super(outputStream);	
-		
 		writer.writeStartDocument();
-		writer.writeStartElement("feed");
-		writer.writeDefaultNamespace("http://www.w3.org/2005/Atom");
-		writer.writeNamespace("ext", EXT_DATA_NS);
-		writer.writeNamespace("geo", GIS_NS);
-		handleSimpleElement("generator", "ITF giscore library");
-
 		dfmt = new DecimalFormat("##.#####");
 	}
 	
@@ -113,6 +106,19 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	@Override
 	public void visit(AtomHeader header) {
 		try {
+			writer.writeStartElement("feed");
+			writer.writeDefaultNamespace(ATOM_URI_NS);
+			writer.writeNamespace("ext", EXT_DATA_NS);
+			writer.writeNamespace("geo", GIS_NS);
+			namespaces.put("ext", EXT_DATA_NS);
+			namespaces.put("geo", GIS_NS);
+			if (header.getNamespaces() != null) {
+				for(Namespace ns : header.getNamespaces()) {
+					writer.writeNamespace(ns.getPrefix(), ns.getURI());
+					namespaces.put(ns.getPrefix(), ns.getURI());
+				}
+			}
+			handleSimpleElement("generator", "ITF giscore library");
 			handleSimpleElement("id", header.getId().toExternalForm());
 			handleSimpleElement("title", header.getTitle());
 			handleSimpleElement("updated", fmt.format(header.getUpdated()));
@@ -127,9 +133,15 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 					handleAuthor(author);
 				}
 			}
+			if (header.getElements() != null && header.getElements().size() > 0) {
+				for(Element el : header.getElements()) {
+					visit(el);
+				}
+			}
+			headerwritten = true;
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
-		}
+		} 
 	}
 
 	/**
@@ -219,6 +231,9 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	 * @param geo
 	 */
 	private void outputRow(Row row, String description, Geometry geo) {
+		if (! headerwritten) {
+			throw new IllegalStateException("Must output atom header before any feature or row");
+		}
 		String id = row.getId();
 		Object title = row.getData(TITLE_ATTR);
 		Object u = row.getData(UPDATED_ATTR);

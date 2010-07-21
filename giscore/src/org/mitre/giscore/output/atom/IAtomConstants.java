@@ -52,6 +52,11 @@ public interface IAtomConstants {
 	static final SimpleField AUTHOR_ATTR = new SimpleField("ATOM_AUTHOR");
 	
 	/**
+	 * URI for ATOM
+	 */
+	static final String ATOM_URI_NS = "http://www.w3.org/2005/Atom";
+	
+	/**
 	 * A namespace for the extended data elements
 	 */
 	static final String EXT_DATA_NS = "http://mitre.org/itf/ext_data/1.0";

@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.IStreamVisitor;
+import org.mitre.giscore.Namespace;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -46,6 +47,8 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	private AtomLink selflink;
 	private List<AtomLink> relatedlinks = new ArrayList<AtomLink>();
 	private List<AtomAuthor> authors = new ArrayList<AtomAuthor>();
+	private List<Namespace> namespaces = new ArrayList<Namespace>();
+	private List<Element> elements = new ArrayList<Element>();
 	private String title;
 	private Date updated;
 
@@ -188,6 +191,34 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		this.updated = updated;
 	}
 
+	/**
+	 * @return the elements
+	 */
+	public List<Element> getElements() {
+		return elements;
+	}
+
+	/**
+	 * @param elements the elements to set
+	 */
+	public void setElements(List<Element> elements) {
+		this.elements = elements;
+	}
+	
+	/**
+	 * @return the namespaces
+	 */
+	public List<Namespace> getNamespaces() {
+		return namespaces;
+	}
+
+	/**
+	 * @param namespaces the namespaces to set
+	 */
+	public void setNamespaces(List<Namespace> namespaces) {
+		this.namespaces = namespaces;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -196,7 +227,11 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((authors == null) ? 0 : authors.hashCode());
+		result = prime * result
+				+ ((elements == null) ? 0 : elements.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result
+				+ ((namespaces == null) ? 0 : namespaces.hashCode());
 		result = prime * result
 				+ ((relatedlinks == null) ? 0 : relatedlinks.hashCode());
 		result = prime * result
@@ -223,10 +258,20 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 				return false;
 		} else if (!authors.equals(other.authors))
 			return false;
+		if (elements == null) {
+			if (other.elements != null)
+				return false;
+		} else if (!elements.equals(other.elements))
+			return false;
 		if (id == null) {
 			if (other.id != null)
 				return false;
 		} else if (!id.equals(other.id))
+			return false;
+		if (namespaces == null) {
+			if (other.namespaces != null)
+				return false;
+		} else if (!namespaces.equals(other.namespaces))
 			return false;
 		if (relatedlinks == null) {
 			if (other.relatedlinks != null)
@@ -261,8 +306,15 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		selflink = (AtomLink) in.readObject();
 		relatedlinks = (List<AtomLink>) in.readObjectCollection();
 		authors = (List<AtomAuthor>) in.readObjectCollection();
+		elements = (List<Element>) in.readObjectCollection();
 		title = in.readString();
 		updated = (Date) in.readScalar();
+		int nscount = in.readInt();
+		for(int i = 0; i < nscount; i++) {
+			String pre = in.readString();
+			String uri = in.readString();
+			namespaces.add(Namespace.getNamespace(pre, uri));
+		}
 	}
 
 	@Override
@@ -271,9 +323,15 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		out.writeObject(selflink);
 		out.writeObjectCollection(relatedlinks);
 		out.writeObjectCollection(authors);
+		out.writeObjectCollection(elements);
 		out.writeString(title);
 		out.writeScalar(updated);
-		
+		int nscount = namespaces.size();
+		out.writeInt(nscount);
+		for(int i = 0; i < nscount; i++) {
+			out.writeString(namespaces.get(i).getPrefix());
+			out.writeString(namespaces.get(i).getURI());
+		}
 	}
 
 }

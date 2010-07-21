@@ -74,6 +74,23 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	}
 	
 	/**
+	 * Ctor
+	 * @param prefix
+	 * @param name
+	 */
+	public Element(String prefix, String name) {
+		super();
+		if (name == null || name.trim().length() == 0) {
+			throw new IllegalArgumentException(
+					"name should never be null or empty");
+		}
+		this.prefix = prefix;
+		this.name = name;
+	}
+
+
+
+	/**
 	 * @return the prefix
 	 */
 	public String getPrefix() {
