@@ -43,7 +43,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * @author DRAND
  */
 public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
-	private URL id;
+	private String id;
 	private AtomLink selflink;
 	private List<AtomLink> relatedlinks = new ArrayList<AtomLink>();
 	private List<AtomAuthor> authors = new ArrayList<AtomAuthor>();
@@ -51,7 +51,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	private List<Element> elements = new ArrayList<Element>();
 	private String title;
 	private Date updated;
-	private String generator = "ITF giscore library";
+	private String generator;
 
 
 	/**
@@ -67,7 +67,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	 * @param title
 	 * @param updated
 	 */
-	public AtomHeader(URL id, AtomLink selflink, String title, Date updated) {
+	public AtomHeader(String id, AtomLink selflink, String title, Date updated) {
 		super();
 		if (id == null) {
 			throw new IllegalArgumentException(
@@ -96,7 +96,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	/**
 	 * @return the id
 	 */
-	public URL getId() {
+	public String getId() {
 		return id;
 	}
 
@@ -105,7 +105,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	/**
 	 * @param id the id to set
 	 */
-	public void setId(URL id) {
+	public void setId(String id) {
 		this.id = id;
 	}
 
@@ -330,8 +330,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
-		String idstr = in.readString();
-		id = StringUtils.isNotBlank(idstr) ? new URL(idstr) : null;
+		id = in.readString();
 		selflink = (AtomLink) in.readObject();
 		relatedlinks = (List<AtomLink>) in.readObjectCollection();
 		authors = (List<AtomAuthor>) in.readObjectCollection();
@@ -349,7 +348,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 
 	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
-		out.writeString(id != null ? id.toExternalForm() : null);
+		out.writeString(id);
 		out.writeObject(selflink);
 		out.writeObjectCollection(relatedlinks);
 		out.writeObjectCollection(authors);

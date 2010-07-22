@@ -64,8 +64,7 @@ public class TestGeoAtomOutputStream {
 		FileOutputStream os = new FileOutputStream(temp);
 		IGISOutputStream gisos = GISFactory.getOutputStream(
 				DocumentType.GeoAtom, os);
-		AtomHeader header = new AtomHeader(new URL(
-				"http://www.fake.mitre.org/12412412412512123123"),
+		AtomHeader header = new AtomHeader("http://www.fake.mitre.org/12412412412512123123",
 				new AtomLink(new URL(
 						"http://www.fake.mitre.org/atomfakefeed/id=xyzzy/123"),
 						"self"), "dummy title", new Date());

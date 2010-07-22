@@ -121,7 +121,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 				}
 			}
 			handleSimpleElement("generator", header.getGenerator());
-			handleSimpleElement("id", header.getId().toExternalForm());
+			handleSimpleElement("id", header.getId());
 			handleSimpleElement("title", header.getTitle());
 			handleSimpleElement("updated", fmt.format(header.getUpdated()));
 			handleLink(header.getSelflink());

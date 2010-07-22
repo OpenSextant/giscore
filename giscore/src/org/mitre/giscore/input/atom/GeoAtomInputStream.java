@@ -69,6 +69,8 @@ public class GeoAtomInputStream extends XmlInputStream {
 			.getLogger(GeoAtomInputStream.class);
 	private static final SafeDateFormat fmt = new SafeDateFormat(
 			IKml.ISO_DATE_FMT);
+	private static final SafeDateFormat fmt2 = new SafeDateFormat(
+			"yyyy-MM-dd'T'HH:mm:ss'Z'");
 	private Map<String, String> namespaceMap = new HashMap<String, String>();
 	private String defaultNamespace;
 
@@ -149,7 +151,7 @@ public class GeoAtomInputStream extends XmlInputStream {
 						if ("generator".equals(name)) {
 							header.setGenerator(getElementText(se.getName()));
 						} else if ("id".equals(name)) {
-							header.setId(new URL(getElementText(se.getName())));
+							header.setId(getElementText(se.getName()));
 						} else if ("title".equals(name)) {
 							header.setTitle(getElementText(se.getName()));
 						} else if ("updated".equals(name)) {
@@ -254,7 +256,11 @@ public class GeoAtomInputStream extends XmlInputStream {
 		try {
 			return fmt.parse(elementText);
 		} catch (ParseException e) {
-			throw new IOException(e);
+			try {
+				return fmt2.parse(elementText);
+			} catch (ParseException e2) {
+				throw new IOException(e);
+			}
 		}
 	}
 
@@ -326,11 +332,13 @@ public class GeoAtomInputStream extends XmlInputStream {
 							link = parseLink(se);
 						} else if ("content".equals(name)) {
 							content = getElementText(se.getName());
+						} else if ("summary".equals(name)) {
+							content = getElementText(se.getName());
 						} else if ("id".equals(name)) {
 							id = getElementText(se.getName());
 						} else if ("updated".equals(name)) {
 							String u = getElementText(se.getName());
-							updated = fmt.parse(u);
+							updated = parseDate(u);
 						} else if ("author".equals(name)) {
 							authors.add(readAuthor(se));
 						}
