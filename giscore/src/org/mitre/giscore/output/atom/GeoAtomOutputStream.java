@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ import org.mitre.giscore.events.Element;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
@@ -79,7 +81,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 			String title, String link, List<String> authors) */
 		super(outputStream);	
 		writer.writeStartDocument();
-		dfmt = new DecimalFormat("##.#####");
+		dfmt = new DecimalFormat("##.######");
 	}
 	
 	
@@ -118,7 +120,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 					namespaces.put(ns.getPrefix(), ns.getURI());
 				}
 			}
-			handleSimpleElement("generator", "ITF giscore library");
+			handleSimpleElement("generator", header.getGenerator());
 			handleSimpleElement("id", header.getId().toExternalForm());
 			handleSimpleElement("title", header.getTitle());
 			handleSimpleElement("updated", fmt.format(header.getUpdated()));
@@ -207,7 +209,13 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	 */
 	@Override
 	public void visit(Row row) {
-		outputRow(row, null, null);
+		Object u = row.getData(UPDATED_ATTR);
+		Date updated = null;
+		if (u != null && u instanceof Date) {
+			updated = (Date) u;
+		}
+		Object title = row.getData(TITLE_ATTR);
+		outputRow(row, updated, title != null ? title.toString() : "", null, null);
 	}
 
 	/*
@@ -219,7 +227,12 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	 */
 	@Override
 	public void visit(Feature feature) {
-		outputRow(feature, feature.getDescription(), feature.getGeometry());
+		Object u = feature.getData(UPDATED_ATTR);
+		Date updated = feature.getStartTime();
+		if (updated == null && u != null && u instanceof Date) {
+			updated = (Date) u;
+		}
+		outputRow(feature, updated, feature.getName(), feature.getDescription(), feature.getGeometry());
 	}
 
 	/**
@@ -227,22 +240,19 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	 * contained in a feature to allow the same code to output either a feature
 	 * or a row.
 	 * @param row
+	 * @param updated
 	 * @param description
 	 * @param geo
 	 */
-	private void outputRow(Row row, String description, Geometry geo) {
+	private void outputRow(Row row, Date updated, String title, 
+			String description, Geometry geo) {
 		if (! headerwritten) {
 			throw new IllegalStateException("Must output atom header before any feature or row");
 		}
 		String id = row.getId();
-		Object title = row.getData(TITLE_ATTR);
-		Object u = row.getData(UPDATED_ATTR);
 		Object a = row.getData(AUTHOR_ATTR);
 		List<String> alist = new ArrayList<String>();
-		Date updated = null;
-		if (u != null && u instanceof Date) {
-			updated = (Date) u;
-		}
+
 		if (a != null) {
 			String authors = a.toString();
 			String parts[] = authors.split(",");
@@ -251,19 +261,66 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 			}
 		}
 		Object link = (Object) row.getData(LINK_ATTR);
-		Map<String, String> data = new HashMap<String, String>();
+		Map<SimpleField, String> data = new HashMap<SimpleField, String>();
 		for (SimpleField field : row.getFields()) {
 			if (ms_builtinFields.contains(field)) continue;
 			String name = field.getName();
 			Object val = row.getData(field);
 			if (val != null) {
-				data.put(name, val.toString());
+				data.put(field, writeValue(field.getType(), val));
 			}
 		}
-		outputEntry(id, title != null ? title.toString() : "",
+		outputEntry(id, title,
 				description, updated,
 				link != null ? link.toString() : "", data,
 				geo, alist);
+	}
+	
+	/**
+	 * Process the string value according to the type. By default just store the
+	 * string.
+	 * @param type
+	 * @param val
+	 * @return
+	 */
+	private String writeValue(Type type, Object val)  {
+		switch(type) {
+		case DOUBLE:
+		case FLOAT:
+			if (val instanceof Number) {
+				return dfmt.format((Number) val);
+			} else {
+				return val.toString();
+			}
+		case INT:
+		case UINT:
+			if (val instanceof Integer) {
+				return Integer.toString((Integer) val);
+			} else {
+				return val.toString();
+			}
+		case SHORT:
+		case USHORT:
+			if (val instanceof Short) {
+				return Short.toString((Short) val);
+			} else {
+				return val.toString();
+			}
+		case BOOL:
+			if (val instanceof Boolean) {
+				return Boolean.toString((Boolean) val);
+			} else {
+				val.toString();
+			}
+		case DATE:
+			if (val instanceof Date) {
+				return fmt.format((Date) val);
+			} else {
+				return val.toString();
+			}
+		default:
+			return val.toString();
+		}
 	}
 
 	/**
@@ -283,7 +340,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	 * @param alist 
 	 */
 	public void outputEntry(String id, String title, String description,
-			Date updated, String link, Map<String, String> data, Geometry geo, List<String> alist) {
+			Date updated, String link, Map<SimpleField, String> data, Geometry geo, List<String> alist) {
 		try {
 			writer.writeStartElement("entry");
 			for(String author : alist) {
@@ -298,9 +355,10 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 			writer.writeStartElement("link");
 			writer.writeAttribute("href", link);
 			writer.writeEndElement();
-			for(String key : data.keySet()) {
+			for(SimpleField key : data.keySet()) {
 				writer.writeStartElement("ext", "data", EXT_DATA_NS);
-				writer.writeAttribute("name", key);
+				writer.writeAttribute("name", key.getName());
+				writer.writeAttribute("type", key.getType().name());
 				writer.writeCharacters(data.get(key));
 				writer.writeEndElement();
 			}

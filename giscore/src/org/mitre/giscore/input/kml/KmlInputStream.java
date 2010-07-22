@@ -47,7 +47,6 @@ import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.EndElement;
 import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
@@ -87,7 +86,7 @@ import org.mitre.giscore.geometry.Model;
 import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
-import org.mitre.giscore.input.GISInputStreamBase;
+import org.mitre.giscore.input.XmlInputStream;
 import org.mitre.giscore.utils.NumberStreamTokenizer;
 import org.mitre.itf.geodesy.Angle;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
@@ -97,7 +96,6 @@ import org.mitre.itf.geodesy.Longitude;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.esri.arcgis.interop.AutomationException;
 
 /**
  * Read a KML/KMZ file in as an input stream. Each time the read method is called,
@@ -181,9 +179,8 @@ import com.esri.arcgis.interop.AutomationException;
  * @author J.Mathews
  * 
  */
-public class KmlInputStream extends GISInputStreamBase implements IKml {
-
-    private static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
+public class KmlInputStream extends XmlInputStream implements IKml {
+    public static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
 
     private static final Set<String> ms_kml_ns = new HashSet<String>(7);
     
@@ -197,11 +194,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
     	ms_kml_ns.add("http://www.opengis.net/kml/2.3");
     	ms_kml_ns.add("http://www.opengis.net/kml/3.0");
     }
-    
-    private InputStream is;
-    private XMLEventReader stream;
-
-	private static final XMLInputFactory ms_fact;
 	private static final Set<String> ms_features = new HashSet<String>();
 	private static final Set<String> ms_containers = new HashSet<String>();
 	private static final Set<String> ms_attributes = new HashSet<String>();
@@ -219,8 +211,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	private static final QName ID_ATTR = new QName(ID);
 
     static {
-		ms_fact = XMLInputFactory.newInstance();
-		
 		// all non-container elements that extend kml:AbstractFeatureType base type in KML Schema
 		ms_features.add(PLACEMARK);
 		ms_features.add(NETWORK_LINK);
@@ -278,15 +268,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	 * @throws IllegalArgumentException if input is null
 	 */
 	public KmlInputStream(InputStream input) throws IOException {
-		if (input == null) {
-			throw new IllegalArgumentException("input should never be null");
-		}
-		is = input;
-		try {
-			stream = ms_fact.createXMLEventReader(is);
-		} catch (XMLStreamException e) {
-			throw new IOException(e);
-		}
+		super(input);
 		DocumentStart ds = new DocumentStart(DocumentType.KML); 
 		addLast(ds);
 		try {
@@ -331,24 +313,7 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		}
 	}
 
-	/**
-	 * Closes this input stream and releases any system resources 
-     * associated with the stream.
-	 * Once the stream has been closed, further read() invocations may throw an IOException.
-     * Closing a previously closed stream has no effect.
-	 */
-	public void close() {
-		if (stream != null)
-			try {
-				stream.close();
-			} catch (XMLStreamException e) {
-				log.warn("Failed to close reader", e);
-			}
-		if (is != null) {
-			IOUtils.closeQuietly(is);
-			is = null;
-		}
-	}
+
 
 	/**
 	 * Push an object back into the read queue
@@ -552,27 +517,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 	}
 
 	/**
-	 * Get non-empty element text.
-	 * 
-	 * @param name  the qualified name of this event
-	 * @return non-empty element text or null if text content is missing, empty or null.
-	 * @throws XMLStreamException
-	 */
-	private String getElementText(QName name) throws XMLStreamException {
-        /*
-         * some elements such as description may have HTML elements as child elements rather than
-         * within required CDATA block.
-         */
-        try {
-            return getNonEmptyElementText();
-        } catch (XMLStreamException e) {
-            log.warn("Unable to parse " + name.getLocalPart() + " as text element: " + e);
-            skipNextElement(stream, name);
-            return null;
-        }
-    }
-
-    /**
 	 * @param cs
 	 * @param name  the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
@@ -628,60 +572,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Is this event a matching end tag?
-	 * 
-	 * @param event
-	 *            the event
-	 * @param tag
-	 *            the tag
-	 * @return <code>true</code> if this is an end element event for the
-	 *         matching tag
-	 */
-	private boolean foundEndTag(XMLEvent event, String tag) {
-        if (event == null) {
-           return true;
-        }
-        if (event.getEventType() == XMLEvent.END_ELEMENT) {
-			if (event.asEndElement().getName().getLocalPart().equals(tag))
-				return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Is this event a matching end tag?
-	 *
-	 * @param event
-	 *            the event
-	 * @param name
-	 *            the qualified name of this event
-	 * 
-	 * @return <code>true</code> if this is an end element event for the
-	 *         matching tag
-	 */	
-	private boolean foundEndTag(XMLEvent event, QName name) {
-		if (event == null) {
-           return true;
-        }
-        if (event.getEventType() == XMLEvent.END_ELEMENT) {
-			if (event.asEndElement().getName().equals(name))
-				return true;
-		}
-		return false;
-	}
-
-	/**
-	 * Found a specific start tag
-	 * 
-	 * @param se
-	 * @param tag
-	 * @return
-	 */
-	private boolean foundStartTag(StartElement se, String tag) {
-		return se.getName().getLocalPart().equals(tag);
 	}
 
 	/**
@@ -1369,63 +1259,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 		return NullObject.getInstance();
 	}
 	
-	/**
-	 * Unrecognized elements are packaged and returned as {@link Element} objects
-	 * which hold their text and attribute data. These can be processed by 
-	 * consumers and may be output by the output side of XML based processors.
-	 * @param se the start tag, never <code>null</code>
-	 * @return the element, never <code>null</code>
-	 * @throws XMLStreamException
-	 * @throws IOException
-	 * @throws AutomationException
-	 */
-	private IGISObject getForeignElement(StartElement se)
-			throws XMLStreamException, IOException {
-		Element el = new Element();
-		el.setName(se.getName().getLocalPart());
-		el.setPrefix(se.getName().getPrefix());
-		@SuppressWarnings("unchecked")
-		Iterator<Attribute> aiter = se.getAttributes();
-		while(aiter.hasNext()) {
-			Attribute attr = aiter.next();
-			String aname;
-			if (StringUtils.isBlank(attr.getName().getPrefix())) {
-				aname = attr.getName().getLocalPart();
-			} else {
-				aname = attr.getName().getPrefix() + ":" + attr.getName().getLocalPart();
-			}
-			el.getAttributes().put(aname, attr.getValue());
-		}
-		XMLEvent nextel = stream.nextEvent();
-		while(true) {
-			if (nextel instanceof Characters) {
-				Characters text = (Characters) nextel;
-				el.setText(text.getData());
-			} else if (nextel.isStartElement()) {
-				el.getChildren().add((Element) getForeignElement(nextel.asStartElement()));
-			} else if (nextel.isEndElement()) {
-				break;
-			}
-			nextel = stream.nextEvent();
-		}
-		return el;
-	}
-
-	/**
-	 * Skip to end of target element given its fully qualified <code>QName</code>
-	 * @param element
-	 * @param name  the qualified name of this event
-	 * @throws XMLStreamException if there is an error with the underlying XML.
-	 */
-	private void skipNextElement(XMLEventReader element, QName name) throws XMLStreamException {
-		while (true) {
-			XMLEvent next = element.nextEvent();
-			if (next == null || foundEndTag(next, name)) {
-				break;
-			}
-		}
-	}
-
 	private IGISObject handleNetworkLinkControl(XMLEventReader stream, QName name) throws XMLStreamException {
 		NetworkLinkControl c = new NetworkLinkControl();
 		// if true indicates we're parsing the Update element
@@ -2415,30 +2248,6 @@ public class KmlInputStream extends GISInputStreamBase implements IKml {
 
 		return null;
 	}
-
-	private Double getDoubleElementValue(String localName) throws XMLStreamException {
-		String elementText = stream.getElementText();
-		if (elementText != null && StringUtils.isNotBlank(elementText))
-			try {
-				return Double.parseDouble(elementText);
-			} catch (NumberFormatException nfe) {
-				log.warn("Ignoring bad value for " + localName + ": " + nfe);
-			}
-		return null;
-	}
-
-    /**
-     * Returns non-empty trimmed elementText from stream otherwise null
-     * @return non-empty trimmed string, otherwise null
-     * @throws XMLStreamException if the current event is not a START_ELEMENT
-     * or if a non text element is encountered
-     */
-    private String getNonEmptyElementText() throws XMLStreamException {
-        String elementText = stream.getElementText();
-        if (elementText == null || elementText.length() == 0) return null;
-        elementText = elementText.trim();
-        return elementText.length() == 0 ? null : elementText;
-    }
 
 	private static class GeometryGroup {
 		List<Point> points;

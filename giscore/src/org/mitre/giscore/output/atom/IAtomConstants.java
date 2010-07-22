@@ -30,14 +30,14 @@ public interface IAtomConstants {
 	
 	/**
 	 * The name of the extended data element that holds the title information 
-	 * for atom features and rows.
+	 * for atom rows. For features use the feature name to hold the title.
 	 */
 	static final SimpleField TITLE_ATTR = new SimpleField("ATOM_TITLE");
 	
 	/**
 	 * The name of the extended data element that holds the updated date 
-	 * information for atom features and rows. The type of the data should be
-	 * a date.
+	 * information for atom rows. The type of the data should be
+	 * a date. Features should use the startTime instead.
 	 */
 	static final SimpleField UPDATED_ATTR = new SimpleField("ATOM_UPDATED", Type.DATE);
 	
@@ -50,6 +50,11 @@ public interface IAtomConstants {
 	 * data to allow author email and other data to be passed.
 	 */
 	static final SimpleField AUTHOR_ATTR = new SimpleField("ATOM_AUTHOR");
+	
+	/**
+	 * Holds the content for an atom entry for rows.
+	 */
+	static final SimpleField CONTENT_ATTR = new SimpleField("ATOM_CONTENT");
 	
 	/**
 	 * URI for ATOM

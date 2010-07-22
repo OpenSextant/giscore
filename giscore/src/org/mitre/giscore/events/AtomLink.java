@@ -51,15 +51,11 @@ public class AtomLink implements IDataSerializable, Serializable {
 	/**
 	 * Basic ctor
 	 * @param href the link, never <code>null</code>
-	 * @param rel the relationship, never <code>null</code> or empty
+	 * @param rel the relationship
 	 */
 	public AtomLink(URL href, String rel) {
 		if (href == null) {
 			throw new IllegalArgumentException("href should never be null");
-		}
-		if (rel == null || rel.trim().length() == 0) {
-			throw new IllegalArgumentException(
-					"rel should never be null or empty");
 		}
 		this.href = href;
 		this.rel = rel;

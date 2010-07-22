@@ -29,6 +29,7 @@ import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.IGISInputStream;
+import org.mitre.giscore.input.XmlInputStream;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.input.kml.KmlInputStream;
@@ -265,7 +266,7 @@ public class TestKmlOutputStream extends TestGISBase {
 		f.setRegion(region);
 		kos.write(f);
 		kos.close();
-		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+		XmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
 		IGISObject o;
 		while ((o = kis.read()) != null) {
 			if (o instanceof Feature) {

@@ -19,11 +19,14 @@
 package org.mitre.giscore.test.output;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
@@ -33,6 +36,7 @@ import org.mitre.giscore.Namespace;
 import org.mitre.giscore.events.AtomAuthor;
 import org.mitre.giscore.events.AtomHeader;
 import org.mitre.giscore.events.AtomLink;
+import org.mitre.giscore.events.DocumentStart;
 import org.mitre.giscore.events.Element;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
@@ -41,6 +45,7 @@ import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
+import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.atom.IAtomConstants;
 
@@ -78,18 +83,102 @@ public class TestGeoAtomOutputStream {
 		header.getElements().add(startIndex);
 		gisos.write(header);
 		
+		List<IGISObject> written = new ArrayList<IGISObject>();
 		for (int i = 0; i < 25; i++) {
-			gisos.write(randomFeature());
+			IGISObject ob = randomFeature();
+			gisos.write(ob);
+			written.add(ob);
 		}
 		for (int i = 0; i < 10; i++) {
-			gisos.write(randomRow());
+			IGISObject ob = randomRow();
+			gisos.write(ob);
+			written.add(ob);
 		}
 
 		gisos.close();
+		
+		FileInputStream is = new FileInputStream(temp);
+		IGISInputStream gisis = GISFactory.getInputStream(DocumentType.GeoAtom, is);
+		IGISObject first = gisis.read();
+		assertNotNull(first);
+		assertTrue(first instanceof AtomHeader);
+		AtomHeader readheader = (AtomHeader) first;
+		assertEquals(header, readheader);
+		
+		List<IGISObject> read = new ArrayList<IGISObject>();
+		while(true) {
+			IGISObject ob = gisis.read();
+			if (ob == null) break;
+			if (ob instanceof DocumentStart) continue;
+			read.add(ob);
+		}
+		assertEquals(written.size(), read.size());
+		
+		for(int i = 0; i < written.size(); i++) {
+			System.err.println("Compare #" + i);
+			compare(written.get(i), read.get(i));
+		}
+	}
+
+	private void compare(IGISObject ob, IGISObject ob2) {
+		if (ob instanceof Feature) {
+			compareFeatures(ob, ob2);
+		} else {
+			compareRows((Row) ob, (Row) ob2);
+		}
+	}
+
+	private void compareRows(Row r1, Row r2) {
+		assertEquals(r1.getId(), r2.getId());
+		// Compare data by named fields
+		Map<String,SimpleField> r1fieldmap = new HashMap<String, SimpleField>();
+		Map<String,SimpleField> r2fieldmap = new HashMap<String, SimpleField>();
+		
+		for(SimpleField f : r1.getFields()) {
+			r1fieldmap.put(f.getName(), f);
+		}
+		for(SimpleField f : r2.getFields()) {
+			r2fieldmap.put(f.getName(), f);
+		}
+		assertEquals(r1fieldmap.keySet(), r2fieldmap.keySet());
+		// Compare data
+		for(String name : r1fieldmap.keySet()) {
+			SimpleField r1field = r1fieldmap.get(name);
+			SimpleField r2field = r2fieldmap.get(name);
+			Object data1 = r1.getData(r1field);
+			Object data2 = r2.getData(r2field);
+			if (data1 instanceof Double) {
+				assertEquals((Double) data1, (Double) data2, 0.0001);
+			} else {
+				assertEquals(data1, data2);
+			}
+		}
+	}
+
+	private void compareFeatures(IGISObject ob, IGISObject ob2) {
+		if (ob instanceof Feature && ob2 instanceof Feature) {
+			// 
+		} else {
+			fail("Not both features");
+		}
+		Feature f1 = (Feature) ob;
+		Feature f2 = (Feature) ob2;
+		assertEquals(f1.getName(), f2.getName());
+		assertEquals(f1.getDescription(), f2.getDescription());
+		assertEquals(f1.getStartTime(), f2.getStartTime());
+		// Hard to compare the geometry objects due to comparing double values
+		// just compare type and counts and call it a day
+		assertNotNull(f1.getGeometry());
+		assertNotNull(f2.getGeometry());
+		assertEquals(f1.getGeometry().getClass(), f2.getGeometry().getClass());
+		assertEquals(f1.getGeometry().getNumPoints(), f2.getGeometry().getNumPoints());
+		compareRows((Row) ob, (Row) ob2);
 	}
 
 	private IGISObject randomFeature() {
 		Feature rval = new Feature();
+		rval.setStartTime(new Date());
+		rval.setName("Random Name " + RandomUtils.nextInt(100));
 		fillData((Row) rval);
 		int i = RandomUtils.nextInt(3);
 		double centerlat = 40.0 + RandomUtils.nextDouble() * 2.0;
@@ -128,9 +217,11 @@ public class TestGeoAtomOutputStream {
 		rval.setId("urn:mitre:test:" + System.nanoTime());
 		rval.putData(IAtomConstants.LINK_ATTR,
 				"http://asite.mitre.org/myservice/fetch=" + rval.getId());
-		rval.putData(IAtomConstants.UPDATED_ATTR, new Date());
-		rval.putData(IAtomConstants.TITLE_ATTR,
-				"Random Title " + RandomUtils.nextInt(100));
+		if (!(rval instanceof Feature)) {
+			rval.putData(IAtomConstants.UPDATED_ATTR, new Date());
+			rval.putData(IAtomConstants.TITLE_ATTR,
+					"Random Title " + RandomUtils.nextInt(100));
+		}
 		rval.putData(X, RandomUtils.nextDouble());
 		rval.putData(Y, RandomUtils.nextDouble());
 		rval.putData(IAtomConstants.AUTHOR_ATTR,
@@ -140,6 +231,7 @@ public class TestGeoAtomOutputStream {
 	private IGISObject randomRow() {
 		Row rval = new Row();
 		fillData(rval);
+		rval.putData(IAtomConstants.CONTENT_ATTR, "Content " + RandomUtils.nextInt());
 		return rval;
 	}
 

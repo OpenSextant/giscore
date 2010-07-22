@@ -38,6 +38,12 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 	private URI uri;
 	private String email;
 
+	/**
+	 * Empty ctor
+	 */
+	public AtomAuthor() {
+	}
+	
 	public AtomAuthor(String name, String email) {
 		if (name == null || name.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -46,7 +52,7 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 		this.name = name;
 		this.email = email;
 	}
-	
+
 	/**
 	 * @return the name
 	 */

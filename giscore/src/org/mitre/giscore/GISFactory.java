@@ -31,6 +31,7 @@ import javax.xml.stream.XMLStreamException;
 
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.input.IGISInputStream;
+import org.mitre.giscore.input.atom.GeoAtomInputStream;
 import org.mitre.giscore.input.csv.CsvInputStream;
 import org.mitre.giscore.input.gdb.GdbInputStream;
 import org.mitre.giscore.input.kml.KmlInputStream;
@@ -112,6 +113,11 @@ public class GISFactory {
 					arguments,
 					new boolean[] { false, false, false, false });
 			return new CsvInputStream(stream, arguments);
+		} else if (DocumentType.GeoAtom.equals(type)) {
+			checkArguments(new Class[] { },
+					arguments,
+					new boolean[] {  });
+			return new GeoAtomInputStream(stream, arguments);
 		} else {
 			throw new UnsupportedOperationException(
 					"Cannot create an input stream for type " + type);

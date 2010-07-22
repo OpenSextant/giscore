@@ -51,7 +51,15 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	private List<Element> elements = new ArrayList<Element>();
 	private String title;
 	private Date updated;
+	private String generator = "ITF giscore library";
 
+
+	/**
+	 * Empty ctor
+	 */
+	public AtomHeader() {
+	}
+	
 	/**
 	 * Ctor
 	 * @param id
@@ -219,6 +227,20 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		this.namespaces = namespaces;
 	}
 
+	/**
+	 * @return the generator
+	 */
+	public String getGenerator() {
+		return generator;
+	}
+
+	/**
+	 * @param generator the generator to set
+	 */
+	public void setGenerator(String generator) {
+		this.generator = generator;
+	}
+
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
@@ -229,6 +251,8 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		result = prime * result + ((authors == null) ? 0 : authors.hashCode());
 		result = prime * result
 				+ ((elements == null) ? 0 : elements.hashCode());
+		result = prime * result
+				+ ((generator == null) ? 0 : generator.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result
 				+ ((namespaces == null) ? 0 : namespaces.hashCode());
@@ -262,6 +286,11 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 			if (other.elements != null)
 				return false;
 		} else if (!elements.equals(other.elements))
+			return false;
+		if (generator == null) {
+			if (other.generator != null)
+				return false;
+		} else if (!generator.equals(other.generator))
 			return false;
 		if (id == null) {
 			if (other.id != null)
@@ -308,6 +337,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		authors = (List<AtomAuthor>) in.readObjectCollection();
 		elements = (List<Element>) in.readObjectCollection();
 		title = in.readString();
+		generator = in.readString();
 		updated = (Date) in.readScalar();
 		int nscount = in.readInt();
 		for(int i = 0; i < nscount; i++) {
@@ -325,6 +355,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		out.writeObjectCollection(authors);
 		out.writeObjectCollection(elements);
 		out.writeString(title);
+		out.writeString(generator);
 		out.writeScalar(updated);
 		int nscount = namespaces.size();
 		out.writeInt(nscount);
