@@ -21,6 +21,7 @@ package org.mitre.giscore.input;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
@@ -48,21 +49,23 @@ import org.slf4j.LoggerFactory;
 public abstract class XmlInputStream extends GISInputStreamBase {
 	private static final Logger log = LoggerFactory
 			.getLogger(XmlInputStream.class);
-	protected static final XMLInputFactory ms_fact;	
-    static {
+	protected static final XMLInputFactory ms_fact;
+	static {
 		ms_fact = XMLInputFactory.newInstance();
-    }
-    protected InputStream is;
+	}
+	protected InputStream is;
 	protected XMLEventReader stream;
 
 	/**
 	 * Ctor
+	 * 
 	 * @param inputStream
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public XmlInputStream(InputStream inputStream) throws IOException {
 		if (inputStream == null) {
-			throw new IllegalArgumentException("inputStream should never be null");
+			throw new IllegalArgumentException(
+					"inputStream should never be null");
 		}
 		is = inputStream;
 		try {
@@ -71,24 +74,26 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 			throw new IOException(e);
 		}
 	}
-	
+
 	/**
 	 * Ctor
+	 * 
 	 * @param inputStream
 	 * @param type
-	 * @throws IOException 
+	 * @throws IOException
 	 */
-	public XmlInputStream(InputStream inputStream, DocumentType type) throws IOException {
+	public XmlInputStream(InputStream inputStream, DocumentType type)
+			throws IOException {
 		this(inputStream);
-		DocumentStart ds = new DocumentStart(type); 
+		DocumentStart ds = new DocumentStart(type);
 		addLast(ds);
 	}
 
 	/**
-	 * Closes this input stream and releases any system resources 
-     * associated with the stream.
-	 * Once the stream has been closed, further read() invocations may throw an IOException.
-     * Closing a previously closed stream has no effect.
+	 * Closes this input stream and releases any system resources associated
+	 * with the stream. Once the stream has been closed, further read()
+	 * invocations may throw an IOException. Closing a previously closed stream
+	 * has no effect.
 	 */
 	public void close() {
 		if (stream != null)
@@ -192,7 +197,8 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 		while (true) {
 			if (nextel instanceof Characters) {
 				Characters text = (Characters) nextel;
-				el.setText(text.getData());
+				String existing = el.getText() != null ? el.getText() : "";
+				el.setText(existing + text.getData());
 			} else if (nextel.isStartElement()) {
 				el.getChildren().add(
 						(Element) getForeignElement(nextel.asStartElement()));
@@ -202,6 +208,49 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 			nextel = stream.nextEvent();
 		}
 		return el;
+	}
+
+	/**
+	 * Read the element and then serialize the read element(s) into text
+	 * 
+	 * @param start
+	 *            the start element
+	 * @return a serialized string
+	 * @throws XMLStreamException
+	 * @throws IOException
+	 */
+	protected String getSerializedElement(StartElement start)
+			throws XMLStreamException, IOException {
+		Element el = (Element) getForeignElement(start);
+		StringBuilder sb = new StringBuilder(100);
+		for (Element child : el.getChildren()) {
+			serialize(child, sb);
+		}
+		sb.append(el.getText());
+		return sb.toString();
+	}
+
+	private void serialize(Element el, StringBuilder sb) {
+		String name = StringUtils.isNotBlank(el.getPrefix()) ? el.getPrefix()
+				+ ":" + el.getName() : el.getName();
+		sb.append('<');
+		sb.append(name);
+		for (Map.Entry<String, String> entry : el.getAttributes().entrySet()) {
+			sb.append(' ');
+			sb.append(entry.getKey());
+			sb.append('=');
+			sb.append('"');
+			sb.append(entry.getValue());
+			sb.append('"');
+		}
+		sb.append('>');
+		for (Element child : el.getChildren()) {
+			serialize(child, sb);
+		}
+		sb.append(el.getText());
+		sb.append("</");
+		sb.append(name);
+		sb.append('>');
 	}
 
 	/**

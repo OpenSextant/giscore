@@ -32,6 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamException;
@@ -67,10 +69,17 @@ import org.slf4j.LoggerFactory;
 public class GeoAtomInputStream extends XmlInputStream {
 	private static final Logger logger = LoggerFactory
 			.getLogger(GeoAtomInputStream.class);
+	
 	private static final SafeDateFormat fmt = new SafeDateFormat(
 			IKml.ISO_DATE_FMT);
-	private static final SafeDateFormat fmt2 = new SafeDateFormat(
-			"yyyy-MM-dd'T'HH:mm:ss'Z'");
+	private static final SafeDateFormat inputFormats[] = {
+		fmt,
+		new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
+		new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ssZ"),
+		new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ssz"),
+	};
+	private static final Pattern problemTZ = Pattern.compile("([-+]\\p{Digit}{2}):(\\p{Digit}{2})$");
+	
 	private Map<String, String> namespaceMap = new HashMap<String, String>();
 	private String defaultNamespace;
 
@@ -253,15 +262,19 @@ public class GeoAtomInputStream extends XmlInputStream {
 	 * @throws IOException
 	 */
 	private Date parseDate(String elementText) throws IOException {
-		try {
-			return fmt.parse(elementText);
-		} catch (ParseException e) {
+		Matcher m = problemTZ.matcher(elementText);
+		if (m.find()) {
+			elementText = elementText.substring(0,elementText.length()-6);
+			elementText += m.group(1) + m.group(2);
+		}
+		for(SafeDateFormat format : inputFormats) {
 			try {
-				return fmt2.parse(elementText);
-			} catch (ParseException e2) {
-				throw new IOException(e);
+				return format.parse(elementText);
+			} catch (ParseException e) {
+				//
 			}
 		}
+		throw new IOException("Could not parse date and time from " + elementText);
 	}
 
 	@Override
@@ -311,6 +324,7 @@ public class GeoAtomInputStream extends XmlInputStream {
 			List<AtomAuthor> authors = new ArrayList<AtomAuthor>();
 			String title = null;
 			String content = null;
+			String summary = null;
 			String id = null;
 			Date updated = null;
 			AtomLink link = null;
@@ -331,9 +345,9 @@ public class GeoAtomInputStream extends XmlInputStream {
 						} else if ("link".equals(name)) {
 							link = parseLink(se);
 						} else if ("content".equals(name)) {
-							content = getElementText(se.getName());
+							content = getSerializedElement(se);
 						} else if ("summary".equals(name)) {
-							content = getElementText(se.getName());
+							summary = getSerializedElement(se);
 						} else if ("id".equals(name)) {
 							id = getElementText(se.getName());
 						} else if ("updated".equals(name)) {
@@ -375,7 +389,11 @@ public class GeoAtomInputStream extends XmlInputStream {
 				rval.setId(id);
 				rval.putData(IAtomConstants.TITLE_ATTR, title);
 				rval.putData(IAtomConstants.UPDATED_ATTR, updated);
-				rval.putData(IAtomConstants.CONTENT_ATTR, content);
+				if (summary != null) {
+					rval.putData(IAtomConstants.CONTENT_ATTR, summary);
+				} else if (content != null) {
+					rval.putData(IAtomConstants.CONTENT_ATTR, content);
+				} 
 				if (link != null) {
 					rval.putData(IAtomConstants.LINK_ATTR, link.getHref().toExternalForm());
 				}
@@ -390,7 +408,11 @@ public class GeoAtomInputStream extends XmlInputStream {
 				Feature rval = new Feature();
 				rval.setId(id);
 				rval.setName(title);
-				rval.setDescription(content);
+				if (summary != null) {
+					rval.setDescription(summary);
+				} else if (content != null) {
+					rval.setDescription(content);
+				}
 				rval.setStartTime(updated);
 				if (link != null) {
 					rval.putData(IAtomConstants.LINK_ATTR, link.getHref().toExternalForm());
