@@ -3,7 +3,7 @@
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="giscore" default="compile">
 
 	<!-- Remove and reinstate ivy:buildnumber should that ever start working again -->
-	<property name="ivy.new.revision" value="0.5.19" />
+	<property name="ivy.new.revision" value="0.5.21" />
 	
 	<property name="proxy.host" value="gatekeeper.mitre.org" />
 	<property name="proxy.port" value="80" />
@@ -235,11 +235,11 @@
 	<target name="publish" depends="pom, javadoc, sourcejar" 
 		description="Publish directly to a repository">		
 		<echo>Publishing revision ${ivy.new.revision}</echo>
-		<ivy:publish resolver="maven-proxy-local" revision="${ivy.new.revision}" conf="compile" overwrite="true">
+		<ivy:publish resolver="maven-proxy-local" revision="${ivy.new.revision}" conf="compile" overwrite="false">
 			<artifacts pattern="rel/[artifact].[ext]" />
 			<artifacts pattern="rel/jars/[artifact].[ext]" />
 		</ivy:publish>
-		<ivy:publish resolver="maven-proxy-local-extra" revision="${ivy.new.revision}" conf="pubextra" publishivy="false" overwrite="true">
+		<ivy:publish resolver="maven-proxy-local-extra" revision="${ivy.new.revision}" conf="pubextra" publishivy="false" overwrite="false">
 			<artifacts pattern="rel/[artifact]-[type].[ext]" />
 		</ivy:publish>	
 	</target>
