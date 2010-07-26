@@ -70,7 +70,6 @@ public abstract class GISInputStreamBase implements IGISInputStream {
 		return !buffered.isEmpty();
 	}
 
-	@Override
 	public Iterator<Schema> enumerateSchemata() throws IOException {
 		throw new UnsupportedOperationException();
 	}
