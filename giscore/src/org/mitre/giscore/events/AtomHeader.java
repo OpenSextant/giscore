@@ -43,6 +43,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * @author DRAND
  */
 public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
+    
 	private String id;
 	private AtomLink selflink;
 	private List<AtomLink> relatedlinks = new ArrayList<AtomLink>();
@@ -52,7 +53,6 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	private String title;
 	private Date updated;
 	private String generator;
-
 
 	/**
 	 * Empty ctor
@@ -66,6 +66,8 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	 * @param selflink
 	 * @param title
 	 * @param updated
+     *
+     * @throws IllegalArgumentException if id, selflink or updated arguments are <tt>null</tt>
 	 */
 	public AtomHeader(String id, AtomLink selflink, String title, Date updated) {
 		super();
@@ -87,7 +89,6 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		this.updated = updated;
 	}
 
-	@Override
 	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
 		
@@ -210,7 +211,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	 * @param elements the elements to set
 	 */
 	public void setElements(List<Element> elements) {
-		this.elements = elements;
+		this.elements = elements == null ? new ArrayList<Element>() : elements;;
 	}
 	
 	/**
@@ -224,7 +225,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	 * @param namespaces the namespaces to set
 	 */
 	public void setNamespaces(List<Namespace> namespaces) {
-		this.namespaces = namespaces;
+		this.namespaces = namespaces == null ? new ArrayList<Namespace>() : namespaces;
 	}
 
 	/**
@@ -326,7 +327,6 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
@@ -346,7 +346,6 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		}
 	}
 
-	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		out.writeString(id);
 		out.writeObject(selflink);
