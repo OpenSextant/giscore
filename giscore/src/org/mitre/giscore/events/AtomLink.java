@@ -36,6 +36,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * @author DRAND
  */
 public class AtomLink implements IDataSerializable, Serializable {
+    
 	private static final long serialVersionUID = 1L;
 	private URL href;
 	private MimeType type;
@@ -52,6 +53,7 @@ public class AtomLink implements IDataSerializable, Serializable {
 	 * Basic ctor
 	 * @param href the link, never <code>null</code>
 	 * @param rel the relationship
+     * @throws IllegalArgumentException if href is null
 	 */
 	public AtomLink(URL href, String rel) {
 		if (href == null) {
@@ -97,19 +99,21 @@ public class AtomLink implements IDataSerializable, Serializable {
 	public void setRel(String rel) {
 		this.rel = rel;
 	}
+    
 	/**
 	 * @return the hreflang
 	 */
 	public String getHreflang() {
 		return hreflang;
 	}
+
 	/**
 	 * @param hreflang the hreflang to set
 	 */
 	public void setHreflang(String hreflang) {
 		this.hreflang = hreflang;
 	}
-	@Override
+
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
@@ -127,9 +131,8 @@ public class AtomLink implements IDataSerializable, Serializable {
 				throw new IOException("Could not read mimetype", e);
 			}
 		}
-		
 	}
-	@Override
+
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		out.writeString(href != null ? href.toExternalForm() : null);
 		out.writeString(hreflang);
@@ -187,5 +190,4 @@ public class AtomLink implements IDataSerializable, Serializable {
 		return true;
 	}
 
-	
 }
