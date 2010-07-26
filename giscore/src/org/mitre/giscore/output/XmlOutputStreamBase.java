@@ -31,6 +31,8 @@ import org.mitre.giscore.events.Element;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Comment;
 import org.mitre.giscore.Namespace;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A base class for those gis output stream implementations that output to XML
@@ -42,10 +44,12 @@ import org.mitre.giscore.Namespace;
 public class XmlOutputStreamBase extends StreamVisitorBase implements
 		IGISOutputStream {
 
+    private static final Logger log = LoggerFactory.getLogger(XmlOutputStreamBase.class);
+
     protected OutputStream stream;
 	protected XMLStreamWriter writer;
 	protected XMLOutputFactory factory;
-	protected Map<String,String> namespaces = new HashMap<String, String>();
+	protected final Map<String,String> namespaces = new HashMap<String, String>();
 
     // common encoding to use which allows special characters such as degrees character
     // that is included in Geometry.toString() output but is not part of the UTF-8 character set.
@@ -222,6 +226,8 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     		if (StringUtils.isNotBlank(ns)) {
     			writer.writeStartElement(ns, el.getName());
     		} else {
+                //TODO: if we can resolve namespace URI then output that as part of XML element
+                //? writer.writeStartElement(ns, el.getName(), "namespaceURI");
     			throw new XMLStreamException("Unknown namespace prefix found " + el.getPrefix());
     		}
     	} else {
@@ -235,9 +241,9 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     			String prefix = parts[0];
     			String ns = namespaces.get(prefix);
     			if (ns == null) {
-    				throw new XMLStreamException("Unknown namespace prefix found " + prefix);
-    			}
-    			writer.writeAttribute(prefix, ns, parts[1], val);
+    				log.warn("Unknown namespace prefix found " + prefix);
+    			} else
+    			    writer.writeAttribute(prefix, ns, parts[1], val);
     		} else {
     			writer.writeAttribute(key, val);
     		}
