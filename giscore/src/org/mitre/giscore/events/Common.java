@@ -163,9 +163,10 @@ public abstract class Common extends Row {
     }
     
 	/**
-	 * @return the elements
+	 * @return the elements, never null
 	 */
 	public List<Element> getElements() {
+        assert elements != null;
 		return elements;
 	}
 
@@ -173,6 +174,9 @@ public abstract class Common extends Row {
 	 * @param elements the elements to set
 	 */
 	public void setElements(List<Element> elements) {
+        if (elements == null) {
+			elements = new ArrayList<Element>();
+		}
 		this.elements = elements;
 	}
 
