@@ -224,10 +224,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		ms_attributes.add(ADDRESS);
 		ms_attributes.add(PHONE_NUMBER);
 		ms_attributes.add(METADATA);
-		ms_attributes.add(SNIPPET);		// Snippnet
+		ms_attributes.add(SNIPPET);		// Snippet
 		ms_attributes.add("snippet");	// snippet (deprecated in 2.2)
-		// Note: KML Schema shows Snippet is deprecated but Google documentation and examples
+		// Note: KML Schema shows Snippet is deprecated but Google Earth documentation and examples
 		// suggestion snippet (lower case 's') is deprecated instead...
+        // http://code.google.com/apis/kml/documentation/kmlreference.html#snippet
 
 		// all posible elements that extend kml:AbstractGeometryType base type in KML Schema
 		ms_geometries.add(POINT);
@@ -489,8 +490,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			} else {
 				//StartElement sl = ee.asStartElement();
 				//QName name = sl.getName();
-				// skip atom:link and atom:author elements ## http://www.w3.org/2005/Atom
-				// skip known non-KML namespace elements. what about unknown ones?
+				// handle atom:link and atom:author elements (e.g. http://www.w3.org/2005/Atom)
+                // and google earth extensions as ForeignElements
+				// skip other non-KML namespace elements.
 				String ns = name.getNamespaceURI();
 				if (ns != null && (ns.startsWith("http://www.w3.org/") || ns.startsWith("http://www.google.com/kml/ext/"))) {
 					try {
