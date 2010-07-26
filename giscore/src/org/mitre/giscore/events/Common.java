@@ -174,10 +174,7 @@ public abstract class Common extends Row {
 	 * @param elements the elements to set
 	 */
 	public void setElements(List<Element> elements) {
-        if (elements == null) {
-			elements = new ArrayList<Element>();
-		}
-		this.elements = elements;
+		this.elements = elements == null ? new ArrayList<Element>() : elements;
 	}
 
 	/**
