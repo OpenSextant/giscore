@@ -43,7 +43,9 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * @author DRAND
  */
 public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
-    
+
+    private static final long serialVersionUID = 1L;
+
 	private String id;
 	private AtomLink selflink;
 	private List<AtomLink> relatedlinks = new ArrayList<AtomLink>();
@@ -204,6 +206,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	 * @return the elements
 	 */
 	public List<Element> getElements() {
+        assert elements != null;
 		return elements;
 	}
 
@@ -218,6 +221,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	 * @return the namespaces
 	 */
 	public List<Namespace> getNamespaces() {
+        assert namespaces != null;
 		return namespaces;
 	}
 
