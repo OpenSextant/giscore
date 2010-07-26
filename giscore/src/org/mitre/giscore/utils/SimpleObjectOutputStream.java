@@ -152,7 +152,7 @@ public class SimpleObjectOutputStream implements Closeable {
 	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeObjectCollection(Collection<? extends IDataSerializable> objects) throws IOException {
-		if (objects == null) {
+		if (objects == null || objects.isEmpty()) {
 			writeInt(0);
 		} else {
 			writeInt(objects.size());
