@@ -20,10 +20,7 @@ package org.mitre.giscore.events;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.IDataSerializable;
@@ -54,12 +51,12 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	/**
 	 * Attribute/value pairs found on the element
 	 */
-	private Map<String, String> attributes = new HashMap<String, String>();
+	private final Map<String, String> attributes = new HashMap<String, String>();
 	
 	/**
 	 * Child elements contained within the element
 	 */
-	private List<Element> children = new ArrayList<Element>();
+	private final List<Element> children = new ArrayList<Element>();
 	
 	/**
 	 * Text content 
@@ -87,8 +84,6 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		this.prefix = prefix;
 		this.name = name;
 	}
-
-
 
 	/**
 	 * @return the prefix
@@ -140,13 +135,13 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	}
 
 	/**
-	 * @return the children
+	 * @return the children, never null
 	 */
 	public List<Element> getChildren() {
+        assert children != null;
 		return children;
 	}
 
-	@Override
 	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);	
 	}
@@ -218,7 +213,6 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		return true;
 	}
 
-	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
@@ -231,19 +225,20 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 			String val = in.readString();
 			attributes.put(attr, val);
 		}
-		children = (List<Element>) in.readObjectCollection();
+        List<Element> collection = (List<Element>) in.readObjectCollection();
+        children.clear();
+        if (collection != null)
+            children.addAll(collection);
 	}
 
-	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		out.writeString(prefix);
 		out.writeString(name);
 		out.writeString(text);
 		out.writeInt(attributes.size());
-		for(String attr : attributes.keySet()) {
-			String val = attributes.get(attr);
-			out.writeString(attr);
-			out.writeString(val);
+		for(Map.Entry<String,String>entry : attributes.entrySet()) {
+			out.writeString(entry.getKey());
+			out.writeString(entry.getValue());
 		}
 		out.writeObjectCollection(children);
 	}
