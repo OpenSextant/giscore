@@ -43,7 +43,6 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.Attribute;
@@ -52,7 +51,6 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.events.Comment;
@@ -95,7 +93,6 @@ import org.mitre.itf.geodesy.Latitude;
 import org.mitre.itf.geodesy.Longitude;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 /**
  * Read a KML/KMZ file in as an input stream. Each time the read method is called,
@@ -312,8 +309,6 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			throw new IOException(e);
 		}
 	}
-
-
 
 	/**
 	 * Push an object back into the read queue
