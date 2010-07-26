@@ -71,6 +71,24 @@ public class TestKmlReader extends TestCase {
 		TestKmlOutputStream.checkApproximatelyEquals(ptFeat, linkedFeatures2.get(1));
 	}
 
+    @Test
+	public void testUrlNetworkLink() throws IOException {
+        // test NetworkLink that contains viewFormat + httpQuery elements which get populated in URL
+        // via KmlBaseReader.getLinkHref()
+        KmlReader reader = new KmlReader(new URL("http://jason-stage.mitre.org:8080/kmlWeb/youAreHere.gsp"));
+        // encooded as URL: http://xxx/youAreHere.gsp?clientVersion=4.3.7284.3916&kmlVersion=2.2&clientName=Google+Earth&lang=en&BBOX=0,0,0,0&CAMERA=0,0,0,0,0&Fov=0,0&width=0&height=0&terrain=0]
+        List<IGISObject> features = reader.readAll(); // implicit close
+        //System.out.println("features=" + features);
+        assertFalse(features.isEmpty());
+        List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
+        //System.out.println("XXX: linkedFeatures=" + linkedFeatures);
+        assertFalse(linkedFeatures.isEmpty());
+		List<URI> networkLinks = reader.getNetworkLinks();
+        //System.out.println("links=" + networkLinks);
+        assertEquals(1, networkLinks.size());
+		//assertEquals(2, linkedFeatures.size());
+    }
+
     /**
      * Targets of NetworkLinks may exist inside a KMZ as well as outside at
      * the same context as the KMZ resource itself so test such a KMZ file.
