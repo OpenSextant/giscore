@@ -60,7 +60,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 * Ctor
 	 * 
 	 * @param inputStream
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public XmlInputStream(InputStream inputStream) throws IOException {
 		if (inputStream == null) {
@@ -80,7 +80,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 * 
 	 * @param inputStream
 	 * @param type
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public XmlInputStream(InputStream inputStream, DocumentType type)
 			throws IOException {
@@ -172,8 +172,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 *            the start tag, never <code>null</code>
 	 * @return the element, never <code>null</code>
 	 * @throws XMLStreamException
-	 * @throws IOException
-	 * @throws AutomationException
+	 * @throws IOException if an I/O error occurs
 	 */
 	protected IGISObject getForeignElement(StartElement se)
 			throws XMLStreamException, IOException {
@@ -217,7 +216,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 *            the start element
 	 * @return a serialized string
 	 * @throws XMLStreamException
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	protected String getSerializedElement(StartElement start)
 			throws XMLStreamException, IOException {

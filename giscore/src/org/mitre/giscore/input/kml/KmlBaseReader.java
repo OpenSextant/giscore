@@ -292,7 +292,7 @@ public abstract class KmlBaseReader implements IKml {
             // escape all whitespace otherwise new URI() throws an exception
             href = escapeUri(href);
             // TODO: URI apparently cannot parse URL with '$' in path (replacing with %24 still fails)
-            // RFC2396 shows '$' allows in path -> abs_path -> path_segment -> segment -> pchar -> "$"
+            // RFC2396 shows '$' allowed in path -> abs_path -> path_segment -> segment -> pchar -> "$"
             // must escape [] and whitespace characters
             // e.g. http://mw1.google.com/mw-earth-vectordb/kml-samples/gp/seattle/gigapxl/$[level]/r$[y]_c$[x].jpg
             // this throws URISyntaxException
