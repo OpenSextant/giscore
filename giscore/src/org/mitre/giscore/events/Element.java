@@ -83,12 +83,9 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	 */
 	public Element(Namespace namespace, String name) {
 		super();
-		if (name == null || name.trim().length() == 0) {
-			throw new IllegalArgumentException(
-					"name should never be null or empty");
-		}
+		setName(name);
 		this.namespace = namespace;
-		this.name = name;
+		//this.name = name;
 	}
 
     /**
@@ -120,13 +117,20 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	 * @return the name
 	 */
 	public String getName() {
+        assert name != null;
 		return name;
 	}
 
 	/**
 	 * @param name the name to set
+     * 
+     * @throws IllegalArgumentException if name is blank string or <tt>null</tt>.
 	 */
 	public void setName(String name) {
+        if (name == null || name.trim().length() == 0) {
+			throw new IllegalArgumentException(
+					"name should never be null or empty");
+		}
 		this.name = name;
 	}
 
