@@ -86,8 +86,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     private final List<IGISObject> waitingElements = new ArrayList<IGISObject>();
 
     private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
-    private transient SafeDateFormat dateFormatter;   
-    
+    private transient SafeDateFormat dateFormatter;
+
+    /**
+     * prefix associated with gx extension namespace if such namespace is provided
+     * in root Document declarations
+     */
+    private String gxNamespacePrefix;
 
     /**
      * Ctor
@@ -172,8 +177,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		try {
 			// Add any additional namespaces to the most proximate containing element
 			for(Namespace ns : documentStart.getNamespaces()) {
-				writer.writeNamespace(ns.getPrefix(), ns.getURI());
-				namespaces.put(ns.getPrefix(), ns.getURI());
+                String prefix = ns.getPrefix();
+                if (StringUtils.isNotBlank(prefix)) {
+                    writer.writeNamespace(prefix, ns.getURI());
+                    namespaces.put(prefix, ns.getURI());
+                    if (NS_GOOGLE_KML_EXT.equals(ns.getURI()))
+                        gxNamespacePrefix = prefix;
+                }
 			}
 			writer.writeCharacters("\n");
 		} catch (XMLStreamException e) {
@@ -492,6 +502,22 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
+    @Override
+    public void visit(Element element) {
+        try {
+            if (gxNamespacePrefix != null && gxNamespacePrefix.equals(element.getPrefix())
+                    || NS_GOOGLE_KML_EXT.equals(element.getNamespaceURI())) {
+                handleXmlElement(element);
+            } else {
+                // REVIEW: handle non-kml element as comment for now
+                log.debug("handle xml element as comment" + element.getName());
+                writeAsComment(element);
+            }
+        } catch (XMLStreamException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 	/**
      * Handle elements specific to a network link feature.
      *
@@ -594,7 +620,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      *
      * @param tag String tag
      * @param loc ScreenLocation of tag
-     * @throws XMLStreamException if an error occurs
+     * @throws XMLStreamException if there is an error with the underlying XML
      */
     private void handleXY(String tag, ScreenLocation loc)
             throws XMLStreamException {
@@ -632,7 +658,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * found and output on the next feature or container.
      *
      * @param containerType type of Container were visiting if (Feature is a Document or Folder) otherwise null
-     * @throws XMLStreamException if an error occurs
+     * @throws XMLStreamException if there is an error with the underlying XML
      * @throws IllegalStateException if invalid element is found in waitingElements list
      */
     private void handleWaitingElements(String containerType) throws XMLStreamException {
@@ -880,15 +906,20 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     }
 
 	private void handleAltitudeMode(AltitudeModeEnumType altitudeMode) throws XMLStreamException {
-		// if null or default clampToGround then ignore
-		// if gx:AltitudeMode extension (clampToSeaFloor, relativeToSeaFloor) then output a comment for now
-		// TODO: would need to add gx namespace to the element or the outer kml element
+		// if null or default (clampToGround) then ignore
+		// if gx:AltitudeMode extension (clampToSeaFloor, relativeToSeaFloor) then output a with gx namespace
 		if (altitudeMode != null) {
 			if (altitudeMode == AltitudeModeEnumType.relativeToGround || altitudeMode == AltitudeModeEnumType.absolute) {
 				handleSimpleElement(ALTITUDE_MODE, altitudeMode);
 			} else if (altitudeMode == AltitudeModeEnumType.clampToSeaFloor || altitudeMode == AltitudeModeEnumType.relativeToSeaFloor) {
-				log.warn("gx:altitudeMode values not supported in KML output: " + altitudeMode);
-				writer.writeComment("gx:altitudeMode>" + altitudeMode + "</gx:altitudeMode");
+                if (gxNamespacePrefix != null)
+                    writer.writeStartElement(gxNamespacePrefix, ALTITUDE_MODE);
+                else
+                    writer.writeStartElement("gx", ALTITUDE_MODE, NS_GOOGLE_KML_EXT);
+                handleCharacters(altitudeMode.toString());
+                writer.writeEndElement();
+				//log.warn("gx:altitudeMode values not supported in KML output: " + altitudeMode);
+				//writer.writeComment("gx:altitudeMode>" + altitudeMode + "</gx:altitudeMode");
         		writer.writeCharacters("\n");
 			}
 		}
@@ -916,7 +947,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      *
      * @param coordinateList the list of coordinates, never <code>null</code>
      * @return String formatted list of coordinate points
-     * @throws XMLStreamException if an error occurs
+     * @throws XMLStreamException if there is an error with the underlying XML
      */
     private String handleCoordinates(Collection<Point> coordinateList)
             throws XMLStreamException {
@@ -1118,7 +1149,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     /**
      * @param style polygon Style element to be written
-     * @throws XMLStreamException if an error occurs
+     * @throws XMLStreamException if there is an error with the underlying XML
      */
     private void handlePolyStyleElement(Style style) throws XMLStreamException {
         writer.writeStartElement(POLY_STYLE);
@@ -1130,7 +1161,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     /**
      * @param style lable Style element to be written
-     * @throws XMLStreamException if an error occurs
+     * @throws XMLStreamException if there is an error with the underlying XML
      */
     private void handleLabelStyleElement(Style style) throws XMLStreamException {
         writer.writeStartElement(LABEL_STYLE);
@@ -1141,7 +1172,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     /**
      * @param style balloon Style element to be written
-     * @throws XMLStreamException if an error occurs
+     * @throws XMLStreamException if there is an error with the underlying XML
      */
     private void handleBalloonStyleElement(Style style)
             throws XMLStreamException {
@@ -1158,7 +1189,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     /**
      * @param style line Style element to be written
-     * @throws XMLStreamException if an error occurs
+     * @throws XMLStreamException if there is an error with the underlying XML
      */
     protected void handleLineStyleElement(Style style)
             throws XMLStreamException {
@@ -1170,7 +1201,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     /**
      * @param style icon Style element to be written
-     * @throws XMLStreamException if an error occurs
+     * @throws XMLStreamException if there is an error with the underlying XML
      */
     protected void handleIconStyleElement(Style style)
             throws XMLStreamException {
@@ -1206,7 +1237,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      *
      * @param tag   String tag color element
      * @param color the Color of the tag to be written
-     * @throws XMLStreamException if an error occurs
+     * @throws XMLStreamException if there is an error with the underlying XML
      */
     protected void handleColor(String tag, Color color)
             throws XMLStreamException {
@@ -1231,7 +1262,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Actually handle style map
      *
      * @param styleMap StyleMap to be written
-     * @throws XMLStreamException if an error occurs
+     * @throws XMLStreamException if there is an error with the underlying XML     
      */
     private void handle(StyleMap styleMap) throws XMLStreamException {
         writer.writeStartElement(STYLE_MAP);
