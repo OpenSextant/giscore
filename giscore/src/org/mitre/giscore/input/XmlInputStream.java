@@ -35,6 +35,7 @@ import javax.xml.stream.events.XMLEvent;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.Namespace;
 import org.mitre.giscore.events.DocumentStart;
 import org.mitre.giscore.events.Element;
 import org.mitre.giscore.events.IGISObject;
@@ -177,8 +178,16 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	protected IGISObject getForeignElement(StartElement se)
 			throws XMLStreamException, IOException {
 		Element el = new Element();
-		el.setName(se.getName().getLocalPart());
-		el.setPrefix(se.getName().getPrefix());
+        QName qName = se.getName();
+        el.setName(qName.getLocalPart());
+        if (StringUtils.isNotBlank(qName.getPrefix())) {
+            try {
+                el.setNamespace(Namespace.getNamespace(qName.getPrefix(), qName.getNamespaceURI()));
+            } catch (IllegalArgumentException e) {
+                log.error(String.format("Failed to assign namespace %s=%s on element %s",
+                        qName.getPrefix(), qName.getNamespaceURI(), qName.getLocalPart()));
+            }
+        }
 		@SuppressWarnings("unchecked")
 		Iterator<Attribute> aiter = se.getAttributes();
 		while (aiter.hasNext()) {
