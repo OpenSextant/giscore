@@ -19,6 +19,7 @@ package org.mitre.giscore.output;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.xml.stream.XMLOutputFactory;
@@ -214,21 +215,41 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
         }
         writer.writeCharacters("\n");
     }
+
+    /**
+     * Write an element
+     * @param el
+     * @throws XMLStreamException if there is an error with the underlying XML
+     */
+    protected void handleXmlElement(Element el) throws XMLStreamException {
+        handleXmlElement(el, namespaces);
+    }
 	
     /**
      * Write an element
      * @param el
-     * @throws XMLStreamException 
+     * @param parentNamespaces declared namespaces from which to resolve local namespace prefixes
+     * @throws XMLStreamException if there is an error with the underlying XML
      */
-    protected void handleXmlElement(Element el) throws XMLStreamException {
-    	if (StringUtils.isNotBlank(el.getPrefix())) {
-    		String ns = namespaces.get(el.getPrefix());
-    		if (StringUtils.isNotBlank(ns)) {
-    			writer.writeStartElement(ns, el.getName());
+    private void handleXmlElement(Element el, Map<String, String> parentNamespaces) throws XMLStreamException {
+        Map<String,String> namespaces = new HashMap<String, String>(parentNamespaces);
+        String nsPrefix = el.getPrefix();
+        if (StringUtils.isNotBlank(nsPrefix)) {
+    		String nsURI = namespaces.get(nsPrefix);
+    		if (StringUtils.isNotBlank(nsURI)) {
+    			writer.writeStartElement(nsURI, el.getName());
     		} else {
-                //TODO: if we can resolve namespace URI then output that as part of XML element
-                //? writer.writeStartElement(ns, el.getName(), "namespaceURI");
-    			throw new XMLStreamException("Unknown namespace prefix found " + el.getPrefix());
+                nsURI = el.getNamespaceURI();
+                if (StringUtils.isNotBlank(nsURI)) {
+                    // namespace not defined in parent/root document
+                     // add namespace to local namespace scope for children of this element to resolve
+                    namespaces.put(nsPrefix, nsURI);
+                    writer.writeStartElement(nsPrefix, el.getName(), nsURI);
+                    writer.writeNamespace(nsPrefix, nsURI);
+                } else {
+                    log.warn("Unknown namespace prefix found " + nsPrefix);
+                    writeAsComment(el);                    
+                }
     		}
     	} else {
     		writer.writeStartElement(el.getName());
@@ -249,13 +270,85 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     		}
     	}
     	for(Element child : el.getChildren()) {
-    		handleXmlElement(child);
+    		handleXmlElement(child, namespaces);
     	}
     	if (StringUtils.isNotBlank(el.getText())) {
     		writer.writeCharacters(el.getText());
     	}
     	writer.writeEndElement();
 	}
+
+    /**
+     * Write formatted element inline within XML comment
+     * @param el
+     * @throws XMLStreamException if there is an error with the underlying XML
+     */
+    protected void writeAsComment(Element el) throws XMLStreamException {
+        StringBuilder sb = new StringBuilder();
+        writeAsComment(el, sb, 0);
+        String text = sb.toString().replace("--", "&#x2D;&#x2D;");
+        writer.writeComment(text);
+    }
+
+    private void writeAsComment(Element el, StringBuilder sb, int level) throws XMLStreamException {
+        if (level == 0)
+            sb.append("\n");
+        else
+            for (int i=0; i < level; i++) {
+                sb.append("  "); // indent 2-spaces for each depth level
+            }
+        sb.append('<');
+        if (StringUtils.isNotBlank(el.getPrefix())) {
+            sb.append(el.getPrefix()).append(":");
+        }
+        sb.append(el.getName());
+        // if namespace not declared in root element then declare it
+        // e.g. xmlns:gx="http://www.google.com/kml/ext/2.2" 
+        if (level == 0 && StringUtils.isNotBlank(el.getNamespaceURI())
+                && StringUtils.isNotBlank(el.getPrefix())
+                && !el.getNamespaceURI().equals(namespaces.get(el.getPrefix()))) {
+            escapeAttribute(sb, "xmlns:" + el.getPrefix(), el.getNamespaceURI());
+        }
+        for(Map.Entry<String, String> attr : el.getAttributes().entrySet()) {
+    		String key = attr.getKey();
+    		String val = attr.getValue();
+            escapeAttribute(sb, key, val);
+        }
+        sb.append('>');
+        List<Element> children = el.getChildren();
+        boolean needNewline = true;
+        if (!children.isEmpty()) {
+            sb.append('\n');
+            for(Element child : children) {
+                writeAsComment(child, sb, level + 1);
+            }
+            needNewline = false;
+        }
+        if (StringUtils.isNotBlank(el.getText())) {
+    		sb.append(el.getText());
+    	} else {
+            if (needNewline) sb.append('\n');
+            for (int i=0; i < level; i++) {
+                sb.append("  "); // indent 2-spaces for each depth level
+            }
+        }
+        sb.append("</").append(el.getName()).append(">\n");
+    }
+
+    protected static void escapeAttribute(StringBuilder sb, String key, String val) {
+        if (StringUtils.isBlank(key) || StringUtils.isBlank(val)) {
+            return;
+        }
+        String delim;
+        if (key.indexOf('\"') == -1) delim = "\"";
+        else if (key.indexOf('\'') == -1)  delim = "'";
+        else {
+            delim = "\"";
+            key = key.replace("\"", "\\\""); // escape quotes in string
+        }
+        sb.append(' ').append(key).append('=');
+        sb.append(delim).append(key).append(delim);
+    }
 
     /**
      * Handles simple element with a namespace.
