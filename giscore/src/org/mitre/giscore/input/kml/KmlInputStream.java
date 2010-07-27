@@ -1192,9 +1192,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException, IOException {
 		StartElement se = e.asStartElement();
 		QName name = se.getName();
-		// check if element is from extension namespace
 		String ns = name.getNamespaceURI();
-		if (ns != null && ns.startsWith("http://www.google.com/kml/ext/")) {
+        // handle non-kml namespace elements as foreign elements
+        // review: should we check instead if namespace doesn't equal our root document namespace...
+		if (ns != null && !ms_kml_ns.contains(ns)) {
+            // //ns.startsWith("http://www.google.com/kml/ext/")) {
+            // handle extension namespace
+            // http://code.google.com/apis/kml/documentation/kmlreference.html#kmlextensions  
 			return getForeignElement(se);
 		}
 
