@@ -494,7 +494,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 // and google earth extensions as ForeignElements
 				// skip other non-KML namespace elements.
 				String ns = name.getNamespaceURI();
-				if (ns != null && (ns.startsWith("http://www.w3.org/") || ns.startsWith("http://www.google.com/kml/ext/"))) {
+				if (ns != null && (ns.startsWith("http://www.w3.org/") || ns.startsWith(NS_GOOGLE_KML_EXT))) {
 					try {
 						Element el = (Element) getForeignElement(ee.asStartElement());
 						feature.getElements().add(el);
@@ -1196,7 +1196,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
         // handle non-kml namespace elements as foreign elements
         // review: should we check instead if namespace doesn't equal our root document namespace...
 		if (ns != null && !ms_kml_ns.contains(ns)) {
-            // //ns.startsWith("http://www.google.com/kml/ext/")) {
+            // //ns.startsWith("http://www.google.com/kml/ext/")) { ...
             // handle extension namespace
             // http://code.google.com/apis/kml/documentation/kmlreference.html#kmlextensions  
 			return getForeignElement(se);
@@ -1675,7 +1675,17 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					// e.g. http://www.google.com/kml/ext/2.2
 					// only add those element that are part of the KML namespace which we expect
 					String ns = qname.getNamespaceURI();
-					if (!rootNs.equals(ns)) {
+					if (ns != null && !rootNs.equals(ns)) {
+                        // TODO: need way to handle atom/gx extension namespace
+                        /*
+                        if (ns.startsWith("http://www.w3.org/") || ns.startsWith(NS_GOOGLE_KML_EXT)) {
+                            try {
+                                Element el = (Element) getForeignElement(se);
+                            } catch (Exception e) {
+                                log.error("Problem getting element", e);
+                            }
+                        }
+                        */
 						log.debug("Skip " + qname.getPrefix() + ":" + sename);
 						skipNextElement(stream, qname);
 						continue;
