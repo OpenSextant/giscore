@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.*;
 
 import org.mitre.giscore.IStreamVisitor;
+import org.mitre.giscore.Namespace;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -35,14 +36,15 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * @author DRAND
  */
 public class Element implements IGISObject, IDataSerializable, Serializable {
+    
 	private static final long serialVersionUID = 1L;
 
-	/**
-	 * The namespace prefix for the namespace that this element belongs to,
-	 * may be <code>null</code> or empty.
-	 */
-	private String prefix;
-	
+    /**
+     * Namespace that this element belongs to,
+	 * may be <code>null</code>.
+     */
+    private Namespace namespace;
+
 	/**
 	 * The name of the element
 	 */
@@ -62,8 +64,8 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	 * Text content 
 	 */
 	private String text;
-	
-	/**
+
+    /**
 	 * Empty ctor
 	 */
 	public Element() {
@@ -71,33 +73,48 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	}
 	
 	/**
-	 * Ctor
-	 * @param prefix
+	 * Create XML Element object.
+     * 
+	 * @param namespace Namespace of this <code>Element</code>,
+     *      may be <code>null</code>.
 	 * @param name
+     *
+     * @throws IllegalArgumentException if name is blank string or <tt>null</tt>. 
 	 */
-	public Element(String prefix, String name) {
+	public Element(Namespace namespace, String name) {
 		super();
 		if (name == null || name.trim().length() == 0) {
 			throw new IllegalArgumentException(
 					"name should never be null or empty");
 		}
-		this.prefix = prefix;
+		this.namespace = namespace;
 		this.name = name;
 	}
+
+    /**
+     * Set the Namespace of this XML <code>Element</code>.
+     * @param namespace Namespace of this <code>Element</code>,
+     *      may be <code>null</code>. 
+     */
+    public void setNamespace(Namespace namespace) {
+        this.namespace = namespace;
+    }
 
 	/**
 	 * @return the prefix
 	 */
 	public String getPrefix() {
-		return prefix;
+		return namespace != null ? namespace.getPrefix() : null;
 	}
 
-	/**
-	 * @param prefix the prefix to set
-	 */
-	public void setPrefix(String prefix) {
-		this.prefix = prefix;
-	}
+     /**
+     * Get the Namespace URI of this XML <code>Element</code>.
+     *
+     * @return Namespace URI of this <code>Element</code>
+     */
+    public String getNamespaceURI() {
+        return namespace != null ? namespace.getURI() : null;
+    }
 
 	/**
 	 * @return the name
@@ -151,7 +168,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	 */
 	@Override
 	public String toString() {
-		return "Element [prefix=" + prefix + ", name=" + name + ", attributes="
+		return "Element [Namespace=" + namespace + ", name=" + name + ", attributes="
 				+ attributes + ", text=" + text
 				+ ", children=" + children + "]";
 	}
@@ -168,7 +185,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		result = prime * result
 				+ ((children == null) ? 0 : children.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((prefix == null) ? 0 : prefix.hashCode());
+		result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
 		result = prime * result + ((text == null) ? 0 : text.hashCode());
 		return result;
 	}
@@ -190,25 +207,25 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 				return false;
 		} else if (!attributes.equals(other.attributes))
 			return false;
-		if (children == null) {
-			if (other.children != null)
-				return false;
-		} else if (!children.equals(other.children))
-			return false;
 		if (name == null) {
 			if (other.name != null)
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (prefix == null) {
-			if (other.prefix != null)
+		if (namespace == null) {
+			if (other.namespace != null)
 				return false;
-		} else if (!prefix.equals(other.prefix))
+		} else if (!namespace.equals(other.namespace))
 			return false;
 		if (text == null) {
 			if (other.text != null)
 				return false;
 		} else if (!text.equals(other.text))
+			return false;
+        if (children == null) {
+			if (other.children != null)
+				return false;
+		} else if (!children.equals(other.children))
 			return false;
 		return true;
 	}
@@ -216,7 +233,12 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
-		prefix = in.readString();
+        String prefix = in.readString();
+        if (prefix != null) {
+            String nsURI = in.readString();
+            namespace = Namespace.getNamespace(prefix, nsURI);
+        } else
+            namespace = null;
 		name = in.readString();
 		text = in.readString();
 		int count = in.readInt();
@@ -232,7 +254,12 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	}
 
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
-		out.writeString(prefix);
+        if (namespace == null || namespace.getPrefix() == null)
+            out.writeString(null);
+        else {
+		    out.writeString(namespace.getPrefix());
+            out.writeString(namespace.getURI());
+        }
 		out.writeString(name);
 		out.writeString(text);
 		out.writeInt(attributes.size());
@@ -242,4 +269,5 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		}
 		out.writeObjectCollection(children);
 	}
+
 }
