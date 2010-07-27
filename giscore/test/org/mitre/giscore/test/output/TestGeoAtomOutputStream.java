@@ -70,12 +70,12 @@ public class TestGeoAtomOutputStream {
 						"self"), "dummy title", new Date());
 		header.getAuthors().add(new AtomAuthor("Joe Shmoe","joe@mitre.org"));
 		header.getRelatedlinks().add(new AtomLink(new URL("http://www.yahoo.com"), "related"));
-		
-		header.getNamespaces().add(
-				Namespace.getNamespace(OPENSEARCH, "http://a9.com/-/spec/opensearch/1.1/"));
-		Element results = new Element(OPENSEARCH, "totalResults");
+
+        Namespace ns = Namespace.getNamespace(OPENSEARCH, "http://a9.com/-/spec/opensearch/1.1/");
+        header.getNamespaces().add(ns);
+		Element results = new Element(ns, "totalResults");
 		results.setText("1000");
-		Element startIndex = new Element(OPENSEARCH, "startIndex");
+		Element startIndex = new Element(ns, "startIndex");
 		startIndex.setText("1");
 		
 		header.getElements().add(results);
