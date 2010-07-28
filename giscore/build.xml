@@ -193,6 +193,9 @@
 	<target name="test" depends="compileTests" description="Run JUnit tests">
 		<mkdir dir="${testoutput}" />
 		<junit printsummary="yes" haltonfailure="no" maxmemory="1024m" fork="yes">
+			<assertions>
+			  <enable package="org.mitre.giscore"/>
+			</assertions>
 			<classpath>
 				<pathelement path="${build.classes}" />
 				<pathelement path="${test.classes}" />
