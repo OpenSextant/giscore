@@ -28,10 +28,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.text.ParseException;
 
@@ -92,7 +90,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * prefix associated with gx extension namespace if such namespace is provided
      * in root Document declarations
      */
-    private String gxNamespacePrefix;
+    private Namespace gxNamespace;
 
     /**
      * Ctor
@@ -181,14 +179,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 if (StringUtils.isNotBlank(prefix)) {
                     writer.writeNamespace(prefix, ns.getURI());
                     namespaces.put(prefix, ns.getURI());
-                    if (NS_GOOGLE_KML_EXT.equals(ns.getURI()))
-                        gxNamespacePrefix = prefix;
+                    if (ns.getURI() != null && ns.getURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+                        gxNamespace = ns;
+                    }
                 }
 			}
 			writer.writeCharacters("\n");
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
-		}
+		}    
 	}
 
     /*
@@ -505,12 +504,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     @Override
     public void visit(Element element) {
         try {
-            if (gxNamespacePrefix != null && gxNamespacePrefix.equals(element.getPrefix())
-                    || NS_GOOGLE_KML_EXT.equals(element.getNamespaceURI())) {
+            if (gxNamespace != null && gxNamespace.getPrefix().equals(element.getPrefix())
+                    || element.getNamespaceURI() != null && element.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
                 handleXmlElement(element);
             } else {
-                // REVIEW: handle non-kml element as comment for now
-                log.debug("handle xml element as comment" + element.getName());
+                // REVIEW: handle non-kml element as comment for now .. any other namespaces to support??
+                String prefix = element.getPrefix();
+                String name = element.getName();
+                if (prefix != null) name += " " + element.getNamespace();
+                log.debug("Handle XML element " + name  + " as comment");
                 writeAsComment(element);
             }
         } catch (XMLStreamException e) {
@@ -752,7 +754,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleGeometryAttributes(l);
                 handleSimpleElement(COORDINATES, handleCoordinates(l.getPoints()));
                 writer.writeEndElement();
-            } catch (XMLStreamException e) {
+            } catch (XMLStreamException e) {                
                 throw new RuntimeException(e);
             }
     }
@@ -912,8 +914,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			if (altitudeMode == AltitudeModeEnumType.relativeToGround || altitudeMode == AltitudeModeEnumType.absolute) {
 				handleSimpleElement(ALTITUDE_MODE, altitudeMode);
 			} else if (altitudeMode == AltitudeModeEnumType.clampToSeaFloor || altitudeMode == AltitudeModeEnumType.relativeToSeaFloor) {
-                if (gxNamespacePrefix != null)
-                    writer.writeStartElement(gxNamespacePrefix, ALTITUDE_MODE);
+                if (gxNamespace != null)
+                    writer.writeStartElement(gxNamespace.getPrefix(), ALTITUDE_MODE, gxNamespace.getURI());
                 else
                     writer.writeStartElement("gx", ALTITUDE_MODE, NS_GOOGLE_KML_EXT);
                 handleCharacters(altitudeMode.toString());

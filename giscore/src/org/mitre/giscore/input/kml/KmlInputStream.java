@@ -149,9 +149,9 @@ import org.slf4j.LoggerFactory;
  *  open, phoneNumber, Snippet, snippet}. 
  * These tags are consumed but discarded.
  * <p>
- * gx extensions (e.g. Track, MultiTrack, Tour, etc.) are ignored, however, {@code gx:altitudeMode}
+ * Some support for gx KML extensions (e.g. Track, MultiTrack, Tour, etc.). Also {@code gx:altitudeMode}
  * is stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry, or
- * GroundOverlay,
+ * GroundOverlay.
  * <p> 
  * {@code StyleMaps} with inline Styles or nested StyleMaps are not supported.
  * StyleMaps must specify {@code styleUrl}.
@@ -494,7 +494,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 // and google earth extensions as ForeignElements
 				// skip other non-KML namespace elements.
 				String ns = name.getNamespaceURI();
-				if (ns != null && (ns.startsWith("http://www.w3.org/") || ns.startsWith(NS_GOOGLE_KML_EXT))) {
+				if (ns != null && (ns.startsWith("http://www.w3.org/") || ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX))) {
 					try {
 						Element el = (Element) getForeignElement(ee.asStartElement());
 						feature.getElements().add(el);
