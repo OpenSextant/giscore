@@ -30,7 +30,8 @@ public interface IKml {
 	// default SimpleDateFormat format pattern to parse/format dates
 	public static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
 
-    static final String NS_GOOGLE_KML_EXT = "http://www.google.com/kml/ext/";
+    static final String NS_GOOGLE_KML_EXT_PREFIX = "http://www.google.com/kml/ext/";
+    static final String NS_GOOGLE_KML_EXT = "http://www.google.com/kml/ext/2.2";
 
 	static final String ADDRESS = "address";
 	static final String ALTITUDE = "altitude";
