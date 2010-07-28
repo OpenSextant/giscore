@@ -39,10 +39,6 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
     
 	private static final long serialVersionUID = 1L;
 
-    /**
-     * Namespace that this element belongs to,
-	 * may be <code>null</code>.
-     */
     private Namespace namespace;
 
 	/**
@@ -87,6 +83,14 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		this.namespace = namespace;
 		//this.name = name;
 	}
+
+    /**
+     * Get namespace that this element belongs to,
+	 * may be <code>null</code>.
+     */
+    public Namespace getNamespace() {
+        return namespace;
+    }
 
     /**
      * Set the Namespace of this XML <code>Element</code>.
@@ -172,9 +176,19 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	 */
 	@Override
 	public String toString() {
-		return "Element [Namespace=" + namespace + ", name=" + name + ", attributes="
-				+ attributes + ", text=" + text
-				+ ", children=" + children + "]";
+        StringBuilder b = new StringBuilder();
+        b.append("Element [");
+        if (namespace != null)
+            b.append("Namespace=").append(namespace.getPrefix()).append(":").append(namespace.getURI()).append(", ");
+        b.append("name=").append(name);
+        if (!attributes.isEmpty())
+            b.append(", attributes=").append(attributes);
+        if (text != null)
+            b.append(", text=").append(text);
+        if (!children.isEmpty())
+            b.append('\n').append("  children=").append(children);
+        b.append(']');
+        return b.toString();
 	}
 
 	/* (non-Javadoc)
