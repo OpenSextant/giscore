@@ -34,6 +34,7 @@ import java.util.UUID;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.Namespace;
 import org.mitre.giscore.events.AtomAuthor;
 import org.mitre.giscore.events.AtomHeader;
@@ -352,9 +353,11 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 			handleSimpleElement("title", title);
 			handleSimpleElement("content", description);
 			handleSimpleElement("updated", fmt.format(updated));
-			writer.writeStartElement("link");
-			writer.writeAttribute("href", link);
-			writer.writeEndElement();
+			if (StringUtils.isNotBlank(link)) {
+				writer.writeStartElement("link");
+				writer.writeAttribute("href", link);
+				writer.writeEndElement();
+			}
 			for(SimpleField key : data.keySet()) {
 				writer.writeStartElement("ext", "data", EXT_DATA_NS);
 				writer.writeAttribute("name", key.getName());
