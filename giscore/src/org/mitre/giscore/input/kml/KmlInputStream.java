@@ -1677,18 +1677,45 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					String ns = qname.getNamespaceURI();
 					if (ns != null && !rootNs.equals(ns)) {
                         // TODO: need way to handle atom/gx extension namespace
-                        /*
-                        if (ns.startsWith("http://www.w3.org/") || ns.startsWith(NS_GOOGLE_KML_EXT)) {
+                        // ns.startsWith("http://www.w3.org/")
+                        if (ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
                             try {
                                 Element el = (Element) getForeignElement(se);
-                            } catch (Exception e) {
+                                if (StringUtils.isNotBlank(el.getText())) {
+                                    String eltname = sename;
+                                    String prefix = qname.getPrefix();
+                                    if (StringUtils.isNotBlank(prefix)) {
+                                        if (!ALTITUDE_MODE.equals(sename)) {
+                                            eltname = prefix + ":" + sename; // prefix name with namespace prefix
+                                        } else {
+                                            // altitudeMode - special case. store w/o prefix since handled as a single attribute
+                                            // if have gx:altitudeMode and altitudeMode then altitudeMode overrides gx:altitudeMode
+                                            if (map.containsKey(ALTITUDE_MODE)) {
+                                                log.debug("Element has duplicate altitudeMode defined");
+                                                continue;
+                                            }
+                                        }
+                                        log.debug("Handle " + prefix + ":" + sename);
+                                    } else {
+                                        // should never get here
+                                        // qname.getNamespaceURI() != null => qname.getPrefix() != null 
+                                        // namespace does not have prefix -- how is that?
+                                        // assuming qname.getPrefix()  == el.getPrefix()
+                                        log.warn("Namespace does not have prefix " + qname);
+                                    }
+                                    map.put(eltname, el.getText());
+                                } else {
+                                    // element does not have text content
+                                    log.debug("Skip " + qname.getPrefix() + ":" + sename);
+                                }
+                            } catch (IOException e) {
                                 log.error("Problem getting element", e);
                             }
+                        } else {
+                            log.debug("Skip " + qname.getPrefix() + ":" + sename);
+                            skipNextElement(stream, qname);
                         }
-                        */
-						log.debug("Skip " + qname.getPrefix() + ":" + sename);
-						skipNextElement(stream, qname);
-						continue;
+                        continue;
 					}
 				}
 				String value = getNonEmptyElementText();

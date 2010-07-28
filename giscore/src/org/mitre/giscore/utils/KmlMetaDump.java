@@ -16,20 +16,7 @@ import java.util.TreeSet;
 
 import javax.xml.stream.XMLStreamException;
 
-import org.mitre.giscore.events.Comment;
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.GroundOverlay;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.Overlay;
-import org.mitre.giscore.events.SimpleField;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.events.StyleMap;
-import org.mitre.giscore.events.TaggedMap;
-import org.mitre.giscore.events.WrappedObject;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
 import org.mitre.giscore.input.kml.IKml;
@@ -43,7 +30,10 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  * Simple KML Debugging Tool to read KML/KMZ documents by File or URL and dump statistics
  * on number of feature elements (Placemarks, Points, Polygons, LineStrings, NetworkLinks, etc.)
  * and properties (ExtendedData, Schema, etc.) and optionally export the same KML to a
- * file (or stdout) to verify all content has been correctly interpreted. <p/>
+ * file (or stdout) to verify all content has been correctly interpreted.
+ *
+ * Parsing also includes support for most gx KML extensions (e.g. MultiTrack, Track, etc.) 
+ * <p/>
  *
  * Notes following conditions if found:
  * <ul>
@@ -240,7 +230,8 @@ public class KmlMetaDump implements IKml {
 		}
 
 		dumpTags();
-		System.out.println("\t# features=" + features);
+        if (features != 0)
+		    System.out.println("\t# features=" + features);
 		System.out.println();
 		tagSet.clear();
 		dumpCount++;
@@ -314,9 +305,18 @@ public class KmlMetaDump implements IKml {
             addTag(":Out of order elements");
         }
         if (verbose) System.out.println(gisObj);
-        Class<? extends IGISObject> cl = gisObj.getClass();
-        if (cl == DocumentStart.class) return; // ignore always present DocumentStart root element
-        features++;
+        final Class<? extends IGISObject> cl = gisObj.getClass();
+        if (cl == DocumentStart.class) return; // ignore always present DocumentStart root element        
+        if (gisObj instanceof Common) {
+            if (gisObj instanceof Feature) features++;
+            Common f = (Common)gisObj;
+            for(Element e : f.getElements()) {
+                String prefix = e.getPrefix();
+                String name = e.getName();
+                if (prefix != null) name = prefix + ":" + name;
+                addTag(name);
+            }
+        }
         if (cl == Feature.class) {
             Feature f = (Feature) gisObj;
             Geometry geom = f.getGeometry();
@@ -455,6 +455,12 @@ public class KmlMetaDump implements IKml {
             checkFeature(ov);
             if (ov.getIcon() == null)
                 addTag(":Overlay missing icon");
+        } else if (cl == Element.class) {
+            Element e = (Element)gisObj;
+            String prefix = e.getPrefix();
+            String name = e.getName();
+            if (prefix != null) name = prefix + ":" + name;
+            addTag(name);
         } else if ( /* cl != DocumentStart.class && */ cl != Comment.class) {
             // ignore: DocumentStart + Comment objects
             addTag(cl); // e.g. Schema, StyleMap, NetworkLinkControl
