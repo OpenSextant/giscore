@@ -1297,7 +1297,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 writer.writeEmptyElement(MODEL);
             else {
                 writer.writeStartElement(MODEL);
-                handleNonNullSimpleElement(ALTITUDE_MODE, model.getAltitudeMode());
+                // if altitudeMode is invalid then it will be omitted (handles gx:AltitudeMode extensions)
+                handleAltitudeMode(model.getAltitudeMode());
                 if (point != null) {
                     writer.writeStartElement(LOCATION);
                     handleSimpleElement(LONGITUDE, point.getLongitude().inDegrees());
