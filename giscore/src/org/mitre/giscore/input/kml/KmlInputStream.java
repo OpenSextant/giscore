@@ -140,7 +140,7 @@ import org.slf4j.LoggerFactory;
  * <h4>Notes/Limitations:</h4>
  * <p> 
  * Only a single {@code Data/SchemaData/Schema ExtendedData} mapping is assumed
- * per Feature but note that although uncommmon, KML allows features to define multiple
+ * per Feature but note that although uncommon, KML allows features to define multiple
  * Schemas. Features with mixed {@code Data} and/or multiple {@code SchemaData} elements
  * will be associated only with the last {@code Schema} referenced.
  * <p> 
@@ -151,7 +151,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Some support for gx KML extensions (e.g. Track, MultiTrack, Tour, etc.). Also {@code gx:altitudeMode}
  * is stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry, or
- * GroundOverlay.
+ * GroundOverlay. gx:TimeStamp or gx:TimeSpan in LookAt/Camera are ignored.
  * <p> 
  * {@code StyleMaps} with inline Styles or nested StyleMaps are not supported.
  * StyleMaps must specify {@code styleUrl}.
@@ -1707,6 +1707,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                                 } else {
                                     // element does not have text content
                                     log.debug("Skip " + qname.getPrefix() + ":" + sename);
+                                    /*
+                                      LookAt/Camera can include gx:TimeSpan or gx:TimeStamp element:
+
+                                      <gx:TimeSpan>
+                                        <begin>2010-05-28T02:02:09Z</begin>
+                                        <end>2010-05-28T02:02:56Z</end>
+                                      </gx:TimeSpan>
+                                     */
                                 }
                             } catch (IOException e) {
                                 log.error("Problem getting element", e);
@@ -1851,6 +1859,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                             model.setLocation(point);
                     } else if (localPart.equals(ALTITUDE_MODE)) {
                         model.setAltitudeMode(getNonEmptyElementText());
+                        // also works for gx:altitudeMode values
                     }
 					// todo: Orientation, Scale, Link, ResourceMap
 				}                        
