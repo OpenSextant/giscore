@@ -45,12 +45,14 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem) (warning)
  *  <li> Region has invalid LatLonAltBox (error)
  *  <li> LatLonAltBox fails to satisfy constraints [ATC 8]
- *  <li> LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) [ATC 8-3] (error)
- *  <li> LatLonAltBox fails to satisfy constraint (altMode != clampToGround) [ATC 8-4] (warning)
+ *  <li> LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) [ATC 8.3] (error)
+ *  <li> LatLonAltBox fails to satisfy constraint (altMode != clampToGround) [ATC 8.4] (warning)
  *  <li> LatLonAltBox appears to be very small area (warning)
  *  <li> minLodPixels must be less than maxLodPixels in Lod [ATC 39] (error)
- *  <li> Camera altitudeMode cannot be clampToGround [ATC 54] (warning)
+ *  <li> Camera altitudeMode cannot be clampToGround [ATC 54.2] (warning)
  *  <li> Invalid LookAt values (error)
+ *  <li> Invalid tilt value in LookAt [ATC 38.2] (error)
+ *  <li> Missing altitude in LookAt [ATC 38.3] (warning)
  *  <li> Invalid TimeSpan if begin later than end value (warning)
  *  <li> Feature inherits time from parent container (info)
  *  <li> Container start date is earlier than that of its ancestors (info)
@@ -570,13 +572,13 @@ public class KmlMetaDump implements IKml {
                 if (tilt < 0 || tilt > 90) {
                     // (2) 0 <= kml:tilt <= 90;
                     addTag(":Invalid LookAt values");
-                    if (verbose) System.out.println(" Error: Invalid tilt value in LookAt: " + tilt);
+                    if (verbose) System.out.format(" Error: Invalid tilt value in LookAt: %f [ATC 38.2]%n", tilt);
                 }
                if (!"clampToGround".equals(viewGroup.get(IKml.ALTITUDE_MODE, "clampToGround")) &&
                            viewGroup.get(IKml.ALTITUDE) == null) {
                     // (3) if kml:altitudeMode does not have the value "clampToGround", then the kml:altitude element is present
                     addTag(":Invalid LookAt values"); // error
-                    if (verbose) System.out.println(" Error: Missing altitude in LookAt");
+                    if (verbose) System.out.println(" Error: Missing altitude in LookAt [ATC 38.3]");
                }
             } else if (IKml.CAMERA.equals(tag)) {
                 addTag(tag); // Camera
@@ -590,7 +592,7 @@ public class KmlMetaDump implements IKml {
                 */
                 if ("clampToGround".equals(viewGroup.get(IKml.ALTITUDE_MODE, "clampToGround"))) {
                     // (2) the value of kml:altitudeMode is not "clampToGround".
-                    addTag(":Camera altitudeMode cannot be clampToGround (ATC 54)"); // warning
+                    addTag(":Camera altitudeMode cannot be clampToGround [ATC 54.2]"); // warning
                }
             } else {
                 addTag(":Invalid ViewGroup tag: " + tag);
@@ -649,7 +651,7 @@ public class KmlMetaDump implements IKml {
 			// check constraint: (3) kml:minAltitude <= kml:maxAltitude;
 			if (minAlt > maxAlt) {
 				addTag(":Region has invalid LatLonAltBox");
-				if (verbose) System.out.println(" Error: LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) [ATC 8-3]");
+				if (verbose) System.out.println(" Error: LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) [ATC 8.3]");
 			}
             // check constraint: (4)
             //  if kml:minAltitude and kml:maxAltitude are both present,
@@ -657,7 +659,7 @@ public class KmlMetaDump implements IKml {
             if (region.get(IKml.MIN_ALTITUDE) != null && region.get(IKml.MAX_ALTITUDE) != null
                     && "clampToGround".equals(region.get(IKml.ALTITUDE_MODE, "clampToGround"))) {
                 addTag(":Region has invalid LatLonAltBox");
-				if (verbose) System.out.println(" Warn: LatLonAltBox fails to satisfy constraint (altMode != clampToGround) [ATC 8-4]");
+				if (verbose) System.out.println(" Warn: LatLonAltBox fails to satisfy constraint (altMode != clampToGround) [ATC 8.4]");
             }
 		} catch (NumberFormatException nfe) {
 			addTag(":Region has invalid LatLonAltBox");
