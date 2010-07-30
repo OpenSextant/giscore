@@ -75,7 +75,13 @@ public class TestKmlReader extends TestCase {
 	public void testUrlNetworkLink() throws IOException {
         // test NetworkLink that contains viewFormat + httpQuery elements which get populated in URL
         // via KmlBaseReader.getLinkHref()
-        KmlReader reader = new KmlReader(new URL("http://jason-stage.mitre.org:8080/kmlWeb/youAreHere.gsp"));
+        KmlReader reader;
+        try {
+            reader = new KmlReader(new URL("http://jason-stage.mitre.org:8080/kmlWeb/youAreHere.gsp"));
+        } catch(java.net.UnknownHostException e) {
+            // host not available - skip test
+            return;
+        }
         // encooded as URL: http://xxx/youAreHere.gsp?clientVersion=4.3.7284.3916&kmlVersion=2.2&clientName=Google+Earth&lang=en&BBOX=0,0,0,0&CAMERA=0,0,0,0,0&Fov=0,0&width=0&height=0&terrain=0]
         List<IGISObject> features = reader.readAll(); // implicit close
         //System.out.println("features=" + features);
