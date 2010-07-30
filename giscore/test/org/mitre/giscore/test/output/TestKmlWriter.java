@@ -40,6 +40,24 @@ public class TestKmlWriter extends TestGISBase {
             System.out.println("Created temp output directory: " + tempKmlDir);
     }
 
+/*
+  @Test
+  public void test_xxx() throws IOException {
+    // add user-kml
+    checkKml(new KmlReader(new java.net.URL("http://jason-stage.mitre.org/kml/kmz/networklink/hier.kmz")), "hier.kmz");
+//	checkKmlFile(new File("C:/temp/kml/BalloonStyle/entity-two-level-photooverlay.kml"));
+//	checkKmlFile(new File("C:/projects/GoogleEarth/kml/PhotoOverlay/ImagePyramid/space-needle.kml"));
+//  checkKmlUrl(new URL("http://jason-stage.mitre.org:8080/kmlWeb/youAreHere.gsp"));
+  }
+
+    private void checkKmlUrl(java.net.URL url) throws IOException {
+        System.out.println("Testing " + url);
+        KmlReader reader = new KmlReader(url);
+        checkKml(reader, url.getFile());
+    }
+
+*/
+
     private void checkDir(File dir) {
 		for (File file : dir.listFiles()) {
 			if (file.isDirectory()) checkDir(file);
@@ -58,20 +76,30 @@ public class TestKmlWriter extends TestGISBase {
     private void checkKmlFile(File file) throws IOException {
         System.out.println("Testing " + file);
         KmlReader reader = new KmlReader(file);
-		List<IGISObject> objs = reader.readAll(); // implicit close
+        checkKml(reader, file.getName());
+    }
+
+    private void checkKml(KmlReader reader, String name) throws IOException {
+        List<IGISObject> objs = reader.readAll(); // implicit close
         System.out.format("features = %d%n", objs.size());
-		normalizeUrls(objs);
-		List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
+        normalizeUrls(objs);
+        List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
         List<URI> links = reader.getNetworkLinks();
-        if (links.size() != 0)
+        // ignore error if remote test host: if unavailable then skip assertion test
+        if (!links.isEmpty() && !links.get(0).toString().startsWith("http://jason-stage")) {
             assertTrue(linkedFeatures.size() != 0);
+        }
         File temp;
         if (autoDelete)
             temp = new File("testOutput/test." + (reader.isCompressed() ? "kmz" : "kml"));
         else {
-            String suff = file.getName();
-            int ind = suff.lastIndexOf('.');
-            if (ind != -1) suff = suff.substring(0, ind);
+            String suff = name;
+            if (suff == null) suff = "test";
+            else {
+              // strip off file extension
+              int ind = suff.lastIndexOf('.');
+              if (ind != -1) suff = suff.substring(0, ind);
+            }
             if (suff.length() < 3) suff = "x" + suff;
             temp = createTemp(suff + "-", reader.isCompressed() ? ".kmz" : ".kml", tempKmlDir);
         }
@@ -165,7 +193,7 @@ public class TestKmlWriter extends TestGISBase {
 
 	private void normalizeUrls(List<IGISObject> objs) {
 		for (IGISObject o : objs) {
-			KmlWriter.normalizeUrls(o);			
+			KmlWriter.normalizeUrls(o);
 		}
 	}
 
