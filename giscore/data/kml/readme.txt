@@ -23,8 +23,7 @@ Summary of tags and properties used in KML collection
 	Feature inherits container time
 	Feature uses inline Style
 	Feature uses inline StyleMap
-	Geometry spans -180/+180 longtiude line
-	Invalid LookAt values
+	Geometry spans -180/+180 longtiude line	
 	Invalid time range: start > end
 	NetworkLink missing Link
 	Out of order elements
@@ -128,15 +127,15 @@ data\kml\bbox.kml
 
 data\kml\Camera\golden-gate.kml
 
-	Camera altitudeMode cannot be clampToGround (ATC 54)
+	Camera altitudeMode cannot be clampToGround [ATC 54.2]
 	Camera               10
 	Placemark            10
 	# features=10
 
 data\kml\ExtendedData\data-ext-ns.kml
-DEBUG [main] (KmlInputStream.java:504) - skip {http://campsites.com}number
-DEBUG [main] (KmlInputStream.java:504) - skip {http://campsites.com}parkingSpaces
-DEBUG [main] (KmlInputStream.java:504) - skip {http://campsites.com}tentSites
+DEBUG [main] (KmlInputStream.java:548) - skip {http://campsites.com}number
+DEBUG [main] (KmlInputStream.java:548) - skip {http://campsites.com}parkingSpaces
+DEBUG [main] (KmlInputStream.java:548) - skip {http://campsites.com}tentSites
 
 	Placemark            1
 	Point                1
@@ -248,7 +247,25 @@ data\kml\GroundOverlay\etna.kmz
 	GroundOverlay        1
 	LatLonBox            1
 	LookAt               1
-	# features=2
+	# features=1
+
+data\kml\gx\altitudemode_reference.kml
+DEBUG [main] (KmlInputStream.java:1698) - Handle gx:altitudeMode
+
+        Line                 1
+        LookAt               1
+        Placemark            1
+        # features=1
+
+data\kml\gx\sample_tour.kml
+
+        IconStyle            1
+        LabelStyle           1
+        Placemark            1
+        Point                1
+        Style                1
+        gx:Tour              1
+        # features=1
 
 data\kml\ItemIcon\kitchensink.kmz
 
@@ -512,7 +529,7 @@ data\kml\Metadata\metadata-yourstuff.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\Model\House.kmz
 
@@ -522,7 +539,7 @@ data\kml\Model\House.kmz
 	Model                1
 	Placemark            2
 	Style                1
-	# features=7
+	# features=2
 
 data\kml\Model\MackyBldg.kmz
 
@@ -536,11 +553,11 @@ data\kml\Model\SharedTextures.kmz
 	LookAt               2
 	Model                2
 	Placemark            2
-	# features=5
+	# features=2
 
 data\kml\MultiGeometry\emptyGeom.kml
-	DEBUG [main] (KmlInputStream.java:1780) - No valid geometries in MultiGeometry
-	DEBUG [main] (KmlInputStream.java:1785) - Convert MultiGeometry to single geometry
+DEBUG [main] (KmlInputStream.java:1823) - No valid geometries in MultiGeometry
+DEBUG [main] (KmlInputStream.java:1828) - Convert MultiGeometry to single geometry
 
 	Placemark            2
 	Point                1
@@ -696,7 +713,7 @@ data\kml\NetworkLink\multiLevelNetworkLinks2.kmz
 	Placemark            3
 	Point                3
 	Style                3
-	# features=15
+	# features=5
 
 data\kml\NetworkLink\nlc.kml
 
@@ -707,7 +724,7 @@ data\kml\NetworkLink\placemark.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\NetworkLink\visibility.kml
 
@@ -715,7 +732,7 @@ data\kml\NetworkLink\visibility.kml
 	NetworkLink          2
 	Placemark            1
 	Point                1
-	# features=5
+	# features=3
 
 data\kml\Placemark\AllElements.kml
 	DEBUG [main] (KmlInputStream.java:487) - skip AddressDetails
@@ -724,6 +741,7 @@ data\kml\Placemark\AllElements.kml
 	LookAt               1
 	Placemark            1
 	Point                1
+	Region               1
 	TimeSpan             1
 	atom:author          1
 	atom:link            1
@@ -816,7 +834,7 @@ data\kml\Placemark\longName.kml
 	# features=1
 
 data\kml\Placemark\mixedDimsLines.kml
- INFO [main] (Line.java:107) - Line points have mixed dimensionality: downgrading line to 2d
+ INFO [main] (Line.java:109) - Line points have mixed dimensionality: downgrading line to 2d
 
 	Line                 1
 	Placemark            4
@@ -827,7 +845,7 @@ data\kml\Placemark\placemark.kml
 
 	Placemark            1
 	Point                1
-	# features=2
+	# features=1
 
 data\kml\Placemark\placemarks.kml
 
@@ -871,7 +889,7 @@ data\kml\Placemark\styled_placemark.kml
 	Placemark            1
 	Point                1
 	Style                1
-	# features=3
+	# features=1
 
 data\kml\Polygon\InnerBoundaryPoly-Pentagon.kml
 
@@ -893,7 +911,7 @@ data\kml\Polygon\treasureIsland.kml
 	PolyStyle            1
 	Polygon              1
 	Style                1
-	# features=3
+	# features=1
 
 data\kml\Region\GroundOverlay\usa-ca-sf.kmz
 
@@ -1004,7 +1022,7 @@ data\kml\Schema\AllTypes.kml
 	Placemark            1
 	Point                1
 	Schema               1
-	# features=5
+	# features=1
 
 data\kml\Schema\MixedTypes.kml
 
@@ -1012,7 +1030,7 @@ data\kml\Schema\MixedTypes.kml
 	Placemark            1
 	Point                1
 	Schema               2
-	# features=6
+	# features=1
 
 data\kml\Schema\schemadata-trailhead.kml
 
@@ -1036,7 +1054,7 @@ data\kml\Schema\SchemaOldStyle2.kml
 	Placemark            3
 	Point                3
 	Schema               1
-	# features=9
+	# features=3
 
 data\kml\Schema\sigint.kmz
 
@@ -1066,16 +1084,16 @@ data\kml\sky\leo.kml
 	# features=1
 
 data\kml\sloppy\badCoord.kml
- WARN [main] (KmlInputStream.java:1975) - comma found instead of whitespace between tuples before 4.0
- WARN [main] (KmlInputStream.java:1966) - ignore invalid string in coordinate: "ddd"
- WARN [main] (KmlInputStream.java:2072) - ignore invalid character in coordinate string: (+)
- WARN [main] (KmlInputStream.java:2072) - ignore invalid character in coordinate string: (+)
- WARN [main] (KmlInputStream.java:2072) - ignore invalid character in coordinate string: (+)
- WARN [main] (KmlInputStream.java:1966) - ignore invalid string in coordinate: "xxx"
- WARN [main] (KmlInputStream.java:1966) - ignore invalid string in coordinate: "xxx"
- WARN [main] (KmlInputStream.java:1966) - ignore invalid string in coordinate: "xxx"
- WARN [main] (KmlInputStream.java:1966) - ignore invalid string in coordinate: "yyy"
-ERROR [main] (KmlInputStream.java:2039) - Invalid coordinate: 200.0
+ WARN [main] (KmlInputStream.java:2160) - comma found instead of whitespace between tuples before 4.0
+ WARN [main] (KmlInputStream.java:2151) - ignore invalid string in coordinate: "ddd"
+ WARN [main] (KmlInputStream.java:2257) - ignore invalid character in coordinate string: (+)
+ WARN [main] (KmlInputStream.java:2257) - ignore invalid character in coordinate string: (+)
+ WARN [main] (KmlInputStream.java:2257) - ignore invalid character in coordinate string: (+)
+ WARN [main] (KmlInputStream.java:2151) - ignore invalid string in coordinate: "xxx"
+ WARN [main] (KmlInputStream.java:2151) - ignore invalid string in coordinate: "xxx"
+ WARN [main] (KmlInputStream.java:2151) - ignore invalid string in coordinate: "xxx"
+ WARN [main] (KmlInputStream.java:2151) - ignore invalid string in coordinate: "yyy"
+ERROR [main] (KmlInputStream.java:2224) - Invalid coordinate: 200.0
 java.lang.IllegalArgumentException: Latitude value exceeds pole value
 ERROR [main] (KmlInputStream.java:2039) - Invalid coordinate: 3000.0
 java.lang.IllegalArgumentException: Angle 52.35987755982989 radians is too big
@@ -1096,10 +1114,14 @@ java.lang.IllegalArgumentException: Angle 52.35987755982989 radians is too big
  java.lang.IllegalStateException: Bad poly found, no outer ring
 
 	Feature uses inline Style
+	IconStyle            1
+	LabelStyle           1
 	Line                 9
+	LineStyle            4
 	LinearRing           1
 	Placemark            32
 	Point                19
+	PolyStyle            3
 	Style                5
 	# features=40
 
@@ -1142,17 +1164,18 @@ data\kml\sloppy\n.kml
 	# features=4
 
 data\kml\sloppy\pred.kml
-	WARN [main] (KmlInputStream.java:1975) - comma found instead of whitespace between tuples before -81.9980316162109
+ WARN [main] (KmlInputStream.java:2160) - comma found instead of whitespace between tuples before -81.9980316162109
 
 	Feature uses inline Style
 	BalloonStyle         1
 	IconStyle            1
 	Line                 1
+	LineStyle            1
 	Model                1
 	Placemark            3
 	Point                1
 	Style                2
-	# features=8
+	# features=3
 
 data\kml\Style\iconStyle.kmz
 
@@ -1169,10 +1192,12 @@ data\kml\Style\inline-stylemap.kml
 	Placemark            1
 	Point                1
 	StyleMap             1
-	# features=3
+	# features=1
 
 data\kml\Style\noicon.kml
 
+	IconStyle            1
+	LabelStyle           1
 	LookAt               1
 	Placemark            1
 	Point                1
@@ -1213,7 +1238,7 @@ data\kml\Style\style-merging.kml
 	PolyStyle            1
 	Polygon              1
 	Style                4
-	# features=12
+	# features=3
 
 data\kml\Style\styledLineString.kml
 
