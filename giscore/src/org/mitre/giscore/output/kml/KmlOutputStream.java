@@ -45,6 +45,7 @@ import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.output.XmlOutputStreamBase;
+import org.mitre.giscore.output.atom.IAtomConstants;
 import org.mitre.giscore.utils.SafeDateFormat;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
@@ -167,33 +168,39 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         IOUtils.closeQuietly(stream);
     }
     
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.DocumentStart)
-	 */
+    /**
+     * Visit a DocumentStart object
+     *
+     * @param documentStart
+     * @throws RuntimeException if there is an error with the underlying XML
+     */
 	@Override
 	public void visit(DocumentStart documentStart) {
 		try {
+            boolean needNewline = false;
 			// Add any additional namespaces to the most proximate containing element
 			for(Namespace ns : documentStart.getNamespaces()) {
                 String prefix = ns.getPrefix();
                 if (StringUtils.isNotBlank(prefix)) {
                     writer.writeNamespace(prefix, ns.getURI());
+                    needNewline = true;
                     namespaces.put(prefix, ns.getURI());
-                    if (ns.getURI() != null && ns.getURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+                    if (gxNamespace == null && ns.getURI() != null && ns.getURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
                         gxNamespace = ns;
                     }
                 }
 			}
-			writer.writeCharacters("\n");
+            if (needNewline) writer.writeCharacters("\n");
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
 		}    
 	}
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Visit a ContainerEnd object
      *
-     * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.ContainerEnd
+     * @param containerEnd
+     * @throws RuntimeException if there is an error with the underlying XML
      */
     @Override
     public void visit(ContainerEnd containerEnd) {
@@ -204,10 +211,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Visit a ContainerStart object
      *
-     * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.ContainerStart
+     * @param containerStart
+     * @throws RuntimeException if there is an error with the underlying XML
      */
     @Override
     public void visit(ContainerStart containerStart) {
@@ -221,8 +229,16 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             writer.writeStartElement(tag);
             handleAttributes(containerStart, tag);
             for(Element el : containerStart.getElements()) {
-            	handleXmlElement(el);
-            }            
+                if (el.getNamespaceURI() != null && el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX))
+            	    handleXmlElement(el);
+                else if (!IAtomConstants.ATOM_URI_NS.equals(el.getNamespaceURI())) {
+                    // what non-kml namespaces can we support without creating invalid KML other than gx: and atom: ??
+                    // suppress atom:attributes in post-xml element dump
+                    // atoms handled in handleAttributes
+                    log.debug("Handle XML element " + el.getName() + " as comment");
+                    writeAsComment(el);
+                }
+            }
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
@@ -332,6 +348,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             Boolean visibility = feature.getVisibility();
             if (visibility != null && !visibility)
                 handleSimpleElement(VISIBILITY, "0"); // default=1
+            // handle atom attributes if defined
+            for(Element el : feature.getElements()) {
+                // suppress atom:attributes in post-xml element dump
+                if (IAtomConstants.ATOM_URI_NS.equals(el.getNamespaceURI()) && (
+                        "author".equals(el.getName()) || "link".equals(el.getName()))) {
+                    handleXmlElement(el);
+                }
+            }
+            // todo: handle Snippet
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
             handleAbstractView(feature.getViewGroup()); // LookAt or Camera AbstractViewGroup
             Date startTime = feature.getStartTime();
@@ -473,10 +498,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.Feature
+    /**
+     * Visit a Feature including its geometry and any child XML Elements.
+     * 
+     * @param feature
+     * @throws RuntimeException if there is an error with the underlying XML
      */
     @Override
     public void visit(Feature feature) {
@@ -492,7 +518,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleNetworkLink((NetworkLink) feature);
             }
             for(Element el : feature.getElements()) {
-            	handleXmlElement(el);
+                if (el.getNamespaceURI() != null && el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX))
+            	    handleXmlElement(el);
+                else if (!IAtomConstants.ATOM_URI_NS.equals(el.getNamespaceURI())) {
+                    // what non-kml namespaces can we support without creating invalid KML other than gx: and atom: ??
+                    // suppress atom:attributes in post-xml element dump
+                    // atoms handled in handleAttributes
+                    log.debug("Handle XML element " + el.getName() + " as comment");
+                    writeAsComment(el);
+                }
             }
             writer.writeEndElement();
             writer.writeCharacters("\n");
@@ -501,6 +535,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
+    /**
+     * Visit an XML Element.
+     *
+     * @param element
+     * @throws RuntimeException if there is an error with the underlying XML
+     */
     @Override
     public void visit(Element element) {
         try {
@@ -981,10 +1021,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Visit a Schema object
      *
-     * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.Schema
+     * @param schema
+     * @throws RuntimeException if there is an error with the underlying XML
      */
     @Override
     public void visit(Schema schema) {
@@ -1033,6 +1074,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Handle the output of a NetworkLinkControl feature
      *
      * @param networkLinkControl
+     * @throws RuntimeException if there is an error with the underlying XML
      */
     public void visit(NetworkLinkControl networkLinkControl) {
         /*
@@ -1284,10 +1326,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         writer.writeEndElement();
     }
 
-    /*
-     * (non-Javadoc)
+  /**
+     * Visit a Model object
      *
-     * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.ContainerStart
+     * @param model
+     * @throws RuntimeException if there is an error with the underlying XML
      */
     @Override
     public void visit(Model model) {
@@ -1312,7 +1355,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
-    }
+    }    
 
     /**
      * @return true if there are any elements on the waitingElements list
