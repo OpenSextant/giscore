@@ -32,6 +32,7 @@ import org.mitre.giscore.events.Element;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Comment;
 import org.mitre.giscore.Namespace;
+import org.mitre.giscore.events.Row;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -107,9 +108,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 			writer.flush();
 			writer.close();
 		} catch (XMLStreamException e) {
-			final IOException e2 = new IOException();
-			e2.initCause(e);
-			throw e2;
+			throw new IOException(e);
 		} finally {
             IOUtils.closeQuietly(stream);
         }
@@ -133,9 +132,11 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     /**
      * Writes XML comment to the output stream if text comment value is not null or empty.
      * The comment can contain any unescaped character (e.g. "declarations for <head> & <body>")
-     * and any occurences of "--" (double-hyphen) will be hex-escaped to &#x2D;&#x2D;
+     * and any occurrences of "--" (double-hyphen) will be hex-escaped to &#x2D;&#x2D;
      *  
      * @param comment Comment, never <code>null</code>
+     * 
+     * @throws RuntimeException if there is an error with the underlying XML 
      */
     @Override
     public void visit(Comment comment) {
@@ -159,6 +160,17 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
             } catch (XMLStreamException e) {
                 throw new RuntimeException(e);
             }
+    }
+
+    /**
+     * Visit a row. Output as an XML Comment.
+     * @param row
+     * @throws RuntimeException if there is an error with the underlying XML
+     */
+    @Override
+    public void visit(Row row) {
+        log.debug("ignore row");
+        visit(new Comment("Row-oriented data " + row));
     }
 
 	/**
