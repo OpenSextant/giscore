@@ -282,7 +282,8 @@ public class KmlMetaDump implements IKml {
                 return new KmlWriter(out);
 			} catch (IOException e) {
 				System.err.println("*** ERROR: Failed to create output: " + name);
-				e.printStackTrace();
+				if (e.getCause() != null) e.getCause().printStackTrace();
+				else e.printStackTrace();
 			}
 		}
 
@@ -293,7 +294,8 @@ public class KmlMetaDump implements IKml {
 				return new KmlWriter(kos);
 			} catch (XMLStreamException e) {
 				System.err.println("*** ERROR: Failed to create stdout outputStream");
-				e.printStackTrace();
+                if (e.getCause() != null) e.getCause().printStackTrace();
+				else e.printStackTrace();
 			}
 		}
 
@@ -730,7 +732,10 @@ public class KmlMetaDump implements IKml {
 			System.out.println("\t*** " + e.getClass().getName() + ": " + msg);
 		else {
 			System.out.println("\t*** " + e.getClass().getName());
-			e.printStackTrace(System.out);
+            if (e.getCause() != null)
+                e.getCause().printStackTrace(System.out);
+            else
+			    e.printStackTrace(System.out);
 		}
 	}
 
