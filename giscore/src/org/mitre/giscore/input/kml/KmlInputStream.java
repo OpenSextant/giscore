@@ -272,7 +272,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		try {
 			XMLEvent ev = stream.peek();
 			while(ev != null && ! ev.isStartElement()) {
-				ev = stream.nextEvent(); // Actually advance
+				stream.nextEvent(); // Actually advance
 				ev = stream.peek();
 			}
             if (ev == null) return;
