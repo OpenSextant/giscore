@@ -94,9 +94,7 @@ public class KmlWriter implements IGISOutputStream {
                 kos = new KmlOutputStream(os, encoding);
             }
         } catch (XMLStreamException e) {
-			final IOException e2 = new IOException();
-			e2.initCause(e);
-			throw e2;
+            throw new IOException(e);
         }
 		// TODO: consider adding KmlWriter(InputStream is, boolean compress) constructor
     }
@@ -126,7 +124,6 @@ public class KmlWriter implements IGISOutputStream {
 	public KmlWriter(KmlOutputStream os) {
 		compressed = false;
 		kos = os;
-		kos.write(new DocumentStart(DocumentType.KML));
 		// note: could check kos if wraps an underlying ZipOutputStream 
 		// compress = kos.getStream() instanceof ZipOutputStream
 	}
@@ -293,9 +290,10 @@ public class KmlWriter implements IGISOutputStream {
 	}
 
 	/**
-	 * Normalize URLs from internal URIs. Only IGISObjects that haves URLs
-	 * may be affected (i.e., NetworkLink, Overlay, and Style) and only if original
-	 * href had a relative URL which gets rewritten to include the parent KML/KMZ document.
+	 * Normalize URLs from internal URIs. Only IGISObjects that haves URL
+	 * attributes may be affected (i.e., NetworkLink, Overlay, and Style)
+     * and only if original href had a relative URL which gets rewritten to
+     * include the parent KML/KMZ document.
 	 * 
 	 * @param o IGISObject to normalize 
 	 */
