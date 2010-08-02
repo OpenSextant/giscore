@@ -21,9 +21,11 @@ package org.mitre.giscore.test.output;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.Namespace;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
@@ -35,12 +37,14 @@ import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.XmlOutputStreamBase;
+import org.mitre.giscore.output.atom.IAtomConstants;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.test.TestGISBase;
 
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Date;
 import java.util.zip.ZipEntry;
@@ -61,7 +65,36 @@ public class TestKmlOutputStream extends TestGISBase {
 	public void testSimpleCase() throws IOException {
 		doTest(getStream("7084.kml"));
 	}
-	
+
+    @Test
+	public void testWriteKmlByteStream() throws IOException, XMLStreamException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+        try {
+            DocumentStart ds = new DocumentStart(DocumentType.KML);
+            ds.getNamespaces().add(Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT));
+            Namespace atomNs = Namespace.getNamespace("atom", IAtomConstants.ATOM_URI_NS);
+            ds.getNamespaces().add(atomNs);
+            kos.write(ds);
+            Feature f = new Feature();
+            f.setName("gx:test");
+            f.setDescription("this is a test placemark");
+            Element link = new Element(atomNs , "link");
+            link.getAttributes().put("href", IKml.NS_GOOGLE_KML_EXT);
+            f.setElements(Collections.singletonList(link));
+            Point point = new Point(12.233, 146.825);
+            point.setAltitudeMode("clampToSeaFloor");
+            f.setGeometry(point);
+            kos.write(f);
+        } finally {
+		    kos.close();
+        }
+        String kml = bos.toString();
+        // System.out.println(kml);
+        Assert.assertTrue(kml.contains("this is a test placemark"));
+        Assert.assertTrue(kml.contains(IKml.NS_GOOGLE_KML_EXT));
+	}
+
 	/**
 	 * Note, this test fails due to some sort of issue with geodesy, but the
 	 * actual output kml is fine.
