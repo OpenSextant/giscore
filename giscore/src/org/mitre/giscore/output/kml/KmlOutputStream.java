@@ -24,13 +24,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.text.ParseException;
 
 import javax.xml.stream.XMLStreamException;
@@ -227,11 +221,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 tag = IKml.FOLDER.equalsIgnoreCase(tag) ? IKml.FOLDER : IKml.DOCUMENT;
             }
             writer.writeStartElement(tag);
-            handleAttributes(containerStart, tag);
-            for(Element el : containerStart.getElements()) {
+            List<Element> elements = handleAttributes(containerStart, tag);
+            for(Element el : elements) {
                 if (el.getNamespaceURI() != null && el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX))
             	    handleXmlElement(el);
-                else if (!IAtomConstants.ATOM_URI_NS.equals(el.getNamespaceURI())) {
+                else {
                     // what non-kml namespaces can we support without creating invalid KML other than gx: and atom: ??
                     // suppress atom:attributes in post-xml element dump
                     // atoms handled in handleAttributes
@@ -340,22 +334,37 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @param feature Common feature object for whom attributes will be written
      * @param containerType type of Container were visiting if (Feature is a Document or Folder) otherwise null
      */
-    private void handleAttributes(Common feature, String containerType) {
+    private List<Element> handleAttributes(Common feature, String containerType) {
         try {
+            List<Element> elements = feature.getElements().isEmpty() ?
+                    Collections.<Element>emptyList() : new LinkedList<Element>(feature.getElements());
+
             String id = feature.getId();
             if (id != null) writer.writeAttribute(ID, id);
             handleNonNullSimpleElement(NAME, feature.getName());
             Boolean visibility = feature.getVisibility();
             if (visibility != null && !visibility)
                 handleSimpleElement(VISIBILITY, "0"); // default=1
-            // handle atom attributes if defined
-            for(Element el : feature.getElements()) {
+
+            // handle atom attributes if defined and remove from list
+            Element author = null;
+            Element link = null;
+            for(Iterator<Element>it = elements.iterator(); it.hasNext(); ) {
+                Element el = it.next();
                 // suppress atom:attributes in post-xml element dump
-                if (IAtomConstants.ATOM_URI_NS.equals(el.getNamespaceURI()) && (
-                        "author".equals(el.getName()) || "link".equals(el.getName()))) {
-                    handleXmlElement(el);
+                if (IAtomConstants.ATOM_URI_NS.equals(el.getNamespaceURI())) {
+                    if ("author".equals(el.getName())) {
+                        author = el;
+                        it.remove(); // remove from list - marked as processed
+                    } else if ("link".equals(el.getName())) {
+                        link = el;
+                        it.remove(); // remove from list - marked as processed
+                    }
                 }
             }
+            if (author != null) handleXmlElement(author);
+            if (link != null) handleXmlElement(link);
+
             // todo: handle Snippet
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
             handleAbstractView(feature.getViewGroup()); // LookAt or Camera AbstractViewGroup
@@ -423,6 +432,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 }
                 writer.writeEndElement();
             }
+
+            return elements;
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
@@ -509,7 +520,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         try {
             String tag = feature.getType();
             writer.writeStartElement(tag);
-            handleAttributes(feature, null);
+            List<Element> elements = handleAttributes(feature, tag);
             if (feature instanceof Overlay) {
                 handleOverlay((Overlay) feature);
             } else if (feature.getGeometry() != null) {
@@ -517,10 +528,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             } else if (feature instanceof NetworkLink) {
                 handleNetworkLink((NetworkLink) feature);
             }
-            for(Element el : feature.getElements()) {
+            for(Element el : elements) {
                 if (el.getNamespaceURI() != null && el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX))
             	    handleXmlElement(el);
-                else if (!IAtomConstants.ATOM_URI_NS.equals(el.getNamespaceURI())) {
+                else {
                     // what non-kml namespaces can we support without creating invalid KML other than gx: and atom: ??
                     // suppress atom:attributes in post-xml element dump
                     // atoms handled in handleAttributes
