@@ -500,11 +500,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                         } catch (Exception e) {
                             log.error("Problem getting element", e);
                         }
-                        return true;
                     } else {
                         // TODO: should we add all-non KML elements as-is or only expected ones ??
                         log.debug("Skip unknown namespace " + name);
+                        skipNextElement(stream, name);
                     }
+                    return true;
                 }
             }
 		} catch (XMLStreamException e) {
