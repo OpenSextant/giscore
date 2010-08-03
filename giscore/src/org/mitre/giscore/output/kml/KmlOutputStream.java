@@ -349,6 +349,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             // handle atom attributes if defined and remove from list
             Element author = null;
             Element link = null;
+            Element  addressDetails = null;
             for(Iterator<Element>it = elements.iterator(); it.hasNext(); ) {
                 Element el = it.next();
                 // suppress atom:attributes in post-xml element dump
@@ -360,12 +361,17 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                         link = el;
                         it.remove(); // remove from list - marked as processed
                     }
+                } else if (NS_OASIS_XAL.equals(el.getNamespaceURI()) &&
+                        ADDRESS_DETAILS.equals(el.getName())) {
+                    addressDetails = el;
+                    it.remove(); // remove from list - marked as processed
                 }
             }
             if (author != null) handleXmlElement(author);
             if (link != null) handleXmlElement(link);
-
-            // todo: handle Snippet
+            // todo: handle kml:address
+            if (addressDetails != null) handleXmlElement(addressDetails);
+            // todo: handle kml:Snippet
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
             handleAbstractView(feature.getViewGroup()); // LookAt or Camera AbstractViewGroup
             Date startTime = feature.getStartTime();

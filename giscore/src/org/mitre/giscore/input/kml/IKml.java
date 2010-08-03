@@ -32,7 +32,9 @@ public interface IKml {
 
     static final String NS_GOOGLE_KML_EXT_PREFIX = "http://www.google.com/kml/ext/";
     static final String NS_GOOGLE_KML_EXT = "http://www.google.com/kml/ext/2.2";
+    static final String NS_OASIS_XAL = "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0";
 
+    static final String ADDRESS_DETAILS = "AddressDetails";
 	static final String ADDRESS = "address";
 	static final String ALTITUDE = "altitude";
 	static final String ALTITUDE_MODE = "altitudeMode";

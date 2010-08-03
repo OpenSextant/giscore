@@ -492,7 +492,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				// skip other non-KML namespace elements.
 				String ns = name.getNamespaceURI();
                 if (ns != null && !ms_kml_ns.contains(ns)) {
-                    if (localname.equals("AddressDetails") || ns.startsWith("http://www.w3.org/")
+                    if (localname.equals(ADDRESS_DETAILS) || ns.startsWith("http://www.w3.org/")
                             || ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
                         try {
                             Element el = (Element) getForeignElement(ee.asStartElement());
