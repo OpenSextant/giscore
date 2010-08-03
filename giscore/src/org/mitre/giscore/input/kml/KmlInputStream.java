@@ -134,8 +134,10 @@ import org.slf4j.LoggerFactory;
  * Geometry. 
  * <p>
  * Feature properties (i.e., {@code name, description, visibility, Camera/LookAt,
- * styleUrl, inline Styles, Region, TimeStamp/TimeSpan} elements) in addition
- * to the geometry are parsed and set on the Feature object.
+ * atom:author, atom:link, xal:AddressDetails, styleUrl, inline Styles, Region,
+ * TimeStamp/TimeSpan} elements) in addition to the geometry are parsed and
+ * set on the Feature object.
+ *
  * <p>
  * <h4>Notes/Limitations:</h4>
  * <p> 
@@ -145,13 +147,13 @@ import org.slf4j.LoggerFactory;
  * will be associated only with the last {@code Schema} referenced.
  * <p> 
  * Unsupported tags include the following:
- *  {@code atom:author, atom:link, address, xal:AddressDetails, Metadata,
- *  open, phoneNumber, Snippet, snippet}. 
+ *  {@code address, Metadata, open, phoneNumber, Snippet, snippet}. 
  * These tags are consumed but discarded.
  * <p>
+ *
  * Some support for gx KML extensions (e.g. Track, MultiTrack, Tour, etc.). Also {@code gx:altitudeMode}
- * is stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry, or
- * GroundOverlay. gx:TimeStamp or gx:TimeSpan in LookAt/Camera are ignored.
+ * is handle specially and stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry,
+ * and GroundOverlay.
  * <p> 
  * {@code StyleMaps} with inline Styles or nested StyleMaps are not supported.
  * StyleMaps must specify {@code styleUrl}.
@@ -482,19 +484,15 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			} else if (localname.equals(EXTENDED_DATA)) {
                 handleExtendedData(feature, name);
                 return true;
-            } else if (localname.equals("AddressDetails")) {
-                // skip AddressDetails (namespace: urn:oasis:names:tc:ciq:xsdschema:xAL:2.0)
-                log.debug("skip " + localname);
-                skipNextElement(stream, name);
-                return true;
-			} else {
+            } else {
 				//StartElement sl = ee.asStartElement();
 				//QName name = sl.getName();
 				// handle atom:link and atom:author elements (e.g. http://www.w3.org/2005/Atom)
                 // and google earth extensions as ForeignElements
 				// skip other non-KML namespace elements.
 				String ns = name.getNamespaceURI();
-				if (ns != null && (ns.startsWith("http://www.w3.org/") || ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX))) {
+				if (ns != null && (localname.equals("AddressDetails") || ns.startsWith("http://www.w3.org/")
+                        || ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX))) {
 					try {
 						Element el = (Element) getForeignElement(ee.asStartElement());
 						feature.getElements().add(el);
@@ -1676,53 +1674,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					// only add those element that are part of the KML namespace which we expect
 					String ns = qname.getNamespaceURI();
 					if (ns != null && !rootNs.equals(ns)) {
-                        // TODO: need way to handle atom/gx extension namespace
-                        // ns.startsWith("http://www.w3.org/")
-                        if (ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
-                            try {
-                                Element el = (Element) getForeignElement(se);
-                                if (StringUtils.isNotBlank(el.getText())) {
-                                    String eltname = sename;
-                                    String prefix = qname.getPrefix();
-                                    if (StringUtils.isNotBlank(prefix)) {
-                                        if (!ALTITUDE_MODE.equals(sename)) {
-                                            eltname = prefix + ":" + sename; // prefix name with namespace prefix
-                                        } else {
-                                            // altitudeMode - special case. store w/o prefix since handled as a single attribute
-                                            // if have gx:altitudeMode and altitudeMode then altitudeMode overrides gx:altitudeMode
-                                            if (map.containsKey(ALTITUDE_MODE)) {
-                                                log.debug("Element has duplicate altitudeMode defined");
-                                                continue;
-                                            }
-                                        }
-                                        log.debug("Handle " + prefix + ":" + sename);
-                                    } else {
-                                        // should never get here
-                                        // qname.getNamespaceURI() != null => qname.getPrefix() != null 
-                                        // namespace does not have prefix -- how is that?
-                                        // assuming qname.getPrefix()  == el.getPrefix()
-                                        log.warn("Namespace does not have prefix " + qname);
-                                    }
-                                    map.put(eltname, el.getText());
-                                } else {
-                                    // element does not have text content
-                                    log.debug("Skip " + qname.getPrefix() + ":" + sename);
-                                    /*
-                                      LookAt/Camera can include gx:TimeSpan or gx:TimeStamp element:
-
-                                      <gx:TimeSpan>
-                                        <begin>2010-05-28T02:02:09Z</begin>
-                                        <end>2010-05-28T02:02:56Z</end>
-                                      </gx:TimeSpan>
-                                     */
-                                }
-                            } catch (IOException e) {
-                                log.error("Problem getting element", e);
-                            }
-                        } else {
+                        if (!handleExtension(map, se, qname)) {
                             log.debug("Skip " + qname.getPrefix() + ":" + sename);
-                            skipNextElement(stream, qname);
-                        }
+                        } else System.out.println("ext tags=" + map);//debug
                         continue;
 					}
 				}
@@ -1735,9 +1689,76 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		return map.isEmpty() ? null : map;
 	}
 
-	private TaggedMap handleTaggedData(QName name) throws XMLStreamException {
+    private TaggedMap handleTaggedData(QName name) throws XMLStreamException {
 		return handleTaggedData(name, new TaggedMap(name.getLocalPart()));
 	}
+
+    private boolean handleExtension(TaggedMap map, StartElement se, QName qname) throws XMLStreamException {
+        String ns = qname.getNamespaceURI();
+        // TODO: need way to handle atom/gx extension namespace
+        // ns.startsWith("http://www.w3.org/")
+        if (!ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+            skipNextElement(stream, qname);
+        } else {
+            return handleElementExtention(map, (Element) getForeignElement(se), null);
+        }
+        return false;
+    }
+
+    private boolean handleElementExtention(TaggedMap map, Element el, String namePrefix) {
+        /*
+         LookAt/Camera elements can include gx:TimeSpan or gx:TimeStamp child elements:
+
+         <gx:TimeSpan>
+           <begin>2010-05-28T02:02:09Z</begin>
+           <end>2010-05-28T02:02:56Z</end>
+         </gx:TimeSpan>
+        */
+        String prefix = el.getPrefix();
+        String ns = el.getNamespaceURI();
+        // use "gx" handle regardless of what KML uses for gx namespace
+        if (ns != null && ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) prefix = "gx";
+        
+        if (!el.getChildren().isEmpty()) {
+            boolean found = false;
+            String eltname = el.getName();
+            if (StringUtils.isNotBlank(prefix)) {
+                eltname = prefix + ":" + eltname;
+            }
+            if (namePrefix == null) namePrefix = eltname;
+            else namePrefix += "/" + eltname;
+            for (Element child : el.getChildren()) {
+                if (handleElementExtention(map, child, namePrefix))
+                    found = true; // got match
+            }
+            return found;
+        }
+
+        // if not Node then look for simple TextElement
+        String text = el.getText();
+        if (StringUtils.isBlank(text)) {
+            return false;
+        }
+
+        String eltname = el.getName();
+        if (StringUtils.isNotBlank(prefix)) {
+            if (ALTITUDE_MODE.equals(eltname)) {
+                // handle altitudeMode as special case. store w/o prefix since handled as a single attribute
+                // if have gx:altitudeMode and altitudeMode then altitudeMode overrides gx:altitudeMode
+                if (map.containsKey(ALTITUDE_MODE)) {
+                    log.debug("Element has duplicate altitudeMode defined"); // ignore but return as element processed
+                    return true;
+                }
+            } else {
+                eltname = prefix + ":" + eltname; // prefix name with namespace prefix
+            }
+            log.debug("Handle tag data " + prefix + ":" + el.getName());
+        } // else log.debug("non-prefix ns=" + el.getNamespace());
+        if (namePrefix == null) namePrefix = eltname;
+        else namePrefix += "/" + eltname;
+        map.put(namePrefix, text);
+        return true;
+    }
 
 	/**
 	 * Handle a lat lon box with north, south, east and west elements.
