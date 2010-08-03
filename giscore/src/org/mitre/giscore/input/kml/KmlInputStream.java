@@ -491,20 +491,21 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 // and google earth extensions as ForeignElements
 				// skip other non-KML namespace elements.
 				String ns = name.getNamespaceURI();
-				if (ns != null && (localname.equals("AddressDetails") || ns.startsWith("http://www.w3.org/")
-                        || ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX))) {
-					try {
-						Element el = (Element) getForeignElement(ee.asStartElement());
-						feature.getElements().add(el);
-					} catch (Exception e) {
-						log.error("Problem getting element", e);
-					}
-					return true;
-				} else {
-                    // TODO: should we add all-non KML elements as-is or only expected ones ??
-                    log.debug("Skip unknown namespace " + name);
+                if (ns != null && !ms_kml_ns.contains(ns)) {
+                    if (localname.equals("AddressDetails") || ns.startsWith("http://www.w3.org/")
+                            || ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+                        try {
+                            Element el = (Element) getForeignElement(ee.asStartElement());
+                            feature.getElements().add(el);
+                        } catch (Exception e) {
+                            log.error("Problem getting element", e);
+                        }
+                        return true;
+                    } else {
+                        // TODO: should we add all-non KML elements as-is or only expected ones ??
+                        log.debug("Skip unknown namespace " + name);
+                    }
                 }
-				//System.out.println("*** skip other: " + localname + " sl=" + sl + " name=" + name.getNamespaceURI());
             }
 		} catch (XMLStreamException e) {
             log.error("Failed to handle: " + localname, e);
