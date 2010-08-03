@@ -181,12 +181,12 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 		Element el = new Element();
         QName qName = se.getName();
         el.setName(qName.getLocalPart());
-        if (StringUtils.isNotBlank(qName.getPrefix())) {
+        String nsURI = qName.getNamespaceURI();
+        if (StringUtils.isNotBlank(nsURI)) {
             try {
-                el.setNamespace(Namespace.getNamespace(qName.getPrefix(), qName.getNamespaceURI()));
+                el.setNamespace(Namespace.getNamespace(qName.getPrefix(), nsURI));
             } catch (IllegalArgumentException e) {
-                log.error(String.format("Failed to assign namespace %s=%s on element %s",
-                        qName.getPrefix(), qName.getNamespaceURI(), qName.getLocalPart()));
+                log.error("Failed to assign namespace " + qName);
             }
         }
 		@SuppressWarnings("unchecked")
