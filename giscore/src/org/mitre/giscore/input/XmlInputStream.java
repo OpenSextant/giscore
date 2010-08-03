@@ -48,8 +48,9 @@ import org.slf4j.LoggerFactory;
  * @author DRAND
  */
 public abstract class XmlInputStream extends GISInputStreamBase {
-	private static final Logger log = LoggerFactory
-			.getLogger(XmlInputStream.class);
+
+	private static final Logger log = LoggerFactory.getLogger(XmlInputStream.class);
+    
 	protected static final XMLInputFactory ms_fact;
 	static {
 		ms_fact = XMLInputFactory.newInstance();
@@ -173,10 +174,10 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 *            the start tag, never <code>null</code>
 	 * @return the element, never <code>null</code>
 	 * @throws XMLStreamException
-	 * @throws IOException if an I/O error occurs
+	 *             if there is an error with the underlying XML.
 	 */
 	protected IGISObject getForeignElement(StartElement se)
-			throws XMLStreamException, IOException {
+			throws XMLStreamException {
 		Element el = new Element();
         QName qName = se.getName();
         el.setName(qName.getLocalPart());
@@ -225,10 +226,10 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 *            the start element
 	 * @return a serialized string
 	 * @throws XMLStreamException
-	 * @throws IOException if an I/O error occurs
+	 *             if there is an error with the underlying XML.
 	 */
 	protected String getSerializedElement(StartElement start)
-			throws XMLStreamException, IOException {
+			throws XMLStreamException {
 		Element el = (Element) getForeignElement(start);
 		StringBuilder sb = new StringBuilder(100);
 		for (Element child : el.getChildren()) {
@@ -297,6 +298,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 * @return non-empty element text or null if text content is missing, empty
 	 *         or null.
 	 * @throws XMLStreamException
+	 *             if there is an error with the underlying XML.
 	 */
 	protected String getElementText(QName name) throws XMLStreamException {
 		/*
