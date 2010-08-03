@@ -500,7 +500,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						log.error("Problem getting element", e);
 					}
 					return true;
-				}
+				} else {
+                    // TODO: should we add all-non KML elements as-is or only expected ones ??
+                    log.debug("Skip unknown namespace " + name);
+                }
 				//System.out.println("*** skip other: " + localname + " sl=" + sl + " name=" + name.getNamespaceURI());
             }
 		} catch (XMLStreamException e) {
