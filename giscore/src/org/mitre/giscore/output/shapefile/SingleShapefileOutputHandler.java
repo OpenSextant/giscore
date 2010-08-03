@@ -87,8 +87,9 @@ import org.slf4j.LoggerFactory;
  * @author Paul Silvey for the original Mediate
  */
 public class SingleShapefileOutputHandler extends ShapefileBaseClass {
-	private static final Logger logger = LoggerFactory
-			.getLogger(SingleShapefileOutputHandler.class);
+    
+	private static final Logger logger = LoggerFactory.getLogger(SingleShapefileOutputHandler.class);
+    
 	private static final int VERSION = 1000;
 	private static final String WGS84prj = "GEOGCS[\"GCS_WGS_1984\"," +
 			"DATUM[\"D_WGS_1984\"," +
@@ -867,6 +868,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * @return the count in words (16 bit words) not including the record header
 	 *         (4 words, record number and length)
 	 */
+	@SuppressWarnings("fallthrough")
 	private int getRecLen(Geometry geom) {
 		int nParts, nPoints;
 		int type = getEsriShapeType(geom);
@@ -889,7 +891,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		nPoints = geom.getNumPoints();
 		int bytesPerPnt = 16;
 		int bytesPerPart = 0;
-
+		
 		switch (type) {
 		case 0: // Null shape
 			base = 4;
@@ -923,7 +925,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			break;
 		case 15: // PolygonZ
 			nPoints = getPolyPntCount(geom);
-            // fall through to PolyLineZ case
+			// fall through to PolyLineZ case
 		case 13: // PolyLineZ
 			base = 60;
 			bytesPerPart = 4;
