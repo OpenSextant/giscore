@@ -560,26 +560,27 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     /**
      * Visit a row. Output as a Placemark with ExtendedData without geometry
-     * @param row
+     * @param row Row to visit
      * @throws RuntimeException if there is an error with the underlying XML
      */
     @Override
     public void visit(Row row) {
-        super.visit(row);
-        try {
-            writer.writeStartElement(PLACEMARK);
-            handleExtendedData(row);
-            writer.writeEndElement();
-            writer.writeCharacters("\n");
-        } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
+        if (row != null && row.hasExtendedData()) {
+            try {
+                writer.writeStartElement(PLACEMARK);
+                handleExtendedData(row);
+                writer.writeEndElement();
+                writer.writeCharacters("\n");
+            } catch (XMLStreamException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
     /**
      * Visit an XML Element.
      *
-     * @param element
+     * @param element Element to visit, never null
      * @throws RuntimeException if there is an error with the underlying XML
      */
     @Override
