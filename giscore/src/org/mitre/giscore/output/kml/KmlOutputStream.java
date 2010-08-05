@@ -333,6 +333,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      *
      * @param feature Common feature object for whom attributes will be written
      * @param containerType type of Container were visiting if (Feature is a Document or Folder) otherwise null
+     * @return list of elements initialized awith getElement() and removed those elements that were processed, empty list
+     *          if no non-kml elements left.
      */
     private List<Element> handleAttributes(Common feature, String containerType) {
         try {
@@ -349,7 +351,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             // handle atom attributes if defined and remove from list
             Element author = null;
             Element link = null;
-            Element  addressDetails = null;
+            Element addressDetails = null;
             for(Iterator<Element>it = elements.iterator(); it.hasNext(); ) {
                 Element el = it.next();
                 // suppress atom:attributes in post-xml element dump
@@ -406,44 +408,48 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             handleWaitingElements(containerType);
 
 			handleRegion(feature.getRegion());
-
-            if (feature.hasExtendedData()) {
-                URI schema = feature.getSchema();
-                writer.writeStartElement(EXTENDED_DATA);
-                if (schema == null) {
-                    for (SimpleField field : feature.getFields()) {
-                        Object value = feature.getData(field);
-						if (value != null) {
-							writer.writeStartElement(DATA);
-							writer.writeAttribute(NAME, field.getName());
-							handleSimpleElement(VALUE, formatValue(field.getType(),
-									value));
-							writer.writeEndElement();
-						}
-                    }
-                } else {
-                    writer.writeStartElement(SCHEMA_DATA);
-                    writer.writeAttribute(SCHEMA_URL, schema.toString());
-                    for (SimpleField field : feature.getFields()) {
-                        Object value = feature.getData(field);
-						if (value != null) {
-							writer.writeStartElement(SIMPLE_DATA);
-							writer.writeAttribute(NAME, field.getName());
-							handleCharacters(formatValue(field.getType(),
-									value));
-							writer.writeEndElement();
-						}
-                    }
-                    writer.writeEndElement();
-                }
-                writer.writeEndElement();
-            }
+            handleExtendedData(feature);
 
             return elements;
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
     }
+
+    private void handleExtendedData(Row feature) throws XMLStreamException {
+        if (feature.hasExtendedData()) {
+            URI schema = feature.getSchema();
+            writer.writeStartElement(EXTENDED_DATA);
+            if (schema == null) {
+                for (SimpleField field : feature.getFields()) {
+                    Object value = feature.getData(field);
+                    if (value != null) {
+                        writer.writeStartElement(DATA);
+                        writer.writeAttribute(NAME, field.getName());
+                        handleSimpleElement(VALUE, formatValue(field.getType(),
+                                value));
+                        writer.writeEndElement();
+                    }
+                }
+            } else {
+                writer.writeStartElement(SCHEMA_DATA);
+                writer.writeAttribute(SCHEMA_URL, schema.toString());
+                for (SimpleField field : feature.getFields()) {
+                    Object value = feature.getData(field);
+                    if (value != null) {
+                        writer.writeStartElement(SIMPLE_DATA);
+                        writer.writeAttribute(NAME, field.getName());
+                        handleCharacters(formatValue(field.getType(),
+                                value));
+                        writer.writeEndElement();
+                    }
+                }
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
+    }
+
 
     /**
      * Format date in ISO format and trim milliseconds field  if 0
@@ -545,6 +551,24 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                     writeAsComment(el);
                 }
             }
+            writer.writeEndElement();
+            writer.writeCharacters("\n");
+        } catch (XMLStreamException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Visit a row. Output as a Placemark with ExtendedData without geometry
+     * @param row
+     * @throws RuntimeException if there is an error with the underlying XML
+     */
+    @Override
+    public void visit(Row row) {
+        super.visit(row);
+        try {
+            writer.writeStartElement(PLACEMARK);
+            handleExtendedData(row);
             writer.writeEndElement();
             writer.writeCharacters("\n");
         } catch (XMLStreamException e) {
