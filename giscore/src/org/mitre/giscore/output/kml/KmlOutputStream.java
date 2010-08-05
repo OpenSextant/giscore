@@ -1066,7 +1066,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Visit a Schema object
      *
-     * @param schema
+     * @param schema Schema to visit, never null
      * @throws RuntimeException if there is an error with the underlying XML
      */
     @Override
@@ -1102,10 +1102,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.Style
+    /**
+     * Visit a Style object
+     * @param style Style to visit, never null
      */
     @Override
     public void visit(Style style) {
@@ -1334,10 +1333,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.StyleMap
+    /**
+     * Visit a StyleMap object
+     * @param styleMap StyleMap to visit, never null
      */
     @Override
     public void visit(StyleMap styleMap) {
@@ -1371,7 +1369,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
   /**
      * Visit a Model object
      *
-     * @param model
+     * @param model Model to visit, never null
      * @throws RuntimeException if there is an error with the underlying XML
      */
     @Override
