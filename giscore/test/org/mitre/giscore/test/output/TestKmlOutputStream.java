@@ -95,6 +95,31 @@ public class TestKmlOutputStream extends TestGISBase {
         Assert.assertTrue(kml.contains(IKml.NS_GOOGLE_KML_EXT));
 	}
 
+    @Test
+	public void testRowData() throws XMLStreamException, IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+        DocumentStart ds = new DocumentStart(DocumentType.KML);
+        kos.write(ds);
+        SimpleField date = new SimpleField("date", SimpleField.Type.DATE);
+        SimpleField name = new SimpleField("name");
+        kos.write(new ContainerStart(IKml.FOLDER));
+        Row row = new Row();
+        row.putData(name, "hello");
+        row.putData(date, new Date());
+        kos.write(row);
+        row = new Row();
+        row.putData(name, "world");
+        row.putData(date, new Date());
+        kos.write(row);
+        kos.write(new ContainerEnd());
+        kos.close();
+        String kml = bos.toString();
+        // System.out.println(kml);
+        Assert.assertTrue(kml.contains(IKml.EXTENDED_DATA));
+        Assert.assertTrue(kml.contains("hello"));
+    }
+
 	/**
 	 * Note, this test fails due to some sort of issue with geodesy, but the
 	 * actual output kml is fine.
