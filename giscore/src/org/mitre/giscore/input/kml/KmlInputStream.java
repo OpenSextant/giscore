@@ -102,7 +102,6 @@ import org.slf4j.LoggerFactory;
  * <li>A new container
  * <li>Exiting a container
  * <li>A new feature
- * <li>Exiting the feature
  * </ul>
  * <p>
  * There are some interesting behaviors needed to make this work properly. The

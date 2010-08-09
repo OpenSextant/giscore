@@ -63,10 +63,12 @@ import org.slf4j.LoggerFactory;
  * The geometry visitors are invoked by the feature vistor via the Geometry
  * accept method.
  * <p/>
+ * Elements such as atom:author, atom:link, xal:AddressDetails, and gx: extensions
+ * must be added to the Feature object as {@link Element} objects. 
+ *
  * <h4>Notes/Limitations:</h4>
  *  -A few tags are not yet supported on features so are omitted from output:
- *   {@code atom:author, atom:link, address, xal:AddressDetails, ListStyle,
- *   Metadata, open, phoneNumber, Snippet, snippet}.<br/>
+ *  {@code address, ListStyle, Metadata, open, phoneNumber, Snippet, and snippet}.<br/>
  * -Warns if shared styles appear in Folders. According to OGC KML specification
  *  shared styles shall only appear within a Document [OGC 07-147r2 section 6.4].
  *
@@ -354,7 +356,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             Element addressDetails = null;
             for(Iterator<Element>it = elements.iterator(); it.hasNext(); ) {
                 Element el = it.next();
-                // suppress atom:attributes in post-xml element dump
+                // remove atom:attributes in post-xml element dump
                 if (IAtomConstants.ATOM_URI_NS.equals(el.getNamespaceURI())) {
                     if ("author".equals(el.getName())) {
                         author = el;
@@ -384,13 +386,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                     writer.writeStartElement(TIME_SPAN);
                     handleSimpleElement(BEGIN, formatDate(startTime));
                 } else if (endTime.equals(startTime)) {
-                    // start == end represents a timestamp
+                    // start == end represents a Timestamp
                     // note that having feature with a timeSpan with same begin and end time
                     // is identical to one with a timestamp of same time in Google Earth client.
                     writer.writeStartElement(TIME_STAMP);
                     handleSimpleElement(WHEN, formatDate(startTime));
                 } else {
-                    // start != end represents a timeSpan
+                    // start != end represents a TimeSpan
                     writer.writeStartElement(TIME_SPAN);
                     handleSimpleElement(BEGIN, formatDate(startTime));
                     handleSimpleElement(END, formatDate(endTime));
@@ -452,7 +454,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
 
     /**
-     * Format date in ISO format and trim milliseconds field  if 0
+     * Format date in ISO format and trim milliseconds field if 0
      * @param date
      * @return formatted date (e.g. 2003-09-30T00:00:06.930Z)
      */
@@ -685,11 +687,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                     try {
                         UrlRef urlRef = new UrlRef(new URI(val));
                         val = urlRef.getKmzRelPath();
-                    } catch (RuntimeException e) {
-                        // ignore
-                    } catch (MalformedURLException e) {
-                        // ignore
-                    } catch (URISyntaxException e) {
+                    } catch (Exception e) {
                         // ignore
                     }
                 }

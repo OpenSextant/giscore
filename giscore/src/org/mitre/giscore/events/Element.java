@@ -81,7 +81,6 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		super();
 		setName(name);
 		this.namespace = namespace;
-		//this.name = name;
 	}
 
     /**
