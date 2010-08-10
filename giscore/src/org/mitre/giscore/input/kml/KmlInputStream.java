@@ -1680,7 +1680,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					if (ns != null && !rootNs.equals(ns)) {
                         if (!handleExtension(map, se, qname)) {
                             log.debug("Skip " + qname.getPrefix() + ":" + sename);
-                        } else System.out.println("ext tags=" + map);//debug
+                        }
                         continue;
 					}
 				}
