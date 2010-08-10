@@ -18,7 +18,6 @@ package org.mitre.giscore.output.kml;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.UrlRef;

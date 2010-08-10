@@ -20,12 +20,10 @@ package org.mitre.giscore.events;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.Namespace;
 import org.mitre.giscore.utils.IDataSerializable;
