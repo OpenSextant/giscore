@@ -18,7 +18,7 @@ See also http://kml-samples.googlecode.com/svn/trunk/morekml/
 
 Summary of tags and properties used in KML collection
 
-	Camera altitudeMode cannot be clampToGround (ATC 54)
+	Camera altitudeMode cannot be clampToGround [ATC 54.2]
 	Container end date is later than that of its ancestors
 	Feature inherits container time
 	Feature uses inline Style
@@ -48,6 +48,8 @@ Summary of tags and properties used in KML collection
 	atom:author		 gx:MultiTrack
 	atom:link		 gx:Tour
 	gx:LatLonQuad		 gx:Track
+	gx:TimeSpan		 gx:TimeStamp
+        gx:balloonVisibility
 
 ----------------------------------------------------------------------------------------------------
 
@@ -248,6 +250,33 @@ data\kml\GroundOverlay\etna.kmz
 	LatLonBox            1
 	LookAt               1
 	# features=1
+
+data\kml\gx\all-gx.kml
+DEBUG [main] (KmlInputStream.java:1758) - Handle tag data gx:altitudeMode
+DEBUG [main] (KmlInputStream.java:1758) - Handle tag data gx:altitudeMode
+
+	Camera altitudeMode cannot be clampToGround [ATC 54.2]
+	Feature uses inline Style
+	Invalid LookAt values
+	Overlay missing icon
+	Camera               1
+	Document             3
+	GroundOverlay        1
+	IconStyle            2
+	Line                 1
+	LookAt               3
+	Placemark            7
+	Point                1
+	Schema               1
+	Style                2
+	gx:LatLonQuad        1
+	gx:MultiTrack        1
+	gx:TimeSpan          2
+	gx:TimeStamp         1
+	gx:Tour              11
+	gx:Track             1
+	gx:balloonVisibility 1
+	# features=8
 
 data\kml\gx\altitudemode_reference.kml
 DEBUG [main] (KmlInputStream.java:1698) - Handle gx:altitudeMode
