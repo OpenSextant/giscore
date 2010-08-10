@@ -20,9 +20,7 @@ package org.mitre.giscore.output.atom;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.net.URL;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -30,7 +28,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -64,9 +61,9 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 		IAtomConstants {
 	private static final SafeDateFormat fmt = new SafeDateFormat(
 			IKml.ISO_DATE_FMT);
-	private DecimalFormat dfmt;
+	private final DecimalFormat dfmt;
 
-	private final static Set<SimpleField> ms_builtinFields = new HashSet<SimpleField>();
+	private final static Set<SimpleField> ms_builtinFields = new HashSet<SimpleField>(4);
 	static {
 		ms_builtinFields.add(LINK_ATTR);
 		ms_builtinFields.add(TITLE_ATTR);
