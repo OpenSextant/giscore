@@ -249,9 +249,9 @@ public final class Namespace {
      */
     private static class NamespaceKey {
 
-        private String prefix;
-        private String uri;
-        private int hash;
+        private final String prefix;
+        private final String uri;
+        private final int hash;
 
         private NamespaceKey(String prefix, String uri) {
             this.prefix = prefix;
