@@ -1320,7 +1320,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 								log.warn("Ignoring bad expires value: " + expires + ": " + e);
 							}
 					} else if (tag.equals(LOOK_AT) || tag.equals(CAMERA)) {
-						TaggedMap viewGroup = handleTaggedData(qname);
+						TaggedMap viewGroup = handleTaggedData(qname); // LookAt | Camera
 						c.setViewGroup(viewGroup);
 					} else if (tag.equals("Update")) {
 						updateFlag = true; // set flag to parse inside Update element
@@ -1551,7 +1551,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 							((Overlay) fs).setDrawOrder(Integer.parseInt(stream
 									.getElementText()));
 						} else if (ICON.equals(localname)) {
-							((Overlay) fs).setIcon(handleTaggedData(qName));
+							((Overlay) fs).setIcon(handleTaggedData(qName)); // Icon
 						}
 						if (ground) {
 							if (LAT_LON_BOX.equals(localname)) {
@@ -1601,9 +1601,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 							((NetworkLink) fs).setFlyToView(isTrue(stream
 									.getElementText()));
 						} else if (LINK.equals(localname)) {
-							((NetworkLink) fs).setLink(handleTaggedData(qName));
+							((NetworkLink) fs).setLink(handleTaggedData(qName)); // Link
 						} else if (URL.equals(localname)) {
-							((NetworkLink) fs).setLink(handleTaggedData(qName));
+							((NetworkLink) fs).setLink(handleTaggedData(qName)); // Url
 						}
 					}
 				}
@@ -1699,8 +1699,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
     private boolean handleExtension(TaggedMap map, StartElement se, QName qname) throws XMLStreamException {
         String ns = qname.getNamespaceURI();
-        // TODO: need way to handle atom/gx extension namespace
-        // ns.startsWith("http://www.w3.org/")
+        // TODO: allow other extensions for TaggedMaps besides gx namespace ?
         if (!ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
             skipNextElement(stream, qname);
         } else {
