@@ -85,10 +85,10 @@ public final class Namespace {
         new Namespace("xml", "http://www.w3.org/XML/1998/namespace");
 
     /** The prefix mapped to this namespace */
-    private String prefix;
+    private final String prefix;
 
     /** The URI for this namespace */
-    private String uri;
+    private final String uri;
 
     /**
      * This static initializer acts as a factory constructor.
