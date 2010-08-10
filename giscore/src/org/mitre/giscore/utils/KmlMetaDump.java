@@ -310,22 +310,17 @@ public class KmlMetaDump implements IKml {
         }
         if (verbose) System.out.println(gisObj);
         final Class<? extends IGISObject> cl = gisObj.getClass();
-        if (cl == DocumentStart.class) return; // ignore always present DocumentStart root element        
+        if (cl == DocumentStart.class) return; // ignore always present DocumentStart root element
+
         if (gisObj instanceof Common) {
-            if (gisObj instanceof Feature) features++;
-            Common f = (Common)gisObj;
-            for(Element e : f.getElements()) {
-                String prefix = e.getPrefix();
-                String name = e.getName();
-                if (prefix != null) name = prefix + ":" + name;
-                addTag(name);
-            }
+            if (gisObj instanceof Feature) features++; // PlaceMark + NetworkLink + Overlay
+            checkCommon((Common)gisObj);
         }
+
         if (cl == Feature.class) {
             Feature f = (Feature) gisObj;
             Geometry geom = f.getGeometry();
             addTag(PLACEMARK);
-            checkFeature(f);
             if (geom != null) {
                 checkGeometry(geom);
                 Class<? extends Geometry> geomClass = geom.getClass();
@@ -337,7 +332,6 @@ public class KmlMetaDump implements IKml {
         } else if (cl == NetworkLink.class) {
             NetworkLink networkLink = (NetworkLink) gisObj;
             checkNetworkLink(networkLink);
-            checkFeature(networkLink);
             addTag(NETWORK_LINK);
             // isn't NetworkLink like a Container where child features are affected by
             // properties of parent NetworkLink such as time, region, etc.
@@ -456,7 +450,6 @@ public class KmlMetaDump implements IKml {
                         || go.getRotation() != null)
                     addTag(IKml.LAT_LON_BOX);
             }
-            checkFeature(ov);
             if (ov.getIcon() == null)
                 addTag(":Overlay missing icon");
         } else if (cl == Element.class) {
@@ -472,7 +465,7 @@ public class KmlMetaDump implements IKml {
         lastObjClass = gisObj.getClass();
 	}
 
-	private void checkBag(GeometryBag geometryBag) {
+    private void checkBag(GeometryBag geometryBag) {
 		for (Geometry g : geometryBag) {
 			if (g != null) {
 				Class<?extends Geometry> gClass = g.getClass();
@@ -524,7 +517,7 @@ public class KmlMetaDump implements IKml {
 			addTag(":NetworkLink missing Link");
 	}
 
-    private void checkFeature(Feature f) {
+    private void checkCommon(Common f) {
         Date startTime = f.getStartTime();
         Date endTime = f.getEndTime();
         if (startTime != null || endTime != null) {
@@ -557,7 +550,7 @@ public class KmlMetaDump implements IKml {
                     maximalSet.add(sf.getName());
                 }
         }
-
+        
         TaggedMap viewGroup = f.getViewGroup();
         if (viewGroup != null) {
             String tag = viewGroup.getTag();
@@ -598,15 +591,32 @@ public class KmlMetaDump implements IKml {
                }
             } else {
                 addTag(":Invalid ViewGroup tag: " + tag);
-            }            
+            }
+
+            // check view for gx:extensions
+            for(String key : viewGroup.keySet()) {
+                if (key.startsWith("gx:")) {
+                    // see if multiple-level element were added (e.g. gx:TimeSpan/begin)
+                    int ind = key.indexOf('/', 3);
+                    if (ind != -1) key = key.substring(0, ind);
+                    addTag(key);
+                }
+            }
 		}
 
-		checkRegion(f);
+        checkRegion(f);
+
+        for (Element e : f.getElements()) {
+            String prefix = e.getPrefix();
+            String name = e.getName();
+            if (prefix != null) name = prefix + ":" + name;
+            addTag(name);
+        }
 
         //if (lastObj instanceof StyleSelector) {
         if (lastObjClass == Style.class || lastObjClass == StyleMap.class)
             addTag(":Feature uses inline " + getClassName(lastObjClass)); // Style or StyleMap
-	}
+    }
 
     /**
      * Test ATC 8: Region/LatLonAltBox constraints. <p>
@@ -621,7 +631,7 @@ public class KmlMetaDump implements IKml {
      *
      * @param f Feature
      */
-	private void checkRegion(Feature f) {
+	private void checkRegion(Common f) {
 		TaggedMap region = f.getRegion();
 		if (region == null) return;
 
