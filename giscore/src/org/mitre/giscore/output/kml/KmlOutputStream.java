@@ -1263,7 +1263,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         handleColor(BG_COLOR, style.getLabelColor());
         Style.ListItemType listItemType = style.getListItemType();
         if (listItemType != null)
-            handleSimpleElement(LIST_ITEM_TYPE, listItemType.getName());
+            handleSimpleElement(LIST_ITEM_TYPE, listItemType.toString());
         writer.writeEndElement();
     }
     /**

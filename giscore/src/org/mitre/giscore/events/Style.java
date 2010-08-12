@@ -55,22 +55,8 @@ public class Style extends StyleSelector {
 
     public enum ColorMode { NORMAL, RANDOM }
 
-    public enum ListItemType {
-        CHECK("check"),
-        CHECK_OFF_ONLY("checkOffOnly"),
-        CHECK_HIDE_CHILDREN("checkHideChildren"),
-        RADIO_FOLDER("radioFolder ");
-
-        private String name;
-        
-        ListItemType(String name) {
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-    }
+    public enum ListItemType { check, checkOffOnly,
+        checkHideChildren, radioFolder }
 
 	private boolean hasIconStyle; // false
 	private Color iconColor;
