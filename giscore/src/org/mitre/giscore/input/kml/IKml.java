@@ -76,6 +76,8 @@ public interface IKml {
 	static final String LINE_STRING = "LineString";
 	static final String LINE_STYLE = "LineStyle";
 	static final String LINK = "Link";
+	static final String LIST_ITEM_TYPE = "listItemType";
+	static final String LIST_STYLE = "ListStyle";
 	static final String LOD = "Lod";
 	static final String LOCATION = "Location";
 	static final String LONGITUDE = "longitude";

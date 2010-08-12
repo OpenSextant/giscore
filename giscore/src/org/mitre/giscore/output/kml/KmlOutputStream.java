@@ -85,7 +85,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * prefix associated with gx extension namespace if such namespace is provided
      * in root Document declarations
      */
-    private Namespace gxNamespace;
+    private Namespace gxNamespace;   
 
     /**
      * Ctor
@@ -1225,6 +1225,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (style.hasBalloonStyle()) {
             handleBalloonStyleElement(style);
         }
+        if (style.hasListStyle()) {            
+            handleListStyleElement(style);
+        }
         writer.writeEndElement();
     }
 
@@ -1241,7 +1244,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     }
 
     /**
-     * @param style lable Style element to be written
+     * @param style Style element with label Style to be written
      * @throws XMLStreamException if there is an error with the underlying XML
      */
     private void handleLabelStyleElement(Style style) throws XMLStreamException {
@@ -1251,6 +1254,18 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         writer.writeEndElement();
     }
 
+    /**
+     * @param style Style element with List style to be written
+     * @throws XMLStreamException if there is an error with the underlying XML
+     */
+    private void handleListStyleElement(Style style) throws XMLStreamException {
+        writer.writeStartElement(LIST_STYLE);
+        handleColor(BG_COLOR, style.getLabelColor());
+        Style.ListItemType listItemType = style.getListItemType();
+        if (listItemType != null)
+            handleSimpleElement(LIST_ITEM_TYPE, listItemType.getName());
+        writer.writeEndElement();
+    }
     /**
      * @param style balloon Style element to be written
      * @throws XMLStreamException if there is an error with the underlying XML

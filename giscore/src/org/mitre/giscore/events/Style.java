@@ -43,7 +43,7 @@ import org.mitre.giscore.IStreamVisitor;
  * <p>
  * <h4>Notes/Limitations:</h4>
  * <p>
- *  TODO: {@code ListStyle} not supported
+ *  TODO: {@code ListStyle} supported except for ItemIcon
  * <br>
  *  Some less common tags (e.g. hotSpot in IconStyle) are not preserved.
  * 
@@ -51,31 +51,52 @@ import org.mitre.giscore.IStreamVisitor;
  */
 public class Style extends StyleSelector {
 
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;    
 
-	public enum ColorMode { NORMAL, RANDOM }
-	
-	private boolean hasIconStyle = false;
+    public enum ColorMode { NORMAL, RANDOM }
+
+    public enum ListItemType {
+        CHECK("check"),
+        CHECK_OFF_ONLY("checkOffOnly"),
+        CHECK_HIDE_CHILDREN("checkHideChildren"),
+        RADIO_FOLDER("radioFolder ");
+
+        private String name;
+        
+        ListItemType(String name) {
+            this.name = name;
+        }
+
+        public String getName() {
+            return name;
+        }
+    }
+
+	private boolean hasIconStyle; // false
 	private Color iconColor;
 	private double iconScale;
 	private double iconHeading;
 	private String iconUrl;
 
-	private boolean hasLineStyle = false;
+	private boolean hasLineStyle; // false
 	private Color lineColor;
 	private double lineWidth;
 
-	private boolean hasBalloonStyle = false;
+	private boolean hasListStyle; // false
+	private Color listBgColor;
+	private ListItemType listItemType;
+
+	private boolean hasBalloonStyle; // false
 	private Color balloonBgColor;
 	private Color balloonTextColor;
 	private String balloonText;
 	private String balloonDisplayMode;
 
-	private boolean hasLabelStyle = false;
+	private boolean hasLabelStyle; // false;
 	private Color labelColor;
 	private double labelScale;
 
-	private boolean hasPolyStyle = false;
+	private boolean hasPolyStyle; // false
 	private Color polyColor;
 	private boolean polyfill;
 	private boolean polyoutline;
@@ -101,6 +122,14 @@ public class Style extends StyleSelector {
 	 */
 	public boolean hasLineStyle() {
 		return hasLineStyle;
+	}
+
+	/**
+	 * @return <code>true</code> if this style contains a list style,
+	 *         <code>false</code> otherwise.
+	 */
+	public boolean hasListStyle() {
+		return hasListStyle;
 	}
 
 	/**
@@ -131,7 +160,7 @@ public class Style extends StyleSelector {
 	 * Set the icon style information
 	 * 
 	 * @param color
-     *            the color for the icon, can be null if want to use default color.
+	 *            the color for the icon, can be null if want to use default color.
 	 * @param scale
 	 *            the scale of the icon
 	 * @param url
@@ -201,7 +230,7 @@ public class Style extends StyleSelector {
 	 */
 	public void setLineStyle(Color color, double width) {
 		hasLineStyle = true;
-        lineColor = color;
+		lineColor = color;
 		lineWidth = (width <= 0.0) ? 0.0 : width;
 	}
 
@@ -220,6 +249,20 @@ public class Style extends StyleSelector {
 	public double getLineWidth() {
 		return lineWidth;
 	}
+
+	public void setListStyle(Color listBgColor, ListItemType listItemType) {
+		hasListStyle = listBgColor != null || listItemType != null;
+		this.listBgColor = listBgColor;
+		this.listItemType = listItemType;
+	}
+
+    public Color getListBgColor() {
+        return listBgColor;
+    }
+
+    public ListItemType getListItemType() {
+        return listItemType;
+    }
 
 	/**
 	 * Set the balloon style
