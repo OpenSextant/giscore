@@ -131,12 +131,11 @@ public class Style extends StyleSelector {
 	 * Set the icon style information
 	 * 
 	 * @param color
-	 *            the color for the icon, never <code>null</code>
+     *            the color for the icon, can be null if want to use default color.
 	 * @param scale
 	 *            the scale of the icon
 	 * @param url
 	 *            the url of the icon
-	 * @throws IllegalArgumentException if color is null. 
 	 */
 	public void setIconStyle(Color color, double scale, String url) {
 		setIconStyle(color, scale, 0.0, url);
@@ -146,7 +145,7 @@ public class Style extends StyleSelector {
 	 * Set the icon style information
 	 * 
 	 * @param color
-	 *            the color for the icon, never <code>null</code>
+	 *            the color for the icon, can be null if want to use default color.
 	 * @param scale
 	 *            the scale of the icon
 	 * @param heading
@@ -154,12 +153,8 @@ public class Style extends StyleSelector {
 	 *            Values range from 0 to 360 degrees. 
 	 * @param url
 	 *            the url of the icon
-	 * @throws IllegalArgumentException if color is null. 
 	 */
 	public void setIconStyle(Color color, double scale, double heading, String url) {
-		if (color == null) {
-			throw new IllegalArgumentException("color should never be null");
-		}
 		hasIconStyle = true;
 		iconColor = color;
 		iconScale = scale <= 0.0 ? 0 : scale;
@@ -169,8 +164,7 @@ public class Style extends StyleSelector {
 
 	/**
 	 * @return the iconColor, the color to apply to the icon in the display. May
-	 *         be <code>null</code> if {@link #hasIconStyle} returns
-	 *         <code>false</code>, but otherwise will be not <code>null</code>.
+	 *         be <code>null</code> in which the default color should be used.
 	 */
 	public Color getIconColor() {
 		return iconColor;
@@ -200,24 +194,20 @@ public class Style extends StyleSelector {
 	 * Set the line style
 	 * 
 	 * @param color
-	 *            the color of the line(s), never <code>null</code>
+	 *            the color of the line(s), can be null if want to use default color.
 	 * @param width
 	 *            the width of the line(s).
 	 *            Note non-positive width suppresses display of lines in Google Earth
-	 * @throws IllegalArgumentException if color is null.
 	 */
 	public void setLineStyle(Color color, double width) {
-		if (color == null) {
-			throw new IllegalArgumentException("color should never be null");
-		}
 		hasLineStyle = true;
-		lineColor = color;
+        lineColor = color;
 		lineWidth = (width <= 0.0) ? 0.0 : width;
 	}
 
 	/**
-	 * @return the lineColor, the color to use when rendering the line. Valid if
-	 *         {@link #hasLineStyle} is <code>true</code>.
+	 * @return the lineColor, the color to use when rendering the line. May
+	 *         be <code>null</code> in which the default color should be used.
 	 */
 	public Color getLineColor() {
 		return lineColor;
