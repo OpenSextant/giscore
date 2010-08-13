@@ -79,8 +79,8 @@ public class TestKmlOutputStream extends TestGISBase {
             Feature f = new Feature();
             f.setName("gx:test");
             f.setDescription("this is a test placemark");
-            Element link = new Element(atomNs , "link");
-            link.getAttributes().put("href", IKml.NS_GOOGLE_KML_EXT);
+            Element link = new Element(atomNs, "link");
+            link.getAttributes().put("href", "http://tools.ietf.org/html/rfc4287");
             f.setElements(Collections.singletonList(link));
             Point point = new Point(12.233, 146.825);
             point.setAltitudeMode("clampToSeaFloor");
