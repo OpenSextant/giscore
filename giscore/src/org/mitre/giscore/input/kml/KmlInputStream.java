@@ -125,6 +125,7 @@ import org.slf4j.LoggerFactory;
  * {@link #handleProperties(Common,XMLEvent,QName)} method takes care of
  * these. This returns {@code false} if the current element isn't a
  * common element, which allows the caller to handle the code.
+
  * <p>
  * Geometry is handled by common code as well. All coordinates in KML are
  * transmitted as tuples of two or three elements. The formatting of these is
@@ -136,6 +137,8 @@ import org.slf4j.LoggerFactory;
  * atom:author, atom:link, xal:AddressDetails, styleUrl, inline Styles, Region,
  * TimeStamp/TimeSpan} elements) in addition to the geometry are parsed and
  * set on the Feature object.
+ * Style and StyleMap supported on Features (Placemarks, Containers, etc.)
+ * with IconStyle, ListStyle, etc.
  *
  * <p>
  * <h4>Notes/Limitations:</h4>
@@ -156,8 +159,6 @@ import org.slf4j.LoggerFactory;
  * <p> 
  * {@code StyleMaps} with inline Styles or nested StyleMaps are not supported.
  * StyleMaps must specify {@code styleUrl}.
- * <p>
- * {@code ListStyle} not supported.
  * <p> 
  * Limited support for {@code PhotoOverlay} which creates an basic overlay object
  * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
@@ -926,19 +927,46 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					handleLabelStyle(style, qname);
 				} else if (localPart.equals(POLY_STYLE)) {
 					handlePolyStyle(style, qname);
+                } else if (localPart.equals(LIST_STYLE)) {
+					handleListStyle(style, qname);
 				}
-                // TODO: ListStyle
 			}
 		}
 	}
 
-	/**
+    private void handleListStyle(Style style, QName qname) throws XMLStreamException {
+        Color bgColor = null; // default color="ffffffff" (white)
+        Style.ListItemType listItemType = null;
+		while (true) {
+			XMLEvent e = stream.nextEvent();
+			if (foundEndTag(e, qname)) {
+				style.setListStyle(bgColor, listItemType);
+				return;
+			}
+			if (e.getEventType() == XMLEvent.START_ELEMENT) {
+				StartElement se = e.asStartElement();
+				String localPart = se.getName().getLocalPart();
+				if (localPart.equals(LIST_ITEM_TYPE)) {
+                    String text = stream.getElementText();
+                    try {
+                        listItemType = Style.ListItemType.valueOf(text);
+                    } catch (IllegalArgumentException e2) {
+                        log.warn("Invalid ListItemType value: " + text);
+                    }
+				} else if (localPart.equals(BG_COLOR)) {
+					bgColor = parseColor(stream.getElementText());
+				}
+			}
+		}
+    }
+
+    /**
 	 * @param style
 	 * @param qname
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handlePolyStyle(Style style, QName qname) throws XMLStreamException {
-		Color color = Color.white; // default color="ffffffff" (white)
+		Color color = null; // default color="ffffffff" (white)
 		boolean fill = true; // default = true
 		boolean outline = true;	// default = true
 		while (true) {
@@ -986,7 +1014,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	private void handleLabelStyle(Style style, QName qname) throws XMLStreamException {
 		double scale = 1;
-		Color color = Color.black;
+		Color color = null; // Color.black;
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (foundEndTag(e, qname)) {
