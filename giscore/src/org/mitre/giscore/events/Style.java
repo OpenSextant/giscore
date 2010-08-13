@@ -20,6 +20,8 @@ package org.mitre.giscore.events;
 
 import java.awt.Color;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.IStreamVisitor;
 
@@ -34,6 +36,7 @@ import org.mitre.giscore.IStreamVisitor;
  * fully transparent and ff is fully opaque. The order of expression is
  * aabbggrr, where aa=alpha (00 to ff); bb=blue (00 to ff); gg=green (00 to ff);
  * rr=red (00 to ff). For example, if you want to apply a blue color with 50
+ *
  * percent opacity to an overlay, you would specify the following:
  * <color>7fff0000</color>, where alpha=0x7f, blue=0xff, green=0x00, and
  * red=0x00.
@@ -60,13 +63,13 @@ public class Style extends StyleSelector {
 
 	private boolean hasIconStyle; // false
 	private Color iconColor;
-	private double iconScale;
-	private double iconHeading;
+	private Double iconScale;
+	private Double iconHeading;
 	private String iconUrl;
 
 	private boolean hasLineStyle; // false
 	private Color lineColor;
-	private double lineWidth;
+	private Double lineWidth;
 
 	private boolean hasListStyle; // false
 	private Color listBgColor;
@@ -80,12 +83,12 @@ public class Style extends StyleSelector {
 
 	private boolean hasLabelStyle; // false;
 	private Color labelColor;
-	private double labelScale;
+	private Double labelScale;
 
 	private boolean hasPolyStyle; // false
 	private Color polyColor;
-	private boolean polyfill;
-	private boolean polyoutline;
+	private Boolean polyfill;
+	private Boolean polyoutline;
 
 	/**
 	 * Ctor
@@ -148,12 +151,12 @@ public class Style extends StyleSelector {
 	 * @param color
 	 *            the color for the icon, can be null if want to use default color.
 	 * @param scale
-	 *            the scale of the icon
+	 *            the scale of the icon, nullable.
 	 * @param url
-	 *            the url of the icon
+	 *            the url of the icon, nullable.
 	 */
-	public void setIconStyle(Color color, double scale, String url) {
-		setIconStyle(color, scale, 0.0, url);
+	public void setIconStyle(Color color, Double scale, String url) {
+		setIconStyle(color, scale, null, url);
 	}
 
 	/**
@@ -162,45 +165,53 @@ public class Style extends StyleSelector {
 	 * @param color
 	 *            the color for the icon, can be null if want to use default color.
 	 * @param scale
-	 *            the scale of the icon
+	 *            the scale of the icon, nullable.
 	 * @param heading
 	 *            heading (i.e. icon rotation) in degrees. Default=0 (North).
-	 *            Values range from 0 to 360 degrees. 
+	 *            Values range from 0 to 360 degrees, nullable. 
 	 * @param url
 	 *            the url of the icon
 	 */
-	public void setIconStyle(Color color, double scale, double heading, String url) {
+	public void setIconStyle(Color color, Double scale, Double heading, String url) {
 		hasIconStyle = true;
 		iconColor = color;
-		iconScale = scale <= 0.0 ? 0 : scale;
-		iconHeading = Math.abs(heading - 360) < 0.1 ? 0 : heading;
+		iconScale = scale == null || scale < 0.0 ? null : scale;
+		iconHeading = heading == null || Math.abs(heading - 360) < 0.1 ? null : heading; // default heading = 0.0
 		iconUrl = StringUtils.isBlank(url) ? null : url;
 	}
 
 	/**
-	 * @return the iconColor, the color to apply to the icon in the display. May
-	 *         be <code>null</code> in which the default color should be used.
+	 * @return the iconColor, the color to apply to the icon in the display.
+     *      Value may be <code>null</code> in which the default color should be used.
 	 */
+    @Nullable
 	public Color getIconColor() {
 		return iconColor;
 	}
 
 	/**
 	 * @return the iconScale, the fraction to increase or decrease the size of
-	 *         the icon from it's native size. Valid if {@link #hasIconStyle}
-	 *         returns <code>true</code>.
+	 *         the icon from it's native size.
+     *      Value may be <code>null</code> in which the default scale (1.0) may be used.
 	 */
-	public double getIconScale() {
+    @Nullable
+	public Double getIconScale() {
 		return iconScale;
 	}
 
-	public double getIconHeading() {
+    /**
+	 * @return the iconHeading.
+     *      Value may be <code>null</code> in which the default heading (0) may be used.
+	 */
+    @Nullable
+	public Double getIconHeading() {
 		return iconHeading;
 	}
 
 	/**
 	 * @return the url of the icon. If null then href was either missing or an empty string.
 	 */
+    @Nullable
 	public String getIconUrl() {
 		return iconUrl;
 	}
@@ -214,16 +225,17 @@ public class Style extends StyleSelector {
 	 *            the width of the line(s).
 	 *            Note non-positive width suppresses display of lines in Google Earth
 	 */
-	public void setLineStyle(Color color, double width) {
+	public void setLineStyle(Color color, Double width) {
 		hasLineStyle = true;
 		lineColor = color;
-		lineWidth = (width <= 0.0) ? 0.0 : width;
+		lineWidth = width == null ? null : (width <= 0.0) ? 0.0 : width;
 	}
 
 	/**
 	 * @return the lineColor, the color to use when rendering the line. May
 	 *         be <code>null</code> in which the default color should be used.
 	 */
+    @Nullable
 	public Color getLineColor() {
 		return lineColor;
 	}
@@ -232,7 +244,8 @@ public class Style extends StyleSelector {
 	 * @return the lineWidth, the width of the line when rendered. Valid if
 	 *         {@link #hasLineStyle} is <code>true</code>.
 	 */
-	public double getLineWidth() {
+    @Nullable
+	public Double getLineWidth() {
 		return lineWidth;
 	}
 
@@ -242,10 +255,12 @@ public class Style extends StyleSelector {
 		this.listItemType = listItemType;
 	}
 
+    @Nullable
     public Color getListBgColor() {
         return listBgColor;
     }
 
+    @Nullable
     public ListItemType getListItemType() {
         return listItemType;
     }
@@ -295,6 +310,7 @@ public class Style extends StyleSelector {
 	 *         <bgColor>7fff0000</bgColor>, where alpha=0x7f, blue=0xff,
 	 *         green=0x00, and red=0x00. The default is opaque white (ffffffff).
 	 */
+    @Nullable
 	public Color getBalloonBgColor() {
 		return balloonBgColor;
 	}
@@ -308,6 +324,7 @@ public class Style extends StyleSelector {
 	 *         directions, a white background, and a tail that is attached to
 	 *         the point coordinates of the Feature, if specified).
 	 */
+    @NonNull 
 	public String getBalloonText() {
 		return balloonText;
 	}
@@ -318,6 +335,7 @@ public class Style extends StyleSelector {
 	 * @return the balloonTextColor, foreground color for text. The default is
 	 *         black (ff000000).
 	 */
+    @Nullable
 	public Color getBalloonTextColor() {
 		return balloonTextColor;
 	}
@@ -332,6 +350,7 @@ public class Style extends StyleSelector {
 	 *         whose balloon's <displayMode> is hide causes Google Earth to fly
 	 *         to the Placemark.
 	 */
+    @Nullable
 	public String getBalloonDisplayMode() {
 		return balloonDisplayMode;
 	}
@@ -342,10 +361,10 @@ public class Style extends StyleSelector {
 	 * @param color
 	 * @param scale
 	 */
-	public void setLabelStyle(Color color, double scale) {
+	public void setLabelStyle(Color color, Double scale) {
 		labelColor = color;
 		labelScale = scale;
-		hasLabelStyle = true;
+		hasLabelStyle = color != null || scale != null;
 	}
 
 	/**
@@ -353,6 +372,7 @@ public class Style extends StyleSelector {
 	 * 
 	 * @return the labelColor
 	 */
+    @Nullable
 	public Color getLabelColor() {
 		return labelColor;
 	}
@@ -362,7 +382,7 @@ public class Style extends StyleSelector {
 	 * 
 	 * @return the labelScale
 	 */
-	public double getLabelScale() {
+	public Double getLabelScale() {
 		return labelScale;
 	}
 
@@ -373,12 +393,11 @@ public class Style extends StyleSelector {
 	 * @param fill Specifies whether to fill the polygon
 	 * @param outline Specifies whether to outline the polygon. Polygon outlines use the current LineStyle. 
 	 */
-	public void setPolyStyle(Color color, boolean fill,
-			boolean outline) {
+	public void setPolyStyle(Color color, Boolean fill, Boolean outline) {
 		polyColor = color;
 		polyfill = fill;
 		polyoutline = outline;
-		hasPolyStyle = true;
+		hasPolyStyle = color != null || fill != null || outline != null;
 	}
 
 	/**
@@ -386,6 +405,7 @@ public class Style extends StyleSelector {
 	 * 
 	 * @return the polyColor
 	 */
+    @Nullable
 	public Color getPolyColor() {
 		return polyColor;
 	}
@@ -395,7 +415,8 @@ public class Style extends StyleSelector {
 	 * 
 	 * @return the polyfill, specifies whether to fill the polygon.
 	 */
-	public boolean isPolyfill() {
+    @Nullable
+	public Boolean getPolyfill() {
 		return polyfill;
 	}
 
@@ -405,7 +426,8 @@ public class Style extends StyleSelector {
 	 * @return the polyoutline, specifies whether to outline the polygon.
 	 *         Polygon outlines use the current LineStyle.
 	 */
-	public boolean isPolyoutline() {
+    @Nullable
+	public Boolean getPolyoutline() {
 		return polyoutline;
 	}
 

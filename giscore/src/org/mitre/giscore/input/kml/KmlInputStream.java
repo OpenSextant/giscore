@@ -967,8 +967,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	private void handlePolyStyle(Style style, QName qname) throws XMLStreamException {
 		Color color = null; // default color="ffffffff" (white)
-		boolean fill = true; // default = true
-		boolean outline = true;	// default = true
+		Boolean fill = null; // default = true
+		Boolean outline = null;	// default = true
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (foundEndTag(e, qname)) {

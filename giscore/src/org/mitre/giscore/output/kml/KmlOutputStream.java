@@ -1238,8 +1238,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     private void handlePolyStyleElement(Style style) throws XMLStreamException {
         writer.writeStartElement(POLY_STYLE);
         handleColor(COLOR, style.getPolyColor());
-        handleSimpleElement(FILL, style.isPolyfill() ? "1" : "0");
-        handleSimpleElement(OUTLINE, style.isPolyoutline() ? "1" : "0");
+        handleSimpleElement(FILL, style.getPolyfill() ? "1" : "0"); // default 1
+        handleSimpleElement(OUTLINE, style.getPolyoutline() ? "1" : "0"); // default 1
         writer.writeEndElement();
     }
 
@@ -1250,7 +1250,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     private void handleLabelStyleElement(Style style) throws XMLStreamException {
         writer.writeStartElement(LABEL_STYLE);
         handleColor(COLOR, style.getLabelColor());
-        handleSimpleElement(SCALE, style.getLabelScale());
+        handleDouble(SCALE, style.getLabelScale());
         writer.writeEndElement();
     }
 
@@ -1260,12 +1260,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      */
     private void handleListStyleElement(Style style) throws XMLStreamException {
         writer.writeStartElement(LIST_STYLE);
-        handleColor(BG_COLOR, style.getLabelColor());
+        handleColor(BG_COLOR, style.getListBgColor());
         Style.ListItemType listItemType = style.getListItemType();
         if (listItemType != null)
             handleSimpleElement(LIST_ITEM_TYPE, listItemType.toString());
         writer.writeEndElement();
     }
+    
     /**
      * @param style balloon Style element to be written
      * @throws XMLStreamException if there is an error with the underlying XML
@@ -1277,9 +1278,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         handleColor(TEXT_COLOR, style.getBalloonTextColor());
         handleSimpleElement(TEXT, style.getBalloonText());
         String displayMode = style.getBalloonDisplayMode();
-        if ("hide".equals(displayMode))
+        // ignore default displayMode value (default)
+        if (displayMode != null && "hide".equals(displayMode))
             handleSimpleElement(DISPLAY_MODE, displayMode);
-        // otherwise use default displayMode value
         writer.writeEndElement();
     }
 
@@ -1291,7 +1292,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             throws XMLStreamException {
         writer.writeStartElement(LINE_STYLE);
         handleColor(COLOR, style.getLineColor());
-        handleSimpleElement(WIDTH, Double.toString(style.getLineWidth()));
+        handleDouble(WIDTH, style.getLineWidth());
         writer.writeEndElement();
     }
 
@@ -1303,9 +1304,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             throws XMLStreamException {
         writer.writeStartElement(ICON_STYLE);
         handleColor(COLOR, style.getIconColor());
-        handleSimpleElement(SCALE, Double.toString(style.getIconScale()));
-        double heading = style.getIconHeading();
-        if (Math.abs(heading) > 0.1 && heading < 360)
+        handleDouble(SCALE, style.getIconScale());
+        Double heading = style.getIconHeading();
+        if (heading != null && Math.abs(heading) > 0.1 && heading < 360)
             handleSimpleElement(HEADING, formatDouble(heading));
         String iconUrl = style.getIconUrl();
         if (iconUrl != null) {
@@ -1328,6 +1329,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         writer.writeEndElement();
     }
 
+    private void handleDouble(String tag, Double value) throws XMLStreamException {
+        if (value != null) {
+            handleSimpleElement(tag, formatDouble(value));
+        }
+    }
+
     /**
      * Get the KML compliant color translation
      *
@@ -1339,8 +1346,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             throws XMLStreamException {
         if (color != null) {
             handleSimpleElement(tag, String.format("%02x%02x%02x%02x",
-                    color.getAlpha(), color.getBlue(),
-                    color.getGreen(), color.getRed()));
+                color.getAlpha(), color.getBlue(),
+                color.getGreen(), color.getRed()));
         }
     }
 
