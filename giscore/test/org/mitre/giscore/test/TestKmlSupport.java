@@ -198,6 +198,8 @@ public class TestKmlSupport extends TestGISBase {
             os.close();
             fos.close();
 
+            //System.out.println("Testing rewritten file: " + testcase.getName());
+
             // Test for equivalence
             fs = new FileInputStream(temp);
             is = GISFactory.getInputStream(DocumentType.KML, fs);

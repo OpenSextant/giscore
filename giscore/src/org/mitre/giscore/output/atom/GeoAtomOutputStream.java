@@ -54,7 +54,7 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
 /**
  * Output ATOM 1.0 format with OGC and other extensions to contain information
  * appropriate for GIS and extended data.
- * 
+ *
  * @author DRAND
  */
 public class GeoAtomOutputStream extends XmlOutputStreamBase implements
@@ -73,16 +73,16 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	private static Namespace gns = Namespace.getNamespace("geo", GIS_NS);
 	private boolean headerwritten = false;
 
-	public GeoAtomOutputStream(OutputStream outputStream, Object[] arguments)  
+	public GeoAtomOutputStream(OutputStream outputStream, Object[] arguments)
 	throws XMLStreamException {
 	    /* GeoAtomOutputStream(OutputStream stream, Date updateDTM,
 			String title, String link, List<String> authors) */
-		super(outputStream);	
+		super(outputStream);
 		writer.writeStartDocument();
 		dfmt = new DecimalFormat("##.######");
 	}
-	
-	
+
+
 
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.output.XmlOutputStreamBase#close()
@@ -141,13 +141,13 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 			headerwritten = true;
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
-		} 
+		}
 	}
 
 	/**
 	 * Handle an author
 	 * @param author
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
 	private void handleAuthor(AtomAuthor author) throws XMLStreamException {
 		writer.writeStartElement("author");
@@ -163,7 +163,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	/**
 	 * Handle a link
 	 * @param link link data
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException
 	 */
 	private void handleLink(AtomLink link) throws XMLStreamException {
 		writer.writeStartElement("link");
@@ -184,7 +184,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
 	 * .Element)
@@ -200,7 +200,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
 	 * .Row)
@@ -218,7 +218,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
 	 * .Feature)
@@ -242,7 +242,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	 * @param description
 	 * @param geo
 	 */
-	private void outputRow(Row row, Date updated, String title, 
+	private void outputRow(Row row, Date updated, String title,
 			String description, Geometry geo) {
 		if (! headerwritten) {
 			throw new IllegalStateException("Must output atom header before any feature or row");
@@ -273,7 +273,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 				link != null ? link.toString() : "", data,
 				geo, alist);
 	}
-	
+
 	/**
 	 * Process the string value according to the type. By default just store the
 	 * string.
@@ -323,7 +323,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 
 	/**
 	 * Output the data in an entry
-	 * 
+	 *
 	 * @param id
 	 *            the atom id for the entry
 	 * @param title
@@ -335,7 +335,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	 *            from the original's extended data. The atom id does not have
 	 *            to be removed as it will be skipped.
 	 * @param geo
-	 * @param alist 
+	 * @param alist
 	 */
 	public void outputEntry(String id, String title, String description,
 			Date updated, String link, Map<SimpleField, String> data, Geometry geo, List<String> alist) {
@@ -373,7 +373,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
 	 * .Point)
@@ -385,8 +385,8 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 			handleSimpleElement(
 					gns,
 					"point",
-					dfmt.format(center.getLatitude().inDegrees()) + " "
-							+ dfmt.format(center.getLongitude().inDegrees()));
+          dfmt.format(center.getLatitudeAsDegrees()) + " "
+              + dfmt.format(center.getLongitudeAsDegrees()));
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
 		}
@@ -394,7 +394,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
 	 * .Line)
@@ -413,16 +413,16 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 		for (Point p : points) {
 			Geodetic2DPoint center = p.getCenter();
 			coords.append(" ");
-			coords.append(dfmt.format(center.getLatitude().inDegrees()));
+      coords.append(dfmt.format(center.getLatitudeAsDegrees()));
 			coords.append(" ");
-			coords.append(dfmt.format(center.getLongitude().inDegrees()));
+      coords.append(dfmt.format(center.getLongitudeAsDegrees()));
 		}
 		return coords.toString().trim();
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
 	 * .LinearRing)
@@ -438,7 +438,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
 	 * .Polygon)

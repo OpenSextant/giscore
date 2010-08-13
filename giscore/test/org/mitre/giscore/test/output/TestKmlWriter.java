@@ -223,7 +223,7 @@ public class TestKmlWriter extends TestGISBase {
 			KmlWriter writer = new KmlWriter(temp);
             NetworkLink nl = new NetworkLink();
             Feature f = null;
-            try { 
+            try {
                 assertTrue(writer.isCompressed());
                 TaggedMap link = new TaggedMap(IKml.LINK);
                 link.put(IKml.HREF, "kml/link.kml");
@@ -338,8 +338,8 @@ public class TestKmlWriter extends TestGISBase {
 			assertEquals(firstTime, f.getEndTime());
 			Geometry geom = f.getGeometry();
 			Geodetic2DPoint center = geom.getCenter();
-			assertEquals(new Latitude(Math.toRadians(39.104144789924)).inDegrees(), center.getLatitude().inDegrees(), 1e-5);
-			assertEquals(new Longitude(Math.toRadians(-76.72894181350101)).inDegrees(), center.getLongitude().inDegrees(), 1e-5);
+			assertEquals(new Latitude(Math.toRadians(39.104144789924)).inDegrees(), center.getLatitudeAsDegrees(), 1e-5);
+			assertEquals(new Longitude(Math.toRadians(-76.72894181350101)).inDegrees(), center.getLongitudeAsDegrees(), 1e-5);
 
 			// feature 1 TimeSpan only end time
 			assertNull(features.get(1).getStartTime());
@@ -401,7 +401,7 @@ public class TestKmlWriter extends TestGISBase {
 			"2009-03-14T00:00:00.000Z	2009-03-14T00:00:00.000Z", // when 2009-03-14
 			"2009-03-14T00:00:00.000Z	2009-03-14T00:00:00.000Z", // span 2009-03-14
 			"2009-03-14T21:06:30.000Z	2009-03-14T21:06:30.000Z", // when 2009-03-14T21:06:30Z
-			"2009-03-14T21:06:00.000Z	2009-03-14T21:06:59.000Z", // span 2009-03-14T21:06Z            
+			"2009-03-14T21:06:00.000Z	2009-03-14T21:06:59.000Z", // span 2009-03-14T21:06Z
 			"2009-03-14T18:10:46.000Z	2009-03-14T18:10:46.000Z", // when 2009-03-14T21:10:46+03:00
 			"2009-03-14T21:10:50.000Z	2009-03-14T21:10:50.000Z", // when 2009-03-14T16:10:50-05:00
 			"2009-03-14T21:10:50.000Z	2009-03-14T21:10:50.000Z"  // when 2009-03-14T16:10:50 (no timezone assumes UTC)

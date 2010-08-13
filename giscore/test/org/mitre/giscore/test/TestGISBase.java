@@ -40,14 +40,14 @@ import org.mitre.itf.geodesy.*;
 /**
  * The base class provides a series of features of various kinds, used to feed
  * the test cases as well as establishing a common test output file directory.
- * 
+ *
  * @author DRAND
  */
 public class TestGISBase {
 
     /**
      * Autodelete flag (default=true). To keep temp files set System flag
-     * keepTempFiles=true before running tests. 
+     * keepTempFiles=true before running tests.
      */
     protected static final boolean autoDelete = !Boolean.getBoolean("keepTempFiles");
 
@@ -62,7 +62,7 @@ public class TestGISBase {
 	}
 	public static final AtomicInteger count = new AtomicInteger();
 	protected static Random random = new Random(1000);
-	
+
 	/**
 	 * Create a temp file or directory for a test
 	 * @param prefix string prefix, never <code>null</code> or empty
@@ -95,11 +95,11 @@ public class TestGISBase {
         if (directory == null) directory = tempdir;
 		return new File(directory, prefix + count.incrementAndGet() + suffix);
 	}
-	
+
 	/**
 	 * Create a feature with a number of data elements in the extended data.
 	 * This method will not use a schema.
-	 * 
+	 *
 	 * @param geoclass
 	 *            the class of the geometry objects to create
 	 * @param names
@@ -126,11 +126,11 @@ public class TestGISBase {
 		}
 		return f;
 	}
-	
+
 	/**
 	 * Create a feature with a number of data elements in the extended data.
 	 * This method will not use a schema.
-	 * 
+	 *
 	 * @param geoclass
 	 *            the class of the geometry objects to create
 	 * @param schema
@@ -155,8 +155,8 @@ public class TestGISBase {
 			f.putData(field, value != null ? value : ObjectUtils.NULL);
 		}
 		return f;
-	}	
-	
+	}
+
 	/**
 	 * Create a schema
 	 * @param names the names for the fields
@@ -207,12 +207,12 @@ public class TestGISBase {
 		}
 		return f;
 	}
-	
+
 	/**
 	 * @param f
 	 * @return
-	 * @throws IllegalAccessException 
-	 * @throws InstantiationException 
+	 * @throws IllegalAccessException
+	 * @throws InstantiationException
 	 */
 	protected int countFeatures(File f) throws InstantiationException, IllegalAccessException {
 		int count = 0;
@@ -240,7 +240,7 @@ public class TestGISBase {
 
     /**
      * Create array of features with all possible MultiGeometry geometries:
-     * MultiPoint, MultiLine, MultiLinearRings, MultiPolygons, GeometryBag    
+     * MultiPoint, MultiLine, MultiLinearRings, MultiPolygons, GeometryBag
      * @return
      */
     protected static List<Feature> getMultiGeometries() {
@@ -332,8 +332,8 @@ public class TestGISBase {
 	}
 
 	protected static Point getRingPoint(Point cp, int n, int total, double size, double min) {
-		double lat = cp.getCenter().getLatitude().inDegrees();
-		double lon = cp.getCenter().getLongitude().inDegrees();
+    double lat = cp.getCenter().getLatitudeAsDegrees();
+    double lon = cp.getCenter().getLongitudeAsDegrees();
 		double theta = Math.toRadians(360.0 * n / total);
 		double magnitude = min + RandomUtils.nextDouble() * size;
 		double dy = magnitude * Math.sin(theta);

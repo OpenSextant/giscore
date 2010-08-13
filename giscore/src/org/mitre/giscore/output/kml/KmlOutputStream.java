@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
  * accept method.
  * <p/>
  * Elements such as atom:author, atom:link, xal:AddressDetails, and gx: extensions
- * must be added to the Feature object as {@link Element} objects. 
+ * must be added to the Feature object as {@link Element} objects.
  *
  * <h4>Notes/Limitations:</h4>
  *  -A few tags are not yet supported on features so are omitted from output:
@@ -85,7 +85,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * prefix associated with gx extension namespace if such namespace is provided
      * in root Document declarations
      */
-    private Namespace gxNamespace;   
+    private Namespace gxNamespace;
 
     /**
      * Ctor
@@ -97,7 +97,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     public KmlOutputStream(OutputStream stream, String encoding) throws XMLStreamException {
         super(stream, encoding);
         if (StringUtils.isBlank(encoding))
-            writer.writeStartDocument();                                                                                      
+            writer.writeStartDocument();
         else
             writer.writeStartDocument(encoding, "1.0");
         writer.writeCharacters("\n");
@@ -137,7 +137,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Flush and close XMLStreamWriter but not the outputStream
      *
-     * @throws IOException if an error occurs     
+     * @throws IOException if an error occurs
      */
     public void closeWriter() throws IOException {
         try {
@@ -161,7 +161,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     public void closeStream()  {
         IOUtils.closeQuietly(stream);
     }
-    
+
     /**
      * Visit a DocumentStart object
      *
@@ -187,7 +187,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             if (needNewline) writer.writeCharacters("\n");
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
-		}    
+		}
 	}
 
     /**
@@ -523,7 +523,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     /**
      * Visit a Feature including its geometry and any child XML Elements.
-     * 
+     *
      * @param feature
      * @throws RuntimeException if there is an error with the underlying XML
      */
@@ -621,7 +621,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     private void handleOverlay(Overlay overlay) throws XMLStreamException {
         handleColor(COLOR, overlay.getColor());
         int order = overlay.getDrawOrder();
-        // don't bother to output drawOrder element if is the default value (0) 
+        // don't bother to output drawOrder element if is the default value (0)
         if (order != 0) handleSimpleElement(DRAW_ORDER, Integer.toString(order));
         handleLinkElement(ICON, overlay.getIcon());
 
@@ -832,7 +832,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleGeometryAttributes(l);
                 handleSimpleElement(COORDINATES, handleCoordinates(l.getPoints()));
                 writer.writeEndElement();
-            } catch (XMLStreamException e) {                
+            } catch (XMLStreamException e) {
                 throw new RuntimeException(e);
             }
     }
@@ -937,7 +937,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             writer.writeEndElement();
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
-        }        
+        }
     }
 
     /**
@@ -1049,9 +1049,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             b.append(' ');
         }
         Geodetic2DPoint p2d = point.getCenter();
-        b.append(formatDouble(p2d.getLongitude().inDegrees()));
+        b.append(formatDouble(p2d.getLongitudeAsDegrees()));
         b.append(',');
-        b.append(formatDouble(p2d.getLatitude().inDegrees()));
+        b.append(formatDouble(p2d.getLatitudeAsDegrees()));
         if (point.getCenter() instanceof Geodetic3DPoint) {
             Geodetic3DPoint p3d = (Geodetic3DPoint) point.getCenter();
             b.append(',');
@@ -1225,7 +1225,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (style.hasBalloonStyle()) {
             handleBalloonStyleElement(style);
         }
-        if (style.hasListStyle()) {            
+        if (style.hasListStyle()) {
             handleListStyleElement(style);
         }
         writer.writeEndElement();
@@ -1268,7 +1268,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             handleSimpleElement(LIST_ITEM_TYPE, listItemType.toString());
         writer.writeEndElement();
     }
-    
+
     /**
      * @param style balloon Style element to be written
      * @throws XMLStreamException if there is an error with the underlying XML
@@ -1369,7 +1369,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Actually handle style map
      *
      * @param styleMap StyleMap to be written
-     * @throws XMLStreamException if there is an error with the underlying XML     
+     * @throws XMLStreamException if there is an error with the underlying XML
      */
     private void handle(StyleMap styleMap) throws XMLStreamException {
         writer.writeStartElement(STYLE_MAP);
@@ -1407,8 +1407,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleAltitudeMode(model.getAltitudeMode());
                 if (point != null) {
                     writer.writeStartElement(LOCATION);
-                    handleSimpleElement(LONGITUDE, point.getLongitude().inDegrees());
-                    handleSimpleElement(LATITUDE, point.getLatitude().inDegrees());
+                    handleSimpleElement(LONGITUDE, point.getLongitudeAsDegrees());
+                    handleSimpleElement(LATITUDE, point.getLatitudeAsDegrees());
                     if (model.is3D())
                         handleSimpleElement(ALTITUDE, ((Geodetic3DPoint)point).getElevation());
                     writer.writeEndElement();
@@ -1418,7 +1418,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
-    }    
+    }
 
     /**
      * @return true if there are any elements on the waitingElements list

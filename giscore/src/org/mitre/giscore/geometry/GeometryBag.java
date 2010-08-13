@@ -39,21 +39,21 @@ import org.mitre.itf.geodesy.Longitude;
 /**
  * This is a simple typed collection of geometries. The methods aggregate answers
  * from the child geometries.
- * 
+ *
  * @author DRAND
  */
 public class GeometryBag extends Geometry implements Collection<Geometry> {
 	private static final long serialVersionUID = 1L;
-	
+
 	private final List<Geometry> geometries = new ArrayList<Geometry>();
 
 	/**
-	 * Empty ctor for object io.	  
+	 * Empty ctor for object io.
 	 */
 	public GeometryBag() {
-		// 
+		//
 	}
-	
+
 	/**
 	 * Ctor
 	 * @param geometries List of Geometry objects to include in the bag
@@ -90,9 +90,9 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 				rval.include(bounds);
 			}
 		}
-		if (rval != null) 
+		if (rval != null)
 			bbox = rval;
-		else 
+		else
 			bbox = new Geodetic2DBounds();
 	}
 
@@ -106,8 +106,8 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		double count = 0;
 		for(Geometry geo : geometries) {
 			Geodetic2DPoint cen = geo.getCenter();
-			lat += cen.getLatitude().inDegrees();
-			lon += cen.getLongitude().inDegrees();
+      lat += cen.getLatitudeAsDegrees();
+      lon += cen.getLongitudeAsDegrees();
 			count++;
 		}
 		// Compute Averages
@@ -128,7 +128,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		}
 		return total;
 	}
-	
+
 	@Override
 	public Geometry getPart(int i) {
 		return geometries.get(i);
@@ -145,7 +145,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		}
 		return total;
 	}
-	
+
 	@Override
 	public List<Point> getPoints() {
 		List<Point> rval = new ArrayList<Point>();
@@ -212,7 +212,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 * @see java.util.Collection#containsAll(java.util.Collection)
 	 */
 	public boolean containsAll(Collection<?> c) {
-		return geometries.containsAll(c); 
+		return geometries.containsAll(c);
 	}
 
 	/* (non-Javadoc)

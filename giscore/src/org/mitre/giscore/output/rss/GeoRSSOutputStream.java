@@ -38,7 +38,7 @@ import java.text.SimpleDateFormat;
  * <p/> http://www.thearchitect.co.uk/schemas/rss-2_0.xsd
  * <p/> http://www.georss.org/xml/1.1/georss.xsd
  * <p/> http://www.windsorsolutions.biz/xsd/ENGeoTF/gmlgeorss11.xsd
- * <p/> 
+ * <p/>
  * <h4>Notes/Limitations:</h4>
  * <p/>
  * -Handles all basic GeoRSS-simple shapes (Point, Line, Polygon, Circle).<br/>
@@ -127,7 +127,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
     }
 
     /**
-     * Creates a <code>GeoRSSOutputStream</code> that uses the specified underlying OutputStream.     
+     * Creates a <code>GeoRSSOutputStream</code> that uses the specified underlying OutputStream.
      *
      * @param stream  the underlying output stream.
      * @param namespaceMap  Mapping of non-RSS element names (can appear in channel
@@ -210,7 +210,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             Geodetic2DPoint center = l.getCenter();
             if (center instanceof Geodetic3DPoint) {
                 Geodetic3DPoint p3d = (Geodetic3DPoint) center;
-                handleSimpleElement(GEORSS_NS, ELEV, formatDouble(p3d.getElevation()));                    
+                handleSimpleElement(GEORSS_NS, ELEV, formatDouble(p3d.getElevation()));
             }
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
@@ -278,7 +278,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
     @Override
     public void visit(LinearRing ring) {
         // todo: encode geom in georss or gml. possibly gml:MultiLineString ??
-        // for now just dump as a georss-simple line        
+        // for now just dump as a georss-simple line
         //visit(new Comment("Ignore LinearRing\n" + ring)); // placeholder
         try {
             /*
@@ -368,7 +368,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
         if (it.hasNext()) visit(it.next());
         /*
         try {
-            // MultiGeometry or MultiPolygon ?? 
+            // MultiGeometry or MultiPolygon ??
             writer.writeStartElement(GML_NS.getPrefix(), "MultiGeometry", GML_NS.getURI());
             super.visit(rings);
             writer.writeEndElement();
@@ -389,7 +389,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
     public void visit(MultiPolygons polygons) {
         // no collection grouping in georss-simple so must use gml:MultiPolygon
         // as a collection. for now just visit the first in the group
-        //visit(new Comment("Ignore MultiPolygons\n" + polygons)); // placeholder 
+        //visit(new Comment("Ignore MultiPolygons\n" + polygons)); // placeholder
         Iterator<Polygon> it = polygons.getPolygons().iterator();
         if (it.hasNext()) visit(it.next());
         /*
@@ -490,7 +490,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             }
             visit(new Comment("Ignore MultiGeometry:\n" + sb.toString())); // placeholder
             */
-            
+
             /*
             try {
             writer.writeStartElement(GML_NS.getPrefix(), "MultiGeometry", GML_NS.getURI());
@@ -641,9 +641,9 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
         if (b.length() > 0) {
             b.append(' ');
         }
-        b.append(formatDouble(pt.getLatitude().inDegrees()));
+        b.append(formatDouble(pt.getLatitudeAsDegrees()));
         b.append(' ');
-        b.append(formatDouble(pt.getLongitude().inDegrees()));
+        b.append(formatDouble(pt.getLongitudeAsDegrees()));
         return b;
     }
 

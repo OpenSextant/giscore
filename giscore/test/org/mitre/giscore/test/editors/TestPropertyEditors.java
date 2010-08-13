@@ -50,17 +50,17 @@ public class TestPropertyEditors {
 		rval.setLongitude(new Longitude(lon, Angle.DEGREES));
 		return rval;
 	}
-	
+
 	public void checkApproximatelyEqual(Point a, Point b) {
-		assertEquals(a.getCenter().getLatitude().inDegrees(), b.getCenter().getLatitude().inDegrees(), EPSILON);
-		assertEquals(a.getCenter().getLongitude().inDegrees(), b.getCenter().getLongitude().inDegrees(), EPSILON);
+    assertEquals(a.getCenter().getLatitudeAsDegrees(), b.getCenter().getLatitudeAsDegrees(), EPSILON);
+    assertEquals(a.getCenter().getLongitudeAsDegrees(), b.getCenter().getLongitudeAsDegrees(), EPSILON);
 	}
-	
+
 	public void checkApproximatelyEqual(Geodetic2DPoint a, Geodetic2DPoint b) {
-		assertEquals(a.getLatitude().inDegrees(), b.getLatitude().inDegrees(), EPSILON);
-		assertEquals(a.getLongitude().inDegrees(), b.getLongitude().inDegrees(), EPSILON);
-	}	
-	
+    assertEquals(a.getLatitudeAsDegrees(), b.getLatitudeAsDegrees(), EPSILON);
+    assertEquals(a.getLongitudeAsDegrees(), b.getLongitudeAsDegrees(), EPSILON);
+	}
+
 	@Test public void testPointEditor() throws Exception {
 		Point orig = new Point(getRandomPoint());
 		PointPropertyEditor pp = new PointPropertyEditor();
@@ -72,7 +72,7 @@ public class TestPropertyEditors {
 		Point read = (Point) pp.getValue();
 		checkApproximatelyEqual(orig, read);
 	}
-	
+
 	@Test public void testCircleEditor() throws Exception {
 		Geodetic2DPoint orig = getRandomPoint();
 		CirclePropertyEditor cpe = new CirclePropertyEditor();
@@ -85,7 +85,7 @@ public class TestPropertyEditors {
 		checkApproximatelyEqual(c.getCenter(), b.getCenter());
 		assertEquals(c.getRadius(), b.getRadius(), EPSILON);
 	}
-	
+
 	@Test public void testLinearRingEditor() throws Exception {
 		List<Point> pts = new ArrayList<Point>();
 		for(int i = 0; i < 5; i++) {

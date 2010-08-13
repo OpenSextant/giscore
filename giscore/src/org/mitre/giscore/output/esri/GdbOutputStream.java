@@ -103,7 +103,7 @@ import com.esri.arcgis.system.PropertySet;
  * Output the GIS information using the ArcObjects Java API. This results in a
  * file GDB, which is stored in a directory containing multiple individual
  * files. The result is packaged into the output stream using ZIP encoding.
- * 
+ *
  * @author DRAND
  */
 public class GdbOutputStream extends StreamVisitorBase implements
@@ -183,7 +183,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/**
 	 * The output stream, used at the end to store away the generated file or
-	 * directory, initialized in the ctor and unchanging afterward. 
+	 * directory, initialized in the ctor and unchanging afterward.
 	 */
 	private OutputStream outputStream;
 
@@ -204,7 +204,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * The path to the file or directory being created by this stream.
 	 */
 	private File outputPath = null;
-	
+
 	/**
 	 * Delete the output path after close is called. <code>false</code> if
 	 * the path was passed in, <code>true</code> if the path was created and
@@ -227,7 +227,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/**
 	 * Ctor
-	 * 
+	 *
 	 * @param type
 	 *            the format to use, never <code>null</code>. ESRI has a number
 	 *            of workspace types, which can be varied to output the
@@ -262,7 +262,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			if (type.equals(DocumentType.FileGDB)) {
 				name += ".gdb";
 				makedir = false;
-			} 
+			}
 			while(path == null || path.exists()) {
 				path = new File(temp, name);
 				t++;
@@ -310,7 +310,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/**
 	 * Ctor for creating an output stream for an SDE
-	 * 
+	 *
 	 * <blockquote> <em>From the ESRI javadoc</em>
 	 * <p>
 	 * List of acceptable connection property names and a brief description of
@@ -343,12 +343,12 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	 * Since the workspace connection can only represent one version only 1 of
 	 * the 3 version properties (<Q>VERSION</Q> or <Q>HISTORICAL_NAME</Q> or
 	 * <Q>HISTORICAL_TIMESTAMP</Q>) should be used. </blockquote>
-	 * 
+	 *
 	 * @param properties
 	 *            the properties required by the open call
 	 * @param containerNameStrategy a name strategy to override the default, may be
-	 *            <code>null</code>.  
-	 * @throws IOException 
+	 *            <code>null</code>.
+	 * @throws IOException
 	 */
 	public GdbOutputStream(Properties properties,
 			IContainerNameStrategy containerNameStrategy) throws IOException {
@@ -358,19 +358,19 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			this.containerNameStrategy = containerNameStrategy;
 		}
 		factory = new SdeWorkspaceFactory();
-		
+
 		PropertySet set = new PropertySet();
 		for(Object key : properties.keySet()) {
 			String keystr = (String) key;
 			set.setProperty(keystr, properties.getProperty(keystr));
 		}
-		
+
 		workspace = new Workspace(factory.open(set, 0));
 	}
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see org.mitre.giscore.output.IGISOutputStream#close()
 	 */
 	public void close() throws IOException {
@@ -406,7 +406,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			outputPath.delete();
 		}
 	}
-	
+
 	/**
 	 * delete dir content
 	 * @param directory
@@ -424,7 +424,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/**
 	 * This gets the feature data and stores it to the database.
-	 * 
+	 *
 	 * @param key
 	 *            the key being handled
 	 * @param fc
@@ -576,8 +576,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	private com.esri.arcgis.geometry.Point makePoint(Point point)
 			throws IOException {
 		com.esri.arcgis.geometry.Point cpoint = new com.esri.arcgis.geometry.Point();
-		cpoint.setX(point.getCenter().getLongitude().inDegrees());
-		cpoint.setY(point.getCenter().getLatitude().inDegrees());
+    cpoint.setX(point.getCenter().getLongitudeAsDegrees());
+    cpoint.setY(point.getCenter().getLatitudeAsDegrees());
 		return cpoint;
 	}
 
@@ -591,7 +591,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/**
 	 * Create a variant of the given object datum
-	 * 
+	 *
 	 * @param type
 	 *            integer type of Variant
 	 * @param size
@@ -746,7 +746,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/**
 	 * Method to check the dataset name for validity with ESRI's checker
-	 * 
+	 *
 	 * @param dsname
 	 *            input dataset name String
 	 * @return fixed dataset name String
@@ -780,7 +780,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	/**
 	 * Create an ESRI field from a simple field and store the relationship for
 	 * later use.
-	 * 
+	 *
 	 * @param key
 	 *            FeatureKey needed for field context
 	 * @param simpleField
@@ -841,7 +841,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	/**
 	 * Make a unique fieldname considering whether we're outputting a shapefile.
 	 * For non-shapefiles the fieldnames must be unique already.
-	 * 
+	 *
 	 * @param simpleField
 	 *            simpleField whose name is being made unique
 	 * @param fieldnames
@@ -941,7 +941,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
 	 * .ContainerEnd
@@ -953,7 +953,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
 	 * .ContainerStart
@@ -965,7 +965,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
 	 * .Feature
@@ -1000,7 +1000,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
 	 * .Schema
@@ -1012,7 +1012,7 @@ public class GdbOutputStream extends StreamVisitorBase implements
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.IGISOutputStream#write(org.mitre.giscore.events
 	 * .IGISObject

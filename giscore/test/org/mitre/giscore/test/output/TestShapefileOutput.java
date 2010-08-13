@@ -70,7 +70,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		}
 		shpos.close();
 		zos.flush();
-		zos.close();		
+		zos.close();
 	}
 
 	@Test public void testPointOutput() throws Exception {
@@ -89,8 +89,8 @@ public class TestShapefileOutput extends TestShapefileBase {
 			f.setSchema(schema.getId());
 			Point point = getRandomPoint();
 			pts.add(point);
-			//System.out.format("Point-%d: %f %f%n", i, point.getCenter().getLongitude().inDegrees(),
-					//point.getCenter().getLatitude().inDegrees()); // debug
+      //System.out.format("Point-%d: %f %f%n", i, point.getCenter().getLongitudeAsDegrees(),
+          //point.getCenter().getLatitudeAsDegrees()); // debug
 			f.setGeometry(point);
 			buffer.write(f);
 		}
@@ -140,7 +140,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 
 		writeShapefile(schema, buffer, null, "multipoint");
 	}
-	
+
 	@Test public void testLineOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -195,7 +195,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		// java.io.IOException: Shapefile contains record with unexpected shape type 1078346337, expecting 13
 		// 	at org.mitre.giscore.input.shapefile.SingleShapefileInputHandler.getGeometry(SingleShapefileInputHandler.java:253)
 	}
-	
+
 	@Test public void testMultiLineOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -221,8 +221,8 @@ public class TestShapefileOutput extends TestShapefileBase {
 		buffer.write(f);
 
 		writeShapefile(schema, buffer, null, "multilines");
-	}	
-	
+	}
+
 	@Test public void testRingOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -250,7 +250,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 			/*
 			//debug
             System.out.println("\nRing-" + i +" " + ring + " " + Integer.toHexString(ring.hashCode()));
-            for (Point pt : pts) System.out.format("%f %f%n", pt.getCenter().getLongitude().inDegrees(), pt.getCenter().getLatitude().inDegrees());
+            for (Point pt : pts) System.out.format("%f %f%n", pt.getCenter().getLongitudeAsDegrees(), pt.getCenter().getLatitudeAsDegrees());
 			// end debug
 			*/
 			if (!ring.clockwise()) System.out.println("rings must be in clockwise point order");
@@ -262,7 +262,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 		// now read shape file back in and test against what we wrote
 		writeShapefile(schema, buffer, rings, "rings");
 	}
-	
+
 	@Test public void testRingZOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -320,7 +320,7 @@ public class TestShapefileOutput extends TestShapefileBase {
             throw ex;
         }
     }
-	
+
 	private void realPolyOutputTest(String filebase) throws Exception {
         /**
          * Note this test generates random points and occasionally the inner points overlap outer points
@@ -363,7 +363,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 
 		writeShapefile(schema, buffer, null, filebase);
 	}
-	
+
 	@Test public void testPolyZOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -395,14 +395,14 @@ public class TestShapefileOutput extends TestShapefileBase {
 				pts.add(pts.get(0)); // should start and end with the same point
 				innerRings.add(new LinearRing(pts, true));
 			}
-			Polygon p = new Polygon(outerRing, innerRings); 
+			Polygon p = new Polygon(outerRing, innerRings);
 			f.setGeometry(p);
 			buffer.write(f);
 		}
 
 		writeShapefile(schema, buffer, null, "polyz");
-	}	
-	
+	}
+
 	@Test public void testMultiRingOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -433,7 +433,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 
 		writeShapefile(schema, buffer, null, "multirings");
 	}
-		
+
 	@Test public void testMultiRingZOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -464,7 +464,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 
 		writeShapefile(schema, buffer, null, "multiringz");
 	}
-	
+
 	@Test public void testMultiPolyOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
@@ -508,7 +508,7 @@ public class TestShapefileOutput extends TestShapefileBase {
 
 		writeShapefile(schema, buffer, null, "multipolys");
 	}
-	
+
 	@Test public void testMultiPolyZOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");

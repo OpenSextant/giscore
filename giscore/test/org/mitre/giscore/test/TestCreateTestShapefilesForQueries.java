@@ -50,7 +50,7 @@ import org.mitre.giscore.output.IGISOutputStream;
 /**
  * Not so much a test as something that will create test shapes to make sure
  * that programs that uses shapefiles to create accept areas are working.
- * 
+ *
  * @author DRAND
  */
 public class TestCreateTestShapefilesForQueries {
@@ -114,8 +114,8 @@ public class TestCreateTestShapefilesForQueries {
 				else
 					assertEquals(count + 1, geo.getPoints().size());
 				for(Point p : geo.getPoints()) {
-					assertEquals(42.0, p.getCenter().getLatitude().inDegrees(), 4.0); // Near
-					assertEquals(32.0, p.getCenter().getLongitude().inDegrees(), 4.0); // Near
+          assertEquals(42.0, p.getCenter().getLatitudeAsDegrees(), 4.0); // Near
+          assertEquals(32.0, p.getCenter().getLongitudeAsDegrees(), 4.0); // Near
 				}
 			}
 			obj = istr.read();
@@ -132,7 +132,7 @@ public class TestCreateTestShapefilesForQueries {
 
 	/**
 	 * Get a ring
-	 * 
+	 *
 	 * @param lon
 	 * @param lat
 	 * @param radius

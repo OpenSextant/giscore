@@ -82,14 +82,14 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The shapefile code is inspired by the old mediate code.
  * <code>ShpHandler</code>
- * 
+ *
  * @author DRAND
  * @author Paul Silvey for the original Mediate
  */
 public class SingleShapefileOutputHandler extends ShapefileBaseClass {
-    
+
 	private static final Logger logger = LoggerFactory.getLogger(SingleShapefileOutputHandler.class);
-    
+
 	private static final int VERSION = 1000;
 	private static final String WGS84prj = "GEOGCS[\"GCS_WGS_1984\"," +
 			"DATUM[\"D_WGS_1984\"," +
@@ -140,7 +140,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Ctor
-	 * 
+	 *
 	 * @param schema
 	 *            the schema, never <code>null</code>.
 	 * @param style
@@ -204,7 +204,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Output the data.
-	 * 
+	 *
 	 * @throws IOException
 	 *             if an error occurs
 	 * @throws IllegalAccessException
@@ -219,13 +219,13 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Output the data.
-	 * 
+	 *
 	 * @param callback
 	 *            Provide {@code ICancelable} callback which if {@code
 	 *            isCanceled()} returns true then processing is aborted and
 	 *            CancellationException is thrown. If {@code null} then no
 	 *            cancellation checks are done.
-	 * 
+	 *
 	 * @throws IOException
 	 *             if an error occurs
 	 * @throws IllegalAccessException
@@ -265,7 +265,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Find and replace and simple fields of type date with type string
-	 * 
+	 *
 	 * @param orign
 	 * @return
 	 */
@@ -297,7 +297,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Write shm if the style is given. This writes a minimal shm file that
 	 * provides shape and color information for the points.
-	 * 
+	 *
 	 * @throws FileNotFoundException
 	 * @throws XMLStreamException
 	 * @throws MalformedURLException
@@ -366,9 +366,9 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output the features. As the features are output, track the bounding box
 	 * information and check for consistent geometry usage. After all the
 	 * features are written we reopen the shapefile to output the header.
-	 * 
+	 *
 	 * @param callback
-	 * 
+	 *
 	 * @throws IOException
 	 *             if an error occurs
 	 * @throws IllegalAccessException
@@ -451,7 +451,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Calculate the esri type
-	 * 
+	 *
 	 * @param geo
 	 * @return
 	 */
@@ -488,7 +488,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Output either a single or a group of lines
-	 * 
+	 *
 	 * @param geo
 	 */
 	private void outputLines(Geometry geo) {
@@ -663,7 +663,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Output the z point range as well as the z points. If the geometry isn't a
 	 * 3d geometry then output zero z values.
-	 * 
+	 *
 	 * @param points
 	 * @throws IOException
 	 */
@@ -701,7 +701,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Output point count and indices to each part in the point vector.
-	 * 
+	 *
 	 * @param geom
 	 * @throws IOException
 	 *             if an error occurs
@@ -717,7 +717,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Count the total points for a polygon
-	 * 
+	 *
 	 * @param geom
 	 * @return
 	 */
@@ -730,7 +730,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Output each poly point's XY paying attention to the need to close the
 	 * figure.
-	 * 
+	 *
 	 * @param geom
 	 * @throws IOException
 	 *             if an error occurs
@@ -754,7 +754,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output each poly point's Z paying attention to the need to close the
 	 * figure. If the last and first point are not the same then we add the
 	 * first point into the list again.
-	 * 
+	 *
 	 * @param geom
 	 * @throws IOException
 	 *             if an error occurs
@@ -810,7 +810,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Output point count for the given geometry
-	 * 
+	 *
 	 * @param geom
 	 * @throws IOException
 	 *             if an error occurs
@@ -821,7 +821,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Output part count for the given geometry
-	 * 
+	 *
 	 * @param geom
 	 * @throws IOException
 	 *             if an error occurs
@@ -832,7 +832,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Output points
-	 * 
+	 *
 	 * @param points
 	 *            the points
 	 * @throws IOException
@@ -841,9 +841,9 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	private void putPointsXY(Collection<Point> points) throws IOException {
 		if (points != null && !points.isEmpty()) {
 			for (Point p : points) {
-				writeDouble(obuf, p.getCenter().getLongitude().inDegrees(),
+        writeDouble(obuf, p.getCenter().getLongitudeAsDegrees(),
 						ByteOrder.LITTLE_ENDIAN);
-				writeDouble(obuf, p.getCenter().getLatitude().inDegrees(),
+        writeDouble(obuf, p.getCenter().getLatitudeAsDegrees(),
 						ByteOrder.LITTLE_ENDIAN);
 			}
 		}
@@ -862,7 +862,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * </ul>
 	 * <em>Note, we do not use the M formats at all. They are included
 	 * here for completeness' sake.</em>
-	 * 
+	 *
 	 * @param geom
 	 *            the geo object
 	 * @return the count in words (16 bit words) not including the record header
@@ -891,7 +891,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		nPoints = geom.getNumPoints();
 		int bytesPerPnt = 16;
 		int bytesPerPart = 0;
-		
+
 		switch (type) {
 		case 0: // Null shape
 			base = 4;
@@ -944,7 +944,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * private helper method to write out X-Y bounding box
-	 * 
+	 *
 	 * @param
 	 * @param bbox
 	 * @throws IOException
@@ -971,7 +971,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Write the shapefile header, containing fileLen, shapeType and Bounding
 	 * Box
-	 * 
+	 *
 	 * @param channel
 	 * @param fileLen
 	 * @param shapeType
@@ -1019,21 +1019,21 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 	/**
 	 * Write a single X/Y point
-	 * 
+	 *
 	 * @param pt
 	 * @throws IOException
 	 *             if an error occurs
 	 */
 	private void putPoint(Point pt) throws IOException {
 		Geodetic2DPoint gp = pt.asGeodetic2DPoint();
-		writeDouble(obuf, gp.getLongitude().inDegrees(),
+    writeDouble(obuf, gp.getLongitudeAsDegrees(),
 				ByteOrder.LITTLE_ENDIAN);
-		writeDouble(obuf, gp.getLatitude().inDegrees(), ByteOrder.LITTLE_ENDIAN);
+    writeDouble(obuf, gp.getLatitudeAsDegrees(), ByteOrder.LITTLE_ENDIAN);
 	}
 
 	/**
 	 * Put out the elevation value
-	 * 
+	 *
 	 * @param pt
 	 * @param writeM <code>true</code> if we should write the measure value
 	 * @throws IOException
@@ -1056,7 +1056,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Helper which sets the byte order and then writes the datum to the byte
 	 * buffer
-	 * 
+	 *
 	 * @param buffer
 	 * @param datum
 	 * @param order
@@ -1069,7 +1069,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Helper which sets the byte order and then writes the datum to the byte
 	 * buffer
-	 * 
+	 *
 	 * @param buffer
 	 * @param datum
 	 * @param order

@@ -18,7 +18,7 @@ import static junit.framework.Assert.assertTrue;
 /**
  * Test base geometry classes with geometry creation and various
  * implementations of the Geometry base class.
- * 
+ *
  * @author Jason Mathews, MITRE Corp.
  * Date: Jun 16, 2010 Time: 10:50:19 AM
  */
@@ -118,16 +118,16 @@ public class TestBaseGeometry extends TestGISBase {
         assertFalse(geo.is3D());
         // center: (1° 0' 0" E, 1° 0' 0" N)
         Geodetic2DPoint center = geo.getCenter();
-        assertEquals(1.0, center.getLatitude().inDegrees(), EPSILON);
-        assertEquals(1.0, center.getLongitude().inDegrees(), EPSILON);
+        assertEquals(1.0, center.getLatitudeAsDegrees(), EPSILON);
+        assertEquals(1.0, center.getLongitudeAsDegrees(), EPSILON);
 
         geo = new LinearRing(geo.getBoundingBox());
         assertEquals(1, geo.getNumParts());
         assertEquals(5, geo.getNumPoints());
         // center: (1° 0' 0" E, 1° 0' 0" N)
         center = geo.getCenter();
-        assertEquals(1.0, center.getLatitude().inDegrees(), EPSILON);
-        assertEquals(1.0, center.getLongitude().inDegrees(), EPSILON);
+        assertEquals(1.0, center.getLatitudeAsDegrees(), EPSILON);
+        assertEquals(1.0, center.getLongitudeAsDegrees(), EPSILON);
     }
 
     @Test
@@ -147,8 +147,8 @@ public class TestBaseGeometry extends TestGISBase {
         assertFalse(geo.is3D());
         Geodetic2DPoint cp = geo.getCenter();
         // center: (1° 0' 0" E, 1° 0' 0" N)
-        assertEquals(1.0, cp.getLatitude().inDegrees(), EPSILON);
-        assertEquals(1.0, cp.getLongitude().inDegrees(), EPSILON);
+        assertEquals(1.0, cp.getLatitudeAsDegrees(), EPSILON);
+        assertEquals(1.0, cp.getLongitudeAsDegrees(), EPSILON);
 
         // create new polygon with outer and inner ring
         pts = new ArrayList<Point>();
@@ -163,8 +163,8 @@ public class TestBaseGeometry extends TestGISBase {
         assertEquals(ring.getNumPoints() + ir.getNumPoints(), geo.getNumPoints());
         cp = geo.getCenter();
         // center: (1° 0' 0" E, 1° 0' 0" N)
-        assertEquals(1.0, cp.getLatitude().inDegrees(), EPSILON);
-        assertEquals(1.0, cp.getLongitude().inDegrees(), EPSILON);
+        assertEquals(1.0, cp.getLatitudeAsDegrees(), EPSILON);
+        assertEquals(1.0, cp.getLongitudeAsDegrees(), EPSILON);
     }
 
     /*
@@ -176,21 +176,21 @@ public class TestBaseGeometry extends TestGISBase {
                 new Latitude(lat, Angle.DEGREES));
         Point geo = new Point(pt);
         Geodetic2DPoint cp = geo.getCenter();
-        assertEquals(lat, cp.getLatitude().inDegrees(), EPSILON);
-        assertEquals(lon, cp.getLongitude().inDegrees(), EPSILON);
+        assertEquals(lat, cp.getLatitudeAsDegrees(), EPSILON);
+        assertEquals(lon, cp.getLongitudeAsDegrees(), EPSILON);
 
         // changing Geodetic2DPoint after constructing Point should not change internal state of Point
         // but Point is doing copy-by-reference so side effects such as this do exist.
         pt.setLongitude(new Longitude(lon + 1, Angle.DEGREES));
         pt.setLatitude(new Latitude(lat + 1, Angle.DEGREES));
 
-        assertEquals(lat, cp.getLatitude().inDegrees(), EPSILON); // fails
-        assertEquals(lon, cp.getLongitude().inDegrees(), EPSILON); // fails
-        
+        assertEquals(lat, cp.getLatitudeAsDegrees(), EPSILON); // fails
+        assertEquals(lon, cp.getLongitudeAsDegrees(), EPSILON); // fails
+
         // likewise if we add/remove points after bounding box is calculated then line/ring state
         // will not be consistent.
     }
-    */    
+    */
 
     @Test
     public void testGeometryBag() throws Exception {
@@ -209,8 +209,8 @@ public class TestBaseGeometry extends TestGISBase {
 
         // center = (1° 15' 0" E, 1° 15' 0" N)
         final Geodetic2DPoint cp = geo.getCenter();
-        assertEquals(1.25, cp.getLatitude().inDegrees(), EPSILON);
-        assertEquals(1.25, cp.getLongitude().inDegrees(), EPSILON);
+        assertEquals(1.25, cp.getLatitudeAsDegrees(), EPSILON);
+        assertEquals(1.25, cp.getLongitudeAsDegrees(), EPSILON);
     }
 
     @Test
@@ -243,8 +243,8 @@ public class TestBaseGeometry extends TestGISBase {
         // (0° 14' 24" E, 0° 14' 24" N) @ 0m
         final Geodetic2DPoint cp = geo.getCenter();
         System.out.println(cp);
-        assertEquals(0.24, cp.getLatitude().inDegrees(), EPSILON);
-        assertEquals(0.24, cp.getLongitude().inDegrees(), EPSILON);
+        assertEquals(0.24, cp.getLatitudeAsDegrees(), EPSILON);
+        assertEquals(0.24, cp.getLongitudeAsDegrees(), EPSILON);
 
         List<Point> points = geo.getPoints(); // all 20 points
         assertEquals(20, points.size());

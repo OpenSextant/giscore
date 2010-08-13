@@ -53,7 +53,7 @@ import org.apache.commons.io.IOUtils;
 
 /**
  * Test KMLInputStream and helper date parsing methods.
- * 
+ *
  * @author DRAND
  * @author Mathews
  */
@@ -88,7 +88,7 @@ public class TestKmlInputStream {
 
 	/**
 	 * Test calling close() multiple times does not throw an exception.
-     * 
+     *
      * @throws IOException  if an I/O error occurs
 	 */
 	@Test
@@ -168,7 +168,7 @@ public class TestKmlInputStream {
         for (int i = 0; i < timestamps.length; i += 2) {
             Date date = null;
             try {
-                date = KmlInputStream.parseDate(timestamps[i]);                
+                date = KmlInputStream.parseDate(timestamps[i]);
             } catch (ParseException e) {
                 Assert.fail("failed to parse " + timestamps[i]);
             }
@@ -178,9 +178,9 @@ public class TestKmlInputStream {
     }
 
 	/**
-	 * Test KmlInputStream.parseCoord() for all variations of valid and invalid coordinate strings. 
+	 * Test KmlInputStream.parseCoord() for all variations of valid and invalid coordinate strings.
 	 */
-	@Test public void testParseCoord() {		
+	@Test public void testParseCoord() {
 
 		Geodetic2DPoint[] points3d = {
 				makePoint(-81.9916466079043, 29.9420387052815, 0.0),
@@ -194,7 +194,7 @@ public class TestKmlInputStream {
 		// valid format: 2 points both with lon,lat,elev
 		checkCoordString("-81.9916466079043,29.9420387052815,0.0 -81.9980316162109,29.9407501220703,567.794982910156",
 				points3d);
-		
+
 	  	// valid format: 2 points both with lon,lat
 		checkCoordString("-81.9916466079043,29.9420387052815 -81.9980316162109,29.9407501220703",
 				points2d);
@@ -326,7 +326,7 @@ public class TestKmlInputStream {
 			else
 				for (Point point : list) {
 					Geodetic2DPoint pt = point.asGeodetic2DPoint();
-					System.out.format("\t%f %f %s%n", pt.getLongitude().inDegrees(), pt.getLatitude().inDegrees(),
+          System.out.format("\t%f %f %s%n", pt.getLongitudeAsDegrees(), pt.getLatitudeAsDegrees(),
 						point.is3D() ? Double.toString(((Geodetic3DPoint)pt).getElevation()) : "");
 				}
 			System.out.println("expected list:");
@@ -347,17 +347,17 @@ public class TestKmlInputStream {
 			if (pt.getClass() != expPt.getClass() || !pt.equals(expPt)) {
 				System.out.println("Coord = "+ coord);
 				//if (pt.getClass() != expPt.getClass()) System.out.format("%s : %s%n", pt.getClass().getName(), expPt.getClass().getName());
-				System.out.format("actual coord: %f %f %s%n", pt.getLongitude().inDegrees(), pt.getLatitude().inDegrees(),
+        System.out.format("actual coord: %f %f %s%n", pt.getLongitudeAsDegrees(), pt.getLatitudeAsDegrees(),
 						point.is3D() ? Double.toString(((Geodetic3DPoint)pt).getElevation()) : "");
-				System.out.format("expected coord: %f %f %s%n", expPt.getLongitude().inDegrees(), expPt.getLatitude().inDegrees(),
+        System.out.format("expected coord: %f %f %s%n", expPt.getLongitudeAsDegrees(), expPt.getLatitudeAsDegrees(),
 							expPt instanceof Geodetic3DPoint ? Double.toString(((Geodetic3DPoint)expPt).getElevation()) : "");
-				Assert.fail("Coordinate " + i + " does not match");				
+				Assert.fail("Coordinate " + i + " does not match");
 			}
 		}
 	}
 
 	private static void printPoint(Geodetic2DPoint pt) {
-		System.out.format("\t%f %f %s%n", pt.getLongitude().inDegrees(), pt.getLatitude().inDegrees(),
+    System.out.format("\t%f %f %s%n", pt.getLongitudeAsDegrees(), pt.getLatitudeAsDegrees(),
 							pt instanceof Geodetic3DPoint ? Double.toString(((Geodetic3DPoint)pt).getElevation()) : "");
 	}
 
@@ -382,4 +382,3 @@ public class TestKmlInputStream {
 	}
 
 }
-

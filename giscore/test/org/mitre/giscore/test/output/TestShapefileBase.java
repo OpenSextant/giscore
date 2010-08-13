@@ -49,9 +49,9 @@ import org.mitre.itf.geodesy.Latitude;
 import org.mitre.itf.geodesy.Longitude;
 
 /**
- * 
+ *
  * @author DRAND
- * 
+ *
  */
 public abstract class TestShapefileBase extends TestGISBase {
 	protected static final File shapeOutputDir = new File("testOutput/shptest");
@@ -108,8 +108,8 @@ public abstract class TestShapefileBase extends TestGISBase {
 							/*
 							 * for (Point pt : ring) {
 							 * System.out.format("%f %f%n",
-							 * pt.getCenter().getLongitude().inDegrees(),
-							 * pt.getCenter().getLatitude().inDegrees()); }
+               * pt.getCenter().getLongitudeAsDegrees(),
+               * pt.getCenter().getLatitudeAsDegrees()); }
 							 */
 							if (!ring.clockwise())
 								System.out
@@ -132,8 +132,8 @@ public abstract class TestShapefileBase extends TestGISBase {
 
 	protected Point getRingPointZ(Point cp, int n, int total, double size,
 			double min) {
-		double lat = cp.getCenter().getLatitude().inDegrees();
-		double lon = cp.getCenter().getLongitude().inDegrees();
+    double lat = cp.getCenter().getLatitudeAsDegrees();
+    double lon = cp.getCenter().getLongitudeAsDegrees();
 		double theta = Math.toRadians(360.0 * n / total);
 		double magnitude = min + RandomUtils.nextDouble() * size;
 		double dy = magnitude * Math.sin(theta);

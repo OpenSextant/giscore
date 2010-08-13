@@ -29,22 +29,22 @@ import org.mitre.itf.geodesy.Latitude;
 import org.mitre.itf.geodesy.Longitude;
 
 /**
- * Convert a string to a geodetic point. The point must be a 
- * pair of floating point numbers. The first is taken to be 
+ * Convert a string to a geodetic point. The point must be a
+ * pair of floating point numbers. The first is taken to be
  * the latitude and the second is the longitude.
  * <p>
  * Example: -24.33/+123.11
- * 
+ *
  * @author DRAND
  */
 public class PointPropertyEditor extends PropertyEditorSupport {
 	/**
-	 * Pattern that matches a decimal lat/lon using +/- for the 
+	 * Pattern that matches a decimal lat/lon using +/- for the
 	 * sign
 	 */
-	protected static final Pattern coordpattern = 
+	protected static final Pattern coordpattern =
 		Pattern.compile("\\s*([+-]?\\d{0,2}\\.\\d*)\\s*[ ,/]\\s*([+-]?[01]?\\d{0,2}\\.\\d*)\\s*");
-	
+
 	/* (non-Javadoc)
 	 * @see java.beans.PropertyEditor#getAsText()
 	 */
@@ -55,9 +55,9 @@ public class PointPropertyEditor extends PropertyEditorSupport {
 		else {
 			Point point = (Point) getValue();
 			StringBuilder sb = new StringBuilder(8);
-			sb.append(point.getCenter().getLatitude().inDegrees());
+      sb.append(point.getCenter().getLatitudeAsDegrees());
 			sb.append("/");
-			sb.append(point.getCenter().getLongitude().inDegrees());
+      sb.append(point.getCenter().getLongitudeAsDegrees());
 			return sb.toString();
 		}
 	}
