@@ -178,14 +178,14 @@ public class Style extends StyleSelector {
 	 *            heading (i.e. icon rotation) in degrees. Default=0 (North).
 	 *            Values range from 0 to 360 degrees, nullable. 
 	 * @param url
-	 *            the url of the icon
+	 *            the url of the icon, nullable.
 	 */
 	public void setIconStyle(Color color, Double scale, Double heading, String url) {
-		hasIconStyle = true;
 		iconColor = color;
 		iconScale = scale == null || scale < 0.0 ? null : scale;
 		iconHeading = heading == null || Math.abs(heading - 360) < 0.1 ? null : heading; // default heading = 0.0
-		iconUrl = StringUtils.isBlank(url) ? null : url;
+		iconUrl = url == null ? null : url.trim();
+        hasIconStyle = iconColor != null | iconScale != null || iconHeading != null || iconUrl != null;
 	}
 
 	/**
@@ -217,7 +217,11 @@ public class Style extends StyleSelector {
 	}
 
 	/**
-	 * @return the url of the icon. If null then href was either missing or an empty string.
+	 * @return the url of the icon.
+     *      If null then IconStyle did not have Icon element. If value is
+     *      non-null then IconStyle should have an associated Icon element
+     *      present. If icon url is empty string then this indicates the href
+     *      value was either omitted, empty element or an empty string.
 	 */
     @Nullable
 	public String getIconUrl() {
@@ -234,9 +238,9 @@ public class Style extends StyleSelector {
 	 *            Note non-positive width suppresses display of lines in Google Earth
 	 */
 	public void setLineStyle(Color color, Double width) {
-		hasLineStyle = true;
 		lineColor = color;
 		lineWidth = width == null ? null : (width <= 0.0) ? 0.0 : width;
+        hasLineStyle = lineColor != null || lineWidth != null;
 	}
 
 	/**
@@ -258,9 +262,9 @@ public class Style extends StyleSelector {
 	}
 
 	public void setListStyle(Color listBgColor, ListItemType listItemType) {
-		hasListStyle = listBgColor != null || listItemType != null;
 		this.listBgColor = listBgColor;
 		this.listItemType = listItemType;
+        hasListStyle = listBgColor != null || listItemType != null;
 	}
 
     @Nullable
