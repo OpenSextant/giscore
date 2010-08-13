@@ -39,6 +39,21 @@ public class StyleMap extends StyleSelector {
 	
 	private final Map<String, String> mappings = new HashMap<String, String>();
 
+    /**
+     * Default Ctor
+     */
+    public StyleMap() {
+        super();
+    }
+
+    /**
+     * Constructor StyleMap with id
+     * @param id
+     */
+    public StyleMap(String id) {
+        setId(id);
+    }
+
 	public void put(String key, String url) {
 		if (key == null || key.trim().length() == 0) {
 			throw new IllegalArgumentException(
