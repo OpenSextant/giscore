@@ -91,10 +91,18 @@ public class Style extends StyleSelector {
 	private Boolean polyoutline;
 
 	/**
-	 * Ctor
+	 * Default Ctor
 	 */
 	public Style() {
-        super();
+        // default constructor only calls super()
+	}
+
+    /**
+	 * Constructor Style with id
+     * @param id
+     */
+	public Style(String id) {
+        setId(id);
 	}
 
 	/**
