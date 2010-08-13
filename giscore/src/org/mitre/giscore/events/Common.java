@@ -23,8 +23,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
+import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Common abstract superclass for features of various kinds.
@@ -35,7 +39,9 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
 public abstract class Common extends Row {
 	
 	private static final long serialVersionUID = 1L;
-	
+
+    private static final Logger log = LoggerFactory.getLogger(Common.class);
+
 	protected String name;
 	protected String description;
 	private Boolean visibility;
@@ -88,6 +94,12 @@ public abstract class Common extends Row {
 	 *            the styleUrl to set
 	 */
 	public void setStyleUrl(String styleUrl) {
+        styleUrl = StringUtils.trimToNull(styleUrl);
+        // test if url relative identifier not starting with '#' then prepend '#' to url
+        if (styleUrl != null && !styleUrl.startsWith("#") && UrlRef.isIdentifier(styleUrl)) {
+            log.debug("fix StyleUrl identifier as local reference");
+            styleUrl = "#" + styleUrl;
+        }
 		this.styleUrl = styleUrl;
 	}
 
