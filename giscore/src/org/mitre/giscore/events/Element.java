@@ -39,7 +39,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
     
 	private static final long serialVersionUID = 1L;
 
-    private Namespace namespace;
+    private transient Namespace namespace;
 
 	/**
 	 * The name of the element
