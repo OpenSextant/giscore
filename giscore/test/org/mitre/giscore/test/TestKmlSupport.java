@@ -43,7 +43,8 @@ import org.apache.commons.io.IOUtils;
  * @author DRAND
  *
  */
-public class TestKmlSupport extends TestGISBase {	
+public class TestKmlSupport extends TestGISBase {
+
 	/**
 	 * Base path to test directories
 	 */
@@ -242,7 +243,9 @@ public class TestKmlSupport extends TestGISBase {
             throw e;
         } finally {
             IOUtils.closeQuietly(fs);
-			if (temp != null && temp.exists()) temp.delete();
+			if (autoDelete && temp != null && temp.exists()) {
+                temp.delete();
+            }
         }
 	}
 
