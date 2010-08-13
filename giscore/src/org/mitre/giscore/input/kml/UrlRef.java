@@ -343,4 +343,33 @@ public class UrlRef {
         return s;
     }
 
+    /**
+     * Test for relative identifier. True if string matches the set
+     * of strings for NCName production in [Namespaces in XML].
+     * Useful to test if target is reference to identifier in KML document
+     * (e.g. StyleMap referencing to local identifer of a Style).
+     * @param str  the String to check, may be null
+     * @return true if string matches a identifier reference
+     */
+    public static boolean isIdentifier(String str) {
+        /*
+         * check if string matches NCName production
+         *  NCName ::=  (Letter | '_') (NCNameChar)*  -- An XML Name, minus the ":"
+         *    NCNameChar ::=  Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender
+         */
+        if (str == null) {
+            return false;
+        }
+        int sz = str.length();
+        if (sz == 0) return false;
+        char c = str.charAt(0);
+        if (c != '_' && !Character.isLetter(c)) return false;
+        for (int i = 1; i < sz; i++) {
+            c = str.charAt(i);
+            if (c != '.' && c != '-' && c != '_' && !Character.isLetterOrDigit(c)) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

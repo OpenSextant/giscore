@@ -22,7 +22,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.IStreamVisitor;
+import org.mitre.giscore.input.kml.UrlRef;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A <code>StyleMap></code> maps between two different Styles.
@@ -36,7 +40,9 @@ import org.mitre.giscore.IStreamVisitor;
 public class StyleMap extends StyleSelector {
 
     private static final long serialVersionUID = 1L;
-	
+
+    private static final Logger log = LoggerFactory.getLogger(StyleMap.class);
+
 	private final Map<String, String> mappings = new HashMap<String, String>();
 
     /**
@@ -54,19 +60,32 @@ public class StyleMap extends StyleSelector {
         setId(id);
     }
 
+    /**
+     *
+     * @param key
+     * @param url
+     * throws IllegalArgumentException if key or url is null or empty string 
+     */
 	public void put(String key, String url) {
-		if (key == null || key.trim().length() == 0) {
+        key = StringUtils.trimToNull(key);
+		if (key == null) {
 			throw new IllegalArgumentException(
 					"key should never be null or empty");
 		}
-		if (url == null || url.trim().length() == 0) {
+        url = StringUtils.trimToNull(url);
+		if (url == null) {
 			throw new IllegalArgumentException(
 					"url should never be null or empty");
 		}
+        // test if url relative identifier not starting with '#' then prepend '#' to url
+        if (!url.startsWith("#") && UrlRef.isIdentifier(url)) {
+            log.debug("fix url identifier as local reference");
+            url = "#" + url;
+        }
 		mappings.put(key, url);
 	}
-	
-	public String get(String key) {
+
+    public String get(String key) {
 		return mappings.get(key);
 	}
 
