@@ -1164,9 +1164,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	private void handleIconStyle(Style style, QName name) throws XMLStreamException {
 		String url = null;
-		double scale = 1.0;		// default value
-		double heading = 0.0;
-		Color color = Color.white;	// default="ffffffff"
+		Double scale = null; //1.0;		// default value
+		Double heading = null; // 0.0;
+		Color color = null; // Color.white;	// default="ffffffff"
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (foundEndTag(e, name)) {
@@ -1200,12 +1200,15 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				} else if (localPart.equals(COLOR)) {
 					String value = stream.getElementText();
 					color = parseColor(value);
-					if (color == null) {
+					//if (color == null) {
 						//log.warn("Invalid IconStyle color: " + value);
-						color = Color.white; // use default="ffffffff"
-					}
+						//color = Color.white; // use default="ffffffff"
+					//}
 				} else if (localPart.equals(ICON)) {
 					url = parseIconHref(qname);
+                    // if have Icon element but no href then use empty to indicate that Icon
+                    // was present but don't have an associated href as handled in KmlOutputStream
+                    if (url == null) url = "";
 				}
 			}
 		}

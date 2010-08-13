@@ -16,6 +16,7 @@
  */
 package org.mitre.giscore.input.kml;
 
+import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.events.*;
 import org.slf4j.Logger;
@@ -185,7 +186,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 				String href = style.getIconUrl();
                 // rewrite relative URLs with UrlRef to include context with parent source
                 // note: could also use URI.isAbsolute() to test rel vs abs URL
-				if (href != null && !absUrlPattern.matcher(href).lookingAt()) {
+				if (StringUtils.isNotBlank(href) && !absUrlPattern.matcher(href).lookingAt()) {
 					//System.out.println("XXX: Relative iconStyle href: " + href);
 					URI uri = getLink(parent, href);
 					if (uri != null) {

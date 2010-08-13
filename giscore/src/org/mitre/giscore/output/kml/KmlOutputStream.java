@@ -1238,8 +1238,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     private void handlePolyStyleElement(Style style) throws XMLStreamException {
         writer.writeStartElement(POLY_STYLE);
         handleColor(COLOR, style.getPolyColor());
-        handleSimpleElement(FILL, style.getPolyfill() ? "1" : "0"); // default 1
-        handleSimpleElement(OUTLINE, style.getPolyoutline() ? "1" : "0"); // default 1
+        if (style.getPolyfill() != null)
+            handleSimpleElement(FILL, style.getPolyfill() ? "1" : "0"); // default 1
+        if (style.getPolyoutline() != null)
+            handleSimpleElement(OUTLINE, style.getPolyoutline() ? "1" : "0"); // default 1
         writer.writeEndElement();
     }
 
@@ -1310,11 +1312,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             handleSimpleElement(HEADING, formatDouble(heading));
         String iconUrl = style.getIconUrl();
         if (iconUrl != null) {
-            writer.writeStartElement(ICON);
-            handleSimpleElement(HREF, iconUrl);
-            writer.writeEndElement();
-        } else {
-            writer.writeEmptyElement(ICON);
+            // if want empty Icon tag then include a blank href
+            if (iconUrl.length() == 0)
+                writer.writeEmptyElement(ICON);
+            else {
+                writer.writeStartElement(ICON);
+                handleSimpleElement(HREF, iconUrl);
+                writer.writeEndElement();
+            }
         }
         /*
         // hotSpot optional. skip it
