@@ -1403,14 +1403,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 writer.writeEmptyElement(MODEL);
             else {
                 writer.writeStartElement(MODEL);
-                // if altitudeMode is invalid then it will be omitted (handles gx:AltitudeMode extensions)
+                // if altitudeMode is invalid/null then it will be omitted (handles gx:AltitudeMode extensions)
                 handleAltitudeMode(model.getAltitudeMode());
                 if (point != null) {
                     writer.writeStartElement(LOCATION);
-                    handleSimpleElement(LONGITUDE, point.getLongitudeAsDegrees());
-                    handleSimpleElement(LATITUDE, point.getLatitudeAsDegrees());
+                    handleSimpleElement(LONGITUDE, formatDouble(point.getLongitudeAsDegrees()));
+                    handleSimpleElement(LATITUDE, formatDouble(point.getLatitudeAsDegrees()));
                     if (model.is3D())
-                        handleSimpleElement(ALTITUDE, ((Geodetic3DPoint)point).getElevation());
+                        handleSimpleElement(ALTITUDE, formatDouble(((Geodetic3DPoint)point).getElevation()));
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();

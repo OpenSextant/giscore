@@ -281,7 +281,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * The esri elements are usually marked with a specific type. This method
 	 * handles adding that attribute
 	 * @param type the type, never <code>null</code> or empty.
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void writeEsriType(String type) throws XMLStreamException {
 		if (type == null || type.trim().length() == 0) {
@@ -357,7 +357,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * records from the data set.
 	 * 
 	 * @param featureKey
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void writeDataSet(FeatureKey featureKey)
 			throws XMLStreamException {
@@ -421,7 +421,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * @param geometryField
 	 *            the field that holds the geometry
 	 * @param index
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void writeRecord(FeatureKey featureKey, Feature feature,
 			SimpleField geometryField, int index) throws XMLStreamException {
@@ -462,7 +462,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 *            the field, assumed not <code>null</code>
 	 * @param datum
 	 *            the datum
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void writeValue(SimpleField field, Object datum)
 			throws XMLStreamException {
@@ -648,7 +648,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	/**
 	 * Write an array of points
 	 * @param points the points, assumed not <code>null</code>
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void writePointArray(Collection<Point> points) throws XMLStreamException {
 		writer.writeStartElement(POINT_ARRAY);
@@ -662,7 +662,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * @param tag the name of the containing element, if <code>null</code>
 	 * skip the containing element
 	 * @param ring the ring, assumed not <code>null</code>
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void writeRing(String tag, LinearRing ring) throws XMLStreamException {
 		if (tag != null) writer.writeStartElement(tag);
@@ -694,10 +694,10 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * @throws XMLStreamException
 	 */
 	private void writePoint(Point point) throws XMLStreamException {
-		handleSimpleElement(X, LOC.format(point.getCenter().getLongitude()
-				.inDegrees()));
-		handleSimpleElement(Y, LOC.format(point.getCenter().getLatitude()
-				.inDegrees()));
+		handleSimpleElement(X, LOC.format(
+                point.getCenter().getLongitudeAsDegrees()));
+		handleSimpleElement(Y, LOC.format(
+                point.getCenter().getLatitudeAsDegrees()));
 	}
 
 	/**
@@ -705,8 +705,8 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * 
 	 * @param featureKey
 	 * @return the shape field name if present, <code>null</code> if there's
-	 * no geometry
-	 * @throws XMLStreamException
+	 *      no geometry
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private String writeFields(FeatureKey featureKey)
 			throws XMLStreamException {
@@ -726,8 +726,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		if (geo_field == null && featureKey.getGeoclass() != null) {
 			SimpleField field = shape;
 			geo_field = shape.getName();
-			writeField(field, geoclass);
-			
+			writeField(field, geoclass);			
 		}
 		if (featureKey.getGeoclass() != null) {
 			if (geoClassNeedsArea(featureKey.getGeoclass()))
@@ -763,7 +762,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * @param field
 	 *            the schema field
 	 * @param geoclass
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void writeField(SimpleField field,
 			Class<? extends Geometry> geoclass) throws XMLStreamException {
@@ -801,8 +800,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			handleSimpleElement(ALIAS_NAME, field.getAliasName());
 		}
 		if (field.getModelName() != null) {
-			handleSimpleElement(MODEL_NAME, field.getModelName());
-			
+			handleSimpleElement(MODEL_NAME, field.getModelName());			
 		}
 		writer.writeEndElement();
 	}
@@ -811,7 +809,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * Write the given spatial reference
 	 * @param wkt
 	 * @param wkid
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void writeSpatialReference(String wkt, int wkid) throws XMLStreamException {
 		writer.writeStartElement(SPATIAL_REFERENCE);
@@ -906,7 +904,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * 
 	 * @param key
 	 * @param datasetname
-	 * @throws XMLStreamException 
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void writeDataSetDef(FeatureKey key, String datasetname) throws XMLStreamException {
 		if (key.getGeoclass() == null) {
@@ -982,7 +980,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * @param ascending
 	 * @param unique
 	 * @param key 
-	 * @throws XMLStreamException 
+     * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void writeIndex(SimpleField field, boolean ascending, boolean unique, FeatureKey key)
 	throws XMLStreamException {

@@ -347,7 +347,8 @@ public class UrlRef {
      * Test for relative identifier. True if string matches the set
      * of strings for NCName production in [Namespaces in XML].
      * Useful to test if target is reference to identifier in KML document
-     * (e.g. StyleMap referencing to local identifer of a Style).
+     * (e.g. StyleMap referencing local identifier of a Style).
+     * 
      * @param str  the String to check, may be null
      * @return true if string matches a identifier reference
      */
