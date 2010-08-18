@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -58,6 +60,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiLinearRings.class);
 
+    @NonNull
     private List<LinearRing> ringList;
 
     /**
@@ -98,6 +101,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
      *
      * @return Iterator over Line objects.
      */
+    @NonNull
     public Iterator<LinearRing> iterator() {
         return Collections.unmodifiableList(ringList).iterator();
     }
@@ -109,6 +113,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 	 *
 	 * @return Collection of the {@code LinearRing} objects.
 	 */
+    @NonNull
 	public Collection<LinearRing> getLinearRings() {
 		return Collections.unmodifiableList(ringList);
 	}
@@ -190,8 +195,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
     
     public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
-    }
-    
+    }    
 
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
@@ -220,6 +224,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 	}
 	
 	@Override
+    @Nullable
 	public Geometry getPart(int i) {
 		return ringList != null ? ringList.get(i) : null;
 	}
@@ -236,6 +241,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 	}
 
 	@Override
+    @NonNull
 	public List<Point> getPoints() {
 		List<Point> pts = new ArrayList<Point>();
 		if (ringList != null) {

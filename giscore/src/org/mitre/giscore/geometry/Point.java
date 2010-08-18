@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -131,6 +132,8 @@ public class Point extends GeometryBase {
 	 * 
 	 * @return Geodetic2DPoint at the center of this Geometry object
 	 */
+    @Override
+    @NonNull
 	public Geodetic2DPoint getCenter() {
 		// for point feature just return the point
 		return pt;
@@ -151,6 +154,7 @@ public class Point extends GeometryBase {
 	 * 
 	 * @return the Geodetic2DPoint object that defines this Point.
 	 */
+    @NonNull
 	public Geodetic2DPoint asGeodetic2DPoint() {
 		return pt;
 	}
@@ -260,6 +264,7 @@ public class Point extends GeometryBase {
 	}
 
 	@Override
+    @NonNull
 	public List<Point> getPoints() {
 		return Collections.singletonList(new Point(pt));
 	}

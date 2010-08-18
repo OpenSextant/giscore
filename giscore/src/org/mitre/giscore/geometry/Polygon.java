@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -57,7 +58,10 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(Polygon.class);
 
+    @NonNull    
     private LinearRing outerRing;
+
+    @NonNull
     private List<LinearRing> ringList;
 
     /**
@@ -133,6 +137,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
      *
      * @return Iterator over LinearRing objects.
      */
+    @NonNull
     public Iterator<LinearRing> iterator() {
         return Collections.unmodifiableList(ringList).iterator();
     }
@@ -144,6 +149,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 	 *
 	 * @return Collection of the {@code LinearRing} objects.
 	 */
+    @NonNull
 	public List<LinearRing> getLinearRings() {
 		return Collections.unmodifiableList(ringList);
 	}
@@ -228,6 +234,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
      * 
      * @return outer ring.  This value cannot be null. 
      */
+    @NonNull
     public LinearRing getOuterRing() {
         return outerRing;
     }
@@ -277,6 +284,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 	}
 	
 	@Override
+    @NonNull
 	public Geometry getPart(int i) {
 		if (i < 0)
 			throw new IllegalArgumentException("i must be non-negative");
@@ -299,6 +307,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 	}
 
 	@Override
+    @NonNull
 	public List<Point> getPoints() {
 		List<Point> rval = new ArrayList<Point>();
 		if (outerRing != null) {
@@ -312,7 +321,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 		if (ringList != null) {
 			for(LinearRing ring : ringList) {
 				List<Point> pts = ring.getPoints();
-				if (ring.clockwise() == true) {
+				if (ring.clockwise()) {
 					// Points are backward, reverse
 					Collections.reverse(pts);
 				}

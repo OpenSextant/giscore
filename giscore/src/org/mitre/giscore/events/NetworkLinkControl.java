@@ -1,5 +1,6 @@
 package org.mitre.giscore.events;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -62,6 +63,7 @@ public class NetworkLinkControl implements IGISObject {
         // empty constructor
 	}
 
+    @Nullable
 	public Double getMinRefreshPeriod() {
 		return minRefreshPeriod;
 	}
@@ -70,6 +72,7 @@ public class NetworkLinkControl implements IGISObject {
 		this.minRefreshPeriod = minRefreshPeriod;
 	}
 
+    @Nullable
 	public Double getMaxSessionLength() {
 		return maxSessionLength;
 	}
@@ -78,6 +81,7 @@ public class NetworkLinkControl implements IGISObject {
 		this.maxSessionLength = maxSessionLength;
 	}
 
+    @Nullable
 	public String getCookie() {
 		return cookie;
 	}
@@ -86,6 +90,7 @@ public class NetworkLinkControl implements IGISObject {
 		this.cookie = cookie;
 	}
 
+    @Nullable
 	public String getMessage() {
 		return message;
 	}
@@ -94,6 +99,7 @@ public class NetworkLinkControl implements IGISObject {
 		this.message = message;
 	}
 
+    @Nullable
 	public String getLinkName() {
 		return linkName;
 	}
@@ -102,6 +108,7 @@ public class NetworkLinkControl implements IGISObject {
 		this.linkName = linkName;
 	}
 
+    @Nullable
 	public String getLinkDescription() {
 		return linkDescription;
 	}
@@ -110,6 +117,7 @@ public class NetworkLinkControl implements IGISObject {
 		this.linkDescription = linkDescription;
 	}
 
+    @Nullable
 	public String getLinkSnippet() {
 		return linkSnippet;
 	}
@@ -118,6 +126,7 @@ public class NetworkLinkControl implements IGISObject {
 		this.linkSnippet = linkSnippet;
 	}
 
+    @Nullable
 	public Date getExpires() {
 		// Note: this exposes internal representation by returning reference to mutable object
 		return expires;
@@ -127,6 +136,7 @@ public class NetworkLinkControl implements IGISObject {
         this.expires = expires == null ? null : (Date)expires.clone();
 	}
 
+    @Nullable
 	public String getTargetHref() {
 		return targetHref;
 	}
@@ -135,6 +145,7 @@ public class NetworkLinkControl implements IGISObject {
 		this.targetHref = targetHref;
 	}
 
+    @Nullable
 	public String getUpdateType() {
 		return updateType;
 	}
@@ -143,6 +154,7 @@ public class NetworkLinkControl implements IGISObject {
 		this.updateType = updateType;
 	}
 
+    @Nullable
 	public TaggedMap getViewGroup() {
 		return viewGroup;
 	}

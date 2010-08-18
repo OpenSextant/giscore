@@ -26,6 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -91,6 +93,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 	 * @return the schema, may be <code>null</code> if there's no reference to a
 	 *         schema
 	 */
+    @Nullable
 	public URI getSchema() {
 		return schema;
 	}
@@ -130,6 +133,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 	 *
      * @return a set view of the Extended data mappings contained in this row
      */
+    @NonNull
 	public Set<Map.Entry<SimpleField,Object>> getEntrySet() {
 		return extendedData.entrySet();
 	}
@@ -137,6 +141,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 	/**
 	 * @return the fields
 	 */
+    @NonNull
 	public Collection<SimpleField> getFields() {
 		return extendedData.keySet();
 	}
@@ -156,6 +161,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 	 * 
 	 * @return the value of the field, value can be @{code null} if defined as such.
 	 */
+    @Nullable
 	public Object getData(SimpleField field) {
 		if (field == null) {
 			throw new IllegalArgumentException(

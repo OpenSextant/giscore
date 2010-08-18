@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -47,7 +49,26 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiLine.class);
 
+    @NonNull
     private List<Line> lineList;
+
+    /**
+     * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
+     * to initialize the object instance otherwise object is invalid.
+     */
+    public MultiLine() {
+        //
+    }
+
+    /**
+     * The Constructor takes a list of points and initializes a Geometry Object for this MultiPoint.
+     *
+     * @param lines List of Line objects to use for the parts of this MultiLine.
+     * @throws IllegalArgumentException error if object is not valid.
+     */
+    public MultiLine(List<Line> lines) throws IllegalArgumentException {
+        init(lines);
+    }
 
     /**
      * This method returns an iterator for cycling through Lines in this MultiLine.
@@ -55,6 +76,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
      *
      * @return Iterator over Line objects.
      */
+    @NonNull
     public Iterator<Line> iterator() {
         return Collections.unmodifiableList(lineList).iterator();
     }
@@ -66,27 +88,10 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	 *
 	 * @return Collection of the {@code Line} objects.
 	 */
+    @NonNull
 	public Collection<Line> getLines() {
 		return Collections.unmodifiableList(lineList);
 	}
-
-	/**
-	 * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
-     * to initialize the object instance otherwise object is invalid.
-	 */
-	public MultiLine() {
-		// 
-	}
-	
-    /**
-     * The Constructor takes a list of points and initializes a Geometry Object for this MultiPoint.
-     *
-     * @param lines List of Line objects to use for the parts of this MultiLine.
-     * @throws IllegalArgumentException error if object is not valid.
-     */
-    public MultiLine(List<Line> lines) throws IllegalArgumentException {
-        init(lines);
-    }
 
     /**
      * Initialize
@@ -186,6 +191,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	}
 
 	@Override
+    @Nullable
 	public Geometry getPart(int i) {
 		return lineList != null ? lineList.get(i) : null;
 	}
@@ -202,6 +208,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	}
 
 	@Override
+    @NonNull
 	public List<Point> getPoints() {
 		List<Point> pts = new ArrayList<Point>();
 		if (lineList != null) {

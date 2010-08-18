@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.Namespace;
 import org.mitre.giscore.utils.IDataSerializable;
@@ -87,6 +89,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
      * Get namespace that this element belongs to,
 	 * may be <code>null</code>.
      */
+    @Nullable
     public Namespace getNamespace() {
         return namespace;
     }
@@ -103,6 +106,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	/**
 	 * @return the prefix
 	 */
+    @Nullable
 	public String getPrefix() {
 		return namespace != null ? namespace.getPrefix() : null;
 	}
@@ -112,6 +116,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
      *
      * @return Namespace URI of this <code>Element</code>
      */
+    @Nullable
     public String getNamespaceURI() {
         return namespace != null ? namespace.getURI() : null;
     }
@@ -140,6 +145,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	/**
 	 * @return the text
 	 */
+    @Nullable
 	public String getText() {
 		return text;
 	}
@@ -154,6 +160,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	/**
 	 * @return the attributes
 	 */
+    @NonNull
 	public Map<String, String> getAttributes() {
 		return attributes;
 	}
@@ -161,6 +168,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	/**
 	 * @return the children, never null
 	 */
+    @NonNull
 	public List<Element> getChildren() {
         assert children != null;
 		return children;

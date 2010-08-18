@@ -20,11 +20,11 @@ package org.mitre.giscore.events;
 
 import java.io.IOException;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.apache.commons.lang.StringUtils;
-
 
 /**
  * We've seen the start of a container. A container can hold zero or more features
@@ -58,6 +58,7 @@ public class ContainerStart extends Common {
 	/**
 	 * @return the type, never null
 	 */
+    @NonNull
 	public String getType() {
 		return type;
 	}

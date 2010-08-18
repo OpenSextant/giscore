@@ -20,6 +20,7 @@ package org.mitre.giscore.events;
 
 import java.io.IOException;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -80,6 +81,7 @@ public class NetworkLink extends Feature {
      *  viewRefreshMode, viewRefreshTime, viewBoundScale, viewFormat, httpQuery.
 	 * @return the link
 	 */
+    @Nullable
 	public TaggedMap getLink() {
 		return link;
 	}

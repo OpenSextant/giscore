@@ -22,6 +22,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -51,6 +53,8 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiPolygons.class);
+
+    @NonNull
     private List<Polygon> polygonList;
 
 	/**
@@ -113,6 +117,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	 *
 	 * @return Collection of the {@code Polygon} objects.
 	 */
+    @NonNull
 	public Collection<Polygon> getPolygons() {
 		return Collections.unmodifiableCollection(polygonList);
 	}	
@@ -193,6 +198,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	}
 	
 	@Override
+    @Nullable
 	public Geometry getPart(int i) {
 		return polygonList != null ? polygonList.get(i) : null;
 	}
@@ -209,6 +215,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	}
 	
 	@Override
+    @NonNull
 	public List<Point> getPoints() {
 		List<Point> rval = new ArrayList<Point>();
 		if (polygonList != null) {

@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -64,6 +66,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * 
 	 * @return Geodetic2DBounds object enclosing this Geometry object.
 	 */
+    @NonNull
 	public Geodetic2DBounds getBoundingBox() {
 		if (bbox == null) {
 			computeBoundingBox();
@@ -106,6 +109,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * 
 	 * @return <code>Geodetic2DPoint</code> or <code>Geodetic3DPoint</code> at the center of this Geometry object
 	 */
+    @Nullable
 	public Geodetic2DPoint getCenter() {
         final Geodetic2DBounds bounds = getBoundingBox();
         if (bounds == null)
@@ -276,6 +280,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * @param i the desired part, 0 origin
 	 * @return the referenced part
 	 */
+    @Nullable
 	public Geometry getPart(int i) {
 		if (i == 0)
 			return this;

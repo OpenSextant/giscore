@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -43,30 +45,10 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiPoint.class);
 
+    @NonNull
     private List<Point> pointList;
 
     /**
-     * This method returns an iterator for cycling through the geodetic Points in this MultiPoint.
-     * This class supports use of Java 'for each' syntax to cycle through the geodetic Points.
-     *
-     * @return Iterator over geodetic Point objects.
-     */
-    public Iterator<Point> iterator() {
-        return Collections.unmodifiableCollection(pointList).iterator();
-    }
-
-	/**
-	 * This method returns the {@code Point}s in this {@code MultiPoint}.
-	 * <br/>
-	 * The returned collection is unmodifiable.
-	 *
-	 * @return Collection of the {@code Point} objects.
-	 */
-	public List<Point> getPoints() {
-		return Collections.unmodifiableList(pointList);
-	}
-	
-	/**
 	 * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
      * to initialize the object instance otherwise object is invalid.
 	 */
@@ -85,6 +67,29 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
             throw new IllegalArgumentException("MultiPoint must contain at least 1 Point");
         init(pts);
     }
+
+    /**
+     * This method returns an iterator for cycling through the geodetic Points in this MultiPoint.
+     * This class supports use of Java 'for each' syntax to cycle through the geodetic Points.
+     *
+     * @return Iterator over geodetic Point objects.
+     */
+    @NonNull    
+    public Iterator<Point> iterator() {
+        return Collections.unmodifiableCollection(pointList).iterator();
+    }
+
+	/**
+	 * This method returns the {@code Point}s in this {@code MultiPoint}.
+	 * <br/>
+	 * The returned collection is unmodifiable.
+	 *
+	 * @return Collection of the {@code Point} objects.
+	 */
+    @NonNull    
+	public List<Point> getPoints() {
+		return Collections.unmodifiableList(pointList);
+	}
 
     /**
      * Initialize
@@ -176,6 +181,7 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	}
 	
 	@Override
+    @Nullable
 	public Geometry getPart(int i) {
 		return pointList != null ? pointList.get(i) : null;
 	}

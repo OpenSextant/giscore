@@ -23,6 +23,8 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -34,7 +36,8 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * @author DRAND
  */
 public class AtomAuthor implements IDataSerializable, Serializable {
-	private String name;
+
+    @NonNull private String name;
 	private URI uri;
 	private String email;
 
@@ -42,6 +45,7 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 	 * Empty ctor
 	 */
 	public AtomAuthor() {
+        // caller must set name otherwise object is not valid
 	}
 	
 	public AtomAuthor(String name, String email) {
@@ -56,11 +60,10 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 	/**
 	 * @return the name
 	 */
+    @NonNull
 	public String getName() {
 		return name;
 	}
-
-
 
 	/**
 	 * @param name the name to set
@@ -69,16 +72,13 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 		this.name = name;
 	}
 
-
-
 	/**
 	 * @return the uri
 	 */
+    @Nullable
 	public URI getUri() {
 		return uri;
 	}
-
-
 
 	/**
 	 * @param uri the uri to set
@@ -87,16 +87,13 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 		this.uri = uri;
 	}
 
-
-
 	/**
 	 * @return the email
 	 */
+    @Nullable
 	public String getEmail() {
 		return email;
 	}
-
-
 
 	/**
 	 * @param email the email to set
@@ -148,7 +145,6 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 		return true;
 	}
 
-	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
@@ -162,9 +158,8 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 				throw new IOException("Bad uri", e);
 			}
 		}
-		
 	}
-	@Override
+
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		out.writeString(name);
 		out.writeString(email);

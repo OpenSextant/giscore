@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.Namespace;
 import org.mitre.giscore.utils.IDataSerializable;
@@ -44,20 +45,21 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-	private String id;
-	private AtomLink selflink;
+	@NonNull private String id;
+	@NonNull private AtomLink selflink;
 	private List<AtomLink> relatedlinks = new ArrayList<AtomLink>();
 	private List<AtomAuthor> authors = new ArrayList<AtomAuthor>();
 	private List<Namespace> namespaces = new ArrayList<Namespace>();
 	private List<Element> elements = new ArrayList<Element>();
 	private String title;
-	private Date updated;
+	@NonNull private Date updated;
 	private String generator;
 
 	/**
 	 * Empty ctor
 	 */
 	public AtomHeader() {
+        // caller must set id, selflink, updated otherwise object is invalid
 	}
 	
 	/**
@@ -90,8 +92,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	}
 
 	public void accept(IStreamVisitor visitor) {
-		visitor.visit(this);
-		
+		visitor.visit(this);		
 	}
 	
 	/**

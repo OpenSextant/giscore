@@ -23,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -55,6 +57,7 @@ public abstract class Common extends Row {
 	/**
 	 * @return the name
 	 */
+    @Nullable
 	public String getName() {
 		return name;
 	}
@@ -70,6 +73,7 @@ public abstract class Common extends Row {
 	/**
 	 * @return the description
 	 */
+    @Nullable
 	public String getDescription() {
 		return description;
 	}
@@ -85,6 +89,7 @@ public abstract class Common extends Row {
 	/**
 	 * @return the styleUrl
 	 */
+    @Nullable
 	public String getStyleUrl() {
 		return styleUrl;
 	}
@@ -106,6 +111,7 @@ public abstract class Common extends Row {
 	/**
 	 * @return the startTime
 	 */
+    @Nullable
 	public Date getStartTime() {
         // note this exposes the internal representation by returning reference to mutable object
 		return startTime;
@@ -122,6 +128,7 @@ public abstract class Common extends Row {
 	/**
 	 * @return the endTime
 	 */
+    @Nullable
 	public Date getEndTime() {
         // note this exposes the internal representation by returning reference to mutable object
 		return endTime;
@@ -135,6 +142,7 @@ public abstract class Common extends Row {
         this.endTime = endTime == null ? null : (Date)endTime.clone();
 	}
 
+    @Nullable
 	public TaggedMap getViewGroup() {
 		return viewGroup;
 	}
@@ -147,6 +155,7 @@ public abstract class Common extends Row {
 		this.viewGroup = viewGroup;
 	}
 
+    @Nullable
 	public TaggedMap getRegion() {
 		return region;
 	}
@@ -159,6 +168,7 @@ public abstract class Common extends Row {
 		this.region = region;
 	}
 
+    @Nullable
 	public Boolean getVisibility() {
 		return visibility;
 	}
@@ -175,6 +185,7 @@ public abstract class Common extends Row {
 	/**
 	 * @return the elements, never null
 	 */
+    @NonNull
 	public List<Element> getElements() {
         assert elements != null;
 		return elements;

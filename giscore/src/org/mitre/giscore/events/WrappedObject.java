@@ -1,5 +1,6 @@
 package org.mitre.giscore.events;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -54,6 +55,7 @@ public class WrappedObject extends Comment implements IDataSerializable, Seriali
 	 * Get wrapped IGISObject instance that this element includes
 	 * @return wrapped object
 	 */
+    @Nullable
 	public IGISObject getObject() {
 		return wrappedObject;
 	}

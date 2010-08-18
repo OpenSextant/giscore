@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.mitre.giscore.IStreamVisitor;
@@ -100,6 +101,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 * @see org.mitre.giscore.geometry.Geometry#getCenter()
 	 */
 	@Override
+    @NonNull
 	public Geodetic2DPoint getCenter() {
 		double lat = 0.0;
 		double lon = 0.0;
@@ -130,6 +132,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	}
 
 	@Override
+    @NonNull
 	public Geometry getPart(int i) {
 		return geometries.get(i);
 	}
@@ -147,6 +150,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	}
 
 	@Override
+    @NonNull
 	public List<Point> getPoints() {
 		List<Point> rval = new ArrayList<Point>();
 		for(Geometry geo : geometries) {
@@ -225,6 +229,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#iterator()
 	 */
+    @NonNull
 	public Iterator<Geometry> iterator() {
 		return geometries.iterator();
 	}
@@ -260,6 +265,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#toArray()
 	 */
+    @NonNull
 	public Object[] toArray() {
 		return geometries.toArray();
 	}
@@ -267,6 +273,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#toArray(T[])
 	 */
+    @NonNull    
 	public <T> T[] toArray(T[] a) {
 		return geometries.toArray(a);
 	}

@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -82,6 +83,7 @@ public class Line extends GeometryBase implements Iterable<Point> {
      *
      * @return Iterator over Geodetic2DPoint point objects.
      */
+    @NonNull
     public Iterator<Point> iterator() {
         return  Collections.unmodifiableList(pointList).iterator();
     }
@@ -93,6 +95,7 @@ public class Line extends GeometryBase implements Iterable<Point> {
 	 *
 	 * @return Collection of the point objects.
 	 */
+    @NonNull
 	public List<Point> getPoints() {
 		return  Collections.unmodifiableList(pointList);
 	}

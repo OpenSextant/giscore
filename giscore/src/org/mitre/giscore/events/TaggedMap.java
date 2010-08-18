@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -44,14 +46,14 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
 	/**
 	 * The tag of the element being held
 	 */
-	private String tag;
+    @NonNull private String tag;
 	
 	/**
 	 * Empty ctor for IO only.  Constructor must be followed by call to {@code readData()}
      * to initialize the object instance otherwise object is invalid.
 	 */
 	public TaggedMap() {
-		// 
+		// must set tag otherwise object is invalid 
 	}
 	
 	/**
@@ -70,6 +72,7 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
 	/**
 	 * @return the tag
 	 */
+    @NonNull
 	public String getTag() {
 		return tag;
 	}
@@ -80,7 +83,7 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
      * @param   key            the key.
      * @param   defaultValue   a default value.
      * @return  the value in this Map with the specified key value
-     *          or defaultValue if not found.  Never <code>null</code>.
+     *          or defaultValue if not found.  Not <code>null</code> unless defaultValue is null.
      */
     public String get(String key, String defaultValue) {
         String value = get(key);
@@ -120,6 +123,7 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
      * @param key
      * @return Integer if property is found and a valid Integer value, otherwise null.
      */
+    @Nullable
     public Integer getIntegerValue(String key) {
         String val = get(key);
         if (val != null) {
@@ -137,6 +141,7 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
      * @param key
      * @return Double if property is found and a valid Double value, otherwise null.
      */
+    @Nullable
     public Double getDoubleValue(String key) {
         String val = get(key);
         if (val != null) {
