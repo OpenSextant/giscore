@@ -21,6 +21,7 @@ package org.mitre.giscore.events;
 import java.awt.Color;
 import java.io.IOException;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -47,6 +48,7 @@ public abstract class Overlay extends Feature {
      * 
 	 * @return the icon property map
 	 */
+    @Nullable
 	public TaggedMap getIcon() {
 		return icon;
 	}
@@ -65,6 +67,7 @@ public abstract class Overlay extends Feature {
 	/**
 	 * @return the color
 	 */
+    @Nullable
 	public Color getColor() {
 		return color;
 	}

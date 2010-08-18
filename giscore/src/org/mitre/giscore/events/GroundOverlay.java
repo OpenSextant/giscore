@@ -20,6 +20,7 @@ package org.mitre.giscore.events;
 
 import java.io.IOException;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -56,6 +57,7 @@ public class GroundOverlay extends Overlay {
 	/**
 	 * @return the north
 	 */
+    @Nullable
 	public Double getNorth() {
 		return north;
 	}
@@ -71,6 +73,7 @@ public class GroundOverlay extends Overlay {
 	/**
 	 * @return the south
 	 */
+    @Nullable
 	public Double getSouth() {
 		return south;
 	}
@@ -86,6 +89,7 @@ public class GroundOverlay extends Overlay {
 	/**
 	 * @return the east
 	 */
+    @Nullable
 	public Double getEast() {
 		return east;
 	}
@@ -101,6 +105,7 @@ public class GroundOverlay extends Overlay {
 	/**
 	 * @return the west
 	 */
+    @Nullable
 	public Double getWest() {
 		return west;
 	}
@@ -114,11 +119,33 @@ public class GroundOverlay extends Overlay {
 	}
 
     /**
-     * Determines appropriate bounding box for overlay if north, south, east, and west edges are defined. Bounds are 3d
-     * if altitude is defined and altitudeMode is absolute otherwise 2d is used.
-     *
-     * @return bounding box for image, null if missing either north, south, east, or west edge from LatLonBox.  
+     * Set overlay bounding box from Geodetic2DBounds. If bbox
+     * is 3d then sets overlay altitude to max elevation. 
+     * @param bbox
+     * @throws IllegalArgumentException if bbox is null  
      */
+    public void setBoundingBox(Geodetic2DBounds bbox) {
+        if (bbox == null)
+            throw new IllegalArgumentException("bbox is null");
+        north = bbox.getNorthLat().inDegrees();
+        south = bbox.getSouthLat().inDegrees();
+        east = bbox.getEastLon().inDegrees();
+        west = bbox.getWestLon().inDegrees();
+        if (bbox instanceof Geodetic3DBounds) {
+            altitude = ((Geodetic3DBounds)bbox).maxElev;
+            altitudeMode = AltitudeModeEnumType.absolute;
+        }
+    }
+
+    /**
+     * Determines appropriate bounding box for overlay if north, south, east,
+     * and west edges are defined. Bounds are 3d if altitude is defined and
+     * altitudeMode is absolute otherwise 2d is used.
+     *
+     * @return bounding box for image, null if missing either north, south, east,
+     *          or west edge from LatLonBox.
+     */
+    @Nullable
     public Geodetic2DBounds getBoundingBox() {
         Geodetic2DBounds bbox = null;
         if (north != null && south != null && east != null && west != null) {
@@ -142,6 +169,7 @@ public class GroundOverlay extends Overlay {
 	/**
 	 * @return the rotation
 	 */
+    @Nullable
 	public Double getRotation() {
 		return rotation;
 	}
@@ -166,6 +194,7 @@ public class GroundOverlay extends Overlay {
      * Get distance above the earth's surface, in meters.
 	 * @return the altitude
 	 */
+    @Nullable
 	public Double getAltitude() {
 		return altitude;
 	}
@@ -184,6 +213,7 @@ public class GroundOverlay extends Overlay {
      * then the default clampToGround is assumed and altitude can be ignored. 
 	 * @return the altitudeMode
 	 */
+    @Nullable
 	public AltitudeModeEnumType getAltitudeMode() {
 		return altitudeMode;
 	}
