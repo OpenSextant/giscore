@@ -59,30 +59,30 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	/**
 	 * The feature sorter
 	 */
-	private FeatureSorter sorter = new FeatureSorter();
+	private final FeatureSorter sorter = new FeatureSorter();
 
 	/**
 	 * The gis output stream, assigned in the ctor and never changed afterward.
 	 * This is never <code>null</code>.
 	 */
-	private IGISOutputStream stream;
+	private final IGISOutputStream stream;
 
 	/**
 	 * The name strategy to use for creating containers, assigned in the ctor
 	 * and never changed afterward. This is never <code>null</code>.
 	 */
-	private IContainerNameStrategy strategy;
+	private final IContainerNameStrategy strategy;
 
 	/**
 	 * Tracks the path - useful for naming collections
 	 */
-	private List<String> path = new ArrayList<String>();
+	private final List<String> path = new ArrayList<String>();
 
 	/**
 	 * The extractor that will determine the name of a category based on the
 	 * actual data in the row or row subclass.
 	 */
-	private ICategoryNameExtractor extractor;
+	private final ICategoryNameExtractor extractor;
 	
 	/**
 	 * Ctor
@@ -93,8 +93,7 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	public SortingOutputStream(IGISOutputStream innerstream,
 			IContainerNameStrategy strategy, ICategoryNameExtractor extractor) {
 		if (innerstream == null) {
-			throw new IllegalArgumentException(
-					"innerstream should never be null");
+			throw new IllegalArgumentException("innerstream should never be null");
 		}
 		if (strategy == null) {
 			throw new IllegalArgumentException("strategy should never be null");
@@ -137,7 +136,7 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 */
 	@Override
 	public void visit(ContainerEnd containerEnd) {
-		if (path.size() > 0) {
+		if (!path.isEmpty()) {
 			path.remove(path.size() - 1);
 		}
 	}
@@ -190,8 +189,8 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	@Override
 	public void visit(Row row) {
 		String category = extractor.extractCategoryName(row);
-		String fullpath = null;
-		if (path.size() > 0) {
+		String fullpath;
+		if (!path.isEmpty()) {
 			fullpath = StringUtils.join(path, '_') + "_" + category;
 		} else {
 			fullpath = category;
