@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.events.IGISObject;
@@ -66,7 +67,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * 
 	 * @return Geodetic2DBounds object enclosing this Geometry object.
 	 */
-    @NonNull
+    @Nullable
 	public Geodetic2DBounds getBoundingBox() {
 		if (bbox == null) {
 			computeBoundingBox();
@@ -109,7 +110,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * 
 	 * @return <code>Geodetic2DPoint</code> or <code>Geodetic3DPoint</code> at the center of this Geometry object
 	 */
-    @Nullable
+    @CheckForNull
 	public Geodetic2DPoint getCenter() {
         final Geodetic2DBounds bounds = getBoundingBox();
         if (bounds == null)
@@ -260,7 +261,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * 
 	 * @param out
 	 * @param angle
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	protected void writeAngle(SimpleObjectOutputStream out, Angle angle)
 			throws IOException {
@@ -272,15 +273,17 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	}
 
 	/**
-	 * @return the component points for the given geometry
+	 * @return the component points for the given geometry.
+     *  May return empty list but never null.
 	 */
+    @NonNull
 	public abstract List<Point> getPoints();
 	
 	/**
 	 * @param i the desired part, 0 origin
 	 * @return the referenced part
 	 */
-    @Nullable
+    @CheckForNull
 	public Geometry getPart(int i) {
 		if (i == 0)
 			return this;
