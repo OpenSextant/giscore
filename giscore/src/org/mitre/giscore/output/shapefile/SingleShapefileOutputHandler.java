@@ -406,37 +406,39 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				}
 				Feature feat = (Feature) ser;
 				Geometry geo = feat.getGeometry();
-				int shape = getEsriShapeType(geo);
-				if (shape != NULL_TYPE) {
-					// Make sure the type is the same as others in the feature
-					// list
-					if (shapeAll == NULL_TYPE) {
-						shapeAll = shape;
-						is3D = is3D(shape);
-					} else if (shape != shapeAll)
-						throw new IllegalArgumentException(
-								"Feature list must contain"
-										+ " geometry objects of same type");
-				}
-				if (bbox == null) {
-					bbox = geo.getBoundingBox(); // 3d or not depending on the
-					// must make copy of the bounding box
-					bbox = bbox instanceof Geodetic3DBounds ? new Geodetic3DBounds(
-							(Geodetic3DBounds) bbox)
-							: new Geodetic2DBounds(bbox);
-					// geo
-				} else {
-					bbox.include(geo.getBoundingBox());
-				}
-				int len = getRecLen(geo);
-				outputGeometry(channel, offset, geo, is3D, shape, recordNumber,
-						len);
-				outputIndex(xchannel, ioffset, offset, len);
-				// Records have additional 4 words of info at the start of the
-				// record
-				offset += len + 4;
-				ioffset += 4;
-				recordNumber++;
+                if (geo != null) {
+                    int shape = getEsriShapeType(geo);
+                    if (shape != NULL_TYPE) {
+                        // Make sure the type is the same as others in the feature
+                        // list
+                        if (shapeAll == NULL_TYPE) {
+                            shapeAll = shape;
+                            is3D = is3D(shape);
+                        } else if (shape != shapeAll)
+                            throw new IllegalArgumentException(
+                                    "Feature list must contain"
+                                            + " geometry objects of same type");
+                    }
+                    if (bbox == null) {
+                        bbox = geo.getBoundingBox(); // 3d or not depending on the
+                        // must make copy of the bounding box
+                        bbox = bbox instanceof Geodetic3DBounds ? new Geodetic3DBounds(
+                                (Geodetic3DBounds) bbox)
+                                : new Geodetic2DBounds(bbox);
+                        // geo
+                    } else {
+                        bbox.include(geo.getBoundingBox());
+                    }
+                    int len = getRecLen(geo);
+                    outputGeometry(channel, offset, geo, is3D, shape, recordNumber,
+                            len);
+                    outputIndex(xchannel, ioffset, offset, len);
+                    // Records have additional 4 words of info at the start of the
+                    // record
+                    offset += len + 4;
+                    ioffset += 4;
+                    recordNumber++;
+                }
 				ser = buffer.read();
 			}
 			// Write header
