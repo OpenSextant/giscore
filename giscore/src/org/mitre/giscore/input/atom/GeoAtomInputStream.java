@@ -51,7 +51,6 @@ import org.mitre.giscore.events.AtomLink;
 import org.mitre.giscore.events.Element;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.NullObject;
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.SimpleField.Type;
@@ -67,11 +66,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GeoAtomInputStream extends XmlInputStream {
-	private static final Logger logger = LoggerFactory
-			.getLogger(GeoAtomInputStream.class);
+
+	private static final Logger logger = LoggerFactory.getLogger(GeoAtomInputStream.class);
 	
-	private static final SafeDateFormat fmt = new SafeDateFormat(
-			IKml.ISO_DATE_FMT);
+	private static final SafeDateFormat fmt = new SafeDateFormat(IKml.ISO_DATE_FMT);
 	private static final SafeDateFormat inputFormats[] = {
 		fmt,
 		new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"),
@@ -204,7 +202,6 @@ public class GeoAtomInputStream extends XmlInputStream {
 	 * Read author
 	 * 
 	 * @param se
-	 * @param header
 	 * @throws XMLStreamException
 	 * @throws URISyntaxException
 	 */
@@ -277,7 +274,6 @@ public class GeoAtomInputStream extends XmlInputStream {
 		throw new IOException("Could not parse date and time from " + elementText);
 	}
 
-	@Override
 	public IGISObject read() throws IOException {
 		if (hasSaved()) {
 			return readSaved();
@@ -316,8 +312,8 @@ public class GeoAtomInputStream extends XmlInputStream {
 	/**
 	 * Read an entry and return a gis object
 	 * 
-	 * @param se
-	 * @throws IOException
+	 * @param start
+	 * @throws IOException if there is an error with the underlying XML.
 	 */
 	private IGISObject readEntry(StartElement start) throws IOException {
 		try {
@@ -436,8 +432,9 @@ public class GeoAtomInputStream extends XmlInputStream {
 	 * string.
 	 * @param type
 	 * @param val
-	 * @return
-	 * @throws ParseException 
+	 * @return value of appropriate type
+	 * @throws ParseException if the string does not contain
+     *            a parsable value of that type. 
 	 */
 	private Object readValue(Type type, String val) throws ParseException {
 		switch(type) {
