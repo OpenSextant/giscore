@@ -209,9 +209,9 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * The following three fields are reused for each feature class that
 	 * contains geometry.
 	 */
-	private static SimpleField shape;
-	private static SimpleField shapeArea;
-	private static SimpleField shapeLength;
+	private static final SimpleField shape;
+	private static final SimpleField shapeArea;
+	private static final SimpleField shapeLength;
 
     private static AtomicInteger ms_id = new AtomicInteger();
 
