@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
@@ -135,10 +136,14 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		return total;
 	}
 
+    /**
+	 * @param i the desired part, 0 origin
+	 * @return the referenced part
+	 */
 	@Override
-    @NonNull
+    @CheckForNull
 	public Geometry getPart(int i) {
-		return geometries.get(i);
+		return i < 0 || i >= geometries.size() ? null : geometries.get(i);
 	}
 
 	/* (non-Javadoc)
