@@ -107,14 +107,18 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		double lon = 0.0;
 		double count = 0;
 		for(Geometry geo : geometries) {
-			Geodetic2DPoint cen = geo.getCenter();
-      lat += cen.getLatitudeAsDegrees();
-      lon += cen.getLongitudeAsDegrees();
-			count++;
+            Geodetic2DPoint cen = geo.getCenter();
+            if (cen != null) {
+                lat += cen.getLatitudeAsDegrees();
+                lon += cen.getLongitudeAsDegrees();
+                count++;
+            }
 		}
 		// Compute Averages
-		lat = lat / count;
-		lon = lon / count;
+        if (count != 0) {
+		    lat = lat / count;
+		    lon = lon / count;
+        }
 		return new Geodetic2DPoint(new Longitude(lon, Angle.DEGREES),
 				new Latitude(lat, Angle.DEGREES));
 	}
@@ -149,8 +153,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		return total;
 	}
 
-	@Override
-    @NonNull
+	@Override    
 	public List<Point> getPoints() {
 		List<Point> rval = new ArrayList<Point>();
 		for(Geometry geo : geometries) {
