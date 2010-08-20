@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.StringUtils;
@@ -36,6 +37,8 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * @author DRAND
  */
 public class AtomAuthor implements IDataSerializable, Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @NonNull private String name;
 	private URI uri;
@@ -60,7 +63,7 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 	/**
 	 * @return the name
 	 */
-    @NonNull
+    @CheckForNull
 	public String getName() {
 		return name;
 	}
@@ -75,7 +78,7 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 	/**
 	 * @return the uri
 	 */
-    @Nullable
+    @CheckForNull
 	public URI getUri() {
 		return uri;
 	}
@@ -90,7 +93,7 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 	/**
 	 * @return the email
 	 */
-    @Nullable
+    @CheckForNull
 	public String getEmail() {
 		return email;
 	}
