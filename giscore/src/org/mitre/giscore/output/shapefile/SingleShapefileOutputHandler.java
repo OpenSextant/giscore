@@ -325,11 +325,11 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 					style.getIconUrl()))));
 			writer.writeEndElement();
 
-			if (style.getIconColor() != null) {
+            Color color = style.getIconColor();
+			if (color != null) {
 				writer.writeStartElement("symbol__color");
 				StringBuilder sb = new StringBuilder(8);
 				Formatter formatter = new Formatter(sb, Locale.US);
-				Color color = style.getIconColor();
 				formatter.format("0x%02x%02x%02x%02x", color.getAlpha(), color
 						.getBlue(), color.getGreen(), color.getRed());
 				writer.writeCharacters(sb.toString());
