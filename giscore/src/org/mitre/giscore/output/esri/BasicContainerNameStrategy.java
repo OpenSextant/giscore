@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
+import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.IContainerNameStrategy;
 
@@ -13,6 +14,7 @@ import org.mitre.giscore.output.IContainerNameStrategy;
  */
 public class BasicContainerNameStrategy implements
         IContainerNameStrategy, Serializable {
+    
 	private static final long serialVersionUID = 1L;
 
 	/*
@@ -26,10 +28,11 @@ public class BasicContainerNameStrategy implements
         StringBuilder setname = new StringBuilder();
 
         setname.append(StringUtils.join(path, '_'));
-        if (key.getGeoclass() != null) {
+        Class<? extends Geometry> geoclass = key.getGeoclass();
+        if (geoclass != null) {
             if (setname.length() > 0)
                 setname.append("_");
-            setname.append(key.getGeoclass().getSimpleName());
+            setname.append(geoclass.getSimpleName());
         }
         String datasetname = setname.toString();
         datasetname = datasetname.replaceAll("\\s+", "_");

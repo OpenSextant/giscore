@@ -19,10 +19,7 @@
 package org.mitre.giscore.output;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.ICategoryNameExtractor;
@@ -68,13 +65,13 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 * The gis output stream, assigned in the ctor and never changed afterward.
 	 * This is never <code>null</code>.
 	 */
-	private IGISOutputStream stream = null;
+	private IGISOutputStream stream;
 
 	/**
 	 * The name strategy to use for creating containers, assigned in the ctor
 	 * and never changed afterward. This is never <code>null</code>.
 	 */
-	private IContainerNameStrategy strategy = null;
+	private IContainerNameStrategy strategy;
 
 	/**
 	 * Tracks the path - useful for naming collections
@@ -85,7 +82,7 @@ public class SortingOutputStream extends StreamVisitorBase implements
 	 * The extractor that will determine the name of a category based on the
 	 * actual data in the row or row subclass.
 	 */
-	private ICategoryNameExtractor extractor = null;
+	private ICategoryNameExtractor extractor;
 	
 	/**
 	 * Ctor
@@ -253,8 +250,12 @@ public class SortingOutputStream extends StreamVisitorBase implements
 		for(FeatureKey key : keys) {
 			ObjectBuffer buffer = sorter.getBuffer(key);
 			String pathstr = key.getPath();
-			String pieces[] = pathstr.split("_");
-			List<String> path = Arrays.asList(pieces);
+            List<String> path;
+            if (pathstr == null) path = Collections.emptyList();
+            else {
+                String pieces[] = pathstr.split("_");
+                path = Arrays.asList(pieces);
+            }
 			try {
 				ContainerStart cs = new ContainerStart("Folder");
 				cs.setName(strategy.deriveContainerName(path, key));

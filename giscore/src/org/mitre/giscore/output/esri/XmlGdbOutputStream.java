@@ -888,9 +888,10 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		if (datasets.get(key) == null) {
 			StringBuilder setname = new StringBuilder();
 			setname.append(fullpath);
-			if (key.getGeoclass() != null) {
+            Class<? extends Geometry> geoclass = key.getGeoclass();
+            if (geoclass != null) {
 				setname.append("_");
-				setname.append(key.getGeoclass().getSimpleName());
+				setname.append(geoclass.getSimpleName());
 			}
 			String datasetname = setname.toString();
 			datasetname = datasetname.replaceAll("\\s", "_");

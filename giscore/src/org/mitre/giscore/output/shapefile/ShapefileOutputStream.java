@@ -22,11 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Stack;
+import java.util.*;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -37,6 +33,7 @@ import java.util.zip.ZipOutputStream;
  *
  */
 public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOutputStream, IStreamVisitor {
+    
 	private static final Logger logger = LoggerFactory.getLogger(ShapefileOutputStream.class);
 	
 	/**
@@ -137,8 +134,12 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
 		for(FeatureKey key : sorter.keys()) {
 			ObjectBuffer buffer = sorter.getBuffer(key);
 			String pathstr = key.getPath();
-			String pieces[] = pathstr.split("_");
-			List<String> path = Arrays.asList(pieces);
+            List<String> path;
+            if (pathstr == null) path = Collections.emptyList();
+            else {
+                String pieces[] = pathstr.split("_");
+                path = Arrays.asList(pieces);
+            }
 			try {
 				String cname = containerNameStrategy.deriveContainerName(path, key);
 				Style style = null;

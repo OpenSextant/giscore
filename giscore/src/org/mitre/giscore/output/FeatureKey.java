@@ -1,5 +1,8 @@
 package org.mitre.giscore.output;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -14,11 +17,11 @@ import org.mitre.giscore.geometry.Geometry;
  * @author DRAND
  */
 public class FeatureKey {
-	private Schema schema;
-	private String path;
-	private String styleRef = null;
-	private Class<? extends Geometry> geoclass;
-	private Class<? extends Row> featureClass;
+	private final Schema schema;
+	@CheckForNull private final String path;
+    @CheckForNull private String styleRef;
+	@CheckForNull private final Class<? extends Geometry> geoclass;
+	private final Class<? extends Row> featureClass;
 	
 	public FeatureKey(Schema schema, String path, Class<? extends Geometry> geoclass, 
 			Class<? extends Row> featureClass) {
@@ -39,6 +42,7 @@ public class FeatureKey {
 	/**
 	 * @return the schema
 	 */
+    @NonNull
 	public Schema getSchema() {
 		return schema;
 	}
@@ -46,6 +50,7 @@ public class FeatureKey {
 	/**
 	 * @return the geoclass
 	 */
+    @CheckForNull
 	public Class<? extends Geometry> getGeoclass() {
 		return geoclass;
 	}
@@ -53,6 +58,7 @@ public class FeatureKey {
 	/**
 	 * @return the featureClass
 	 */
+    @NonNull
 	public Class<? extends Row> getFeatureClass() {
 		return featureClass;
 	}
@@ -60,10 +66,12 @@ public class FeatureKey {
 	/**
 	 * @return the path
 	 */
+    @CheckForNull
 	public String getPath() {
 		return path;
 	}
-	
+
+    @CheckForNull
 	public String getStyleRef() {
 		return styleRef;
 	}
