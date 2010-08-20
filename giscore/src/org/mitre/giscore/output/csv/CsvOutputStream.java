@@ -144,15 +144,14 @@ public class CsvOutputStream extends StreamVisitorBase implements
     @Override
     public void visit(Row row) {
         if (row == null) {
-            throw new IllegalArgumentException(
-                    "row should never be null");
+            throw new IllegalArgumentException("row should never be null");
         }
         writtenRow = true;
         boolean first = true;
 
         if (schema != null && row.getSchema() != null) {
             URI schemauri = row.getSchema();
-            if (!schemauri.equals(schema.getId())) {
+            if (schemauri == null || !schemauri.equals(schema.getId())) {
                 throw new RuntimeException("Row schema doesn't match schema given");
             }
             try {
