@@ -341,7 +341,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			writer.writeEndElement();
 
 			writer.writeStartElement("point__size");
-			int size = (int) (style.getIconScale() * 15.0);
+			int size = style.getIconScale() == null ? 15 : (int) (style.getIconScale() * 15.0);
 			writer.writeCharacters(Integer.toString(size));
 			writer.writeEndElement();
 
