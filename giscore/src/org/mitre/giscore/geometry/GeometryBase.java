@@ -1,6 +1,6 @@
 package org.mitre.giscore.geometry;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -29,7 +29,7 @@ public abstract class GeometryBase extends Geometry {
      * then the default clampToGround is assumed and altitude can be ignored.
 	 * @return the altitudeMode
 	 */
-    @Nullable
+    @CheckForNull
 	public AltitudeModeEnumType getAltitudeMode() {
 		return altitudeMode;
 	}
@@ -53,7 +53,7 @@ public abstract class GeometryBase extends Geometry {
         this.altitudeMode = AltitudeModeEnumType.getNormalizedMode(altitudeMode);
 	}
 
-    @Nullable
+    @CheckForNull
     public Boolean getExtrude() {
         return extrude;
     }
@@ -62,7 +62,7 @@ public abstract class GeometryBase extends Geometry {
         this.extrude = extrude;
     }
 
-    @Nullable
+    @CheckForNull
 	public Boolean getTessellate() {
         return tessellate;
     }

@@ -26,8 +26,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.StringUtils;
@@ -138,7 +138,7 @@ public class Schema implements IGISObject {
 	 * This should normally be null.
      * @return parent
      */
-    @Nullable
+    @CheckForNull
     public String getParent() {
         return parent;
     }
@@ -174,7 +174,7 @@ public class Schema implements IGISObject {
 	 * @return the previous value associated with <tt>name</tt>, or
      *         <tt>null</tt> if there was no mapping for <tt>name</tt>. 
 	 */
-    @Nullable
+    @CheckForNull
 	public SimpleField remove(String name) {
 		if (StringUtils.isEmpty(name)) {
 			throw new IllegalArgumentException(
@@ -201,7 +201,7 @@ public class Schema implements IGISObject {
 	 * @return the field data, may be <code>null</code> if the field is
 	 * not found.
 	 */
-    @Nullable   
+    @CheckForNull
 	public SimpleField get(String name) {
 		if (name == null || name.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -235,7 +235,7 @@ public class Schema implements IGISObject {
 	 * @return the name of the geometry field or <code>null</code> if one 
 	 * doesn't exist
 	 */
-    @Nullable
+    @CheckForNull
 	public String getGeometryField() {
         for (SimpleField field : fields.values()) {
             if (field.getType().isGeometry()) return field.getName();
@@ -248,7 +248,7 @@ public class Schema implements IGISObject {
 	 * if there is no such field. Note that if there is, for some reason, 
 	 * multiples, then the first will be returned.
 	 */
-    @Nullable
+    @CheckForNull
 	public SimpleField getShapeField() {
 		return getFieldOfType(SimpleField.Type.GEOMETRY);
 	}
@@ -258,7 +258,7 @@ public class Schema implements IGISObject {
 	 * if there is no such field. Note that if there is, for some reason, 
 	 * multiples, then the first will be returned.
 	 */
-    @Nullable
+    @CheckForNull
 	public SimpleField getOidField() {
 		return getFieldOfType(SimpleField.Type.OID);
 	}
@@ -267,7 +267,7 @@ public class Schema implements IGISObject {
 	 * @param type
 	 * @return
 	 */
-    @Nullable   
+    @CheckForNull
 	private SimpleField getFieldOfType(Type type) {
 		for(SimpleField field : fields.values()) {
 			if (type.equals(field.getType())) {

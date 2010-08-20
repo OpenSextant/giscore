@@ -21,8 +21,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -181,7 +181,7 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	}
 	
 	@Override
-    @Nullable
+    @CheckForNull
 	public Geometry getPart(int i) {
 		return pointList != null ? pointList.get(i) : null;
 	}

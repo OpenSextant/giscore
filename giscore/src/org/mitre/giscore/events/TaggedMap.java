@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -123,7 +123,7 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
      * @param key
      * @return Integer if property is found and a valid Integer value, otherwise null.
      */
-    @Nullable
+    @CheckForNull
     public Integer getIntegerValue(String key) {
         String val = get(key);
         if (val != null) {
@@ -141,7 +141,7 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
      * @param key
      * @return Double if property is found and a valid Double value, otherwise null.
      */
-    @Nullable
+    @CheckForNull
     public Double getDoubleValue(String key) {
         String val = get(key);
         if (val != null) {

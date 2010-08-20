@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.geometry.Geometry;

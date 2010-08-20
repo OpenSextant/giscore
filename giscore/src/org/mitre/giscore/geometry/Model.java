@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -39,7 +39,7 @@ public class Model extends Geometry {
         // empty constructor
 	}
 
-    @Nullable
+    @CheckForNull
     public Geodetic2DPoint getLocation() {
         return location;
     }    
@@ -77,7 +77,7 @@ public class Model extends Geometry {
 		return getNumParts(); // Happily they happen to be the same here
 	}
 
-    @Nullable
+    @CheckForNull
     public AltitudeModeEnumType getAltitudeMode() {
         return altitudeMode;
     }
@@ -105,7 +105,7 @@ public class Model extends Geometry {
 	 *
 	 * @return Geodetic2DPoint or Geodetic3DPoint at the center of this Model
 	 */
-    @Nullable
+    @Override
 	public Geodetic2DPoint getCenter() {
 		// for point feature just return the point
 		return location;

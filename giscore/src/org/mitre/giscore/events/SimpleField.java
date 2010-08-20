@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Date;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -216,7 +216,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 	/**
 	 * @return the displayName
 	 */
-    @Nullable
+    @CheckForNull
 	public String getDisplayName() {
 		return displayName;
 	}
@@ -277,7 +277,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 	/**
 	 * @return the scale
 	 */
-    @Nullable
+    @CheckForNull
 	public Integer getScale() {
 		return scale;
 	}
@@ -313,7 +313,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 	/**
 	 * @return the aliasName
 	 */
-    @Nullable
+    @CheckForNull
 	public String getAliasName() {
 		return aliasName;
 	}
@@ -328,7 +328,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 	/**
 	 * @return the modelName
 	 */
-    @Nullable
+    @CheckForNull
 	public String getModelName() {
 		return modelName;
 	}
@@ -343,7 +343,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 	/**
 	 * @return the index
 	 */
-    @Nullable
+    @CheckForNull
 	public Integer getIndex() {
 		return index;
 	}

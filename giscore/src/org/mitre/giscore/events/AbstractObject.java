@@ -1,6 +1,6 @@
 package org.mitre.giscore.events;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -24,7 +24,7 @@ public abstract class AbstractObject implements IDataSerializable, IGISObject {
      * @return the id to use to distinguish this object from another.
      * Value is either a non-empty string or <code>null</code>.
      */
-    @Nullable   
+    @CheckForNull
     public String getId() {
         return id;
     }

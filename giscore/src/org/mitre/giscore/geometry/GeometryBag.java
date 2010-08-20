@@ -158,7 +158,8 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		return total;
 	}
 
-	@Override    
+	@Override
+    @NonNull
 	public List<Point> getPoints() {
 		List<Point> rval = new ArrayList<Point>();
 		for(Geometry geo : geometries) {

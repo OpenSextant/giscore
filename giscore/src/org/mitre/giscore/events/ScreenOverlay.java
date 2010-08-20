@@ -20,7 +20,7 @@ package org.mitre.giscore.events;
 
 import java.io.IOException;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.input.kml.IKml;
@@ -53,7 +53,7 @@ public class ScreenOverlay extends Overlay {
 	/**
 	 * @return the overlay
 	 */
-    @Nullable
+    @CheckForNull
 	public ScreenLocation getOverlay() {
 		return overlay;
 	}
@@ -68,7 +68,7 @@ public class ScreenOverlay extends Overlay {
 	/**
 	 * @return the screen
 	 */
-    @Nullable
+    @CheckForNull
 	public ScreenLocation getScreen() {
 		return screen;
 	}
@@ -83,7 +83,7 @@ public class ScreenOverlay extends Overlay {
 	/**
 	 * @return the rotation
 	 */
-    @Nullable
+    @CheckForNull
 	public ScreenLocation getRotation() {
 		return rotation;
 	}
@@ -98,7 +98,7 @@ public class ScreenOverlay extends Overlay {
 	/**
 	 * @return the size
 	 */
-    @Nullable
+    @CheckForNull
 	public ScreenLocation getSize() {
 		return size;
 	}
@@ -113,7 +113,7 @@ public class ScreenOverlay extends Overlay {
 	/**
 	 * @return the rotationAngle
 	 */
-    @Nullable
+    @CheckForNull
 	public Double getRotationAngle() {
 		return rotationAngle;
 	}

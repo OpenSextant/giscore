@@ -20,7 +20,7 @@ package org.mitre.giscore.events;
 
 import java.io.IOException;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -57,7 +57,7 @@ public class GroundOverlay extends Overlay {
 	/**
 	 * @return the north
 	 */
-    @Nullable
+    @CheckForNull
 	public Double getNorth() {
 		return north;
 	}
@@ -73,7 +73,7 @@ public class GroundOverlay extends Overlay {
 	/**
 	 * @return the south
 	 */
-    @Nullable
+    @CheckForNull
 	public Double getSouth() {
 		return south;
 	}
@@ -89,7 +89,7 @@ public class GroundOverlay extends Overlay {
 	/**
 	 * @return the east
 	 */
-    @Nullable
+    @CheckForNull
 	public Double getEast() {
 		return east;
 	}
@@ -105,7 +105,7 @@ public class GroundOverlay extends Overlay {
 	/**
 	 * @return the west
 	 */
-    @Nullable
+    @CheckForNull
 	public Double getWest() {
 		return west;
 	}
@@ -145,7 +145,7 @@ public class GroundOverlay extends Overlay {
      * @return bounding box for image, null if missing either north, south, east,
      *          or west edge from LatLonBox.
      */
-    @Nullable
+    @CheckForNull
     public Geodetic2DBounds getBoundingBox() {
         Geodetic2DBounds bbox = null;
         if (north != null && south != null && east != null && west != null) {
@@ -169,7 +169,7 @@ public class GroundOverlay extends Overlay {
 	/**
 	 * @return the rotation
 	 */
-    @Nullable
+    @CheckForNull
 	public Double getRotation() {
 		return rotation;
 	}
@@ -194,7 +194,7 @@ public class GroundOverlay extends Overlay {
      * Get distance above the earth's surface, in meters.
 	 * @return the altitude
 	 */
-    @Nullable
+    @CheckForNull
 	public Double getAltitude() {
 		return altitude;
 	}
@@ -213,7 +213,7 @@ public class GroundOverlay extends Overlay {
      * then the default clampToGround is assumed and altitude can be ignored. 
 	 * @return the altitudeMode
 	 */
-    @Nullable
+    @CheckForNull
 	public AltitudeModeEnumType getAltitudeMode() {
 		return altitudeMode;
 	}

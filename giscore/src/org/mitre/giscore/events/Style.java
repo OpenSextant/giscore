@@ -20,9 +20,8 @@ package org.mitre.giscore.events;
 
 import java.awt.Color;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
-import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.IStreamVisitor;
 
 /**
@@ -192,7 +191,7 @@ public class Style extends StyleSelector {
 	 * @return the iconColor, the color to apply to the icon in the display.
      *      Value may be <code>null</code> in which the default color should be used.
 	 */
-    @Nullable
+    @CheckForNull
 	public Color getIconColor() {
 		return iconColor;
 	}
@@ -202,7 +201,7 @@ public class Style extends StyleSelector {
 	 *         the icon from it's native size.
      *      Value may be <code>null</code> in which the default scale (1.0) may be used.
 	 */
-    @Nullable
+    @CheckForNull
 	public Double getIconScale() {
 		return iconScale;
 	}
@@ -211,7 +210,7 @@ public class Style extends StyleSelector {
 	 * @return the iconHeading.
      *      Value may be <code>null</code> in which the default heading (0) may be used.
 	 */
-    @Nullable
+    @CheckForNull
 	public Double getIconHeading() {
 		return iconHeading;
 	}
@@ -223,7 +222,7 @@ public class Style extends StyleSelector {
      *      present. If icon url is empty string then this indicates the href
      *      value was either omitted, empty element or an empty string.
 	 */
-    @Nullable
+    @CheckForNull
 	public String getIconUrl() {
 		return iconUrl;
 	}
@@ -247,7 +246,7 @@ public class Style extends StyleSelector {
 	 * @return the lineColor, the color to use when rendering the line. May
 	 *         be <code>null</code> in which the default color should be used.
 	 */
-    @Nullable
+    @CheckForNull
 	public Color getLineColor() {
 		return lineColor;
 	}
@@ -256,7 +255,7 @@ public class Style extends StyleSelector {
 	 * @return the lineWidth, the width of the line when rendered. Valid if
 	 *         {@link #hasLineStyle} is <code>true</code>.
 	 */
-    @Nullable
+    @CheckForNull
 	public Double getLineWidth() {
 		return lineWidth;
 	}
@@ -267,12 +266,12 @@ public class Style extends StyleSelector {
         hasListStyle = listBgColor != null || listItemType != null;
 	}
 
-    @Nullable
+    @CheckForNull
     public Color getListBgColor() {
         return listBgColor;
     }
 
-    @Nullable
+    @CheckForNull
     public ListItemType getListItemType() {
         return listItemType;
     }
@@ -322,7 +321,7 @@ public class Style extends StyleSelector {
 	 *         <bgColor>7fff0000</bgColor>, where alpha=0x7f, blue=0xff,
 	 *         green=0x00, and red=0x00. The default is opaque white (ffffffff).
 	 */
-    @Nullable
+    @CheckForNull
 	public Color getBalloonBgColor() {
 		return balloonBgColor;
 	}
@@ -347,7 +346,7 @@ public class Style extends StyleSelector {
 	 * @return the balloonTextColor, foreground color for text. The default is
 	 *         black (ff000000).
 	 */
-    @Nullable
+    @CheckForNull
 	public Color getBalloonTextColor() {
 		return balloonTextColor;
 	}
@@ -362,7 +361,7 @@ public class Style extends StyleSelector {
 	 *         whose balloon's <displayMode> is hide causes Google Earth to fly
 	 *         to the Placemark.
 	 */
-    @Nullable
+    @CheckForNull
 	public String getBalloonDisplayMode() {
 		return balloonDisplayMode;
 	}
@@ -384,7 +383,7 @@ public class Style extends StyleSelector {
 	 * 
 	 * @return the labelColor
 	 */
-    @Nullable
+    @CheckForNull
 	public Color getLabelColor() {
 		return labelColor;
 	}
@@ -417,7 +416,7 @@ public class Style extends StyleSelector {
 	 * 
 	 * @return the polyColor
 	 */
-    @Nullable
+    @CheckForNull
 	public Color getPolyColor() {
 		return polyColor;
 	}
@@ -427,7 +426,7 @@ public class Style extends StyleSelector {
 	 * 
 	 * @return the polyfill, specifies whether to fill the polygon.
 	 */
-    @Nullable
+    @CheckForNull
 	public Boolean getPolyfill() {
 		return polyfill;
 	}
@@ -438,7 +437,7 @@ public class Style extends StyleSelector {
 	 * @return the polyoutline, specifies whether to outline the polygon.
 	 *         Polygon outlines use the current LineStyle.
 	 */
-    @Nullable
+    @CheckForNull
 	public Boolean getPolyoutline() {
 		return polyoutline;
 	}

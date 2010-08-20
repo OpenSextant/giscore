@@ -1,6 +1,6 @@
 package org.mitre.giscore.geometry;
 
-import edu.umd.cs.findbugs.annotations.Nullable;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.*;
@@ -88,7 +88,7 @@ public class Circle extends Point {
      * the circle must be converted.
      * @return hint { LINE, RING, or POLYGON }
      */
-    @Nullable
+    @CheckForNull
     public HintType getHint() {
         return hint;
     }

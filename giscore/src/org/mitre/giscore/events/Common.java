@@ -25,7 +25,6 @@ import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -74,7 +73,7 @@ public abstract class Common extends Row {
 	/**
 	 * @return the description
 	 */
-    @Nullable
+    @CheckForNull
 	public String getDescription() {
 		return description;
 	}
