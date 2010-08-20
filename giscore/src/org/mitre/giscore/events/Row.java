@@ -26,6 +26,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.ObjectUtils;
@@ -93,7 +94,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 	 * @return the schema, may be <code>null</code> if there's no reference to a
 	 *         schema
 	 */
-    @Nullable
+    @CheckForNull
 	public URI getSchema() {
 		return schema;
 	}
@@ -161,7 +162,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 	 * 
 	 * @return the value of the field, value can be @{code null} if defined as such.
 	 */
-    @Nullable
+    @CheckForNull
 	public Object getData(SimpleField field) {
 		if (field == null) {
 			throw new IllegalArgumentException(

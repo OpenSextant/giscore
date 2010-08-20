@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.StringUtils;
@@ -57,7 +58,7 @@ public abstract class Common extends Row {
 	/**
 	 * @return the name
 	 */
-    @Nullable
+    @CheckForNull
 	public String getName() {
 		return name;
 	}
@@ -89,7 +90,7 @@ public abstract class Common extends Row {
 	/**
 	 * @return the styleUrl
 	 */
-    @Nullable
+    @CheckForNull
 	public String getStyleUrl() {
 		return styleUrl;
 	}
@@ -111,7 +112,7 @@ public abstract class Common extends Row {
 	/**
 	 * @return the startTime
 	 */
-    @Nullable
+    @CheckForNull
 	public Date getStartTime() {
         // note this exposes the internal representation by returning reference to mutable object
 		return startTime;
@@ -128,7 +129,7 @@ public abstract class Common extends Row {
 	/**
 	 * @return the endTime
 	 */
-    @Nullable
+    @CheckForNull
 	public Date getEndTime() {
         // note this exposes the internal representation by returning reference to mutable object
 		return endTime;
@@ -142,7 +143,7 @@ public abstract class Common extends Row {
         this.endTime = endTime == null ? null : (Date)endTime.clone();
 	}
 
-    @Nullable
+    @CheckForNull
 	public TaggedMap getViewGroup() {
 		return viewGroup;
 	}
@@ -155,7 +156,7 @@ public abstract class Common extends Row {
 		this.viewGroup = viewGroup;
 	}
 
-    @Nullable
+    @CheckForNull
 	public TaggedMap getRegion() {
 		return region;
 	}
@@ -168,7 +169,7 @@ public abstract class Common extends Row {
 		this.region = region;
 	}
 
-    @Nullable
+    @CheckForNull
 	public Boolean getVisibility() {
 		return visibility;
 	}
