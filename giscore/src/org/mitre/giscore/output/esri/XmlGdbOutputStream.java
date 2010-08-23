@@ -291,11 +291,12 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		writer.writeAttribute(XSI_NS, TYPE_ATTR, "esri:" + type);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see org.mitre.giscore.output.IGISOutputStream#close()
-	 */
+	/**
+     * Close this writer and free any resources associated with the
+     * writer.  This also closes the underlying output stream.
+     *
+     * @throws IOException if an error occurs
+     */
 	@Override
 	public void close() throws IOException {
 		try {
@@ -328,13 +329,16 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			writeDataSets();
 			writer.writeEndElement(); // Workspace
 			writer.writeEndDocument();
-			super.close();
-			sorter.cleanup();
 		} catch (XMLStreamException e) {
-			final IOException e2 = new IOException();
-			e2.initCause(e);
-			throw e2;
-		}
+			throw new IOException(e);
+		} finally {
+            try {
+                super.close();
+            } catch (IOException ioe) {
+                // ignore
+            }
+			sorter.cleanup();
+        }
 	}
 
 	/**
@@ -927,6 +931,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		writeEsriType("Indexes");
 		writer.writeStartElement(INDEX_ARRAY);
 		writeEsriType("ArrayOfIndex");
+        // REVIEW: schema.getOidField() can be null
 		writeIndex(schema.getOidField(), true, true, key);
 		if (key.getGeoclass() != null) {
 			writeIndex(shape, false, false, key);
