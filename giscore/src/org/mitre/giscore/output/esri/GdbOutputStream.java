@@ -714,9 +714,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 		Set<String> fieldnames = new HashSet<String>();
 
 		Fields fields = new Fields();
-		for (String fieldname : schema.getKeys()) {
-			fields
-					.addField(createField(key, schema.get(fieldname),
+		for (SimpleField field : schema.getFields()) {
+			fields.addField(createField(key, field,
 							fieldnames));
 		}
 		if (shapeField == null) {
