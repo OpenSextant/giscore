@@ -21,6 +21,8 @@ package org.mitre.giscore.input;
 import java.io.IOException;
 import java.util.Iterator;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
 
@@ -40,6 +42,7 @@ public interface IGISInputStream {
 	 * if there are no more objects present.
 	 * @throws IOException if an I/O error occurs
 	 */
+    @CheckForNull
 	IGISObject read() throws IOException;
 	
 	/**
@@ -49,8 +52,11 @@ public interface IGISInputStream {
 	 * N.B. At this time this may be unimplemented for some input streams.
 	 * 
 	 * @return an iterator over the schemata, never <code>null</code>
-	 * @throws IOException 
+     * 
+	 * @throws IOException if an I/O error occurs
+     * @throws UnsupportedOperationException if not supported in implementation 
 	 */
+    @NonNull
 	Iterator<Schema> enumerateSchemata() throws IOException;
 	
 	/**

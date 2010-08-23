@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.mitre.giscore.events.NetworkLink;
 import org.mitre.giscore.events.TaggedMap;
 import org.slf4j.Logger;
@@ -95,9 +96,10 @@ public abstract class KmlBaseReader implements IKml {
 	 * TaggedMap if modifications were made to href otherwise left unchanged. 
 	 *
 	 * @param parent
-	 * @param links TaggedMap object containing href link  @return adjusted href URL as URI, null if href is missing or empty string
-	 * @return
+	 * @param links TaggedMap object containing href link
+     * @return adjusted href URL as URI, null if href is missing or empty string
 	 */
+    @CheckForNull
 	protected URI getLinkHref(UrlRef parent, TaggedMap links) {
 		String href = links != null ? getTrimmedValue(links, HREF) : null;
 		if (href == null) return null;
@@ -410,6 +412,7 @@ public abstract class KmlBaseReader implements IKml {
      * @param link NetworkLink (never null)
      * @return NetworkLink link as URI or <tt>null</tt> if not present 
      */
+    @CheckForNull
     public static URI getLinkUri(NetworkLink link) {
         TaggedMap links = link.getLink();
         if (links != null) {

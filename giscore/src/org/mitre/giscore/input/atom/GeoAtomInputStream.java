@@ -43,6 +43,7 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.events.AtomAuthor;
@@ -85,7 +86,8 @@ public class GeoAtomInputStream extends XmlInputStream {
 	 * Ctor
 	 * 
 	 * @param stream
-	 * @throws IOException
+	 * @param arguments
+     * @throws IOException if an I/O or parsing error occurs
 	 */
 	public GeoAtomInputStream(InputStream stream, Object arguments[])
 			throws IOException {
@@ -105,7 +107,7 @@ public class GeoAtomInputStream extends XmlInputStream {
 	 * <p>
 	 * A valid document will not cause a stream exception to be thrown.
 	 * 
-	 * @throws XMLStreamException
+     * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void readRootElement() throws XMLStreamException {
 		XMLEvent ev = stream.nextEvent();
@@ -134,7 +136,7 @@ public class GeoAtomInputStream extends XmlInputStream {
 	 * Read elements from the XML stream until we find the first entry. At that
 	 * point we need to stop reading and queue the atom header.
 	 * 
-	 * @throws IOException
+	 * @throws IOException if an I/O or parsing error occurs
 	 */
 	private void readHeader() throws IOException {
 		try {
@@ -274,6 +276,14 @@ public class GeoAtomInputStream extends XmlInputStream {
 		throw new IOException("Could not parse date and time from " + elementText);
 	}
 
+    /**
+     * Reads the next <code>IGISObject</code> from the InputStream.
+     * 
+     * @return next object, or <code>null</code> if the end of the
+     *             stream is reached.
+     * @throws IOException if an I/O or parsing error occurs
+     */
+    @CheckForNull
 	public IGISObject read() throws IOException {
 		if (hasSaved()) {
 			return readSaved();

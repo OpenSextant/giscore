@@ -29,6 +29,8 @@ import java.net.URLConnection;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
 
 /**
@@ -287,6 +289,7 @@ public class UrlRef {
 	/**
 	 * @return the internal URI of the UrlRef, never {@code null}
 	 */
+    @NonNull
 	public URI getURI() {
         return uri;
     }
@@ -298,6 +301,7 @@ public class UrlRef {
 	 * then URL returned is <code>http://server/test.kmz</code>.  
 	 * @return original external URL, never {@code null}
 	 */
+    @NonNull
 	public URL getURL() {
         return url;
     }
@@ -310,6 +314,7 @@ public class UrlRef {
 	 *
 	 * @return relative path to the KMZ resource otherwise {@code null}
 	 */
+    @CheckForNull
 	public String getKmzRelPath() {
         return kmzRelPath;
     }
