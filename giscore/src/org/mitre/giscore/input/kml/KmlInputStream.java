@@ -45,12 +45,10 @@ import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.Namespace;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
+import javax.xml.stream.events.*;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.events.Comment;
@@ -273,8 +271,17 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		addLast(ds);
 		try {
 			XMLEvent ev = stream.peek();
+            // Find first StartElement in stream
 			while(ev != null && ! ev.isStartElement()) {
-				stream.nextEvent(); // Actually advance
+				ev = stream.nextEvent(); // Actually advance
+                if (ev != null && ev.isStartDocument()) {
+                    StartDocument doc = (StartDocument)ev;
+                    if (doc.encodingSet()) {
+                        String encoding = doc.getCharacterEncodingScheme(); // default UTF-8
+                        if (StringUtils.isNotBlank(encoding))
+                            this.encoding = encoding;
+                    }
+                }
 				ev = stream.peek();
 			}
             if (ev == null) return;
@@ -325,9 +332,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * Reads the next <code>IGISObject</code> from the InputStream.
 	 *
-	 * @return next <code>IGISObject</code>, null if end of stream reached
+	 * @return next <code>IGISObject</code>,
+     *           or <code>null</code> if the end of the stream is reached.
 	 * @throws IOException if an I/O error occurs
 	 */
+    @CheckForNull
 	public IGISObject read() throws IOException {
 		if (hasSaved()) {
 			return readSaved();
@@ -797,6 +806,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return <code>Date</code> created from the <code>lexicalRepresentation</code>, never null.
 	 * @throws ParseException If the <code>lexicalRepresentation</code> is not a valid <code>Date</code>.
 	 */
+    @NonNull
 	public static Date parseDate(String datestr) throws ParseException {
         if (StringUtils.isBlank(datestr)) throw new ParseException("Empty or null date string", 0);
 		try {
@@ -2188,6 +2198,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param coord
 	 * @return list of coordinates
 	 */
+    @NonNull
 	public static List<Point> parseCoord(String coord) {
 		List<Point> list = new ArrayList<Point>();
 		NumberStreamTokenizer st = new NumberStreamTokenizer(coord);

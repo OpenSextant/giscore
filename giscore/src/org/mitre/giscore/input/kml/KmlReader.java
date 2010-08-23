@@ -16,6 +16,8 @@
  */
 package org.mitre.giscore.input.kml;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.events.*;
@@ -52,13 +54,14 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 
 	private InputStream iStream;
 
-	private final IGISInputStream kis;
+	private final KmlInputStream kis;
 
 	private ZipFile zf;
 
 	private final List<URI> gisNetworkLinks = new ArrayList<URI>();
+    private String encoding;
 
-	/**
+    /**
 	 * Creates a <code>KmlStreamReader</code> and attempts to read
 	 * all GISObjects from a stream created from the <code>URL</code>.
 	 * @param url   the KML or KMZ URL to be opened for reading.
@@ -124,6 +127,15 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		baseUrl = url;
 	}
 
+    /**
+     * Returns the encoding style of the XML data.
+     * @return the character encoding, defaults to "UTF-8". Never null.
+     */
+    @NonNull
+    public String getEncoding() {
+        return kis.getEncoding();
+    }
+
 	/**
 	 * Get list of NetworkLinks visited.  If <code>importFromNetworkLinks()</code> was
 	 * called then this will be the complete list including all NetworkLinks
@@ -132,6 +144,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 *
 	 * @return list of NetworkLink URIs
 	 */
+    @NonNull
 	public List<URI> getNetworkLinks() {
 		return gisNetworkLinks;
 	}
@@ -142,6 +155,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 * if there are no more objects present.
 	 * @throws IOException if an I/O error occurs
 	 */
+    @CheckForNull
 	public IGISObject read() throws IOException {
 		return read(kis, null, null);
 	}

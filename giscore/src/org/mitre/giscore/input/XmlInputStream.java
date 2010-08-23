@@ -32,6 +32,7 @@ import javax.xml.stream.events.Characters;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
@@ -57,6 +58,13 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	}
 	protected InputStream is;
 	protected XMLEventReader stream;
+
+    /**
+     * Encoding style of the XML data (defaults to "UTF-8").
+     * Must never be null.
+     */
+    @NonNull
+    protected String encoding = "UTF-8";
 
 	/**
 	 * Ctor
@@ -109,6 +117,15 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 			is = null;
 		}
 	}
+
+   /**
+    * Returns the encoding style of the XML data.
+    * @return the character encoding, defaults to "UTF-8". Never null.
+    */
+    @NonNull
+    public String getEncoding() {
+        return encoding;
+    }
 
 	/**
 	 * Is this event a matching end tag?
