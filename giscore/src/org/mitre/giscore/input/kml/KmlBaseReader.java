@@ -49,7 +49,7 @@ public abstract class KmlBaseReader implements IKml {
 
 	static {
 		final String[] labels = {
-				"clientVersion", "4.3.7284.3916",
+				"clientVersion", "5.2.1.1547",
 				"kmlVersion",   "2.2",
 				"clientName",   "Google+Earth",
 				"language",     "en"};

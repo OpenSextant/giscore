@@ -58,8 +58,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 
 	private ZipFile zf;
 
-	private final List<URI> gisNetworkLinks = new ArrayList<URI>();
-    private String encoding;
+	private final List<URI> gisNetworkLinks = new ArrayList<URI>();    
 
     /**
 	 * Creates a <code>KmlStreamReader</code> and attempts to read
