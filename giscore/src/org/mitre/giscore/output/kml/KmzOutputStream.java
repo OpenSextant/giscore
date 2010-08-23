@@ -51,14 +51,29 @@ public class KmzOutputStream implements IGISOutputStream {
 	private KmlOutputStream kmlStream;
 	final ZipOutputStream zipStream;
 
-	public KmzOutputStream(final OutputStream stream) throws XMLStreamException {
+    /**
+     * Creates a <code>KmzOutputStream</code> by opening a ZipOutputStream on the output stream.
+     * @param stream OutputStream to decorate as a KmzOutputStream
+     * @throws XMLStreamException if error occurs creating output stream
+     */
+    public KmzOutputStream(final OutputStream stream) throws XMLStreamException {
+        this(stream, null);
+    }
+
+    /**
+     * Creates a <code>KmzOutputStream</code> by opening a ZipOutputStream on the output stream.
+     * @param stream OutputStream to decorate as a KmzOutputStream
+     * @param encoding the encoding to use, if null default encoding (UTF-8) is assumed
+     * @throws XMLStreamException if error occurs creating output stream
+     */
+	public KmzOutputStream(final OutputStream stream, String encoding) throws XMLStreamException {
 		zipStream = new ZipOutputStream(stream);
 		try {
 			zipStream.putNextEntry(new ZipEntry("doc.kml"));
 		} catch (IOException e) {
 			throw new XMLStreamException("Could not add doc.kml entry to the zip file", e);
 		}
-		kmlStream = new KmlOutputStream(zipStream);
+		kmlStream = new KmlOutputStream(zipStream, encoding);
 	}
 
 	/**
