@@ -59,7 +59,7 @@ public class GISFactory {
 	 */
 	public final static AtomicInteger inMemoryBufferSize = new AtomicInteger(2000);
 	
-	private static IRemoteGISService remoteService = null;
+	private static IRemoteGISService remoteService;
 	
 	/**
 	 * Input stream factory
@@ -207,13 +207,16 @@ public class GISFactory {
 
 		try {
 			IContainerNameStrategy strategy;
+            String encoding;
 			switch(type) {
 				case KML:
-					checkArguments(new Class[] {}, arguments, new boolean[] {});
-					return new KmlOutputStream(outputStream);
+					checkArguments(new Class[] { String.class }, arguments, new boolean[] { false });
+                    encoding = arguments.length != 0 ? (String)arguments[0] : null;
+					return new KmlOutputStream(outputStream, encoding);
 				case KMZ:
-					checkArguments(new Class[] {}, arguments, new boolean[] {});
-					return new KmzOutputStream(outputStream);
+					checkArguments(new Class[] { String.class }, arguments, new boolean[] { false });
+                     encoding = arguments.length != 0 ? (String)arguments[0] : null;
+					return new KmzOutputStream(outputStream, encoding);
 				case Shapefile:
 					checkArguments(new Class[] { File.class,
 							IContainerNameStrategy.class, PointShapeMapper.class },
@@ -259,9 +262,7 @@ public class GISFactory {
 							"Cannot create an output stream for type " + type);
 			}
 		} catch (XMLStreamException e) {
-			final IOException e2 = new IOException();
-			e2.initCause(e);
-			throw e2;
+			throw new IOException(e);
 		}
 	}
 	

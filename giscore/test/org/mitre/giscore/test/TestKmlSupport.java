@@ -36,6 +36,7 @@ import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.input.IGISInputStream;
+import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.apache.commons.io.IOUtils;
 
@@ -181,18 +182,17 @@ public class TestKmlSupport extends TestGISBase {
         FileInputStream fs = new FileInputStream(testcase);
         List<IGISObject> elements = new ArrayList<IGISObject>();
         try {
-            IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
+            KmlInputStream kis = (KmlInputStream) GISFactory.getInputStream(DocumentType.KML, fs);
 		    temp = createTemp(testcase.getName(), ".kml");
 			OutputStream fos = new FileOutputStream(temp);
-            // Note if input KML uses encoding other than default UTF-8 then output will fail when opened for reading 
-            IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos);
+            IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos, kis.getEncoding());
             IGISObject current;
-            while ((current = is.read()) != null) {
+            while ((current = kis.read()) != null) {
                 os.write(current);
                 elements.add(current);
             }
 
-            is.close();
+            kis.close();
             fs.close();
 
             os.close();
@@ -202,7 +202,7 @@ public class TestKmlSupport extends TestGISBase {
 
             // Test for equivalence
             fs = new FileInputStream(temp);
-            is = GISFactory.getInputStream(DocumentType.KML, fs);
+            IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
             int index = 0;
             while ((current = is.read()) != null) {
                 //elements2.add(current);
@@ -222,9 +222,9 @@ public class TestKmlSupport extends TestGISBase {
             is.close();
         } catch (IOException e) {
             System.out.println(" *Failed to parse KML for testcase: " + testcase.getName());
-            String msg = e.getMessage();
-            if (msg == null || !msg.contains("Message: Invalid byte 1 of 1-byte UTF-8 sequence"))
-                throw e;
+            //String msg = e.getMessage();
+            //if (msg == null || !msg.contains("Message: Invalid byte 1 of 1-byte UTF-8 sequence"))
+            throw e;
             // otherwise we wrote a KML source with wrong XML encoding
             // this is an error in the tester not the giscore framework
         } catch (AssertionError e) {

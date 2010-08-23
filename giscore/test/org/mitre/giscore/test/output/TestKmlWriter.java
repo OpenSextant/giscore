@@ -106,7 +106,7 @@ public class TestKmlWriter extends TestGISBase {
         KmlReader reader2 = null;
 		try {
 			System.out.println(">create " + temp);
-			KmlWriter writer = new KmlWriter(temp);
+			KmlWriter writer = new KmlWriter(temp, reader.getEncoding());
             int features = 0;
             try {
                 for (IGISObject o : objs) {
