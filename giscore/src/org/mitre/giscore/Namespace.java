@@ -53,6 +53,8 @@
  */
 package org.mitre.giscore;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -111,6 +113,7 @@ public final class Namespace {
      * @throws IllegalArgumentException if the given prefix and uri make up
      *         an illegal namespace name.
      */
+    @NonNull
     public static Namespace getNamespace(String prefix, String uri) {
         // Sanity checking
         if (prefix == null || prefix.trim().equals("")) {
@@ -167,6 +170,7 @@ public final class Namespace {
      * @param uri <code>String</code> URI of new <code>Namespace</code>.
      * @return <code>Namespace</code> - ready to use namespace.
      */
+    @NonNull
     public static Namespace getNamespace(String uri) {
         return getNamespace("", uri);
     }
@@ -189,6 +193,7 @@ public final class Namespace {
      *
      * @return <code>String</code> - prefix for this <code>Namespace</code>.
      */
+    @NonNull
     public String getPrefix() {
         return prefix;
     }
@@ -198,6 +203,7 @@ public final class Namespace {
      *
      * @return <code>String</code> - URI for this <code>Namespace</code>.
      */
+    @NonNull
     public String getURI() {
         return uri;
     }
