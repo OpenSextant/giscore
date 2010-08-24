@@ -27,6 +27,7 @@ import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.apache.commons.lang.builder.ToStringStyle;
 import org.mitre.giscore.IStreamVisitor;
@@ -141,7 +142,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 * @return the referenced part
 	 */
 	@Override
-    @CheckForNull
+    @Nullable
 	public Geometry getPart(int i) {
 		return i < 0 || i >= geometries.size() ? null : geometries.get(i);
 	}

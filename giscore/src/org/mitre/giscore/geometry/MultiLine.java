@@ -24,6 +24,7 @@ import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -191,7 +192,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	}
 
 	@Override
-    @CheckForNull
+    @Nullable
 	public Geometry getPart(int i) {
 		return lineList != null ? lineList.get(i) : null;
 	}

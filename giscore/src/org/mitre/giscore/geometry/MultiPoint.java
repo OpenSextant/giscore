@@ -23,6 +23,7 @@ import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -155,7 +156,7 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 			IllegalAccessException {
 		super.readData(in);
 		int pcount = in.readInt();
-		List<Point> plist = new ArrayList<Point>();
+		List<Point> plist = new ArrayList<Point>(pcount);
 		for(int i = 0; i < pcount; i++) {
 			plist.add((Point) in.readObject());
 		}
@@ -181,7 +182,7 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	}
 	
 	@Override
-    @CheckForNull
+    @Nullable
 	public Geometry getPart(int i) {
 		return pointList != null ? pointList.get(i) : null;
 	}

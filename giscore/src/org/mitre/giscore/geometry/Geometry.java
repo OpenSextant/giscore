@@ -283,7 +283,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * @param i the desired part, 0 origin
 	 * @return the referenced part
 	 */
-    @CheckForNull
+    @Nullable
 	public Geometry getPart(int i) {
 		if (i == 0)
 			return this;
