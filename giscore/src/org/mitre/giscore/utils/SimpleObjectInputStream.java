@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
 
@@ -100,6 +101,7 @@ public class SimpleObjectInputStream implements Closeable {
      *               or if the class has no nullary constructor;
      *               or if the instantiation fails for some other reason.
 	 */
+    @Nullable
 	public Object readObject() throws ClassNotFoundException, IOException,
 			InstantiationException, IllegalAccessException {
 		try {
@@ -166,6 +168,7 @@ public class SimpleObjectInputStream implements Closeable {
 	 * @throws IllegalAccessException
 	 */
 	@SuppressWarnings("unchecked")
+    @Nullable
 	public List<? extends IDataSerializable> readObjectCollection()
 			throws IOException, ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
@@ -184,6 +187,7 @@ public class SimpleObjectInputStream implements Closeable {
 	 * @return the next scalar object from the stream
 	 * @throws IOException if an I/O error occurs
 	 */
+    @Nullable
 	public Object readScalar() throws IOException {
 		int type = stream.readShort();
 		switch (type) {
@@ -219,6 +223,7 @@ public class SimpleObjectInputStream implements Closeable {
 	 * @return The string read, possibly {@code null}.
 	 * @throws IOException if an I/O error occurs
 	 */
+    @Nullable
 	public String readString() throws IOException {
 		boolean isnull = stream.readBoolean();
 		if (isnull) {
