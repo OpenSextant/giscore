@@ -16,6 +16,7 @@ import java.util.TreeSet;
 
 import javax.xml.stream.XMLStreamException;
 
+import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.GeometryBag;
@@ -37,7 +38,6 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  *
  * Notes following conditions if found:
  * <ul>
-
  *  <li> NetworkLink has missing or empty HREF (info)
  *  <li> Overlay does not contain Icon element (info)
  *  <li> End container with no matching start container (error)
@@ -58,6 +58,8 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  *  <li> Container start date is earlier than that of its ancestors (info)
  *  <li> Container end date is later than that of its ancestors (info)
  *  <li> Out of order elements
+ *  <li> gx:Track coord-when mismatch (error)
+ *  <li> gx:SimpleArrayData has incorrect length (error)
  * </ul>
  * 
  * This tool helps to uncover issues in reading and writing target KML files.
@@ -328,6 +330,8 @@ public class KmlMetaDump implements IKml {
                     addTag(MULTI_GEOMETRY);
                     checkBag((GeometryBag) geom);
                 } else addTag(geomClass);
+            } else {
+                checkElements(f);
             }
         } else if (cl == NetworkLink.class) {
             NetworkLink networkLink = (NetworkLink) gisObj;
@@ -456,7 +460,7 @@ public class KmlMetaDump implements IKml {
             Element e = (Element)gisObj;
             String prefix = e.getPrefix();
             String name = e.getName();
-            if (prefix != null) name = prefix + ":" + name;
+            if (StringUtils.isNotEmpty(prefix)) name = prefix + ":" + name;
             addTag(name);
         } else if ( /* cl != DocumentStart.class && */ cl != Comment.class) {
             // ignore: DocumentStart + Comment objects
@@ -464,6 +468,72 @@ public class KmlMetaDump implements IKml {
         }
         lastObjClass = gisObj.getClass();
 	}
+
+    private void checkElements(Feature f) {
+        for (Element e : f.getElements()) {
+            if (e.getNamespaceURI() == null ||
+                    ! e.getNamespaceURI().startsWith(IKml.NS_GOOGLE_KML_EXT_PREFIX))
+                continue;
+            if ("Track".equals(e.getName()))
+                checkTrack(e);
+            else if ("MultiTrack".equals(e.getName())) {
+                // http://code.google.com/apis/kml/documentation/kmlreference.html#gxmultitrack
+                for (Element child : e.getChildren()) {
+                    if ("Track".equals(child.getName()))
+                        checkTrack(child);
+                }
+            }
+        }
+    }
+
+    private void checkTrack(Element e) {
+        // http://code.google.com/apis/kml/documentation/kmlreference.html#gxtrack
+        int whenCount = 0, coordCount = 0;
+        for (Element child : e.getChildren()) {
+            if ("when".equals(child.getName())) {
+                whenCount++;
+            } else if ("coord".equals(child.getName())) {
+                coordCount++;
+            } else if (EXTENDED_DATA.equals(child.getName())) {
+                child = child.getChild("SchemaData", child.getNamespace()); // SchemaData
+                if (child == null) continue;
+                child = child.getChild("SimpleArrayData", e.getNamespace()); // SimpleArrayData
+                if (child == null) continue;
+                // check parallel "arrays" of values for <when> and <gx:coord> where the number of time and position values must be equal.
+                // <gx:SimpleArrayData> element containing <gx:value> elements that correspond to each time/position on the track.
+                /*
+                <ExtendedData>
+                <SchemaData schemaUrl="#schema">
+                  <gx:SimpleArrayData name="cadence">
+                    <gx:value>86</gx:value>
+                    <gx:value>103</gx:value>
+                    <gx:value>108</gx:value>
+                    ...
+                  </gx:SimpleArrayData>
+                  ...
+                 */
+                int values = 0;
+                for (Element value : child.getChildren()) {
+                    if ("value".equals(value.getName())) values++;
+                }
+                if (values != whenCount && values != coordCount) {
+                    addTag(":gx:SimpleArrayData has incorrect length");
+                    if (verbose) System.out.format(" Error: SimpleArrayData %s has incorrect length (%d) - expecting %d%n",
+                            child.getAttributes().get("name"), values, Math.max(whenCount, coordCount));
+                }            
+            }
+            /*else {
+                // Model, altitudeMode, angles, etc.
+                addTag(":Unknown Track element: " + child.getName());
+            }
+            */
+        }
+        if (coordCount != whenCount) {            
+            addTag(":gx:Track coord-when mismatch");
+            if (verbose)
+                System.out.format(" Error: Number of time (%d) and position (%d) values must match%n", whenCount, coordCount);
+        }
+    }
 
     private void checkBag(GeometryBag geometryBag) {
 		for (Geometry g : geometryBag) {
@@ -482,7 +552,7 @@ public class KmlMetaDump implements IKml {
 	 */
 	private void checkGeometry(Geometry geom) {
 		// geom must have at least 2 points (points cannot span the line)
-		if (geom.getNumPoints() < 2) return;
+		if (geom.getNumPoints() >= 2) return;
 		Geodetic2DBounds bbox = geom.getBoundingBox();
 		//if (geom instanceof Line && (((Line)geom).clippedAtDateLine())) System.out.println(":clipped");
 		//else if (geom instanceof LinearRing && (((LinearRing)geom).clippedAtDateLine())) System.out.println(":clipped");
@@ -609,7 +679,7 @@ public class KmlMetaDump implements IKml {
         for (Element e : f.getElements()) {
             String prefix = e.getPrefix();
             String name = e.getName();
-            if (prefix != null) name = prefix + ":" + name;
+            if (StringUtils.isNotEmpty(prefix)) name = prefix + ":" + name;
             addTag(name);
         }
 
