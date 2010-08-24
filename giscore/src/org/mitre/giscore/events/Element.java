@@ -64,51 +64,57 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	private String text;
 
     /**
-	 * Empty ctor
+	 * Empty constructor requires caller to call setName() and setNamespace()
+     * directly or deserialize with {@link #readData}.
 	 */
 	public Element() {
-		
+        namespace = Namespace.NO_NAMESPACE;
 	}
 	
 	/**
 	 * Create XML Element object.
      * 
-	 * @param namespace Namespace of this <code>Element</code>,
-     *      may be <code>null</code>.
-	 * @param name
+	 * @param namespace Namespace of this <code>Element</code>. If
+     *      the namespace is <code>null</code>, the element will have no namespace.
+      @param  name                 local name of the element
      *
      * @throws IllegalArgumentException if name is blank string or <tt>null</tt>. 
 	 */
 	public Element(Namespace namespace, String name) {
-		super();
 		setName(name);
-		this.namespace = namespace;
+		setNamespace(namespace);
 	}
 
     /**
-     * Get namespace that this element belongs to,
-	 * may be <code>null</code>.
+     * Get namespace that this element belongs to.
+	 * Never <code>null</code>.
+     * @return                     the element's namespace
      */
-    @CheckForNull
+    @NonNull
     public Namespace getNamespace() {
+        assert namespace != null;
         return namespace;
     }
 
     /**
-     * Set the Namespace of this XML <code>Element</code>.
+     * Set the Namespace of this XML <code>Element</code>. If the provided namespace is null,
+     * the element will have no namespace.
      * @param namespace Namespace of this <code>Element</code>,
      *      may be <code>null</code>. 
      */
     public void setNamespace(Namespace namespace) {
+        if (namespace == null) {
+            namespace = Namespace.NO_NAMESPACE;
+        }
         this.namespace = namespace;
     }
 
 	/**
 	 * @return the prefix
 	 */
-    @CheckForNull
+    @NonNull
 	public String getPrefix() {
-		return namespace != null ? namespace.getPrefix() : null;
+		return namespace.getPrefix();
 	}
 
      /**
@@ -116,14 +122,15 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
      *
      * @return Namespace URI of this <code>Element</code>
      */
-    @CheckForNull
+    @NonNull
     public String getNamespaceURI() {
-        return namespace != null ? namespace.getURI() : null;
+        return namespace.getURI();
     }
 
 	/**
 	 * @return the name
 	 */
+    @NonNull
 	public String getName() {
         assert name != null;
 		return name;
@@ -187,7 +194,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
      */
     @CheckForNull
     public Element getChild(final String name, final Namespace ns) {
-        if (name == null || children.size() == 0) return null;
+        if (name == null || children.isEmpty()) return null;
         for (Element child : children) {
             if (name.equals(child.getName())) {
                 if (ns == null || ns.equals(child.getNamespace()))
@@ -300,7 +307,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
             String nsURI = in.readString();
             namespace = Namespace.getNamespace(prefix, nsURI);
         } else
-            namespace = null;
+            namespace = Namespace.NO_NAMESPACE;
 		name = in.readString();
 		text = in.readString();
 		int count = in.readInt();
@@ -316,7 +323,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	}
 
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
-        if (namespace == null || namespace.getPrefix() == null)
+        if (namespace.getURI().length() == 0)
             out.writeString(null);
         else {
 		    out.writeString(namespace.getPrefix());
