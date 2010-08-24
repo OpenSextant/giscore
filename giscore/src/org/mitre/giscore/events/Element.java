@@ -174,6 +174,43 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		return children;
 	}
 
+    /**
+     * This returns the first child element within this element with the
+     * given local name and belonging to the given namespace.
+     * If no elements exist for the specified name and namespace, null is
+     * returned.
+     *
+     * @param name local name of child element to match
+     * @param ns <code>Namespace</code> to search within. If ns is null
+     *      then only the name field is checked.
+     * @return the first matching child element, or null if not found
+     */
+    @CheckForNull
+    public Element getChild(final String name, final Namespace ns) {
+        if (name == null || children.size() == 0) return null;
+        for (Element child : children) {
+            if (name.equals(child.getName())) {
+                if (ns == null || ns.equals(child.getNamespace()))
+                    return child;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * This returns the first child element within this element with the
+     * given local name regardless of the namespace.
+     * If no elements exist for the specified name, null is
+     * returned.
+     *
+     * @param name local name of child element to match
+     * @return the first matching child element, or null if not found
+     */
+    @CheckForNull
+    public Element getChild(final String name) {
+        return getChild(name, null);
+    }
+
 	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);	
 	}
