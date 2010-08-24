@@ -34,12 +34,12 @@ import java.util.zip.ZipEntry;
 import java.io.*;
 
 /**
- * Wrapper to <code>KmlInputStream</code> that handles various house cleaning of parsing KML sources.
+ * Wrapper to <code>KmlInputStream</code> that handles various house cleaning of parsing KML and KMZ sources.
  * <p/>
  * Handles the following tasks:
  * <ul>
- * <li>read from KMZ/KML files transparently
- * <li>re-writing of URLs inside KMZ files and resolving relative URLs
+ * <li>read from KMZ/KML files or URLs transparently
+ * <li>re-writing of URLs inside KMZ files to resolve relative URLs
  * <li>rewrites URLs of NetworkLinks, IconStyle, and Screen/GroundOverlays with respect to parent URL.
  *   Use <code>UrlRef</code> to get InputStream of links and resolve URI to original URL.
  * <li>recursively read all features from referenced NetworkLinks
@@ -319,6 +319,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 * @return list of objects
 	 * @throws IOException if an I/O error occurs
 	 */
+    @NonNull
 	public List<IGISObject> readAll() throws IOException {
 		List<IGISObject> features = new ArrayList<IGISObject>();
         try {
@@ -368,8 +369,8 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
          *
          * @param ref UriRef for NetworkLink resource
          * @param gisObj new IGISObject object. This will never be null.
-         * @return Return true to continue parsing and follow networkLinks, false
-         *         stops following networklinks. 
+         * @return Return true to continue parsing and recursively follow NetworkLinks,
+         *         false stops following NetworkLinks. 
          */
         boolean handleEvent(UrlRef ref, IGISObject gisObj);
     }

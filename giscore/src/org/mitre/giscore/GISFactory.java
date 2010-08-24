@@ -137,7 +137,7 @@ public class GISFactory {
 	 * @throws IOException
 	 *             if an I/O error occurs
 	 * @throws IllegalArgumentException
-	 *             if type or file are null
+	 *             if type or file are null or file does not exist
 	 * @see org.mitre.giscore.input.kml.KmlReader
 	 */
 	@SuppressWarnings("unchecked")
