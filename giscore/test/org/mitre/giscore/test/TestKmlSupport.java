@@ -20,6 +20,7 @@ package org.mitre.giscore.test;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -185,7 +186,9 @@ public class TestKmlSupport extends TestGISBase {
             KmlInputStream kis = (KmlInputStream) GISFactory.getInputStream(DocumentType.KML, fs);
 		    temp = createTemp(testcase.getName(), ".kml");
 			OutputStream fos = new FileOutputStream(temp);
-            IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos, kis.getEncoding());
+            String encoding = kis.getEncoding();
+            assertNotNull(encoding);
+            IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos, encoding);
             IGISObject current;
             while ((current = kis.read()) != null) {
                 os.write(current);
