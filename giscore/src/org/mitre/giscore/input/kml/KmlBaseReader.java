@@ -292,7 +292,7 @@ public abstract class KmlBaseReader implements IKml {
         URI uri = null;
         try {
             // escape all whitespace otherwise new URI() throws an exception
-            href = escapeUri(href);
+            href = UrlRef.escapeUri(href);
             // TODO: URI apparently cannot parse URL with '$' in path (replacing with %24 still fails)
             // RFC2396 shows '$' allowed in path -> abs_path -> path_segment -> segment -> pchar -> "$"
             // must escape [] and whitespace characters
@@ -338,58 +338,6 @@ public abstract class KmlBaseReader implements IKml {
             log.warn("Invalid link: " + href, e);
         }
         return uri;
-    }
-
-    /**
-     * Escape invalid characters in URI string.
-     * @param  href   The string to be parsed into a URI
-     * @return escaped URI string
-     */
-    protected static String escapeUri(String href) {
-        /*
-        excluded characters from URI syntax:
-
-        control     = <US-ASCII coded characters 00-1F and 7F hexadecimal>
-        space       = <US-ASCII coded character 20 hexadecimal>
-        delims      = "<" | ">" | "#" | "%" | <">
-
-       Other characters are excluded because gateways and other transport
-       agents are known to sometimes modify such characters, or they are
-       used as delimiters.
-
-       unwise      = "{" | "}" | "|" | "\" | "^" | "[" | "]" | "`"
-
-       Data corresponding to excluded characters must be escaped in order to
-       be properly represented within a URI.
-
-       http://www.ietf.org/rfc/rfc2396.txt
-         */
-        StringBuilder buf = new StringBuilder(href.length());
-        for (char c : href.toCharArray()) {
-            switch (c) {
-                case ' ': // %20
-                case '"': // %22
-                case '<':
-                case '>':
-                case '[':
-                case ']':
-                case '{':
-                case '}':
-                case '^':
-                case '`':
-                case '\\':
-                case '|': // %7C
-                    buf.append('%').append(String.format("%02X", (int)c));
-                    // note '#" is allowed in URI construction
-                    break;
-                default:
-                    buf.append(c);
-            }
-        }
-        String newVal = buf.toString();
-        if (log.isDebugEnabled() && newVal.length() != href.length())
-            log.debug("Escaped illegal characters in URL: " + newVal);
-        return newVal;
     }
 
     /**

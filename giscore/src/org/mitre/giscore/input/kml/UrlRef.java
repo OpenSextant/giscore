@@ -32,6 +32,8 @@ import java.util.zip.ZipInputStream;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <code>UrlRef</code> manages the encoding/decoding of internally created
@@ -61,6 +63,8 @@ import org.apache.commons.io.IOUtils;
  * @author Jason Mathews
  */
 public class UrlRef {
+
+    private static final Logger log = LoggerFactory.getLogger(UrlRef.class);
 
     // private static final Logger log = LoggerFactory.getLogger(UrlRef.class);
 
@@ -378,5 +382,60 @@ public class UrlRef {
             }
         }
         return true;
+    }
+
+    /**
+     * Escape invalid characters in URI string.
+     * Must escape [] and whitespace characters
+     * (e.g. http://mw1.google.com/mw-earth-vectordb/kml-samples/gp/seattle/gigapxl/$[level]/r$[y]_c$[x].jpg)
+     * which would throw an URISyntaxException if URI is created from this URI string.
+     * @param  href   The string to be parsed into a URI
+     * @return escaped URI string
+     */
+    public static String escapeUri(String href) {
+        /*
+        excluded characters from URI syntax:
+
+        control     = <US-ASCII coded characters 00-1F and 7F hexadecimal>
+        space       = <US-ASCII coded character 20 hexadecimal>
+        delims      = "<" | ">" | "#" | "%" | <">
+
+       Other characters are excluded because gateways and other transport
+       agents are known to sometimes modify such characters, or they are
+       used as delimiters.
+
+       unwise      = "{" | "}" | "|" | "\" | "^" | "[" | "]" | "`"
+
+       Data corresponding to excluded characters must be escaped in order to
+       be properly represented within a URI.
+
+       http://www.ietf.org/rfc/rfc2396.txt
+         */
+        StringBuilder buf = new StringBuilder(href.length());
+        for (char c : href.toCharArray()) {
+            switch (c) {
+                case ' ': // %20
+                case '"': // %22
+                case '<':
+                case '>':
+                case '[':
+                case ']':
+                case '{':
+                case '}':
+                case '^':
+                case '`':
+                case '\\':
+                case '|': // %7C
+                    buf.append('%').append(String.format("%02X", (int)c));
+                    // note '#" is allowed in URI construction
+                    break;
+                default:
+                    buf.append(c);
+            }
+        }
+        String newVal = buf.toString();
+        if (log.isDebugEnabled() && newVal.length() != href.length())
+            log.debug("Escaped illegal characters in URL: " + newVal);
+        return newVal;
     }
 }
