@@ -140,7 +140,9 @@ import org.slf4j.LoggerFactory;
  *
  * <p>
  * <h4>Notes/Limitations:</h4>
- * <p> 
+ * <p>
+ * Handles ExtendedData with Data/Value or SchemaData/SimpleData elements but does not handle the non-KML namespace
+ * form of extended data (see http://code.google.com/apis/kml/documentation/extendeddata.html#opaquedata).
  * Only a single {@code Data/SchemaData/Schema ExtendedData} mapping is assumed
  * per Feature but note that although uncommon, KML allows features to define multiple
  * Schemas. Features with mixed {@code Data} and/or multiple {@code SchemaData} elements
@@ -549,7 +551,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				if (rootNS != null && !rootNS.equals(qname.getNamespaceURI())) {
 					// ignore extended data elements other namespace other than root namespace
 					// external namespace contents in ExtendedData not supported
-					// http://code.google.com/apis/kml/documentation/extendeddata.html
+					// http://code.google.com/apis/kml/documentation/extendeddata.html##opaquedata
 					/*
 						<ExtendedData xmlns:camp="http://campsites.com">
 						  <camp:number>14</camp:number>
@@ -561,7 +563,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 	skipNextElement(stream, qname);
 				} else if (tag.equals(DATA)) {
 					Attribute nameAttr = se.getAttributeByName(new QName(NAME));
-					if (nameAttr != null) {
+					if (nameAttr != null) {                        
 						String value = parseValue(qname);
                         if (value != null)
     						cs.putData(new SimpleField(nameAttr.getValue()), value);
@@ -570,15 +572,20 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				} else if (tag.equals(SCHEMA_DATA)) {
 					Attribute url = se.getAttributeByName(new QName(SCHEMA_URL));
 					if (url != null) {
-						String uri = url.getValue();
+                        // NOTE: reference and schema id must be handled exactly the same. See handleSchema()
+                        String uri = UrlRef.escapeUri(url.getValue());
 						handleSchemaData(uri, cs, qname);
 						try {
 							cs.setSchema(new URI(uri));
 						} catch (URISyntaxException e) {
+                            // is URI properly encoded??
 							log.error("Failed to handle SchemaData schemaUrl=" + uri , e);
 						}
 					}
-				}
+                } else {
+                    log.debug("ignore " + qname);
+                	skipNextElement(stream, qname);
+                }
 			}
 		}
 	}
@@ -1400,13 +1407,20 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		attr = element.getAttributeByName(new QName(PARENT));
 		String parent = getNonEmptyAttrValue(attr);
 		Attribute id = element.getAttributeByName(ID_ATTR);
+        /*
+         * The ·value space· of ID is the set of all strings that ·match· the NCName production in [Namespaces in XML]:
+         *  NCName ::=  (Letter | '_') (NCNameChar)*  -- An XML Name, minus the ":"
+         *    NCNameChar ::=  Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender
+         */
 		if (id != null) {
-			String uri = id.getValue();
+            // NOTE: reference and schema id must be handled exactly the same. See handleExtendedData().
+			String uri = UrlRef.escapeUri(id.getValue());
 			// remember the schema for later references
 			schemata.put(uri, s);
 			try {
 				s.setId(new URI(uri));
 			} catch (URISyntaxException e) {
+                // is URI properly encoded??
 				log.warn("Invalid schema id " + uri, e);
 			}
 		}

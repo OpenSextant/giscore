@@ -435,7 +435,7 @@ public class UrlRef {
         }
         String newVal = buf.toString();
         if (log.isDebugEnabled() && newVal.length() != href.length())
-            log.debug("Escaped illegal characters in URL: " + newVal);
+            log.debug("Escaped illegal characters in URL: " + href);
         return newVal;
     }
 }
