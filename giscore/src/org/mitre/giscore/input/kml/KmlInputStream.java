@@ -1758,12 +1758,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
         if (!ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
             skipNextElement(stream, qname);
         } else {
-            return handleElementExtention(map, (Element) getForeignElement(se), null);
+            return handleElementExtension(map, (Element) getForeignElement(se), null);
         }
         return false;
     }
 
-    private boolean handleElementExtention(TaggedMap map, Element el, String namePrefix) {
+    private boolean handleElementExtension(TaggedMap map, Element el, String namePrefix) {
         /*
          LookAt/Camera elements can include gx:TimeSpan or gx:TimeStamp child elements:
 
@@ -1775,7 +1775,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
         String prefix = el.getPrefix();
         String ns = el.getNamespaceURI();
         // use "gx" handle regardless of what KML uses for gx namespace
-        if (ns != null && ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) prefix = "gx";
+        if (ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) prefix = "gx";
         
         if (!el.getChildren().isEmpty()) {
             boolean found = false;
@@ -1786,7 +1786,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
             if (namePrefix == null) namePrefix = eltname;
             else namePrefix += "/" + eltname;
             for (Element child : el.getChildren()) {
-                if (handleElementExtention(map, child, namePrefix))
+                if (handleElementExtension(map, child, namePrefix))
                     found = true; // got match
             }
             return found;

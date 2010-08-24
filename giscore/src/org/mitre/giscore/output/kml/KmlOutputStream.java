@@ -223,7 +223,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             writer.writeStartElement(tag);
             List<Element> elements = handleAttributes(containerStart, tag);
             for(Element el : elements) {
-                if (el.getNamespaceURI() != null && el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX))
+                if (el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX))
             	    handleXmlElement(el);
                 else {
                     // what non-kml namespaces can we support without creating invalid KML other than gx: and atom: ??
@@ -587,14 +587,16 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     public void visit(Element element) {
         try {
             if (gxNamespace != null && gxNamespace.getPrefix().equals(element.getPrefix())
-                    || element.getNamespaceURI() != null && element.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+                    || element.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
                 handleXmlElement(element);
             } else {
                 // REVIEW: handle non-kml element as comment for now .. any other namespaces to support??
-                String prefix = element.getPrefix();
-                String name = element.getName();
-                if (prefix != null) name += " " + element.getNamespace();
-                log.debug("Handle XML element " + name  + " as comment");
+                if (log.isDebugEnabled()) {
+                    String prefix = element.getPrefix();
+                    String name = element.getName();
+                    if (StringUtils.isNotEmpty(prefix)) name += " " + element.getNamespace();
+                    log.debug("Handle XML element " + name  + " as comment");
+                }
                 writeAsComment(element);
             }
         } catch (XMLStreamException e) {
