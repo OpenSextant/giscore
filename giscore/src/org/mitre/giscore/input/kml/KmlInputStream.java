@@ -1410,10 +1410,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
         /*
          * The ·value space· of ID is the set of all strings that ·match· the NCName production in [Namespaces in XML]:
          *  NCName ::=  (Letter | '_') (NCNameChar)*  -- An XML Name, minus the ":"
-         *    NCNameChar ::=  Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender
+         *  NCNameChar ::=  Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender
          */
 		if (id != null) {
             // NOTE: reference and schema id must be handled exactly the same. See handleExtendedData().
+            // Schema id is not really a URI but will be treated as such for validation for now.
+            // NCName is subset of possible URI values.
 			String uri = UrlRef.escapeUri(id.getValue());
 			// remember the schema for later references
 			schemata.put(uri, s);

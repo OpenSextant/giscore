@@ -78,6 +78,8 @@ public class Schema implements IGISObject {
      * @throws IllegalArgumentException if urn is null
      */
 	public Schema(URI urn) {
+        // note schema ID not really a URI but represents the ID attribute type from [XML 1.0 (Second Edition)]
+        // matching the NCName production rules [see Namespaces in XML].
 		this();
 		if (urn == null) {
 			throw new IllegalArgumentException(
