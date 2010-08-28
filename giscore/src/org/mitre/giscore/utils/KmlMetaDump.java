@@ -182,7 +182,7 @@ public class KmlMetaDump implements IKml {
      * @param name Name part of KML file or URL
      */
 	private void processKmlSource(KmlReader reader, File file, String name) {
-		KmlWriter writer = getWriter(name);
+		KmlWriter writer = getWriter(reader, name);
 		features = 0;
 		try {
 			IGISObject gisObj;
@@ -248,7 +248,7 @@ public class KmlMetaDump implements IKml {
 		containerEndDate = null;
 	}
 
-	private KmlWriter getWriter(String name) {
+	private KmlWriter getWriter(KmlReader reader, String name) {
 		if (outPath != null) {
 			if (!outPathCheck) {
 				if (!outPath.exists() && !outPath.mkdirs()) {
@@ -281,7 +281,7 @@ public class KmlMetaDump implements IKml {
                     System.err.println("*** WARNING: target file " + out + " exists");
                     return null;
                 }
-                return new KmlWriter(out);
+                return new KmlWriter(out, reader.getEncoding());
 			} catch (IOException e) {
 				System.err.println("*** ERROR: Failed to create output: " + name);
 				if (e.getCause() != null) e.getCause().printStackTrace();
@@ -291,7 +291,7 @@ public class KmlMetaDump implements IKml {
 
 		if (useStdout) {
 			try {
-				KmlOutputStream kos = new KmlOutputStream(System.out);
+				KmlOutputStream kos = new KmlOutputStream(System.out, reader.getEncoding());
 				System.out.println();
 				return new KmlWriter(kos);
 			} catch (XMLStreamException e) {
