@@ -269,7 +269,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	public KmlInputStream(InputStream input) throws IOException {
 		super(input);
-		DocumentStart ds = new DocumentStart(DocumentType.KML); 
+		DocumentStart ds = new DocumentStart(DocumentType.KML);
 		addLast(ds);
 		try {
 			XMLEvent ev = stream.peek();
@@ -302,7 +302,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			}
 			@SuppressWarnings("unchecked")
 			Iterator<Namespace> niter = first.getNamespaces();
-			while(niter.hasNext()) {
+			while(niter.hasNext()) {                                    
 				Namespace ns = niter.next();
                 String prefix = ns.getPrefix();
                 if (StringUtils.isBlank(prefix)) continue;
@@ -478,7 +478,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				skipNextElement(stream, name);
                 return true;
 			} else if (localname.equals(STYLE_URL)) {
-                feature.setStyleUrl(stream.getElementText());
+                feature.setStyleUrl(stream.getElementText()); // value trimmed to null
                 return true;
             } else if (localname.equals(TIME_SPAN) || localname.equals(TIME_STAMP)) {
                 handleTimePrimitive(feature, ee);
@@ -922,6 +922,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		StartElement sse = ee.asStartElement();
 		Attribute id = sse.getAttributeByName(ID_ATTR);
 		if (id != null) {
+            // escape invalid characters in id field?
+            // if so must be consistent in feature.setStyleUrl() and handleStyleMapPair(), etc.
 			style.setId(id.getValue());
 		}
 		if (cs != null) addFirst(style);
@@ -1416,6 +1418,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
             // NOTE: reference and schema id must be handled exactly the same. See handleExtendedData().
             // Schema id is not really a URI but will be treated as such for validation for now.
             // NCName is subset of possible URI values.
+            // Following characters cause fail URI creation: 0x20 ":<>[\]^`{|} so escape them
 			String uri = UrlRef.escapeUri(id.getValue());
 			// remember the schema for later references
 			schemata.put(uri, s);
