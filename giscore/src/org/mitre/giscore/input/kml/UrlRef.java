@@ -115,7 +115,7 @@ import org.slf4j.LoggerFactory;
  * Use <code>getURI()</code> to get the internal URI and <code>getUrl()</code>
  * to return the original URL.
  * <p/>
- * Class includes static util methods copied from org.jdom.Verifier: {@code isXMLNameCharacter()},
+ * Includes static validation methods copied from org.jdom.Verifier: {@code isXMLNameCharacter()},
  * {@code isXMLNameStartCharacter()}, etc.
  *
  * @author Jason Mathews
@@ -410,7 +410,7 @@ public final class UrlRef {
 		}
         return s;
     }
-
+    
     /**
      * Escape invalid characters in URI string.
      * Must escape [] and whitespace characters
@@ -421,6 +421,8 @@ public final class UrlRef {
      */
     public static String escapeUri(String href) {
         /*
+        URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment
+        
         excluded characters from URI syntax:
 
         control     = <US-ASCII coded characters 00-1F and 7F hexadecimal>
@@ -440,8 +442,11 @@ public final class UrlRef {
          */
         StringBuilder buf = new StringBuilder(href.length());
         for (char c : href.toCharArray()) {
+            if (c <= 0x20 || c >= 0x7f)
+                buf.append('%').append(String.format("%02X", (int)c));
+            else
             switch (c) {
-                case ' ': // %20
+                // case ' ': // %20
                     // excluded delim characters from URI syntax
                 case '"': // %22
                 case '<':
@@ -456,7 +461,8 @@ public final class UrlRef {
                 case ']':
                 case '`':
                     buf.append('%').append(String.format("%02X", (int)c));
-                    // note '#" is allowed in URI construction
+                    // note '#" is allowed in URI construction only once
+                    // if '%' appears it must be followed by 2 hex-decimal chars
                     break;
                 default:
                     buf.append(c);
@@ -504,9 +510,12 @@ public final class UrlRef {
         return true;
     }
 
-    // util functions copied from org.jdom.Verifier source
+    //////////////////////////////////////////////////////
+    // util functions below copied from org.jdom.Verifier source.
+    //
     // A utility class to handle well-formedness checks on names, data, and other
-    // verification tasks for JDOM. The class is final and may not be subclassed.
+    // verification tasks for JDOM.
+    //////////////////////////////////////////////////////
 
     /**
      * This is a utility function for determining whether a specified
@@ -957,5 +966,5 @@ public final class UrlRef {
 
         return false;
     }
-
+   
 }
