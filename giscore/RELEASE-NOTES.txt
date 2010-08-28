@@ -1,0 +1,45 @@
+GIScore Release Notes
+
+These are the release notes for the GIScore library. At a minimum, this file
+attempts to document changes to the public APIs. This file also provides a
+high-level overview of the features added in each release.
+
+------------------------------------------------------------------------------
+
+Release 0.5.23
+
+This release primarily introduces enhancenments and minor bug-fixes to KML input/output
+and some underlying XML handling.
+
+General
+  * Added ListStyle support to Style/KmlOutputStream/KmlInputStream
+  * Update geodesy 1.9.14 using short-cut from Geodetic2DPoint.getLatitude().inDegrees()
+    to Geodetic2DPoint.getLatitudeAsDegrees().
+  * Add @Nullable/@CheckForNull annotations to methods in GroundOverlay, Overlay, Style, etc.
+  * Added getEncoding() to XmlInputStream, KmlInputStream, KmlReader so output stream can have
+    correct character encoding if not UTF-8 used
+
+Common
+  * Fix setStyleUrl() to auto-fix the url if relative idref and '#' not first character
+
+GISFactory
+  * Added encoding (String) as first argument to KML + KMZ type in getOutputStream()
+    so can match correct character encoding
+
+KmzOutputStream
+  * Added public KmzOutputStream(OutputStream stream, String encoding) constructor
+
+XmlGdbOutputStream
+  * Update close() and close streams in finally block to close even if exception thrown
+
+GroundOverlay
+  * Added setBoundingBox(Geodetic2DBounds box) to set overlay bounding box from Geodetic2DBounds
+
+Style
+  * Change double to Double and boolean to Boolean in field types and associated getters/setters to allow Nullable values.
+
+UrlRef
+  * Update User-Agent to Google Earth 5.2 identifier
+  * Add new methods: isIdentifier(), isXMLNameCharacter(), isXMLNameStartCharacter()
+  * Updated escapeUri() to handle ascii control chars 00-2f and extended 7f-ff
+
