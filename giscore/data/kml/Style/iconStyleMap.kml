@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+    <name>icon styleMap</name>
+    <open>1</open>
+
+    <Style id="sh_volcano">
+        <IconStyle>
+            <color>ff0000aa</color>
+            <scale>1.8</scale>
+            <Icon>
+                <href>http://maps.google.com/mapfiles/kml/shapes/volcano.png</href>
+            </Icon>
+        </IconStyle>
+        <ListStyle>
+        </ListStyle>
+    </Style>
+
+    <Style id="sn_volcano">
+        <IconStyle>
+            <scale>1.2</scale>
+            <Icon>
+                <href>http://maps.google.com/mapfiles/kml/shapes/volcano.png</href>
+            </Icon>
+        </IconStyle>
+        <ListStyle>
+        </ListStyle>
+    </Style>
+
+    <StyleMap id="msn_volcano">
+        <Pair>
+            <key>normal</key>
+            <styleUrl>#sn_volcano</styleUrl>
+        </Pair>
+        <Pair>
+            <key>highlight</key>
+            <styleUrl>#sh_volcano</styleUrl>
+        </Pair>
+    </StyleMap>
+
+    <Placemark>
+        <name>Mt Vesuvius Volcano - Campania, Italy</name>
+        <description>Click on the placemark icon then move on/off it to see icon change</description>
+        <styleUrl>#msn_volcano</styleUrl>
+        <Point>
+		<coordinates>14.4289564042183,40.81876265476919,0</coordinates>
+        </Point>
+    </Placemark>
+</Document>
+</kml>
