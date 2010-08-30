@@ -82,8 +82,8 @@ public class StyleMap extends StyleSelector {
 		}
         // test if url relative identifier not starting with '#' then prepend '#' to url
         if (!url.startsWith("#") && UrlRef.isIdentifier(url)) {
-            log.debug("fix url identifier as local reference");
             url = "#" + url;
+            log.debug("fix StyleMap url identifier as local reference: " + url);
         }
 		mappings.put(key, url);
 	}
