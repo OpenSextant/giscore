@@ -44,7 +44,7 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  *  <li> Starting container tag with no matching end container (error)
  *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem) (warning)
  *  <li> Region has invalid LatLonAltBox (error)
- *  <li> LatLonAltBox fails to satisfy constraints [ATC 8]
+ *  <li> LatLonAltBox fails to satisfy constraints [ATC 8] (warning)
  *  <li> LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) [ATC 8.3] (error)
  *  <li> LatLonAltBox fails to satisfy constraint (altMode != clampToGround) [ATC 8.4] (warning)
  *  <li> LatLonAltBox appears to be very small area (warning)
@@ -57,7 +57,12 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  *  <li> Feature inherits time from parent container (info)
  *  <li> Container start date is earlier than that of its ancestors (info)
  *  <li> Container end date is later than that of its ancestors (info)
- *  <li> Out of order elements
+ *  <li> Suspicious Style id characters (warning)
+ *  <li> Suspicious styleUrl characters (warning)
+ *  <li> Suspicious StyleMap id characters (warning)
+ *  <li> Suspicious StyleMap highlight URL characters (warning)
+ *  <li> Suspicious StyleMap normal URL characters (warning)
+ *  <li> Out of order elements (error)
  *  <li> gx:Track coord-when mismatch (error)
  *  <li> gx:SimpleArrayData has incorrect length (error)
  * </ul>
@@ -443,7 +448,31 @@ public class KmlMetaDump implements IKml {
                 addTag(IKml.LINE_STYLE);
             if (s.hasPolyStyle())
                 addTag(IKml.POLY_STYLE);
-            // giscore does not support ListStyle
+            if (s.hasListStyle())
+                addTag(IKml.LIST_STYLE);
+            String id = s.getId();
+            if (id != null && !UrlRef.isIdentifier(id)) {
+                addTag(":Suspicious Style id characters");
+                if (verbose) System.out.println(" Warning: Style id appears to contain invalid characters: " + id);
+            }
+        } else if (cl == StyleMap.class) {
+            addTag(cl);
+            StyleMap s = (StyleMap) gisObj;
+            String id = s.getId();
+            if (id != null && !UrlRef.isIdentifier(id)) {
+                addTag(":Suspicious StyleMap id characters");
+                if (verbose) System.out.println(" Warning: StyleMap id appears to contain invalid characters: " + id);
+            }
+            String styleUrl = s.get(StyleMap.NORMAL);
+            if (styleUrl != null && styleUrl.startsWith("#") && !UrlRef.isIdentifier(styleUrl.substring(1))) {
+                addTag(":Suspicious StyleMap normal URL characters");
+                if (verbose) System.out.println(" Warning: StyleMap normal URL appears to contain invalid characters: " + styleUrl);
+            }
+            styleUrl = s.get(StyleMap.HIGHLIGHT);
+            if (styleUrl != null && styleUrl.startsWith("#") && !UrlRef.isIdentifier(styleUrl.substring(1))) {
+                addTag(":Suspicious StyleMap highlight URL characters");
+                if (verbose) System.out.println(" Warning: StyleMap highlight URL appears to contain invalid characters: " + styleUrl);
+            }
         } else if (gisObj instanceof Overlay) {
             Overlay ov = (Overlay) gisObj;
             addTag(ov.getClass());
@@ -464,7 +493,7 @@ public class KmlMetaDump implements IKml {
             addTag(name);
         } else if ( /* cl != DocumentStart.class && */ cl != Comment.class) {
             // ignore: DocumentStart + Comment objects
-            addTag(cl); // e.g. Schema, StyleMap, NetworkLinkControl
+            addTag(cl); // e.g. Schema, NetworkLinkControl
         }
         lastObjClass = gisObj.getClass();
 	}
@@ -588,6 +617,14 @@ public class KmlMetaDump implements IKml {
 	}
 
     private void checkCommon(Common f) {
+        String styleUrl = f.getStyleUrl();
+        if (styleUrl != null && styleUrl.startsWith("#")) {
+            if (!UrlRef.isIdentifier(styleUrl.substring(1))) {
+                addTag(":Suspicious styleUrl characters");
+                if (verbose) System.out.println(" Warning: styleUrl appears to contain invalid characters: " + styleUrl);
+            }
+        }
+        
         Date startTime = f.getStartTime();
         Date endTime = f.getEndTime();
         if (startTime != null || endTime != null) {

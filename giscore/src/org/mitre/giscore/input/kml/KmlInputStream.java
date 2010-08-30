@@ -715,6 +715,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		while (true) {
 			next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
+                System.out.println(sm.toString());//debug
 				return sm;
 			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
@@ -723,7 +724,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					handleStyleMapPair(sm, ie.getName());
 				}
 			}
-		}
+		}        
 	}
 
 	/**
@@ -752,7 +753,22 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			XMLEvent ne = stream.peek();
 			if (foundEndTag(ne, name)) {
 				if (value != null) {
-                    if (key == null) key = "normal"; // default
+                    if (key == null) {
+                        if (sm.containsKey(StyleMap.NORMAL)) {
+                            log.warn("StyleMap already has normal definition. Ignore keyless value=" + value);
+                            continue;
+                        }
+                        key = StyleMap.NORMAL; // default
+                    } else if (key.equalsIgnoreCase(StyleMap.NORMAL))
+                        key = StyleMap.NORMAL;
+                    else if (key.equalsIgnoreCase(StyleMap.HIGHLIGHT))
+                        key = StyleMap.HIGHLIGHT;
+                    else
+                        log.warn("Unknown StyleMap key: " + key);
+
+                    // note if styleUrl is "local reference" and does not have '#' prefix
+                    // then it will be pre-pended to the URL
+
 					sm.put(key, value);
 				}
 				return;
