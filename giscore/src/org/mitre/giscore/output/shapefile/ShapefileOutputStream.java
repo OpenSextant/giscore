@@ -222,7 +222,7 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
 
 	@Override
 	public void visit(StyleMap styleMap) {
-		String id = styleMap.get("normal");
+		String id = styleMap.get(StyleMap.NORMAL);
 		if (id != null && id.startsWith("#")) {
 			styleMappings.put(styleMap.getId(), id.substring(1));
 		}
