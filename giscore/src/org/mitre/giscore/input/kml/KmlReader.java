@@ -220,7 +220,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 *
 	 * @return list of visited networkLink URIs, empty list if
 	 * 			no reachable networkLinks are found, never null
-	 * @throws IllegalArgumentException if reader is still opened
+	 * @throws IllegalArgumentException if reader is still open
 	 */
 	public List<IGISObject> importFromNetworkLinks() {
         return _importFromNetworkLinks(null);
@@ -357,8 +357,25 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 
     /**
      * ImportEventHandler interface used for callers to implement handling
-     * of GISObjects encountered as NetworkLinks are parsed.
-     *
+     * of GISObjects encountered as NetworkLinks are parsed. If the callback
+     * handleEvent() method returns false then recursion is aborted no more
+     * NetworkLink features are processed.
+     * <pre>
+     * KmlReader reader = new KmlReader(new URL(
+     *   "http://kml-samples.googlecode.com/svn/trunk/kml/NetworkLink/visibility.kml"))
+     * ... // read all features from reader
+     * reader.close();
+     * // reader stream must be closed (all features processed) before trying
+     * // to import features from NetworkLinks.
+     * reader.importFromNetworkLinks(
+     *    new KmlReader.ImportEventHandler() {
+     *          public boolean handleEvent(UrlRef ref, IGISObject gisObj)
+     *       {
+     *            // do something with gisObj
+     *            return true;
+     *       }
+     *    });</pre>
+     * 
      * @see KmlReader#importFromNetworkLinks(ImportEventHandler)
      */
     public static interface ImportEventHandler {
