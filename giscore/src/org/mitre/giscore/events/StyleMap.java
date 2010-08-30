@@ -45,6 +45,9 @@ public class StyleMap extends StyleSelector {
 
 	private final Map<String, String> mappings = new HashMap<String, String>();
 
+    public final static String NORMAL = "normal";
+    public final static String HIGHLIGHT = "highlight";
+
     /**
      * Default Ctor
      */
@@ -84,6 +87,10 @@ public class StyleMap extends StyleSelector {
         }
 		mappings.put(key, url);
 	}
+
+    public boolean containsKey(String key) {
+        return mappings.containsKey(key);
+    }
 
     public String get(String key) {
 		return mappings.get(key);
