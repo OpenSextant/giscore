@@ -61,7 +61,7 @@ public class TestGISBase {
             System.out.println("Created temp output directory: " + tempdir);
 	}
 	public static final AtomicInteger count = new AtomicInteger();
-	protected static Random random = new Random(1000);
+	protected static final Random random = new Random(1000);
 
 	/**
 	 * Create a temp file or directory for a test
