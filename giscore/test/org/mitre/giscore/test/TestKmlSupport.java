@@ -22,24 +22,24 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertNotNull;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.awt.*;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.*;
+import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.input.IGISInputStream;
+import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.apache.commons.io.IOUtils;
+import org.mitre.giscore.output.kml.KmlOutputStream;
+
+import javax.xml.stream.XMLStreamException;
 
 /**
  * @author DRAND
@@ -253,6 +253,25 @@ public class TestKmlSupport extends TestGISBase {
             }
         }
 	}
+
+    @Test public void testStyleUrl()  {
+        Feature f = new Feature();
+        f.setStyleUrl("myStyle");
+        // test auto anchor prefix '#' prepend to feature style url
+        assertEquals("#myStyle", f.getStyleUrl());
+
+        f.setStyleUrl("#my_Style123");
+        assertEquals("#my_Style123", f.getStyleUrl());
+    }
+
+    @Test public void testStyleMapUrl()  {
+        StyleMap sm = new StyleMap("myStyle");
+        sm.put(StyleMap.NORMAL, "sn_myStyle");
+        sm.put(StyleMap.HIGHLIGHT, "sh_myStyle");
+        // test auto anchor prefix '#' prepend to styleUrls
+        assertEquals("#sn_myStyle", sm.get(StyleMap.NORMAL));
+        assertEquals("#sh_myStyle", sm.get(StyleMap.HIGHLIGHT));
+    }
 
 	/**
 	 * For most objects they need to be exactly the same, but for some we can 
