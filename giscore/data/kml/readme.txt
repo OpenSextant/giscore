@@ -6,7 +6,7 @@ Other examples have been added to this collection to cover nearly all possible
 features of KML 2.2 as a validation test suite including those from older versions
 of KML (KML 2.0, KML 2.1) with deleted and deprecated features.
 
-e.g. 
+e.g.
      http://kml-samples.googlecode.com/svn/trunk/kml/Placemark/placemark.kml
      http://kml-samples.googlecode.com/svn/trunk/kml/kmz/simple/big.kmz
      http://kml-samples.googlecode.com/svn/trunk/kml/kmz/simple/mimetype.kmz
@@ -23,33 +23,33 @@ Summary of tags and properties used in KML collection
 	Feature inherits container time
 	Feature uses inline Style
 	Feature uses inline StyleMap
-	Geometry spans -180/+180 longtiude line	
+	Geometry spans -180/+180 longtiude line
 	Invalid time range: start > end
 	NetworkLink missing Link
 	Out of order elements
 	Overlay missing icon
 	Region has invalid LatLonAltBox
 
-	BalloonStyle		 MultiPoint
-	Camera			 NetworkLink
-	Document		 NetworkLinkControl
-	ExtendedData		 PhotoOverlay
-	Folder			 Placemark
-	GroundOverlay		 Point
-	IconStyle		 PolyStyle
-	LabelStyle		 Polygon
-	LatLonBox		 Region
-	Line			 Schema
-	LineStyle		 ScreenOverlay
-	LinearRing		 Style
-	LookAt			 StyleMap
-	Model			 TimeSpan
-	MultiGeometry		 TimeStamp
-	atom:author		 gx:MultiTrack
-	atom:link		 gx:Tour
-	gx:LatLonQuad		 gx:Track
-	gx:TimeSpan		 gx:TimeStamp
-        gx:balloonVisibility
+	BalloonStyle		MultiPoint
+	Camera			NetworkLink
+	Document		NetworkLinkControl
+	ExtendedData		PhotoOverlay
+	Folder			Placemark
+	GroundOverlay		Point
+	IconStyle		PolyStyle
+	LabelStyle		Polygon
+	LatLonBox		Region
+	Line			Schema
+	LineStyle		ScreenOverlay
+        LinearRing		Style
+        ListStyle		StyleMap
+        LookAt			TimeSpan
+        Model			TimeStamp
+        MultiGeometry		atom:author
+	atom:link		gx:MultiTrack
+        gx:LatLonQuad		gx:Tour
+        gx:TimeSpan		gx:Track
+        gx:balloonVisibility	gx:TimeStamp
 
 ----------------------------------------------------------------------------------------------------
 
@@ -461,12 +461,14 @@ data\kml\ListStyle\check-hide-children.kml
 
 	Document             1
 	Folder               2
+	ListStyle            1
 	Placemark            4
 	Style                1
 	# features=4
 
 data\kml\ListStyle\check-off-only.kml
 
+	ListStyle            1
 	Placemark            4
 	Point                4
 	Style                1
@@ -476,6 +478,7 @@ data\kml\ListStyle\check.kml
 
 	Document             1
 	Folder               2
+	ListStyle            1
 	Placemark            4
 	Point                4
 	Style                1
@@ -505,6 +508,7 @@ data\kml\ListStyle\radio-folder-vis.kml
 
 	Document             1
 	Folder               2
+	ListStyle            1
 	Placemark            4
 	Point                4
 	Style                1
@@ -514,6 +518,7 @@ data\kml\ListStyle\radio-folder.kml
 
 	Document             1
 	Folder               2
+	ListStyle            1
 	Placemark            4
 	Point                4
 	Style                1
@@ -525,6 +530,7 @@ data\kml\ListStyle\radio-hide-children.kml
 	url=file:/C:/projects/giscore/data/kml/ListStyle/other-stuff.kml
 	Document             1
 	Folder               2
+	ListStyle            1
 	NetworkLink          2
 	Placemark            5
 	Point                4
@@ -1031,6 +1037,7 @@ data\kml\Region\ScreenOverlay\continents.kmz
 
 	Document             1
 	Folder               2
+	ListStyle            1
 	Line                 4
 	Placemark            4
 	Region               8
