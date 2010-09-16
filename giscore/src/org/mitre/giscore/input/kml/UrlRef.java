@@ -71,24 +71,19 @@ Copyright (C) 2000-2007 Jason Hunter & Brett McLaughlin.
  */
 package org.mitre.giscore.input.kml;
 
-import java.io.BufferedInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.net.URLConnection;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.*;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * <code>UrlRef</code> manages the encoding/decoding of internally created
@@ -120,9 +115,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author Jason Mathews
  */
-public final class UrlRef {
+public final class UrlRef implements java.io.Serializable {
 
     private static final Logger log = LoggerFactory.getLogger(UrlRef.class);
+
+    private static final long serialVersionUID = 1L;
 
     // private static final Logger log = LoggerFactory.getLogger(UrlRef.class);
 
