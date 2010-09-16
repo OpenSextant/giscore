@@ -176,7 +176,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author DRAND
  * @author J.Mathews
- * 
+ *
  */
 public class KmlInputStream extends XmlInputStream implements IKml {
     public static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
@@ -1035,9 +1035,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		// xsd:boolean· can have the following legal literals {true, false, 1, 0}.
 		if (val != null) {
 			val = val.trim();                   
-			if ("1".equals(val)) return true;
-			else if ("0".equals(val)) return false;
-			return val.equalsIgnoreCase("true");
+			//if ("1".equals(val)) return true;
+			//else if ("0".equals(val)) return false;
+			return "1".equals(val) || val.equalsIgnoreCase("true");
 		}
 		return false;
 	}
@@ -1974,23 +1974,21 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private GeometryBase getGeometryBase(QName name, String localname) throws XMLStreamException {
 		if (localname.equals(LINE_STRING)) {
 			GeometryGroup geom = parseCoordinates(name);
-            if (geom.size() == 1) {
-                Point pt = geom.points.get(0);
-                log.warn("line with single coordinate converted to point: " + pt);
-                return getGeometry(geom, pt);
-            }
-			else return getGeometry(geom, new Line(geom.points));
+			if (geom.size() == 1) {
+				Point pt = geom.points.get(0);
+				log.warn("line with single coordinate converted to point: " + pt);
+				return getGeometry(geom, pt);
+			} else return getGeometry(geom, new Line(geom.points));
 		} else if (localname.equals(LINEAR_RING)) {
 			GeometryGroup geom = parseCoordinates(name);
-            if (geom.size() == 1) {
-                Point pt = geom.points.get(0);
-                log.warn("ring with single coordinate converted to point: " + pt);
-                return getGeometry(geom, pt);
-            } else if (geom.size() != 0 && geom.size() < 4) {
-                log.warn("ring with " + geom.size()+ " coordinates converted to line: " + geom);
+			if (geom.size() == 1) {
+				Point pt = geom.points.get(0);
+				log.warn("ring with single coordinate converted to point: " + pt);
+				return getGeometry(geom, pt);
+			} else if (geom.size() != 0 && geom.size() < 4) {
+				log.warn("ring with " + geom.size() + " coordinates converted to line: " + geom);
 				return getGeometry(geom, new Line(geom.points));
-            }
-			else return getGeometry(geom, new LinearRing(geom.points));
+			} else return getGeometry(geom, new LinearRing(geom.points));
 		} else if (localname.equals(POLYGON)) {
 			// contains one outer ring and 0 or more inner rings
 			LinearRing outer = null;
@@ -2008,16 +2006,16 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					if (sename.equals(OUTER_BOUNDARY_IS)) {
 						parseCoordinates(qname, geom);
 						int nPoints = geom.size();
-                        if (nPoints == 1) {
-                            Point pt = geom.points.get(0);
-                            log.warn("polygon with single coordinate converted to point: " + pt);
+						if (nPoints == 1) {
+							Point pt = geom.points.get(0);
+							log.warn("polygon with single coordinate converted to point: " + pt);
 							return getGeometry(geom, pt);
-                        } else if (nPoints != 0 && nPoints < 4) {
+						} else if (nPoints != 0 && nPoints < 4) {
 							// less than 4 points - use line for the shape
-                            log.warn("polygon with " + nPoints + " coordinates converted to line: " + geom);
+							log.warn("polygon with " + nPoints + " coordinates converted to line: " + geom);
 							Line line = new Line(geom.points);
 							return getGeometry(geom, line);
-                        }
+						}
 						outer = new LinearRing(geom.points);
 					} else if (sename.equals(INNER_BOUNDARY_IS)) {
 						GeometryGroup innerRing = parseCoordinates(qname);
