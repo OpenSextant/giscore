@@ -26,6 +26,7 @@ import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
+import org.mitre.itf.geodesy.Geodetic2DPoint;
 
 /**
  * Simple KML Debugging Tool to read KML/KMZ documents by File or URL and dump statistics
@@ -581,8 +582,14 @@ public class KmlMetaDump implements IKml {
 	 */
 	private void checkGeometry(Geometry geom) {
 		// geom must have at least 2 points (points cannot span the line)
-		if (geom.getNumPoints() >= 2) return;
-		Geodetic2DBounds bbox = geom.getBoundingBox();
+        Geodetic2DBounds bbox = geom.getBoundingBox();
+		if (bbox == null || geom.getNumPoints() < 2) return;
+		if (verbose) {
+			Geodetic2DPoint c = geom.getCenter();
+			if (c != null) {
+				System.out.format("Center point: %f,%f%n", c.getLongitudeAsDegrees(), c.getLatitudeAsDegrees());
+			}
+		}
 		//if (geom instanceof Line && (((Line)geom).clippedAtDateLine())) System.out.println(":clipped");
 		//else if (geom instanceof LinearRing && (((LinearRing)geom).clippedAtDateLine())) System.out.println(":clipped");
 		// see http://www.cadmaps.com/gisblog/?cat=10
@@ -591,12 +598,13 @@ public class KmlMetaDump implements IKml {
 			addTag(":Geometry spans -180/+180 longtiude line");
 			// such geometries must be sub-divided to render correctly
 		}
+
 	}
 
 	private void checkNetworkLink(NetworkLink networkLink) {
 		TaggedMap link = networkLink.getLink();
 		if (link != null) {
-            String href = link.get(HREF);
+			String href = link.get(HREF);
 			if (href == null)
 				addTag(":NetworkLink missing or empty HREF");
 			else {
