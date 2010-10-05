@@ -1,4 +1,5 @@
 GIScore Release Notes
+---------------------
 
 These are the release notes for the GIScore library. At a minimum, this file
 attempts to document changes to the public APIs. This file also provides a
@@ -42,4 +43,19 @@ UrlRef
   * Update User-Agent to Google Earth 5.2 identifier
   * Add new methods: isIdentifier(), isXMLNameCharacter(), isXMLNameStartCharacter()
   * Updated escapeUri() to handle ascii control chars 00-2f and extended 7f-ff
+
+
+------------------------------------------------------------------------------
+
+Release 0.5.24
+
+This release primarily introduces bug-fixes to KML output and some underlying XML handling.
+
+Fixed bug in KmlWriter that did not close all image entries in created KMZ file
+creating corrupt ZIP file. Added flag to underlying KmlOutputStream/XmlOutputStreamBase classes.
+
+StyleMap
+-add containsKey() method + added NORMAL/HIGHLIGHT constants
+
+------------------------------------------------------------------------------
 
