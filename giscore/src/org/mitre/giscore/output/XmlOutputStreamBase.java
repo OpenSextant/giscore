@@ -49,6 +49,12 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     private static final Logger log = LoggerFactory.getLogger(XmlOutputStreamBase.class);
 
     protected OutputStream stream;
+    
+    /**
+     * Keep flag if writer is open so don't accidentally try to append closing tags more than once...
+     */
+    protected boolean writerOpen = true;
+    
 	protected XMLStreamWriter writer;
 	protected XMLOutputFactory factory;
 	protected final Map<String,String> namespaces = new HashMap<String, String>();
@@ -105,11 +111,14 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
      */
 	public void close() throws IOException {
 		try {
-			writer.flush();
-			writer.close();
+            if (writerOpen) {
+                writer.flush();
+                writer.close();
+            }
 		} catch (XMLStreamException e) {
 			throw new IOException(e);
 		} finally {
+            writerOpen = false;
             IOUtils.closeQuietly(stream);
         }
 	}    

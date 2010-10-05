@@ -124,13 +124,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     @Override
     public void close() throws IOException {
         try {
-            writer.writeEndElement();
-            writer.writeCharacters("\n");
-            writer.writeEndDocument();
+            if (writerOpen) {
+                writer.writeEndElement();
+                writer.writeCharacters("\n");
+                writer.writeEndDocument();
+            }
         } catch (XMLStreamException e) {
             throw new IOException(e);
         } finally {
-            super.close();
+            super.close();            
         }
     }
 
@@ -140,19 +142,22 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @throws IOException if an error occurs
      */
     public void closeWriter() throws IOException {
-        try {
+        if (writerOpen)
             try {
-                writer.writeEndElement();
-                writer.writeCharacters("\n");
-                writer.writeEndDocument();
+                try {
+                    writer.writeEndElement();
+                    writer.writeCharacters("\n");
+                    writer.writeEndDocument();
+                } finally {
+                    writer.flush();
+                    writer.close();                    
+                    // don't call super.close() which closes the outputStream
+                }
+            } catch (XMLStreamException e) {
+                throw new IOException(e);
             } finally {
-                writer.flush();
-                writer.close();
-                // don't call super.close() which closes the outputStream
+                writerOpen = false;
             }
-        } catch (XMLStreamException e) {
-            throw new IOException(e);
-        }
     }
 
     /**

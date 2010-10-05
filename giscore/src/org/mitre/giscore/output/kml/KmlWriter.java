@@ -176,7 +176,6 @@ public class KmlWriter implements IGISOutputStream {
 			if (zoS == null) throw new IOException("stream is already closed");
 			if (kos != null) {
 				kos.closeWriter();
-				kos = null;
 				zoS.closeEntry();
 			}
 			ZipEntry zEnt = new ZipEntry(entryName.trim());
@@ -232,7 +231,7 @@ public class KmlWriter implements IGISOutputStream {
 
     /**
      * Close this KmlWriter and free any resources associated with the
-     * writer inlcuding underlying stream.
+     * writer including underlying stream.
      */
     public void close() {
 		close(true);
