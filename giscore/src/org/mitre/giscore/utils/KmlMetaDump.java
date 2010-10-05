@@ -165,6 +165,7 @@ public class KmlMetaDump implements IKml {
 		System.out.flush();
 		System.out.println();
 		Integer docCnt = tagSet.get(DOCUMENT); Integer fldCnt = tagSet.get(FOLDER);
+		boolean metaProps = false;
 		if ((docCnt == null || docCnt == 1) && (fldCnt == null || fldCnt == 1)) {
 			// if have only one document and/or folder then omit these
 			tagSet.remove(DOCUMENT); tagSet.remove(FOLDER);
@@ -172,10 +173,18 @@ public class KmlMetaDump implements IKml {
 		for (Map.Entry<String,Integer> entry: tagSet.entrySet()) {
 			String key = entry.getKey();
 			// message/warnings start with : prefix, otherwise show key + count
-			if (key.startsWith(":"))
+			if (key.startsWith(":")) {
 				System.out.println("\t" + key.substring(1));
-			else
+				metaProps = true;
+			} else {
+				if (metaProps) {
+					// if last property was a message/warnings then
+					// print new line to separate the two groups of items
+					System.out.println("\t--");
+					metaProps = false;
+				}
 				System.out.format("\t%-20s %d%n", key, entry.getValue());
+			}
 		}
 		totals.addAll(tagSet.keySet()); // accumulate total tag set
 		System.out.flush();
@@ -833,6 +842,34 @@ public class KmlMetaDump implements IKml {
 		return defaultValue;
 	}
 
+	private void dumpStats() {
+		if (dumpCount > 1 && !totals.isEmpty()) {
+			System.out.println("Summary: " + dumpCount + " KML resources\n");
+			boolean metaProp = false;
+			for (String tag : totals) {
+				// message/warnings start with : prefix, otherwise show key + count
+				if (tag.startsWith(":")) {
+					tag = tag.substring(1);
+					metaProp = true;
+				} else {
+					if (metaProp) {
+						// if last property was a message/warnings then
+						// print new line to separate the two groups of items
+						System.out.println("\t--");
+						metaProp = false;
+					}
+				}
+				System.out.println("\t" + tag);
+			}
+		}
+		if (maximalSet != null && !maximalSet.isEmpty()) {
+				System.out.println("\nExtendedData:");
+				for (String name : maximalSet) {
+					System.out.println("\t" + name);
+				}
+		}
+	}
+
 	private void addTag(Class<? extends IGISObject> aClass) {
         String tag = getClassName(aClass);
         if (tag != null) addTag(tag);
@@ -868,14 +905,15 @@ public class KmlMetaDump implements IKml {
 		System.out.println("Usage: java KmlMetaDump [options] <file, directory, or URL..>");
 		System.out.println("\nIf a directory is choosen that all kml/kmz files in any subfolder will be examined");
 		System.out.println("\nOptions:");
-		System.out.println("\t-o<path-to-output-directory> Writes KML/KMZ to file in specified directory");
-		System.out.println("\t\tusing same base file as original file.");
-		System.out.println("\t\tFiles with same name in target location will be skipped as NOT to overwrite anything.");
-		System.out.println("\t-f Follow networkLinks: recursively loads content from NetworkLinks");
-		System.out.println("\t\tand adds features to resulting statistics");
-		System.out.println("\t-stdout Write KML output to STDOUT instead of writing files");
- 		System.out.println("\t-v Set verbose which dumps out features");
-		System.out.println("\t-x Dump full set of extended data property names");
+		System.out.println("  -o<path-to-output-directory>");
+		System.out.println("     Writes KML/KMZ to file in specified directory using");
+		System.out.println("     same base file as original file.  Files with same name");
+		System.out.println("     in target location will be skipped as NOT to overwrite anything.");
+		System.out.println("  -f Follow networkLinks: recursively loads content from NetworkLinks");
+		System.out.println("     and adds features to resulting statistics");
+		System.out.println("  -stdout Write KML output to STDOUT instead of writing files");
+ 		System.out.println("  -v Set verbose which dumps out features");
+		System.out.println("  -x Dump full set of extended data property names");
 		System.exit(1);
 	}	
 
@@ -929,32 +967,8 @@ public class KmlMetaDump implements IKml {
 				System.out.println();
 			}
         }
-		
-		if (app.dumpCount > 1 && !app.totals.isEmpty()) {
-			System.out.println("Summary: " + app.dumpCount + " KML resources\n");
-			boolean metaProp = false;
-			for (String tag : app.totals) {
-				// message/warnings start with : prefix, otherwise show key + count
-				if (tag.startsWith(":")) {
-					tag = tag.substring(1);
-					metaProp = true;
-				} else {
-					if (metaProp) {
-						// if last property was a message/warnings then
-						// print new line to separate the two groups of items
-						System.out.println();
-						metaProp = false;
-					}
-				}
-				System.out.println("\t" + tag);
-			}
-		}
-		if (app.maximalSet != null && !app.maximalSet.isEmpty()) {
-				System.out.println("\nExtendedData:");
-				for (String name : app.maximalSet) {
-					System.out.println("\t" + name);
-				}
-		}
+
+		app.dumpStats();
     }
 
 }
