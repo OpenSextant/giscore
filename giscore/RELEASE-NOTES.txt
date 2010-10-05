@@ -49,13 +49,19 @@ UrlRef
 
 Release 0.5.24
 
-This release primarily introduces bug-fixes to KML output and some underlying XML handling.
+This release primarily introduces cleanup and bug-fixes to KML input/output and some underlying XML handling.
 
 Fixed bug in KmlWriter that did not close all image entries in created KMZ file
 creating corrupt ZIP file. Added flag to underlying KmlOutputStream/XmlOutputStreamBase classes.
 
 StyleMap
 -add containsKey() method + added NORMAL/HIGHLIGHT constants
+
+KmlInputStream
+-Updated StyleMap handling
+
+UrlRef
+-Added check in escapeUri() to escape all control chars (ASCII code < 0x20) and extended chars (code >= 0x7f)
 
 ------------------------------------------------------------------------------
 
