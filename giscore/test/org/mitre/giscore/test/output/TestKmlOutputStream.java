@@ -18,8 +18,6 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.output;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -44,11 +42,12 @@ import org.mitre.giscore.test.TestGISBase;
 import javax.xml.stream.XMLStreamException;
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
+
+import static org.junit.Assert.*;
 
 /**
  * Test the KML output stream.
@@ -67,32 +66,73 @@ public class TestKmlOutputStream extends TestGISBase {
 	}
 
     @Test
-	public void testWriteKmlByteStream() throws IOException, XMLStreamException {
+	public void testElement() throws IOException, XMLStreamException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		KmlOutputStream kos = new KmlOutputStream(bos);
+		KmlOutputStream kos = new KmlOutputStream(bos, KmlOutputStream.ISO_8859_1);
         try {
             DocumentStart ds = new DocumentStart(DocumentType.KML);
-            ds.getNamespaces().add(Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT));
-            Namespace atomNs = Namespace.getNamespace("atom", IAtomConstants.ATOM_URI_NS);
+			Namespace gxNs = Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT);
+			Namespace atomNs = Namespace.getNamespace("atom", IAtomConstants.ATOM_URI_NS);
+			ds.getNamespaces().add(gxNs);
             ds.getNamespaces().add(atomNs);
             kos.write(ds);
             Feature f = new Feature();
-            f.setName("gx:test");
+            f.setName("gx:atom:test");
             f.setDescription("this is a test placemark");
-            Element link = new Element(atomNs, "link");
+			/*
+			 <atom:author>
+         		<atom:name>the Author</atom:name>
+ 			 </atom:author>
+ 			 <atom:link href="http://tools.ietf.org/html/rfc4287" />
+			 */
+			List<Element> elements = new ArrayList<Element>(2);
+			Element author = new Element(atomNs, "author");
+			Element name = new Element(atomNs, "name");
+			name.setText("the Author");
+			author.getChildren().add(name);
+			elements.add(author);
+			Element link = new Element(atomNs, "link");
             link.getAttributes().put("href", "http://tools.ietf.org/html/rfc4287");
-            f.setElements(Collections.singletonList(link));
+			elements.add(link);
+            f.setElements(elements);
             Point point = new Point(12.233, 146.825);
             point.setAltitudeMode("clampToSeaFloor");
             f.setGeometry(point);
             kos.write(f);
+			kos.close();
+			kos = null;
+
+			// System.out.println(bos.toString());
+			
+			KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+			IGISObject o = kis.read();
+			assertTrue(o instanceof DocumentStart);
+			List<Namespace> namespaces = ((DocumentStart)o).getNamespaces();
+			assertTrue(namespaces.contains(atomNs));
+			assertTrue(namespaces.contains(gxNs));
+			o = kis.read();
+			assertTrue(o instanceof Feature);
+			Feature f2 = (Feature)o;
+			List<Element> elts = f2.getElements();
+			assertTrue(elts != null && elts.size() == 2);
+			checkApproximatelyEquals(f, f2);
+			Element e = elts.get(0);
+			assertNotNull(e.getNamespaceURI());
+			assertEquals(atomNs, e.getNamespace());
+			assertNotNull(e.getChildren());
+			Element child = e.getChild("name", atomNs);
+			assertNotNull(child);
+			assertNotNull(e.getChild("name"));
+			Point pt = (Point)f2.getGeometry();
+			assertEquals(AltitudeModeEnumType.clampToSeaFloor, pt.getAltitudeMode());
+			kis.close();
         } finally {
-		    kos.close();
+			if (kos != null)
+				kos.close();
         }
-        String kml = bos.toString();
         // System.out.println(kml);
-        Assert.assertTrue(kml.contains("this is a test placemark"));
-        Assert.assertTrue(kml.contains(IKml.NS_GOOGLE_KML_EXT));
+        //Assert.assertTrue(kml.contains("this is a test placemark"));
+        //Assert.assertTrue(kml.contains(IKml.NS_GOOGLE_KML_EXT));
 	}
 
     @Test

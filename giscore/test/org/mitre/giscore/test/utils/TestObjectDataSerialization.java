@@ -22,19 +22,19 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.Date;
+import java.util.Map;
 
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
-import org.mitre.giscore.events.Common;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.Row;
-import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.Namespace;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.events.SimpleField.Type;
+import org.mitre.giscore.output.atom.IAtomConstants;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Test individual object data serialization 
@@ -91,8 +91,36 @@ public class TestObjectDataSerialization {
 		ContainerStart c2 = (ContainerStart) sois.readObject();
 		assertEquals(c, c2);
 	}
-	
-	@Test public void testX() throws Exception {
+
+	@Test public void testElement() throws Exception {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(256);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+		Namespace atomNs = Namespace.getNamespace("atom", IAtomConstants.ATOM_URI_NS);
+
+		Element author = new Element(atomNs, "author");
+		Element name = new Element(atomNs, "name");
+		name.setText("the Author");
+		author.getChildren().add(name);
+		soos.writeObject(author);
+
+		Element link = new Element(atomNs, "link");
+		Map<String,String> attrs = link.getAttributes();
+		attrs.put("href", "http://tools.ietf.org/html/rfc4287");
+		attrs.put("type", "text/html");
+		soos.writeObject(link);
+		
+		soos.close();
+		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+		Element e2 = (Element) sois.readObject();
+		assertEquals(author, e2);
+
+		e2 = (Element) sois.readObject();
+		assertEquals(link, e2);
+		sois.close();
+	}
+
+//	@Test public void testX() throws Exception {
 //		ByteArrayOutputStream bos = new ByteArrayOutputStream(100);
 //		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 //		
@@ -102,5 +130,5 @@ public class TestObjectDataSerialization {
 //		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 //		Row r2 = (Row) sois.readObject();
 //		assertEquals(r, r2);
-	}
+//	}
 }
