@@ -311,8 +311,9 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 	public List<Point> getPoints() {
 		List<Point> rval = new ArrayList<Point>();
 		if (outerRing != null) {
-			List<Point> pts = outerRing.getPoints();
+			List<Point> pts = outerRing.getPoints(); // returns Collections.unmodifiableList(pointList)
 			if (outerRing.clockwise() == false) {
+				pts = new ArrayList<Point>(pts); // make modifiable copy of list
 				// Points are backward, reverse
 				Collections.reverse(pts);
 			}
@@ -323,6 +324,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 				List<Point> pts = ring.getPoints();
 				if (ring.clockwise()) {
 					// Points are backward, reverse
+					pts = new ArrayList<Point>(pts); // make modifiable copy of list
 					Collections.reverse(pts);
 				}
 				rval.addAll(pts);
