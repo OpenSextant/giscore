@@ -32,6 +32,7 @@ import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.*;
+import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlInputStream;
@@ -271,6 +272,38 @@ public class TestKmlSupport extends TestGISBase {
         // test auto anchor prefix '#' prepend to styleUrls
         assertEquals("#sn_myStyle", sm.get(StyleMap.NORMAL));
         assertEquals("#sh_myStyle", sm.get(StyleMap.HIGHLIGHT));
+    }
+
+	@Test
+	public void test_Style() throws XMLStreamException, IOException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		Style s = new Style("myStyle");
+		s.setIconStyle(Color.red, 1.4, "http://maps.google.com/mapfiles/kml/shapes/airports.png");
+		kos.write(s);
+		kos.write(new ContainerStart(IKml.DOCUMENT));
+		Feature f = createBasicFeature(Point.class);
+		f.setStyleUrl("myStyle");
+		// test auto anchor prefix '#' prepend to feature style url
+		assertEquals("#myStyle", f.getStyleUrl());
+		kos.write(f);
+		kos.write(new ContainerEnd());
+		kos.close();
+
+		//String kml = bos.toString("UTF-8");
+		//System.out.println(kml);
+		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+		int count = 0;
+		for (IGISObject o; (o = kis.read()) != null; ) {
+			if (o instanceof Feature) {
+				Feature f2 = (Feature)o;
+				assertEquals("#myStyle", f2.getStyleUrl());
+			}
+			count++;
+			// System.out.println(o);
+		}
+		assertEquals(5, count);
+		kis.close();
     }
 
 	/**
