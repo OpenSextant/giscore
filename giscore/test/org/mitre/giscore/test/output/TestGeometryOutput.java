@@ -14,6 +14,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.ByteArrayInputStream;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
 
 /**
  * Test reading/writing core geometry classes.
@@ -104,6 +106,9 @@ public class TestGeometryOutput extends TestGISBase {
             if (g != null) bag.add(g);
         }
         bag.writeData(os);
+		assertFalse(bag.isEmpty());
+		assertNotNull(bag.getPoints());
+		assertNotNull(bag.getPart(0));
 
         SimpleObjectInputStream is = new SimpleObjectInputStream(new ByteArrayInputStream(bos.toByteArray()));
         GeometryBag geo2 = new GeometryBag();
