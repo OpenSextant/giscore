@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.2">
+    <Document>
+
+        <Style id="default+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png">
+            <IconStyle>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/kml/shapes/poi.png</href>
+                </Icon>
+            </IconStyle>
+            <LabelStyle>
+                <scale>1.0</scale>
+            </LabelStyle>
+        </Style>
+
+        <Style id="hi+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png">
+            <IconStyle>
+                <Icon>
+                    <href>http://maps.google.com/mapfiles/kml/shapes/poi.png</href>
+                </Icon>
+                <scale>1.5</scale>
+            </IconStyle>
+            <LabelStyle>
+                <scale>1.1</scale>
+                <color>ff0000c0</color>
+            </LabelStyle>
+        </Style>
+
+        <StyleMap id="map+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png">
+            <Pair>
+                <key>normal</key>
+                <styleUrl>#default+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png</styleUrl>
+            </Pair>
+            <Pair>
+                <key>highlight</key>
+                <styleUrl>#hi+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png</styleUrl>
+            </Pair>
+        </StyleMap>
+
+        <Placemark>
+            <name>StyleMap example</name>
+            <styleUrl>#map+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png</styleUrl>
+            <Point>
+                <coordinates>-122.368987,37.817634,0</coordinates>
+            </Point>
+        </Placemark>
+	<altitudeMode>clampToGround</altitudeMode>
+    </Document>
+</kml>
+

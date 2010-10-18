@@ -12,3 +12,7 @@ Well-formed XML documents (fail schema validation)
  bluedevil20080812-short2.kml
  n.kml
  pred.kml
+ police.kml
+	cvc-datatype-valid.1.2.1: invalid value for 'NCName' <Style id="***default+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png***">
+	<altitudeMode>***clampToGround***</altitudeMode>
+
