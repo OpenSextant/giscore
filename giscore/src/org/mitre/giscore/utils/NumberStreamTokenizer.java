@@ -10,6 +10,7 @@ package org.mitre.giscore.utils;
 import java.io.IOException;
 //import java.io.InputStream;
 import java.io.Reader;
+import java.util.Arrays;
 
 /**
  * The <code>NumberStreamTokenizer</code> class takes an input stream and
@@ -47,6 +48,7 @@ import java.io.Reader;
  * @since   JDK1.0
  *
  * Original source from JRE build 1.6.0_13-b03
+ * Incorporated changes from 1.47 05/11/30
  * NumberStreamTokenizer is a slightly modified version of StreamTokenizer
  * that handles exponents in numbers.
  * Modified by Jason Mathews May, 2009. 
@@ -186,12 +188,13 @@ public class NumberStreamTokenizer {
 	parseNumbers();
     }
 
-    /**
+    /*
      * Create a tokenizer that parses the given character stream.
      *
      * @param r  a Reader object providing the input stream.
      * @since   JDK1.1
      */
+	/*
     public NumberStreamTokenizer(Reader r) {
 	this();
         if (r == null) {
@@ -199,6 +202,7 @@ public class NumberStreamTokenizer {
         }
 	reader = r;
     }
+    */
 
 	/**
      * Create a tokenizer that parses the given String.
@@ -207,9 +211,9 @@ public class NumberStreamTokenizer {
      */
     public NumberStreamTokenizer(String s) {
 	// added this constructor
-	this();
+		this();
 		if (s == null) s = "";
-	reader = new java.io.StringReader(s);
+		reader = new java.io.StringReader(s);
     }
 
 	/**
@@ -458,12 +462,12 @@ public class NumberStreamTokenizer {
 
     /** Read the next character */
     private int read() throws IOException {
-	if (reader != null)
+	//if (reader != null)
 	    return reader.read();
 	//else if (input != null)
 	    //return input.read();
-	else
-	    throw new IllegalStateException();
+	//else
+	    //throw new IllegalStateException();
     }
 
     /**
@@ -620,9 +624,7 @@ public class NumberStreamTokenizer {
 	    int i = 0;
 	    do {
 		if (i >= buf.length) {
-                    char[] nbuf = new char[buf.length * 2];
-                    System.arraycopy(buf, 0, nbuf, 0, buf.length);
-                    buf = nbuf;
+			buf = Arrays.copyOf(buf, buf.length * 2);
 		}
 		buf[i++] = (char) c;
 		c = read();
@@ -691,9 +693,7 @@ public class NumberStreamTokenizer {
 		    d = read();
 		}
 		if (i >= buf.length) {
-                    char[] nbuf = new char[buf.length * 2];
-                    System.arraycopy(buf, 0, nbuf, 0, buf.length);
-                    buf = nbuf;
+			buf = Arrays.copyOf(buf, buf.length * 2);
 		}
 		buf[i++] = (char)c;
 	    }
