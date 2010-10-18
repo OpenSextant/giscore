@@ -85,15 +85,15 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     protected static final int MULTINESTEDRINGS_TYPE = 5;  // 5 is Polygon    15 is PolygonZ
     protected static final int MULTIPOINT_TYPE = 8;        // 8 is MultiPoint 18 is MultiPointZ
     
-	/**
+	/*
 	 * Schema, derived from the read dbf file
 	 */
-	private Schema schema;
+	// private Schema schema;
 
-	/**
+	/*
 	 * Style derived from the shm file if present
 	 */
-	private Style style;
+	//private Style style;
 
 	/*
 	 * Files that hold the essential information for the shapefile.
@@ -146,9 +146,9 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 			throw new IllegalArgumentException(
 					"shapefilename should never be null");
 		}
-		URI uri = new URI("urn:org:mitre:giscore:schema:"
-				+ UUID.randomUUID().toString());
-		schema = new Schema(uri);
+		//URI uri = new URI("urn:org:mitre:giscore:schema:"
+				//+ UUID.randomUUID().toString());
+		// Schema schema = new Schema(uri);
 		File dbfFile = new File(inputDirectory, shapefilename + ".dbf");
 		File shpFile = new File(inputDirectory, shapefilename + ".shp");
 		File prjFile = new File(inputDirectory, shapefilename + ".prj");
@@ -168,7 +168,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 			// First thing in the dbf should be a schema
 			IGISObject ob = dbf.read();
 			if (ob instanceof Schema) {
-				schema = (Schema) ob;
+				// schema = (Schema) ob;
 				addFirst(ob);
 			} else {
 				throw new IllegalStateException(
