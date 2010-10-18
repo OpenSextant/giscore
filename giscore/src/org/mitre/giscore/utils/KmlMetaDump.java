@@ -99,7 +99,7 @@ public class KmlMetaDump implements IKml {
 	private Date containerEndDate;
 	private final Stack<ContainerStart> containers = new Stack<ContainerStart>();
 
-	private Set<String> maximalSet;		
+	private Set<String> simpleFieldSet;
 
 	/**
 	 * count of number of KML resources were processed and stats were tallied
@@ -131,6 +131,18 @@ public class KmlMetaDump implements IKml {
 			System.out.println(file.getAbsolutePath());
 			processKmlSource(new KmlReader(file), file, file.getName());
 		}
+	}
+
+	public Set<String> getSimpleFieldSet() {
+		return simpleFieldSet;
+	}
+
+	public void useSimpleFieldSet() {
+		simpleFieldSet = new TreeSet<String>();
+	}
+
+	public Map<String, Integer> getTagSet() {
+		return tagSet;
 	}
 
 	public void setFollowLinks(boolean followLinks) {
@@ -669,9 +681,9 @@ public class KmlMetaDump implements IKml {
 
         if (f.hasExtendedData()) {
             addTag(EXTENDED_DATA);
-            if (maximalSet != null)
+            if (simpleFieldSet != null)
                 for (SimpleField sf : f.getFields()) {
-                    maximalSet.add(sf.getName());
+                    simpleFieldSet.add(sf.getName());
                 }
         }
         
@@ -862,9 +874,9 @@ public class KmlMetaDump implements IKml {
 				System.out.println("\t" + tag);
 			}
 		}
-		if (maximalSet != null && !maximalSet.isEmpty()) {
+		if (simpleFieldSet != null && !simpleFieldSet.isEmpty()) {
 				System.out.println("\nExtendedData:");
-				for (String name : maximalSet) {
+				for (String name : simpleFieldSet) {
 					System.out.println("\t" + name);
 				}
 		}
@@ -930,7 +942,7 @@ public class KmlMetaDump implements IKml {
 				else if (arg.startsWith("-v"))
 					app.setVerbose(true);
 				else if (arg.startsWith("-x"))
-				 	app.maximalSet = new TreeSet<String>();
+					app.useSimpleFieldSet();
 				else if (arg.startsWith("-stdout"))
 					app.setUseStdout(true);
 				else usage();
