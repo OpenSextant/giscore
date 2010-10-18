@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ http://code.google.com/apis/kml/documentation/kmlreference.html#trackexample
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2"
+ xmlns:gx="http://www.google.com/kml/ext/2.2">
+  <Document>
+    <name>GPS device</name>
+    <Snippet>Created Wed Jun  2 15:33:39 2010</Snippet>
+    <LookAt>
+      <gx:TimeSpan>
+        <begin>2010-05-28T02:02:09Z</begin>
+        <end>2010-05-28T02:02:56Z</end>
+      </gx:TimeSpan>
+      <longitude>-122.205544</longitude>
+      <latitude>37.373386</latitude>
+      <range>1300.000000</range>
+    </LookAt>
+
+<!-- Normal track style -->
+    <Style id="track_n">
+      <IconStyle>
+        <scale>.5</scale>
+        <Icon>
+          <href>http://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
+        </Icon>
+      </IconStyle>
+      <LabelStyle>
+        <scale>0</scale>
+      </LabelStyle>
+    </Style>
+<!-- Highlighted track style -->
+    <Style id="track_h">
+      <IconStyle>
+        <scale>1.2</scale>
+        <Icon>
+          <href>http://earth.google.com/images/kml-icons/track-directional/track-none.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+    <StyleMap id="track">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#track_n</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#track_h</styleUrl>
+      </Pair>
+    </StyleMap>
+<!-- Normal multiTrack style -->
+    <Style id="multiTrack_n">
+      <IconStyle>
+        <Icon>
+          <href>http://earth.google.com/images/kml-icons/track-directional/track-0.png</href>
+        </Icon>
+      </IconStyle>
+      <LineStyle>
+        <color>99ffac59</color>
+        <width>6</width>
+      </LineStyle>
+    </Style>
+<!-- Highlighted multiTrack style -->
+    <Style id="multiTrack_h">
+      <IconStyle>
+        <scale>1.2</scale>
+        <Icon>
+          <href>http://earth.google.com/images/kml-icons/track-directional/track-0.png</href>
+        </Icon>
+      </IconStyle>
+      <LineStyle>
+        <color>99ffac59</color>
+        <width>8</width>
+      </LineStyle>
+    </Style>
+    <StyleMap id="multiTrack">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#multiTrack_n</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#multiTrack_h</styleUrl>
+      </Pair>
+    </StyleMap>
+<!-- Normal waypoint style -->
+    <Style id="waypoint_n">
+      <IconStyle>
+        <Icon>
+          <href>http://maps.google.com/mapfiles/kml/pal4/icon61.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+<!-- Highlighted waypoint style -->
+    <Style id="waypoint_h">
+      <IconStyle>
+        <scale>1.2</scale>
+        <Icon>
+          <href>http://maps.google.com/mapfiles/kml/pal4/icon61.png</href>
+        </Icon>
+      </IconStyle>
+    </Style>
+    <StyleMap id="waypoint">
+      <Pair>
+        <key>normal</key>
+        <styleUrl>#waypoint_n</styleUrl>
+      </Pair>
+      <Pair>
+        <key>highlight</key>
+        <styleUrl>#waypoint_h</styleUrl>
+      </Pair>
+    </StyleMap>
+    <Style id="lineStyle">
+      <LineStyle>
+        <color>99ffac59</color>
+        <width>6</width>
+      </LineStyle>
+    </Style>
+
+    <Schema id="schema">
+      <gx:SimpleArrayField name="heartrate" type="int">
+          <displayName>Heart Rate</displayName>
+      </gx:SimpleArrayField>
+      <gx:SimpleArrayField name="cadence" type="int">
+          <displayName>Cadence</displayName>
+      </gx:SimpleArrayField>
+      <gx:SimpleArrayField name="power" type="float">
+          <displayName>Power</displayName>
+      </gx:SimpleArrayField>
+    </Schema>
+
+    <Folder>
+      <name>Tracks</name>
+      <Placemark>
+        <name>2010-05-28T01:16:35.000Z</name>
+        <styleUrl>#multiTrack</styleUrl>
+        <gx:Track>
+          <when>2010-05-28T02:02:09Z</when>
+          <when>2010-05-28T02:02:35Z</when>
+          <when>2010-05-28T02:02:44Z</when>
+          <when>2010-05-28T02:02:53Z</when>
+          <when>2010-05-28T02:02:54Z</when>
+          <when>2010-05-28T02:02:55Z</when>
+          <when>2010-05-28T02:02:56Z</when>
+          <gx:coord>-122.207881 37.371915 156.000000</gx:coord>
+          <gx:coord>-122.205712 37.373288 152.000000</gx:coord>
+          <gx:coord>-122.204678 37.373939 147.000000</gx:coord>
+          <gx:coord>-122.203572 37.374630 142.199997</gx:coord>
+          <gx:coord>-122.203451 37.374706 141.800003</gx:coord>
+          <gx:coord>-122.203329 37.374780 141.199997</gx:coord>
+          <gx:coord>-122.203207 37.374857 140.199997</gx:coord>
+          <ExtendedData>
+            <SchemaData schemaUrl="#schema">
+              <gx:SimpleArrayData name="cadence">
+                <gx:value>86</gx:value>
+                <gx:value>103</gx:value>
+                <gx:value>108</gx:value>
+                <gx:value>113</gx:value>
+                <gx:value>113</gx:value>
+                <gx:value>113</gx:value>
+                <gx:value>113</gx:value>
+              </gx:SimpleArrayData>
+              <gx:SimpleArrayData name="heartrate">
+                <gx:value>181</gx:value>
+                <gx:value>177</gx:value>
+                <gx:value>175</gx:value>
+                <gx:value>173</gx:value>
+                <gx:value>173</gx:value>
+                <gx:value>173</gx:value>
+                <gx:value>173</gx:value>
+              </gx:SimpleArrayData>
+              <gx:SimpleArrayData name="power">
+                <gx:value>327.0</gx:value>
+                <gx:value>177.0</gx:value>
+                <gx:value>179.0</gx:value>
+                <gx:value>162.0</gx:value>
+                <gx:value>166.0</gx:value>
+                <gx:value>177.0</gx:value>
+                <gx:value>183.0</gx:value>
+              </gx:SimpleArrayData>
+            </SchemaData>
+          </ExtendedData>
+        </gx:Track>
+      </Placemark>
+    </Folder>
+
+  </Document>
+</kml>
+
