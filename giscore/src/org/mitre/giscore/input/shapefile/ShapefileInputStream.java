@@ -90,7 +90,7 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	/**
 	 * This tracks if we're using a temp directory
 	 */
-	private boolean usingTemp;
+	private final boolean usingTemp;
 
 	/**
 	 * Ctor
