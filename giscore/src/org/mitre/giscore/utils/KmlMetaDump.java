@@ -239,7 +239,7 @@ public class KmlMetaDump implements IKml {
 
 		if (followLinks) {
 			List<URI> networkLinks = reader.getNetworkLinks();
-			if (networkLinks.size() != 0) {
+			if (! networkLinks.isEmpty()) {
 				reader.importFromNetworkLinks(new KmlReader.ImportEventHandler() {
                     private URI last;
 					public boolean handleEvent(UrlRef ref, IGISObject gisObj) {
@@ -337,9 +337,9 @@ public class KmlMetaDump implements IKml {
             gisObj = ((WrappedObject) gisObj).getObject();
             addTag(":Out of order elements");
         }
+		final Class<? extends IGISObject> cl = gisObj.getClass();
         if (verbose) System.out.println(gisObj);
-        final Class<? extends IGISObject> cl = gisObj.getClass();
-        if (cl == DocumentStart.class) return; // ignore always present DocumentStart root element
+        if (cl == DocumentStart.class) return; // ignore DocumentStart root element.. contents dumped above
 
         if (gisObj instanceof Common) {
             if (gisObj instanceof Feature) features++; // PlaceMark + NetworkLink + Overlay
@@ -403,12 +403,10 @@ public class KmlMetaDump implements IKml {
 				}
 				// override any previous start date
 				containerStartDate = startTime;
-				if (endTime != null) {
-					if (containerEndDate != null) {
-						if (verbose) System.out.println(" Overriding parent container end date");
-						if (endTime.compareTo(containerEndDate) > 0)
-							addTag(":Container end date is later than that of its ancestors");
-					}
+				if (endTime != null && containerEndDate != null) {
+					if (verbose) System.out.println(" Overriding parent container end date");
+					if (endTime.compareTo(containerEndDate) > 0)
+						addTag(":Container end date is later than that of its ancestors");
 				}
 				// override any previous end date
 				containerEndDate = endTime;
@@ -513,8 +511,8 @@ public class KmlMetaDump implements IKml {
             String name = e.getName();
             if (StringUtils.isNotEmpty(prefix)) name = prefix + ":" + name;
             addTag(name);
-        } else if ( /* cl != DocumentStart.class && */ cl != Comment.class) {
-            // ignore: DocumentStart + Comment objects
+        } else if (cl != Comment.class) {
+            // ignore: Comment objects but capture others
             addTag(cl); // e.g. Schema, NetworkLinkControl
         }
         lastObjClass = gisObj.getClass();
