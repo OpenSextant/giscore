@@ -111,6 +111,8 @@ public class KmlMetaDump implements IKml {
 	private final Map<String,Integer> tagSet = new java.util.TreeMap<String,Integer>();
 	private final Set<String> totals = new TreeSet<String>();
 	private boolean useStdout;
+	
+	private static final String CLAMP_TO_GROUND = "clampToGround";
 
 	public void checkSource(URL url) throws IOException {
 		System.out.println(url);
@@ -703,7 +705,7 @@ public class KmlMetaDump implements IKml {
                     addTag(":Invalid LookAt values");
                     if (verbose) System.out.format(" Error: Invalid tilt value in LookAt: %f [ATC 38.2]%n", tilt);
                 }
-               if (!"clampToGround".equals(viewGroup.get(IKml.ALTITUDE_MODE, "clampToGround")) &&
+               if (!CLAMP_TO_GROUND.equals(viewGroup.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND)) &&
                            viewGroup.get(IKml.ALTITUDE) == null) {
                     // (3) if kml:altitudeMode does not have the value "clampToGround", then the kml:altitude element is present
                     addTag(":Invalid LookAt values"); // error
@@ -719,9 +721,9 @@ public class KmlMetaDump implements IKml {
 
                     Reference: OGC-07-147r2: cl. 14.2.2
                 */
-                if ("clampToGround".equals(viewGroup.get(IKml.ALTITUDE_MODE, "clampToGround"))) {
+                if (CLAMP_TO_GROUND.equals(viewGroup.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND))) {
                     // (2) the value of kml:altitudeMode is not "clampToGround".
-                    addTag(":Camera altitudeMode cannot be clampToGround [ATC 54.2]"); // warning
+                    addTag(":Camera altitudeMode cannot be " + CLAMP_TO_GROUND + " [ATC 54.2]"); // warning
                }
             } else {
                 addTag(":Invalid ViewGroup tag: " + tag);
@@ -803,9 +805,9 @@ public class KmlMetaDump implements IKml {
             //  if kml:minAltitude and kml:maxAltitude are both present,
 			//  then kml:altitudeMode does not have the value "clampToGround".
             if (region.get(IKml.MIN_ALTITUDE) != null && region.get(IKml.MAX_ALTITUDE) != null
-                    && "clampToGround".equals(region.get(IKml.ALTITUDE_MODE, "clampToGround"))) {
+                    && CLAMP_TO_GROUND.equals(region.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND))) {
                 addTag(":Region has invalid LatLonAltBox");
-				if (verbose) System.out.println(" Warn: LatLonAltBox fails to satisfy constraint (altMode != clampToGround) [ATC 8.4]");
+				if (verbose) System.out.println(" Warn: LatLonAltBox fails to satisfy constraint (altMode != " + CLAMP_TO_GROUND + ") [ATC 8.4]");
             }
 		} catch (NumberFormatException nfe) {
 			addTag(":Region has invalid LatLonAltBox");
