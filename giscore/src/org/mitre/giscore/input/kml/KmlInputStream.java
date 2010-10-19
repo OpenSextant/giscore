@@ -291,8 +291,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			// handled by the rest of the code. We'll handle it here to obtain the
 			// namespaces
 			StartElement first = ev.asStartElement();
-			String nstr = first.getName().getNamespaceURI(); 
-			if ("kml".equals(first.getName().getLocalPart())) {
+			QName qname = first.getName();
+			String nstr = qname.getNamespaceURI();
+			if ("kml".equals(qname.getLocalPart())) {
                 if (StringUtils.isNotBlank(nstr) && !ms_kml_ns.contains(nstr)) {
                     // KML namespace not registered
                     log.info("Registering unrecognized KML namespace: " + nstr);
@@ -502,7 +503,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 // and google earth extensions as ForeignElements
 				// skip other non-KML namespace elements.
 				String ns = name.getNamespaceURI();
-                if (ns != null && !ms_kml_ns.contains(ns)) {
+                if (StringUtils.isNotEmpty(ns) && !ms_kml_ns.contains(ns)) {
                     if (localname.equals(ADDRESS_DETAILS) || ns.startsWith("http://www.w3.org/")
                             || ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
                         try {
@@ -1261,12 +1262,15 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		StartElement se = e.asStartElement();
 		QName name = se.getName();
 		String ns = name.getNamespaceURI();
+
         // handle non-kml namespace elements as foreign elements
         // review: should we check instead if namespace doesn't equal our root document namespace...
-		if (ns != null && !ms_kml_ns.contains(ns)) {
+		// if namespace empty string then probably old-style "kml" root element without explicit namespace
+		if (StringUtils.isNotEmpty(ns) && !ms_kml_ns.contains(ns)) {
             // //ns.startsWith("http://www.google.com/kml/ext/")) { ...
             // handle extension namespace
-            // http://code.google.com/apis/kml/documentation/kmlreference.html#kmlextensions  
+            // http://code.google.com/apis/kml/documentation/kmlreference.html#kmlextensions
+			log.debug("XXX: handle as foreign element: " + name);
 			return getForeignElement(se);
 		}
 
@@ -1287,8 +1291,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		}
 		try {
 			if (ms_features.contains(elementName)) {
+				// all non-container elements that extend kml:AbstractFeatureType base type in KML Schema
+				// Placemark, NetworkLink, GroundOverlay, ScreenOverlay, PhotoOverlay 
 				return handleFeature(e, elementName);
 			} else if (ms_containers.contains(elementName)) {
+				// all container elements that extend kml:AbstractContainerType base type in KML Schema
 				//System.out.println("** handle container: " + elementName);
 				return handleContainer(se);
 			} else if (SCHEMA.equals(localname)) {
@@ -1308,7 +1315,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				// this messes up the way Style+StyleMap are added to last Feature written
 				return new WrappedObject(handleStyleMap(null, se, name));
 			} else {
-				String namespace = se.getName().getNamespaceURI();
+				String namespace = name.getNamespaceURI();
 				if (ms_kml_ns.contains(namespace)) {
 					// Look for next start element and recurse
 					XMLEvent next = stream.nextTag();
@@ -1316,6 +1323,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						return handleStartElement(next);
 					}  
 				} else {
+					log.debug("XXX: handle startElement with foreign namespace: " + name);
 					return getForeignElement(se);
 				}
 			}
