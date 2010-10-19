@@ -8,7 +8,6 @@
 package org.mitre.giscore.utils;
 
 import java.io.IOException;
-//import java.io.InputStream;
 import java.io.Reader;
 import java.util.Arrays;
 
@@ -48,10 +47,11 @@ import java.util.Arrays;
  * @since   JDK1.0
  *
  * Original source from JRE build 1.6.0_13-b03
- * Incorporated changes from 1.47 05/11/30
  * NumberStreamTokenizer is a slightly modified version of StreamTokenizer
  * that handles exponents in numbers.
- * Modified by Jason Mathews May, 2009. 
+ * Modified by Jason Mathews May, 2009.
+ * Changes:
+ *  10/18/2010 Incorporated changes from JSE build 1.6.0_22-b04. Added Arrays.copyOf() 
  */
 
 public class NumberStreamTokenizer {
