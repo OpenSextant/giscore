@@ -353,14 +353,14 @@ public class KmlMetaDump implements IKml {
             Geometry geom = f.getGeometry();
             addTag(PLACEMARK);
             if (geom != null) {
-                checkGeometry(geom);
+                checkGeometry(geom); // Point, LineString, Polygon, Model, MultiGeometry, etc.
                 Class<? extends Geometry> geomClass = geom.getClass();
                 if (geomClass == GeometryBag.class) {
                     addTag(MULTI_GEOMETRY);
                     checkBag((GeometryBag) geom);
                 } else addTag(geomClass);
             } else {
-                checkElements(f);
+                checkElements(f); // check gx:Track, gx:MultiTrack geometries
             }
         } else if (cl == NetworkLink.class) {
             NetworkLink networkLink = (NetworkLink) gisObj;
@@ -511,7 +511,8 @@ public class KmlMetaDump implements IKml {
             Element e = (Element)gisObj;
             String prefix = e.getPrefix();
             String name = e.getName();
-            if (StringUtils.isNotEmpty(prefix)) name = prefix + ":" + name;
+            if (StringUtils.isEmpty(prefix)) prefix = "other"; 
+			name = prefix + ":" + name;
             addTag(name);
         } else if (cl != Comment.class) {
             // ignore: Comment objects but capture others
@@ -546,10 +547,11 @@ public class KmlMetaDump implements IKml {
             } else if ("coord".equals(child.getName())) {
                 coordCount++;
             } else if (EXTENDED_DATA.equals(child.getName())) {
-                child = child.getChild("SchemaData", child.getNamespace()); // SchemaData
+                child = child.getChild("SchemaData", child.getNamespace()); // kml:SchemaData
                 if (child == null) continue;
-                child = child.getChild("SimpleArrayData", e.getNamespace()); // SimpleArrayData
+                child = child.getChild("SimpleArrayData", e.getNamespace()); // gx:SimpleArrayData
                 if (child == null) continue;
+				addTag("gx:SimpleArrayData");
                 // check parallel "arrays" of values for <when> and <gx:coord> where the number of time and position values must be equal.
                 // <gx:SimpleArrayData> element containing <gx:value> elements that correspond to each time/position on the track.
                 /*
