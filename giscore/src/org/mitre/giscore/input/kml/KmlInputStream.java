@@ -2278,6 +2278,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 							switch (++numparts) {
 								case 1:
 									if (seenComma) {
+										// note: this branch might not be possible: if numparts==0 then seenComma should be false
 										lat = new Latitude(st.nval, Angle.DEGREES);
 										lon = new Longitude(); // skipped longitude (use 0 degrees)
 										numparts = 2;
@@ -2347,6 +2348,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 							} else {
 								switch (numparts) {
 									case 0:
+										// note this branch may never occur since seenComa=true implies numparts > 0
 										//System.out.println("\tXXX: WARN: COMMA1: seenComma w/numparts=" + numparts);
 										lon = new Longitude(); // skipped longitude (use 0 degrees)
 										numparts = 1;
