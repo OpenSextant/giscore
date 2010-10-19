@@ -4,6 +4,7 @@
  *  Created: Jan 27, 2009
  *
  *  @author DRAND
+ *  @author Mathews
  *
  *  (C) Copyright MITRE Corporation 2009
  *
@@ -18,38 +19,27 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.input;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.*;
-import java.util.Collection;
-import java.util.List;
-import java.util.Date;
-import java.util.TimeZone;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
-
-import org.junit.Test;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.SimpleField;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.events.StyleMap;
 import org.mitre.giscore.input.IGISInputStream;
-import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.input.kml.IKml;
+import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.itf.geodesy.*;
-import org.apache.commons.io.IOUtils;
+
+import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+import java.util.TimeZone;
+
+import static org.junit.Assert.*;
 
 /**
  * Test KMLInputStream and helper date parsing methods.
@@ -273,6 +263,13 @@ public class TestKmlInputStream {
 				}
 		);
 
+        // extraneous whitespace and CR-LF in tuple
+        checkCoordString("-10,\n\t10",   // interpreted as [-10,10,0] by GoogleEarth
+				new Geodetic2DPoint[]{
+						makePoint(-10, 10),
+				}
+		);
+
 		// invalid lat/lon range
 		checkCoordString("5000,1,0", new Geodetic2DPoint[] { } );
 		// note Google Earth interprets this as 180,1,0 but giscore is stricter on valid ranges
@@ -296,6 +293,12 @@ public class TestKmlInputStream {
 				}
 		);
 
+        checkCoordString("xxx,-8.6",	// interpreted as [0,-8.6,0] by GoogleEarth
+				new Geodetic2DPoint[] {
+					makePoint(0, -8.6),
+				}
+		);
+
 		// partial numbers: ignore non-numeric text
 
 		checkCoordString("1,2,3dd",		// interpreted as [1,2,3] by GoogleEarth
@@ -303,6 +306,7 @@ public class TestKmlInputStream {
 					makePoint(1, 2, 3),
 				}
 		);
+
 		checkCoordString("xx10,20,300",	// interpreted as [0,20,300] by GoogleEarth
 				new Geodetic2DPoint[] {
 					makePoint(0, 20, 300),
