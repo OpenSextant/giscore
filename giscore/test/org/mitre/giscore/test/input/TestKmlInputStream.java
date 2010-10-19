@@ -214,6 +214,11 @@ public class TestKmlInputStream {
 					makePoint(1, 2, 7.76166643845),
 				}
 		);
+		checkCoordString("1,2,7.76166643845E+0",
+				new Geodetic2DPoint[] {
+					makePoint(1, 2, 7.76166643845),
+				}
+		);
 		checkCoordString("1,2,7.76166643845e+3",
 				new Geodetic2DPoint[] {
 					makePoint(1, 2, 7761.66643845),
