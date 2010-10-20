@@ -16,27 +16,20 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.kml;
 
-import java.awt.Color;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.TimeZone;
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import org.apache.commons.lang.StringUtils;
+import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.events.Comment;
+import org.mitre.giscore.events.*;
+import org.mitre.giscore.geometry.*;
+import org.mitre.giscore.geometry.Point;
+import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.input.XmlInputStream;
+import org.mitre.giscore.utils.NumberStreamTokenizer;
+import org.mitre.itf.geodesy.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -46,51 +39,16 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.*;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import org.apache.commons.lang.StringUtils;
-import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.events.Comment;
-import org.mitre.giscore.events.Common;
-import org.mitre.giscore.events.ContainerEnd;
-import org.mitre.giscore.events.ContainerStart;
-import org.mitre.giscore.events.DocumentStart;
-import org.mitre.giscore.events.Element;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.GroundOverlay;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.NetworkLink;
-import org.mitre.giscore.events.NetworkLinkControl;
-import org.mitre.giscore.events.NullObject;
-import org.mitre.giscore.events.Overlay;
-import org.mitre.giscore.events.PhotoOverlay;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.ScreenLocation;
-import org.mitre.giscore.events.ScreenOverlay;
-import org.mitre.giscore.events.SimpleField;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.events.StyleMap;
-import org.mitre.giscore.events.TaggedMap;
-import org.mitre.giscore.events.WrappedObject;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.GeometryBag;
-import org.mitre.giscore.geometry.GeometryBase;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.Model;
-import org.mitre.giscore.geometry.MultiPoint;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
-import org.mitre.giscore.input.XmlInputStream;
-import org.mitre.giscore.utils.NumberStreamTokenizer;
-import org.mitre.itf.geodesy.Angle;
-import org.mitre.itf.geodesy.Geodetic2DPoint;
-import org.mitre.itf.geodesy.Geodetic3DPoint;
-import org.mitre.itf.geodesy.Latitude;
-import org.mitre.itf.geodesy.Longitude;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.awt.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.List;
 
 /**
  * Read a KML/KMZ file in as an input stream. Each time the read method is called,
@@ -2345,23 +2303,19 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 									lon = new Longitude(); // skipped longitude (use 0 degrees)
 									numparts = 1;
 								}
-							} else {
-								switch (numparts) {
-									case 0:
-										// note this branch may never occur since seenComa=true implies numparts > 0
-										//System.out.println("\tXXX: WARN: COMMA1: seenComma w/numparts=" + numparts);
-										lon = new Longitude(); // skipped longitude (use 0 degrees)
-										numparts = 1;
-										break;
-									case 1:
-										//System.out.println("\tXXX: WARN: COMMA2: seenComma w/numparts=" + numparts);
-										lat = new Latitude();  // skipped Latitude (use 0 degrees)
-										numparts = 2;
-										break;
-									//default:
-										//System.out.println("\tXXX: ** ERROR: COMMA3: seenComma w/numparts=" + numparts);
-								}
-							}
+							} else
+                                // seenComma -> true
+                                if (numparts == 1) {
+                                    //System.out.println("\tXXX: WARN: COMMA2: seenComma w/numparts=" + numparts);
+                                    lat = new Latitude();  // skipped Latitude (use 0 degrees)
+                                    numparts = 2;
+                                } else if (numparts == 0) {
+                                    // note this branch may never occur since seenComa=true implies numparts > 0
+                                    //System.out.println("\tXXX: WARN: COMMA1: seenComma w/numparts=" + numparts);
+                                    lon = new Longitude(); // skipped longitude (use 0 degrees)
+                                    numparts = 1;
+                                }
+                                //else System.out.println("\tXXX: ** ERROR: COMMA3: seenComma w/numparts=" + numparts);
 						} else
 							log.warn("ignore invalid character in coordinate string: (" + (char) st.ttype + ")");
 						//s = "CHAR:" + String.valueOf((char) st.ttype);
