@@ -18,42 +18,10 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.atom;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Namespace;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.events.AtomAuthor;
-import org.mitre.giscore.events.AtomHeader;
-import org.mitre.giscore.events.AtomLink;
-import org.mitre.giscore.events.Element;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.Row;
-import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Line;
@@ -65,6 +33,24 @@ import org.mitre.giscore.output.atom.IAtomConstants;
 import org.mitre.giscore.utils.SafeDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Namespace;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.text.ParseException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GeoAtomInputStream extends XmlInputStream {
 
@@ -79,7 +65,7 @@ public class GeoAtomInputStream extends XmlInputStream {
 	};
 	private static final Pattern problemTZ = Pattern.compile("([-+]\\p{Digit}{2}):(\\p{Digit}{2})$");
 	
-	private Map<String, String> namespaceMap = new HashMap<String, String>();
+	private final Map<String, String> namespaceMap = new HashMap<String, String>();
 	private String defaultNamespace;
 
 	/**
