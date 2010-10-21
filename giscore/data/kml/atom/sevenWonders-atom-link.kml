@@ -12,7 +12,7 @@
     <Style id="blue-dot-paddle">
       <IconStyle>
         <Icon>
-          <href>http://maps.google.com/mapfiles/ms/micons/blue-dot.png</href>
+          <href>http://maps.google.com/mapfiles/kml/paddle/blu-circle.png</href>
         </Icon>
       </IconStyle>
     </Style>
