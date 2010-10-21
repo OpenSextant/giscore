@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
 
 timestamps on Folders/Documents inherited by child
 features (i.e. placemarks) contained in that container
@@ -28,7 +28,7 @@ that lack a time component.
         <Style id="hiker-icon">
             <IconStyle>
                 <Icon>
-                    <href>http://maps.google.com/mapfiles/ms/icons/hiker.png</href>
+                    <href>http://maps.google.com/mapfiles/kml/shapes/hiker.png</href>
                 </Icon>
                 <hotSpot x="0" xunits="fraction" y=".5" yunits="fraction"/>
             </IconStyle>
@@ -185,4 +185,3 @@ that lack a time component.
         </Placemark>
     </Document>
 </kml>
-

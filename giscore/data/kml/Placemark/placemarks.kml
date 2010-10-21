@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <kml xmlns="http://earth.google.com/kml/2.1">
-<!-- 
+<!--
 
 Subset of TimeStamp example showing
 inherited IconStyle for those Placemarks w/o styleUrl
@@ -10,7 +10,6 @@ original: http://code.google.com/apis/kml/documentation/TimeStamp_example.kml
 -->
   <Document>
     <name>Points with TimeStamps</name>
-    <styleUrl>#hiker-icon</styleUrl>
     <Style id="paddle-a">
       <IconStyle>
         <Icon>
@@ -30,7 +29,7 @@ original: http://code.google.com/apis/kml/documentation/TimeStamp_example.kml
     <Style id="hiker-icon">
       <IconStyle>
         <Icon>
-          <href>http://maps.google.com/mapfiles/ms/icons/hiker.png</href>
+	  <href>http://maps.google.com/mapfiles/kml/shapes/hiker.png</href>
         </Icon>
         <hotSpot x="0" y=".5" xunits="fraction" yunits="fraction"/>
       </IconStyle>
@@ -43,12 +42,14 @@ original: http://code.google.com/apis/kml/documentation/TimeStamp_example.kml
       </Point>
     </Placemark>
     <Placemark>
+      <styleUrl>#hiker-icon</styleUrl>
       <name>2</name>
       <Point>
         <coordinates>-122.536422,37.860303,0</coordinates>
       </Point>
     </Placemark>
     <Placemark>
+      <styleUrl>#hiker-icon</styleUrl>
       <name>3</name>
       <Point>
         <coordinates>-122.536688,37.860072,0</coordinates>
