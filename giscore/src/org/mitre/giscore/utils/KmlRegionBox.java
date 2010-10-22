@@ -1,26 +1,26 @@
 package org.mitre.giscore.utils;
 
-import org.mitre.giscore.input.kml.KmlReader;
-import org.mitre.giscore.input.kml.IKml;
-import org.mitre.giscore.input.kml.UrlRef;
-import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.output.kml.KmlOutputStream;
-import org.mitre.giscore.DocumentType;
-import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.apache.commons.lang.StringUtils;
+import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.events.*;
+import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.Point;
+import org.mitre.giscore.input.kml.IKml;
+import org.mitre.giscore.input.kml.KmlReader;
+import org.mitre.giscore.input.kml.UrlRef;
+import org.mitre.giscore.output.kml.KmlOutputStream;
+import org.mitre.itf.geodesy.Geodetic2DBounds;
 
 import javax.xml.stream.XMLStreamException;
-import java.net.URL;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.io.IOException;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.FileNotFoundException;
-import java.util.List;
+import java.net.URL;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Create KML output with bounding box outlines from KML regions.
@@ -37,10 +37,10 @@ public class KmlRegionBox {
 
 	private KmlOutputStream kos;
 	private final List<Geodetic2DBounds> regions = new ArrayList<Geodetic2DBounds>();
-	private String outFile;
+	private File outFile;
 	private boolean followLinks;
 
-	public void checkSource(URL url) throws IOException, XMLStreamException {
+    public void checkSource(URL url) throws IOException, XMLStreamException {
 		System.out.println(url);
 		processKmlSource(new KmlReader(url), url.toString());
 	}
@@ -191,7 +191,7 @@ public class KmlRegionBox {
 
 				if (kos == null) {
 					// initialize KmlOutputStream
-					if (StringUtils.isBlank(outFile)) outFile = "bbox.kml";
+					if (outFile == null) outFile = new File("bbox.kml");
 					kos = new KmlOutputStream(new FileOutputStream(outFile));
 					kos.write(new DocumentStart(DocumentType.KML));
 					ContainerStart cs = new ContainerStart(IKml.FOLDER);
@@ -202,6 +202,27 @@ public class KmlRegionBox {
 			}
 		}
 	}
+
+    public List<Geodetic2DBounds> getRegions() {
+        return regions;
+    }
+
+    public void setFollowLinks(boolean followLinks) {
+        this.followLinks = followLinks;
+    }
+
+    public void setOutFile(File outFile) {
+        this.outFile = outFile;
+    }
+
+    public void close() {
+        if (kos != null)
+			try {
+				kos.close();
+			} catch (IOException e) {
+				System.out.println("\t*** " + e.getMessage());
+			}
+    }
 
 	private static double handleTaggedElement(String tag, TaggedMap region, int maxDegrees) {
 		String val = region.get(tag);
@@ -227,10 +248,11 @@ public class KmlRegionBox {
 		List<String> sources = new ArrayList<String>();
 		for (String arg : args) {
 			if ("-f".equals(arg))
-				app.followLinks = true;
-			else if ("-o".equals(arg))
-				app.outFile = arg.substring(2);
-			else if (!arg.startsWith("-"))
+                app.setFollowLinks(true);
+			else if (StringUtils.startsWith(arg, "-o")) {
+                if (arg.length() > 2)
+				    app.setOutFile(new File(arg.substring(2)));
+            } else if (!arg.startsWith("-"))
 				sources.add(arg);
 			//System.out.println("Invalid argument: " + arg);
 		}
@@ -241,40 +263,37 @@ public class KmlRegionBox {
 			return;
 		}
 
-		for (String arg : sources) {
-			try {
-				if (arg.startsWith("http:") || arg.startsWith("file:")) {
-					URL url = new URL(arg);
-					app.checkSource(url);
-				} else {
-					File f = new File(arg);
-					if (f.exists()) {
-						try {
-							f = f.getCanonicalFile();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-						app.checkSource(f);
-					} else
-						app.checkSource(new URL(arg));
-				}
-			} catch (MalformedURLException e) {
-				System.out.println(arg);
-				System.out.println("\t*** " + e.getMessage());
-				System.out.println();
-			} catch (IOException e) {
-				System.out.println(e);
-			} catch (XMLStreamException e) {
-				System.out.println(e);
-			}
-		}
-
-		if (app.kos != null)
-			try {
-				app.kos.close();
-			} catch (IOException e) {
-				System.out.println("\t*** " + e.getMessage());
-			}
+        try {
+            for (String arg : sources) {
+                try {
+                    if (arg.startsWith("http:") || arg.startsWith("file:")) {
+                        URL url = new URL(arg);
+                        app.checkSource(url);
+                    } else {
+                        File f = new File(arg);
+                        if (f.exists()) {
+                            try {
+                                f = f.getCanonicalFile();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                            app.checkSource(f);
+                        } else
+                            app.checkSource(new URL(arg));
+                    }
+                } catch (MalformedURLException e) {
+                    System.out.println(arg);
+                    System.out.println("\t*** " + e.getMessage());
+                    System.out.println();
+                } catch (IOException e) {
+                    System.out.println(e);
+                } catch (XMLStreamException e) {
+                    System.out.println(e);
+                }
+            }
+        } finally {
+            app.close();
+        }
 	}
 
 }
