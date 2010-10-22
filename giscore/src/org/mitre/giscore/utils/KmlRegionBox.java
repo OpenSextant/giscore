@@ -216,12 +216,14 @@ public class KmlRegionBox {
     }
 
     public void close() {
-        if (kos != null)
+        if (kos != null) {
 			try {
 				kos.close();
 			} catch (IOException e) {
 				System.out.println("\t*** " + e.getMessage());
 			}
+            kos = null;
+        }
     }
 
 	private static double handleTaggedElement(String tag, TaggedMap region, int maxDegrees) {
