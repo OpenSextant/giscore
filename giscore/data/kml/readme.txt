@@ -24,11 +24,19 @@ Summary of tags and properties used in KML collection
 	Feature uses inline Style
 	Feature uses inline StyleMap
 	Geometry spans -180/+180 longtiude line
+	Invalid LookAt values
 	Invalid time range: start > end
 	NetworkLink missing Link
 	Out of order elements
 	Overlay missing icon
 	Region has invalid LatLonAltBox
+	Suspicious Style id characters
+	Suspicious StyleMap highlight URL characters
+	Suspicious StyleMap id characters
+	Suspicious StyleMap normal URL characters
+	Suspicious styleUrl characters
+	gx:SimpleArrayData has incorrect length
+	gx:Track coord-when mismatch
 
 	BalloonStyle		MultiPoint
 	Camera			NetworkLink
@@ -46,10 +54,11 @@ Summary of tags and properties used in KML collection
         LookAt			TimeSpan
         Model			TimeStamp
         MultiGeometry		atom:author
-	atom:link		gx:MultiTrack
+	xal:AddressDetails	atom:link
         gx:LatLonQuad		gx:Tour
         gx:TimeSpan		gx:Track
         gx:balloonVisibility	gx:TimeStamp
+        gx:MultiTrack
 
 ----------------------------------------------------------------------------------------------------
 
@@ -105,6 +114,8 @@ data\kml\balloon\noballoon.kml
 
 data\kml\BalloonStyle\displayMode.kml
 
+	Feature uses inline Style
+	--
 	BalloonStyle         3
 	Document             1
 	Folder               2
@@ -115,6 +126,8 @@ data\kml\BalloonStyle\displayMode.kml
 
 data\kml\BalloonStyle\simpleBalloonStyles.kml
 
+	Feature uses inline Style
+	--
 	BalloonStyle         5
 	Placemark            5
 	Point                5
@@ -145,6 +158,8 @@ DEBUG [main] (KmlInputStream.java:548) - skip {http://campsites.com}tentSites
 
 data\kml\ExtendedData\data-golf.kml
 
+	Feature uses inline Style
+	--
 	BalloonStyle         2
 	ExtendedData         2
 	Placemark            2
@@ -154,6 +169,8 @@ data\kml\ExtendedData\data-golf.kml
 
 data\kml\ExtendedData\mti-data.kmz
 
+	Feature uses inline Style
+	--
 	Document             1
 	ExtendedData         33
 	Folder               3
@@ -168,6 +185,8 @@ data\kml\ExtendedData\mti-data.kmz
 
 data\kml\ExtendedData\mti-schema-data.kmz
 
+	Feature uses inline Style
+	--
 	BalloonStyle         1
 	Document             1
 	ExtendedData         33
@@ -218,12 +237,14 @@ data\kml\FeatureType\life-of-a-feature-view-data.kml
 DEBUG [main] (KmlReader.java:166) - NetworkLink href is empty or missing
 	NetworkLink missing Link
 	Overlay missing icon
+	--
 	BalloonStyle         1
 	Document             2
-	ExtendedData         5
+	ExtendedData         7
 	Folder               1
 	GroundOverlay        1
-	LookAt               5
+	ListStyle            1
+	LookAt               7
 	NetworkLink          1
 	PhotoOverlay         1
 	Placemark            1
@@ -259,6 +280,7 @@ DEBUG [main] (KmlInputStream.java:1758) - Handle tag data gx:altitudeMode
 	Feature uses inline Style
 	Invalid LookAt values
 	Overlay missing icon
+	--
 	Camera               1
 	Document             3
 	GroundOverlay        1
@@ -296,8 +318,38 @@ data\kml\gx\sample_tour.kml
         gx:Tour              1
         # features=1
 
+data\kml\gx\trackData.kml
+org.mitre.giscore.events.StyleMap@fe64b9[
+  mappings={normal=#track_n, highlight=#track_h}
+  id=track
+]
+org.mitre.giscore.events.StyleMap@186db54[
+  mappings={normal=#multiTrack_n, highlight=#multiTrack_h}
+  id=multiTrack
+]
+org.mitre.giscore.events.StyleMap@a97b0b[
+  mappings={normal=#waypoint_n, highlight=#waypoint_h}
+  id=waypoint
+]
+
+	Feature uses inline Style
+	--
+	IconStyle            6
+	LabelStyle           1
+	LineStyle            3
+	LookAt               1
+	Placemark            1
+	Schema               1
+	Style                7
+	StyleMap             3
+	gx:TimeSpan          2
+	gx:Track             1
+	# features=1
+
 data\kml\ItemIcon\kitchensink.kmz
 
+	Feature uses inline Style
+	--
 	Placemark            12
 	Point                12
 	Style                14
@@ -530,7 +582,7 @@ data\kml\ListStyle\radio-hide-children.kml
 	url=file:/C:/projects/giscore/data/kml/ListStyle/other-stuff.kml
 	Document             1
 	Folder               2
-	ListStyle            1
+	ListStyle            2
 	NetworkLink          2
 	Placemark            5
 	Point                4
@@ -570,7 +622,7 @@ data\kml\Model\House.kmz
 
 	Feature uses inline Style
 	Folder               2
-	LookAt               1
+	LookAt               2
 	Model                1
 	Placemark            2
 	Style                1
@@ -692,7 +744,7 @@ data\kml\NetworkLink\aliasing\nl+desc.kml
 
 data\kml\NetworkLink\flyToView\d-lookat-p-lookat.kml
 
-	LookAt               1
+	LookAt               2
 	Placemark            1
 	# features=1
 
@@ -710,7 +762,7 @@ data\kml\NetworkLink\flyToView\flyToView.kml
 	url=file:/C:/projects/giscore/data/kml/NetworkLink/flyToView/nlc-lookat-p-lookat.kml
 	url=file:/C:/projects/giscore/data/kml/NetworkLink/flyToView/nlc-lookat.kml
 	Document             3
-	LookAt               3
+	LookAt               5
 	NetworkLink          4
 	NetworkLinkControl   2
 	Placemark            4
@@ -786,9 +838,10 @@ data\kml\Placemark\clippedAtDateLine.kml
 
 	Feature uses inline Style
 	Geometry spans -180/+180 longtiude line
-
+	--
 	Line                 2
 	LineStyle            2
+	LookAt               1
 	Placemark            3
 	Point                1
 	Style                2
@@ -1026,8 +1079,10 @@ data\kml\Region\polygon-swap-pop.kml
 data\kml\Region\screen-rulers.kml
 
 	Overlay missing icon
+	--
 	Document             1
 	Folder               2
+	ListStyle            1
 	Placemark            2
 	ScreenOverlay        8
 	Style                1
@@ -1161,16 +1216,27 @@ java.lang.IllegalArgumentException: Angle 52.35987755982989 radians is too big
 	Style                5
 	# features=40
 
+data\kml\sloppy\badTrack.kml
+
+	gx:SimpleArrayData has incorrect length
+	gx:Track coord-when mismatch
+	--
+	Placemark            1
+	gx:SimpleArrayData   1
+	gx:Track             1
+	# features=1
+
 data\kml\sloppy\bluedevil20080812-short2.kml
 	DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
 	DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
 	DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
 	WARN [main] (KmlInputStream.java:1255) - Skip unexpected element: name
 	INFO [main] (AltitudeModeEnumType.java:40) - Ignoring invalid altitudeMode value: clampedToGround
-
+	--
 	Feature uses inline Style
 	Out of order elements
 	Overlay missing icon
+	--
 	Document             1
 	Folder               2
 	IconStyle            3
@@ -1199,6 +1265,28 @@ data\kml\sloppy\n.kml
 	Point                4
 	# features=4
 
+data\kml\sloppy\police.kml
+org.mitre.giscore.events.StyleMap@19106c7[
+  mappings={normal=#default+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png, highlight=#hi+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png}
+  id=map+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png
+]
+ WARN [main] (KmlInputStream.java:1289) - Skip unexpected element: altitudeMode
+
+	Feature uses inline Style
+	Suspicious Style id characters
+	Suspicious StyleMap highlight URL characters
+	Suspicious StyleMap id characters
+	Suspicious StyleMap normal URL characters
+	Suspicious styleUrl characters
+	--
+	IconStyle            2
+	LabelStyle           2
+	Placemark            1
+	Point                1
+	Style                2
+	StyleMap             1
+	# features=1
+
 data\kml\sloppy\pred.kml
  WARN [main] (KmlInputStream.java:2160) - comma found instead of whitespace between tuples before -81.9980316162109
 
@@ -1224,7 +1312,12 @@ data\kml\Style\iconStyle.kmz
 
 data\kml\Style\inline-stylemap.kml
 
+org.mitre.giscore.events.StyleMap@60420f[
+  mappings={}
+  id=<null>
+]
 	Feature uses inline StyleMap
+	--
 	Placemark            1
 	Point                1
 	StyleMap             1
@@ -1232,6 +1325,8 @@ data\kml\Style\inline-stylemap.kml
 
 data\kml\Style\noicon.kml
 
+	Feature uses inline Style
+	--
 	IconStyle            1
 	LabelStyle           1
 	LookAt               1
@@ -1243,6 +1338,7 @@ data\kml\Style\noicon.kml
 data\kml\Style\overrideStyles.kml
 
 	Feature uses inline Style
+	--
 	IconStyle            2
 	LabelStyle           1
 	Placemark            2
@@ -1252,6 +1348,8 @@ data\kml\Style\overrideStyles.kml
 
 data\kml\Style\SharedStyle.kml
 
+	Feature uses inline Style
+	--
 	BalloonStyle         1
 	IconStyle            1
 	LabelStyle           1
@@ -1264,11 +1362,13 @@ data\kml\Style\SharedStyle.kml
 data\kml\Style\style-merging.kml
 
 	Feature uses inline Style
+	--
 	BalloonStyle         2
 	IconStyle            1
 	LabelStyle           1
 	Line                 1
 	LineStyle            3
+	ListStyle            1
 	Placemark            3
 	Point                1
 	PolyStyle            1
@@ -1278,6 +1378,8 @@ data\kml\Style\style-merging.kml
 
 data\kml\Style\styledLineString.kml
 
+	Feature uses inline Style
+	--
 	Line                 1
 	LineStyle            1
 	LookAt               1
@@ -1289,6 +1391,7 @@ data\kml\Style\styledLineString.kml
 data\kml\Style\styled_placemark.kml
 
 	Feature uses inline Style
+	--
 	BalloonStyle         1
 	IconStyle            1
 	LabelStyle           1
@@ -1299,7 +1402,10 @@ data\kml\Style\styled_placemark.kml
 
 data\kml\Style\styles.kml
 
+	Feature uses inline Style
+	--
 	IconStyle            1
+	ListStyle            1
 	Style                2
 
 data\kml\time\080708_dirtdevil_test1.kml
@@ -1328,7 +1434,7 @@ data\kml\time\multiNestedInherits.kml
 	Placemark            2
 	Point                2
 	Style                2
-	TimeSpan             2
+	TimeSpan             4
 	# features=2
 
 data\kml\time\multiNestedInheritsUnboundedSpans.kml
@@ -1339,7 +1445,7 @@ data\kml\time\multiNestedInheritsUnboundedSpans.kml
 	Placemark            2
 	Point                2
 	Style                2
-	TimeSpan             2
+	TimeSpan             4
 	# features=2
 
 data\kml\time\nestedInherits.kml
@@ -1353,7 +1459,7 @@ data\kml\time\nestedInherits.kml
 	Placemark            6
 	Point                6
 	Style                6
-	TimeSpan             3
+	TimeSpan             4
 	# features=6
 
 data\kml\time\time-inherit2.kml
@@ -1366,8 +1472,8 @@ data\kml\time\time-inherit2.kml
 	Placemark            13
 	Point                13
 	Style                4
-	TimeSpan             1
-	TimeStamp            3
+	TimeSpan             4
+	TimeStamp            5
 	# features=13
 
 data\kml\time\time-inherits.kml
@@ -1377,6 +1483,7 @@ data\kml\time\time-inherits.kml
 	Folder               4
 	GroundOverlay        6
 	LatLonBox            6
+	TimeSpan             3
 	# features=6
 
 data\kml\time\time-span-overlay.kml
@@ -1389,6 +1496,7 @@ data\kml\time\time-span-overlay.kml
 data\kml\time\time-stamp-point.kmz
 
 	IconStyle            3
+	ListStyle            1
 	Placemark            361
 	Point                361
 	Style                4
@@ -1406,6 +1514,7 @@ data\kml\time\timestamps.kml
 data\kml\time\TimeTest.kml
 
 	Feature uses inline Style
+	--
 	IconStyle            6
 	Placemark            6
 	Point                6
