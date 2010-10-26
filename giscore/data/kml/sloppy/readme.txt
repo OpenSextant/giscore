@@ -16,3 +16,9 @@ Well-formed XML documents (fail schema validation)
 	cvc-datatype-valid.1.2.1: invalid value for 'NCName' <Style id="***default+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png***">
 	<altitudeMode>***clampToGround***</altitudeMode>
 
+Well-formed XML documents (passes schema validation)
+ badTrack.kml
+    Well-formed KML and valid with respect to KML XML schema but with gx:Track
+    coord-when mismatch in addition to gx:SimpleArrayData with an incorrect length 
+    with respect to number of coord/when elements.
+
