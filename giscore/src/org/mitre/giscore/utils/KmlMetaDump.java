@@ -36,6 +36,7 @@ import java.util.*;
  *  <li> Overlay does not contain Icon element (info)
  *  <li> End container with no matching start container (error)
  *  <li> Starting container tag with no matching end container (error)
+ *  <li> Nested MultiGeometries (info)
  *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem) (warning)
  *  <li> Region has invalid LatLonAltBox (error)
  *  <li> LatLonAltBox fails to satisfy constraints [ATC 8] (warning)
@@ -591,9 +592,10 @@ public class KmlMetaDump implements IKml {
 		for (Geometry g : geometryBag) {
 			if (g != null) {
 				Class<?extends Geometry> gClass = g.getClass();
-				if (gClass == GeometryBag.class)
+				if (gClass == GeometryBag.class) {
+                    addTag(":Nested MultiGeometries");
 					checkBag((GeometryBag)g);
-				else
+                } else
 					addTag(gClass);
 			}
 		}
