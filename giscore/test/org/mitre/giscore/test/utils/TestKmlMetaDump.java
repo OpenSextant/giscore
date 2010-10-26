@@ -6,6 +6,7 @@ import org.mitre.giscore.utils.KmlMetaDump;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * @author Jason Mathews, MITRE Corp.
@@ -29,13 +30,27 @@ public class TestKmlMetaDump extends TestCase {
 		realTest(new File("data/kml/sloppy"));
 	}
 
+    public void testKmlUrl() throws IOException {
+        File file = new File("data/kml/Placemark/placemark.kml");
+        if (file.isFile()) {
+            URL url = file.toURI().toURL();
+            KmlMetaDump app = new KmlMetaDump();
+            app.setVerbose(true);
+            app.checkSource(url);
+            assertTrue(app.getTotals().contains(IKml.PLACEMARK));
+        }
+    }
+
 	public void testKmlOutput() throws IOException {
 		File file = new File("data/kml/MultiGeometry/testLayers.kml");
 		if (file.isFile()) {
 			KmlMetaDump app = new KmlMetaDump();
-			app.setOutPath(new File("testOutput"));
+            File outDir = new File("testOutput/output");
+            File outFile = new File(outDir, "testLayers.kml");
+            if (outFile.exists()) outFile.delete();
+            app.setOutPath(outDir);
 			app.checkSource(file);
-			assertTrue(app.getTagSet().containsKey(IKml.MULTI_GEOMETRY));
+			assertTrue(app.getTotals().contains(IKml.MULTI_GEOMETRY));
 		}
 	}
 
@@ -46,7 +61,7 @@ public class TestKmlMetaDump extends TestCase {
 			app.useSimpleFieldSet();
 			app.checkSource(dir);
 			assertFalse(app.getSimpleFieldSet().isEmpty());
-			assertTrue(app.getTagSet().containsKey(IKml.SCHEMA));
+			assertTrue(app.getTotals().contains(IKml.SCHEMA));
 		}
 	}
 
@@ -56,7 +71,7 @@ public class TestKmlMetaDump extends TestCase {
 			KmlMetaDump app = new KmlMetaDump();
 			app.setFollowLinks(true);
 			app.checkSource(dir);
-			assertTrue(app.getTagSet().containsKey(IKml.NETWORK_LINK));
+			assertTrue(app.getTotals().contains(IKml.NETWORK_LINK));
 		}
 	}
 
@@ -64,7 +79,7 @@ public class TestKmlMetaDump extends TestCase {
 		if (file.isDirectory()) {
 			KmlMetaDump app = new KmlMetaDump();
 			app.checkSource(file);
-			assertFalse(app.getTagSet().isEmpty());
+            assertFalse("tag set should be non-empty: " + file, app.getTotals().isEmpty());
 		}
 	}
 	
