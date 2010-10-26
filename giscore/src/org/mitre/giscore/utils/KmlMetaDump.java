@@ -1,21 +1,5 @@
 package org.mitre.giscore.utils;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeSet;
-
-import javax.xml.stream.XMLStreamException;
-
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.Geometry;
@@ -27,6 +11,15 @@ import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
+
+import javax.xml.stream.XMLStreamException;
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.*;
 
 /**
  * Simple KML Debugging Tool to read KML/KMZ documents by File or URL and dump statistics
@@ -104,7 +97,7 @@ public class KmlMetaDump implements IKml {
 	/**
 	 * count of number of KML resources were processed and stats were tallied
 	 * this means the number of times the tagSet keys were dumped into the totals set
-	 * if dumpConut == 1 then the totals the same the single tagSet dumped.
+	 * if dumpCount == 1 then the totals the same the single tagSet dumped.
  	 */
 	private int dumpCount;
 
@@ -116,7 +109,7 @@ public class KmlMetaDump implements IKml {
 
 	public void checkSource(URL url) throws IOException {
 		System.out.println(url);
-		processKmlSource(new KmlReader(url), null, url.getFile());
+		processKmlSource(new KmlReader(url), url.getFile());
 	}
 
 	public void checkSource(File file) throws IOException {
@@ -131,7 +124,7 @@ public class KmlMetaDump implements IKml {
 				}
 		} else {			
 			System.out.println(file.getAbsolutePath());
-			processKmlSource(new KmlReader(file), file, file.getName());
+			processKmlSource(new KmlReader(file), file.getName());
 		}
 	}
 
@@ -143,8 +136,15 @@ public class KmlMetaDump implements IKml {
 		simpleFieldSet = new TreeSet<String>();
 	}
 
-	public Map<String, Integer> getTagSet() {
-		return tagSet;
+    /**
+     * Get tag set for last KML resource processed
+     */
+   public Map<String, Integer> getTagSet() {
+       return tagSet;
+   }
+
+	public Set<String> getTotals() {
+		return totals;
 	}
 
 	public void setFollowLinks(boolean followLinks) {
@@ -207,12 +207,12 @@ public class KmlMetaDump implements IKml {
     /**
      * Process KML Source reading each feature and dump out stats when done
      * @param reader KmlReader
-     * @param file File if checking File source, other null if URL source
      * @param name Name part of KML file or URL
      */
-	private void processKmlSource(KmlReader reader, File file, String name) {
+	private void processKmlSource(KmlReader reader, String name) {
+        tagSet.clear(); // clear tags
+        features = 0;
 		KmlWriter writer = getWriter(reader, name);
-		features = 0;
 		try {
 			IGISObject gisObj;
 			while ((gisObj = reader.read()) != null) {
@@ -265,8 +265,7 @@ public class KmlMetaDump implements IKml {
 		dumpTags();
         if (features != 0)
 		    System.out.println("\t# features=" + features);
-		System.out.println();
-		tagSet.clear();
+		System.out.println();		
 		dumpCount++;
 	}
 
