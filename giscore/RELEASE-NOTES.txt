@@ -65,3 +65,16 @@ UrlRef
 
 ------------------------------------------------------------------------------
 
+Release 0.5.25
+
+This release fixes minor bugs in KML input and Polygon point handling.
+
+Polygon
+-fix getPoints(). failed if points in "wrong" order.
+ Puts outer ring points in clockwise order and inner ring points in ccw order
+
+KmlInputStream
+-fix interpreting kml elements as non-kml/foreign elements if kml root element does not declare explicit kml namespace
+
+------------------------------------------------------------------------------
+
