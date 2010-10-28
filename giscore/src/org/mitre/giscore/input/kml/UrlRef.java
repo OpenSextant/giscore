@@ -499,12 +499,35 @@ public final class UrlRef implements java.io.Serializable {
 
         for (int i = 1; i < len; i++) {
             c = str.charAt(i);
-            if (!isXMLNameCharacter(c)) {
+            if (c=='%') {
+                // check for URI escaping mechanism (% HH, where HH is the hexadecimal notation of the byte value).
+                // next 2 characters must be hexadecimal digits
+                if (i+2 >= len) {
+                    // System.out.format(" XX: bad i=%d len=%d%n",i,len);
+                    return false;
+                }
+                if (!isHexDigit(str.charAt(++i)) || !isHexDigit(str.charAt(++i))) {
+                    //System.out.println(" not hexdecimal");
+                    return false;
+                }
+            }
+            else if (!isXMLNameCharacter(c)) {
             // if (c != '.' && c != '-' && c != '_' && !Character.isLetterOrDigit(c)) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * Determines if the specified character is a hexadecimal digit [0-9,a-f,A-F].
+     * @param   ch   the character to be tested.
+     * @return  <code>true</code> if the character is a hexadecimal digit;
+     *          <code>false</code> otherwise.
+     */
+    public static boolean isHexDigit(char ch) {
+        // digit(ch,16) == -1 then no hexadecimal character [0-9,a-f,A-F]
+        return Character.digit(ch, 16) >= 0;
     }
 
     //////////////////////////////////////////////////////
