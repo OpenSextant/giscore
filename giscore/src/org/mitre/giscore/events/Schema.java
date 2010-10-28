@@ -18,6 +18,14 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.NonNull;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
+import org.mitre.giscore.IStreamVisitor;
+import org.mitre.giscore.events.SimpleField.Type;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collection;
@@ -25,14 +33,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.StringUtils;
-import org.mitre.giscore.IStreamVisitor;
-import org.mitre.giscore.events.SimpleField.Type;
 
 /**
  * Defines a data schema. Data schemata are important because they allow us to 
@@ -97,15 +97,16 @@ public class Schema implements IGISObject {
 	}
 
 	/**
-	 * @param name the name to set, non-empty string (never null)
-     * @throws IllegalArgumentException if name is null or empty string
+     * Set name for schema. Normalizes name trimming any leading and trailing whitespace.
+	 * @param name the name to set, non-blank string (never null)
+     * @throws IllegalArgumentException if name is null or blank string
 	 */
 	public void setName(String name) {
-		if (name == null || name.trim().length() == 0) {
+		if (StringUtils.isBlank(name)) {
 			throw new IllegalArgumentException(
 					"name should never be null or empty");
 		}
-		this.name = name;
+		this.name = name.trim();
 	}
 
 	/**
