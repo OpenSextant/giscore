@@ -18,15 +18,21 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.shapefile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.geometry.*;
+import org.mitre.giscore.input.GISInputStreamBase;
+import org.mitre.giscore.input.IGISInputStream;
+import org.mitre.giscore.input.dbf.DbfInputStream;
+import org.mitre.giscore.utils.PolyHolder;
+import org.mitre.itf.geodesy.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.*;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -35,34 +41,6 @@ import java.nio.channels.FileChannel.MapMode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
-
-import org.apache.commons.io.IOUtils;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.IGISObject;
-import org.mitre.giscore.events.Schema;
-import org.mitre.giscore.events.Style;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.MultiLine;
-import org.mitre.giscore.geometry.MultiPoint;
-import org.mitre.giscore.geometry.MultiPolygons;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
-import org.mitre.giscore.input.GISInputStreamBase;
-import org.mitre.giscore.input.IGISInputStream;
-import org.mitre.giscore.input.dbf.DbfInputStream;
-import org.mitre.giscore.utils.PolyHolder;
-import org.mitre.itf.geodesy.Angle;
-import org.mitre.itf.geodesy.Geodetic2DBounds;
-import org.mitre.itf.geodesy.Geodetic2DPoint;
-import org.mitre.itf.geodesy.Geodetic3DBounds;
-import org.mitre.itf.geodesy.Geodetic3DPoint;
-import org.mitre.itf.geodesy.Latitude;
-import org.mitre.itf.geodesy.Longitude;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Read a single shapefile (.prj, .shp, .dbf, etc) to an object buffer for later
@@ -136,19 +114,28 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 	 */
 	// private int recLen;
 
+    /**
+     * Create <tt>SingleShapefileInputHandler</tt> for single shapefile given
+     * input directory and base filename (not including .shp extension) as
+     * base name for .shp, .dbf, and .prj files. 
+     * @param inputDirectory input directory, must exist
+     * @param shapefilename base shape file name, never null or blank string
+     * @throws IllegalArgumentException if Input directory is null or does not exist
+     *              or if shapefilename is null or blank string.
+     * @throws IOException if an I/O error occurs
+     */
 	public SingleShapefileInputHandler(File inputDirectory, String shapefilename)
-			throws URISyntaxException, IOException {
+			throws IOException {
 		if (inputDirectory == null || !inputDirectory.exists()) {
 			throw new IllegalArgumentException(
 					"Input directory must exist and be non-null");
 		}
-		if (shapefilename == null) {
+		if (StringUtils.isBlank(shapefilename)) {
 			throw new IllegalArgumentException(
-					"shapefilename should never be null");
+					"shapefilename should never be null or blank");
 		}
 		//URI uri = new URI("urn:org:mitre:giscore:schema:"
 				//+ UUID.randomUUID().toString());
-		// Schema schema = new Schema(uri);
 		File dbfFile = new File(inputDirectory, shapefilename + ".dbf");
 		File shpFile = new File(inputDirectory, shapefilename + ".shp");
 		File prjFile = new File(inputDirectory, shapefilename + ".prj");
@@ -168,8 +155,9 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 			// First thing in the dbf should be a schema
 			IGISObject ob = dbf.read();
 			if (ob instanceof Schema) {
-				// schema = (Schema) ob;
-				addFirst(ob);
+				Schema schema = (Schema) ob;
+                schema.setName(shapefilename);
+				addFirst(schema);
 			} else {
 				throw new IllegalStateException(
 						"Schema not the first thing returned from dbf");

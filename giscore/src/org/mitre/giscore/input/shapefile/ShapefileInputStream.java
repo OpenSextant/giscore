@@ -18,20 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.shapefile;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipInputStream;
-
+import com.esri.arcgis.interop.AutomationException;
 import org.apache.commons.io.IOUtils;
 import org.mitre.giscore.IAcceptSchema;
 import org.mitre.giscore.events.IGISObject;
@@ -39,7 +26,13 @@ import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.input.GISInputStreamBase;
 import org.mitre.giscore.input.dbf.DbfInputStream;
 
-import com.esri.arcgis.interop.AutomationException;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * Read one or more shapefiles in from a directory or from a zip input stream.
@@ -253,18 +246,13 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * Calculate the shapefile basename and open the single handler to the 
 	 * new shapefile.
 	 * 
-	 * @throws URISyntaxException
 	 * @throws IOException if an I/O error occurs
 	 */
 	private void handleNewShapefile() throws IOException {
-		try {
-			File shapefile = shapefiles[currentShapefile];
-			String basename = shapefile.getName();
-			int i = basename.indexOf(".shp");
-			basename = basename.substring(0, i);
-			handler = new SingleShapefileInputHandler(workingDir, basename);
-		} catch (URISyntaxException e) {
-			throw new RuntimeException("Unexpected exception", e);
-		}
+		File shapefile = shapefiles[currentShapefile];
+		String basename = shapefile.getName();
+		int i = basename.indexOf(".shp");
+		basename = basename.substring(0, i);
+		handler = new SingleShapefileInputHandler(workingDir, basename);
 	}
 }
