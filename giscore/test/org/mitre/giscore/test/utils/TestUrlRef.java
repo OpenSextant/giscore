@@ -11,7 +11,12 @@ public class TestUrlRef extends TestCase {
 
     public void testIsIdentifier() {
         
-        String[]ids = { "X509Data", "abc-ABC_12.34", "id%20" };
+        String[]ids = { "X509Data", "abc-ABC_12.34", "id%20",
+                "_\u00B7\u3005\u30FE",  // XMLExtender
+                "_\u309A", // XMLCombiningChar
+                "_\uD7A3",  // XMLLetter
+                "_\u0ED9"   // XMLDigit
+        };
         /*
          * valid identifier follows NCName production in [Namespaces in XML]:
          *  NCName ::=  (Letter | '_') (NCNameChar)*  -- An XML Name, minus the ":"
