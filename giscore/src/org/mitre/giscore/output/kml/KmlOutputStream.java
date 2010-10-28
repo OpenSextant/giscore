@@ -18,21 +18,14 @@
  ***************************************************************************************/
 package org.mitre.giscore.output.kml;
 
-import java.awt.Color;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.URI;
-import java.util.*;
-import java.text.ParseException;
-
-import javax.xml.stream.XMLStreamException;
-
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.Namespace;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.geometry.*;
+import org.mitre.giscore.geometry.Point;
+import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.input.kml.UrlRef;
@@ -43,6 +36,16 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.xml.stream.XMLStreamException;
+import java.awt.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.URI;
+import java.text.ParseException;
+import java.util.*;
+import java.util.List;
+import java.util.Queue;
 
 /**
  * The KML output stream creates a result KML file using the given output
@@ -1076,11 +1079,16 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     public void visit(Schema schema) {
         try {
             writer.writeStartElement(SCHEMA);
+            // review: normalize/escape? GE allows whitespace, []'s. etc. in names
+            // as well as BalloonStyle substitution entities...
+            // String schemaName = UrlRef.escapeUri(schema.getName());
             writer.writeAttribute(NAME, schema.getName());
-            String schemaid = schema.getId().toString();
+            String schemaid = UrlRef.escapeUri(schema.getId().toString());
             if (schemaid.startsWith("#")) {
                 schemaid = schemaid.substring(1);
             }
+            // must follow xsd:ID type (http://www.w3.org/TR/xmlschema-2/#ID)
+            // which follows NCName production in [Namespaces in XML].
             writer.writeAttribute(ID, schemaid);
             for (String name : schema.getKeys()) {
                 SimpleField field = schema.get(name);
