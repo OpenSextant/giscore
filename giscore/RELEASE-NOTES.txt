@@ -67,7 +67,7 @@ UrlRef
 
 Release 0.5.25
 
-This release fixes minor bugs in KML input and Polygon point handling.
+This release fixes minor bugs in KML input/output, Schema, and Polygon point handling.
 
 Polygon
 -fix getPoints(). failed if points in "wrong" order.
@@ -75,6 +75,19 @@ Polygon
 
 KmlInputStream
 -fix interpreting kml elements as non-kml/foreign elements if kml root element does not declare explicit kml namespace
+
+KmlOutputStream
+-Properly escape schema id value in output
+
+UrlRef
+-updated isIdentifier() to allow %HH URI-escaping
+-added isHexDegit()
+
+Schema
+-Update setName() to normalize name value stripping leading/trailing whitespace and not allow blank strings as valid
+
+KmlMetaDump.java
+-Add check for suspicious Schema id/name characters to enforce Schema id/name constraints
 
 ------------------------------------------------------------------------------
 
