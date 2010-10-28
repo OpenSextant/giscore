@@ -52,6 +52,8 @@ import java.util.*;
  *  <li> Feature inherits time from parent container (info)
  *  <li> Container start date is earlier than that of its ancestors (info)
  *  <li> Container end date is later than that of its ancestors (info)
+ *  <li> Suspicious Schema id characters
+ *  <li> Suspicious Schema name characters
  *  <li> Suspicious Style id characters (warning)
  *  <li> Suspicious styleUrl characters (warning)
  *  <li> Suspicious StyleMap id characters (warning)
@@ -514,6 +516,19 @@ public class KmlMetaDump implements IKml {
             if (StringUtils.isEmpty(prefix)) prefix = "other"; 
 			name = prefix + ":" + name;
             addTag(name);
+        } else if (cl == Schema.class) {
+            addTag(cl);
+            Schema schema = (Schema)gisObj;
+            String uri = schema.getId().toString();  // getId never null value
+            if (!UrlRef.isIdentifier(uri)) {
+                addTag(":Suspicious Schema id characters");
+                if (verbose) System.out.println(" Warning: Schema id appears to contain invalid characters: " + uri);
+            }
+            String name = schema.getName(); // name never null or blank value
+            if (!UrlRef.isIdentifier(name)) {
+                addTag(":Suspicious Schema name characters");
+                if (verbose) System.out.println(" Warning: Schema name may contain invalid characters: " + name);
+            }
         } else if (cl != Comment.class) {
             // ignore: Comment objects but capture others
             addTag(cl); // e.g. Schema, NetworkLinkControl
