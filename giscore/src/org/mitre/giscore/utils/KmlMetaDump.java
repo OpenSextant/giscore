@@ -1,9 +1,13 @@
 package org.mitre.giscore.utils;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.log4j.AppenderSkeleton;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.spi.LocationInfo;
+import org.apache.log4j.spi.LoggingEvent;
 import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.GeometryBag;
+import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.input.kml.UrlRef;
@@ -36,8 +40,6 @@ import java.util.*;
  *  <li> Overlay does not contain Icon element (info)
  *  <li> End container with no matching start container (error)
  *  <li> Starting container tag with no matching end container (error)
- *  <li> Nested MultiGeometries (info)
- *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem) (warning)
  *  <li> Region has invalid LatLonAltBox (error)
  *  <li> LatLonAltBox fails to satisfy constraints [ATC 8] (warning)
  *  <li> LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) [ATC 8.3] (error)
@@ -62,6 +64,14 @@ import java.util.*;
  *  <li> Out of order elements (error)
  *  <li> gx:Track coord-when mismatch (error)
  *  <li> gx:SimpleArrayData has incorrect length (error)
+ * </ul>
+ * Geometry checks: <br>
+ * <ul>
+ *  <li> Nested MultiGeometries (info)
+ *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem) (warning)
+ *  <li> Outer ring clipped at DateLine (info)
+ *  <li> Inner ring clipped at DateLine (info)
+ *  <li> Inner ring not contained within outer ring (info)
  * </ul>
  * 
  * This tool helps to uncover issues in reading and writing target KML files.
@@ -109,6 +119,20 @@ public class KmlMetaDump implements IKml {
 	private boolean useStdout;
 	
 	private static final String CLAMP_TO_GROUND = "clampToGround";
+
+	public KmlMetaDump() {
+		try {
+			//Get the root logger
+			Logger root = Logger.getRootLogger();
+			if (root != null) {
+				MetaAppender appender = new MetaAppender();
+				appender.setThreshold(Level.WARN);
+				root.addAppender(appender);
+			}
+		} catch (Exception e) {
+			//ignore
+		}
+	}
 
 	public void checkSource(URL url) throws IOException {
 		System.out.println(url);
@@ -621,23 +645,57 @@ public class KmlMetaDump implements IKml {
 	 */
 	private void checkGeometry(Geometry geom) {
 		// geom must have at least 2 points (points cannot span the line)
+		// Polygon/LineRing must have at least 4 points
         Geodetic2DBounds bbox = geom.getBoundingBox();
 		if (bbox == null || geom.getNumPoints() < 2) return;
+		
 		if (verbose) {
 			Geodetic2DPoint c = geom.getCenter();
 			if (c != null) {
 				System.out.format("Center point: %f,%f%n", c.getLongitudeAsDegrees(), c.getLatitudeAsDegrees());
 			}
 		}
-		//if (geom instanceof Line && (((Line)geom).clippedAtDateLine())) System.out.println(":clipped");
-		//else if (geom instanceof LinearRing && (((LinearRing)geom).clippedAtDateLine())) System.out.println(":clipped");
+		if (geom instanceof Polygon) {
+			Polygon poly = (Polygon) geom;
+			LinearRing oring = poly.getOuterRing();
+			checkRingOrder("Outer ring", oring);
+			if (oring.clippedAtDateLine())
+				addTag(":Outer ring clipped at DateLine");
+			for (LinearRing ring : poly.getLinearRings()) {
+				if (ring.clippedAtDateLine())
+					addTag(":Inner ring clipped at DateLine");
+				if (!oring.contains(ring))
+					addTag(":Inner ring not contained within outer ring");
+				checkRingOrder("Inner ring", ring);
+			}
+		} else if (geom instanceof Line && (((Line)geom).clippedAtDateLine())) {
+			addTag(":Line clipped at DateLine");
+		}
+		else if (geom instanceof LinearRing) {
+			LinearRing ring = (LinearRing)geom;
+			if (ring.clippedAtDateLine())
+				addTag(":LinearRing clipped at DateLine");
+			checkRingOrder("LinearRing", ring);
+		}
 		// see http://www.cadmaps.com/gisblog/?cat=10
 		if (bbox.getWestLon().inDegrees() > bbox.getEastLon().inDegrees()) {
 			//System.out.println(geom.getClass().getName());
 			addTag(":Geometry spans -180/+180 longtiude line");
 			// such geometries must be sub-divided to render correctly
 		}
+	}
 
+	private void checkRingOrder(String label, LinearRing ring) {
+		if (verbose) {
+			if (ring.clockwise()) {
+				addTag(":" + label + " points in clockwise order");
+				return;
+			}
+			List<Point> list = new ArrayList<Point>(ring.getPoints());
+			Collections.reverse(list);
+			if (new LinearRing(list).clockwise())
+				addTag(":" + label + " points in counter-clockwise order");
+		}
 	}
 
 	private void checkNetworkLink(NetworkLink networkLink) {
@@ -1000,5 +1058,32 @@ public class KmlMetaDump implements IKml {
 
 		app.dumpStats();
     }
+
+	private class MetaAppender extends AppenderSkeleton {
+
+		@Override
+		protected void append(LoggingEvent event) {
+			String msg = event.getRenderedMessage();
+			if (StringUtils.isBlank(msg)) return;
+			LocationInfo location = event.getLocationInformation();
+			if (location == null) return;
+			String className = location.getClassName();
+			// only kml classes (e.g. org.mitre.giscore.input.kml.KmlInputStream)
+			if (className != null &&
+					(className.startsWith("org.mitre.giscore.events.") ||
+					className.startsWith("org.mitre.giscore.input.kml."))) {
+				addTag(":" + msg);
+			}
+			// event.getThrowableStrRep();
+		}
+
+		public void close() {
+			// nothing to do
+		}
+
+		public boolean requiresLayout() {
+			return false;
+		}
+	}
 
 }
