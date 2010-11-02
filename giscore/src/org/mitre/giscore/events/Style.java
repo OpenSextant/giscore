@@ -18,11 +18,10 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
-import java.awt.Color;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import edu.umd.cs.findbugs.annotations.NonNull;
 import org.mitre.giscore.IStreamVisitor;
+
+import java.awt.*;
 
 /**
  * Represents style information for points and lines. This information is used
@@ -283,8 +282,7 @@ public class Style extends StyleSelector {
 	 *            the color for the balloon background, if <code>null</code>
      *            will use default color: opaque white (ffffffff). 
 	 * @param text
-	 *            the textual template for the balloon content, never
-	 *            <code>null</code>
+	 *            the textual template for the balloon content
 	 * @param textColor
 	 *            the color for the text in the balloon.
      *            The default is black (ff000000). 
@@ -292,15 +290,11 @@ public class Style extends StyleSelector {
      *            If <displayMode> is default, Google Earth uses the information
      *            supplied in <text> to create a balloon . If <displayMode> is hide,
      *            Google Earth does not display the balloon. "default" is the default value
-     *            if null value is supplied.
-     * @throws IllegalArgumentException if text is null.
+     *            if null value is supplied.     
 	 */
 	public void setBalloonStyle(Color bgColor, String text, Color textColor,
 			String displayMode) {
-		if (text == null) {
-			throw new IllegalArgumentException("text should never be null");
-		}
-		hasBalloonStyle = true;
+        hasBalloonStyle = text != null || bgColor != null;
 		this.balloonBgColor = bgColor;
 		this.balloonText = text;
 		this.balloonTextColor = textColor;
@@ -335,7 +329,7 @@ public class Style extends StyleSelector {
 	 *         directions, a white background, and a tail that is attached to
 	 *         the point coordinates of the Feature, if specified).
 	 */
-    @NonNull 
+    @CheckForNull 
 	public String getBalloonText() {
 		return balloonText;
 	}
@@ -393,6 +387,7 @@ public class Style extends StyleSelector {
 	 * 
 	 * @return the labelScale
 	 */
+    @CheckForNull
 	public Double getLabelScale() {
 		return labelScale;
 	}
