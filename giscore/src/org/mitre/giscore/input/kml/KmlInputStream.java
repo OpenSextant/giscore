@@ -1942,17 +1942,17 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			GeometryGroup geom = parseCoordinates(name);
 			if (geom.size() == 1) {
 				Point pt = geom.points.get(0);
-				log.warn("line with single coordinate converted to point: " + pt);
+				log.info("line with single coordinate converted to point: " + pt);
 				return getGeometry(geom, pt);
 			} else return getGeometry(geom, new Line(geom.points));
 		} else if (localname.equals(LINEAR_RING)) {
 			GeometryGroup geom = parseCoordinates(name);
 			if (geom.size() == 1) {
 				Point pt = geom.points.get(0);
-				log.warn("ring with single coordinate converted to point: " + pt);
+				log.info("ring with single coordinate converted to point: " + pt);
 				return getGeometry(geom, pt);
 			} else if (geom.size() != 0 && geom.size() < 4) {
-				log.warn("ring with " + geom.size() + " coordinates converted to line: " + geom);
+				log.info("ring with " + geom.size() + " coordinates converted to line: " + geom);
 				return getGeometry(geom, new Line(geom.points));
 			} else return getGeometry(geom, new LinearRing(geom.points));
 		} else if (localname.equals(POLYGON)) {
@@ -1974,11 +1974,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						int nPoints = geom.size();
 						if (nPoints == 1) {
 							Point pt = geom.points.get(0);
-							log.warn("polygon with single coordinate converted to point: " + pt);
+							log.info("polygon with single coordinate converted to point: " + pt);
 							return getGeometry(geom, pt);
 						} else if (nPoints != 0 && nPoints < 4) {
 							// less than 4 points - use line for the shape
-							log.warn("polygon with " + nPoints + " coordinates converted to line: " + geom);
+							log.info("polygon with " + nPoints + " coordinates converted to line: " + geom);
 							Line line = new Line(geom.points);
 							return getGeometry(geom, line);
 						}
