@@ -6,6 +6,7 @@ import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
+import org.apache.log4j.spi.ThrowableInformation;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.input.kml.IKml;
@@ -31,49 +32,62 @@ import java.util.*;
  * and properties (ExtendedData, Schema, etc.) and optionally export the same KML to a
  * file (or stdout) to verify all content has been correctly interpreted.
  *
- * Parsing also includes support for most gx KML extensions (e.g. MultiTrack, Track, etc.) 
+ * Parsing also includes support for most gx KML extensions (e.g. MultiTrack, Track, etc.)
  * <p/>
  *
  * Notes following conditions if found:
  * <ul>
- *  <li> NetworkLink has missing or empty HREF (info)
- *  <li> Overlay does not contain Icon element (info)
- *  <li> End container with no matching start container (error)
- *  <li> Starting container tag with no matching end container (error)
- *  <li> Region has invalid LatLonAltBox (error)
- *  <li> LatLonAltBox fails to satisfy constraints [ATC 8] (warning)
- *  <li> LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) [ATC 8.3] (error)
- *  <li> LatLonAltBox fails to satisfy constraint (altMode != clampToGround) [ATC 8.4] (warning)
- *  <li> LatLonAltBox appears to be very small area (warning)
- *  <li> minLodPixels must be less than maxLodPixels in Lod [ATC 39] (error)
  *  <li> Camera altitudeMode cannot be clampToGround [ATC 54.2] (warning)
+ *  <li> comma found instead of whitespace between tuples (error)
+ *  <li> Container end date is later than that of its ancestors (info)
+ *  <li> Container start date is earlier than that of its ancestors (info)
+ *  <li> End container with no matching start container (error)
+ *  <li> Feature inherits time from parent container (info)
+ *  <li> Feature uses inline [Style|StyleMap) (info)
+ *  <li> gx:SimpleArrayData has incorrect length (error)
+ *  <li> gx:Track coord-when mismatch (error)
+ *  <li> ignore invalid character in coordinate string (error)
+ *  <li> ignore invalid string in coordinate (error)
  *  <li> Invalid LookAt values (error)
  *  <li> Invalid tilt value in LookAt [ATC 38.2] (error)
- *  <li> Missing altitude in LookAt [ATC 38.3] (warning)
+ *  <li> Invalid time range: start > end (error)
  *  <li> Invalid TimeSpan if begin later than end value (warning)
- *  <li> Feature inherits time from parent container (info)
- *  <li> Container start date is earlier than that of its ancestors (info)
- *  <li> Container end date is later than that of its ancestors (info)
+ *  <li> Invalid ViewGroup tag: XXX (warn)
+ *  <li> LatLonAltBox appears to be very small area (warning)
+ *  <li> LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) [ATC 8.3] (error)
+ *  <li> LatLonAltBox fails to satisfy constraint (altMode != clampToGround) [ATC 8.4] (warning)
+ *  <li> LatLonAltBox fails to satisfy constraints [ATC 8] (warning)
+ *  <li> minLodPixels must be less than maxLodPixels in Lod [ATC 39] (error)
+ *  <li> Missing altitude in LookAt [ATC 38.3] (warning)
+ *  <li> NetworkLink missing Link (info)
+ *  <li> NetworkLink missing or empty HREF (info)
+ *  <li> Out of order elements (error)
+ *  <li> Overlay does not contain Icon element (info)
+ *  <li> Region has invalid LatLonAltBox (error)
+ *  <li> Region has invalid Lod
+ *  <li> Starting container tag with no matching end container (error)
  *  <li> Suspicious Schema id characters
  *  <li> Suspicious Schema name characters
  *  <li> Suspicious Style id characters (warning)
- *  <li> Suspicious styleUrl characters (warning)
+ *  <li> Suspicious StyleMap [normal|highlight] URL characters (warning)
  *  <li> Suspicious StyleMap id characters (warning)
- *  <li> Suspicious StyleMap highlight URL characters (warning)
- *  <li> Suspicious StyleMap normal URL characters (warning)
- *  <li> Out of order elements (error)
- *  <li> gx:Track coord-when mismatch (error)
- *  <li> gx:SimpleArrayData has incorrect length (error)
+ *  <li> Suspicious styleUrl characters (warning)
+ *  <li> Unknown Track element: XXX (warn)
  * </ul>
  * Geometry checks: <br>
  * <ul>
- *  <li> Nested MultiGeometries (info)
- *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem) (warning)
- *  <li> Outer ring clipped at DateLine (info)
+ *  <li> Bad poly found, no outer ring (error)
+ *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem) (warn)
  *  <li> Inner ring clipped at DateLine (info)
- *  <li> Inner ring not contained within outer ring (info)
+ *  <li> Inner ring not contained within outer ring (warn)
+ *  <li> Inner rings in Polygon must not overlap with each other (warn)
+ *  <li> Line clipped at DateLine (info)
+ *  <li> LinearRing can not self-intersect (warn)
+ *  <li> LinearRing must start and end with the same point (error)
+ *  <li> Nested MultiGeometries (info)
+ *  <li> Outer ring clipped at DateLine (info)
  * </ul>
- * 
+ *
  * This tool helps to uncover issues in reading and writing target KML files.
  * Some KML files fail to parse and those cases are almost always those that don't
  * conform to the appropriate KML XML Schema or strictly follow the OGC KML standard
@@ -87,7 +101,7 @@ import java.util.*;
  *
  * ATC x-x errors/warnings reference those defined in the OGC KML 2.2 Abstract Test Suite
  * Reference OGC 07-134r2 available at http://www.opengeospatial.org/standards/kml
- * 
+ *
  * @author Jason Mathews, MITRE Corp.
  * Created: May 20, 2009 12:05:04 PM
  */
@@ -99,7 +113,7 @@ public class KmlMetaDump implements IKml {
 	private int features;
 	private boolean verbose;
 	private Class<? extends IGISObject> lastObjClass;
-	
+
 	private boolean inheritsTime;
 	private Date containerStartDate;
 	private Date containerEndDate;
@@ -117,7 +131,7 @@ public class KmlMetaDump implements IKml {
 	private final Map<String,Integer> tagSet = new java.util.TreeMap<String,Integer>();
 	private final Set<String> totals = new TreeSet<String>();
 	private boolean useStdout;
-	
+
 	private static final String CLAMP_TO_GROUND = "clampToGround";
 
 	public KmlMetaDump() {
@@ -149,7 +163,7 @@ public class KmlMetaDump implements IKml {
 					if (name.endsWith(".kml") || name.endsWith(".kmz"))
 						checkSource(f);
 				}
-		} else {			
+		} else {
 			System.out.println(file.getAbsolutePath());
 			processKmlSource(new KmlReader(file), file.getName());
 		}
@@ -379,12 +393,14 @@ public class KmlMetaDump implements IKml {
             Geometry geom = f.getGeometry();
             addTag(PLACEMARK);
             if (geom != null) {
-                checkGeometry(geom); // Point, LineString, Polygon, Model, MultiGeometry, etc.
                 Class<? extends Geometry> geomClass = geom.getClass();
                 if (geomClass == GeometryBag.class) {
                     addTag(MULTI_GEOMETRY);
-                    checkBag((GeometryBag) geom);
-                } else addTag(geomClass);
+                    checkBag((GeometryBag) geom); // handle MultiGeometry
+                } else {
+					addTag(geomClass);
+					checkGeometry(geom); // Point, LineString, LinearRing, Polygon, Model
+				}
             } else {
                 checkElements(f); // check gx:Track, gx:MultiTrack geometries
             }
@@ -420,7 +436,7 @@ public class KmlMetaDump implements IKml {
 						// assertion: the begin value is earlier than the end value.
 						// if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
 						addTag(":Invalid time range: start > end");
-						if (verbose) System.out.println(" Error: Invalid time range: start > end\n");
+						if (verbose) System.out.println(" Error: Invalid time range: start > end");
 					}
 					if (containerStartDate != null) {
 						if (verbose) System.out.println(" Overriding parent container start date");
@@ -628,14 +644,17 @@ public class KmlMetaDump implements IKml {
     }
 
     private void checkBag(GeometryBag geometryBag) {
+		checkGeometry(geometryBag);
 		for (Geometry g : geometryBag) {
 			if (g != null) {
 				Class<?extends Geometry> gClass = g.getClass();
 				if (gClass == GeometryBag.class) {
                     addTag(":Nested MultiGeometries");
 					checkBag((GeometryBag)g);
-                } else
+                } else {
 					addTag(gClass);
+					checkGeometry(g);
+				}
 			}
 		}
 	}
@@ -646,10 +665,9 @@ public class KmlMetaDump implements IKml {
 	private void checkGeometry(Geometry geom) {
 		// geom must have at least 2 points (points cannot span the line)
 		// Polygon/LineRing must have at least 4 points
-        Geodetic2DBounds bbox = geom.getBoundingBox();
-		if (bbox == null || geom.getNumPoints() < 2) return;
-		
-		if (verbose) {
+		if (geom instanceof Point || geom instanceof Model) return; // no checks for Points or Models
+
+		if (verbose && geom.getNumPoints() > 1) {
 			Geodetic2DPoint c = geom.getCenter();
 			if (c != null) {
 				System.out.format("Center point: %f,%f%n", c.getLongitudeAsDegrees(), c.getLatitudeAsDegrees());
@@ -657,44 +675,84 @@ public class KmlMetaDump implements IKml {
 		}
 		if (geom instanceof Polygon) {
 			Polygon poly = (Polygon) geom;
-			LinearRing oring = poly.getOuterRing();
-			checkRingOrder("Outer ring", oring);
-			if (oring.clippedAtDateLine())
-				addTag(":Outer ring clipped at DateLine");
-			for (LinearRing ring : poly.getLinearRings()) {
-				if (ring.clippedAtDateLine())
-					addTag(":Inner ring clipped at DateLine");
-				if (!oring.contains(ring))
+			LinearRing outerRing = poly.getOuterRing();
+			validateLinearRing("Outer ring", outerRing);			
+			// Verify that all the inner rings are in counter-clockwise point order, are fully
+        	// contained in the outer ring, and are non-intersecting with each other.
+			List<LinearRing> rings = poly.getLinearRings();
+			final int n = rings.size();
+			byte flags = 0;
+        	for (int i = 0; i < n; i++) {
+				LinearRing inner = rings.get(i);
+				validateLinearRing("Inner ring", inner);
+				//if (inner.clockwise())
+					//addTag(":All inner rings in Polygon must be " +
+						//"in counter-clockwise point order");
+				// Verify that inner rings are properly contained inside outer ring
+				if ((flags & 1) == 0 && !outerRing.contains(inner)) {
+					flags |= 1;
 					addTag(":Inner ring not contained within outer ring");
-				checkRingOrder("Inner ring", ring);
-			}
-		} else if (geom instanceof Line && (((Line)geom).clippedAtDateLine())) {
-			addTag(":Line clipped at DateLine");
-		}
-		else if (geom instanceof LinearRing) {
+				}
+				// Verify that inner rings don't overlap with each other
+				if ((flags & 2) == 0 && i < n -1)
+					for (int j = i + 1; j < n; j++) {
+						if (inner.overlaps(rings.get(j))) {
+							addTag(":Inner rings in Polygon must not overlap with each other");
+							flags |= 2;
+							break;
+						}
+					}
+				if ((byte)3 == flags) break; // both bits set. stop checking
+        	}
+		} else if (geom instanceof Line) {
+			 if (((Line)geom).clippedAtDateLine())
+				addTag(":Line clipped at DateLine");
+		} else if (geom instanceof LinearRing) {
 			LinearRing ring = (LinearRing)geom;
-			if (ring.clippedAtDateLine())
-				addTag(":LinearRing clipped at DateLine");
-			checkRingOrder("LinearRing", ring);
+			validateLinearRing("LinearRing", ring);
 		}
+		// otherwise: GeometryBag
+		// else System.out.println(" other geometry: " + getClassName(geom.getClass()));
+		
 		// see http://www.cadmaps.com/gisblog/?cat=10
-		if (bbox.getWestLon().inDegrees() > bbox.getEastLon().inDegrees()) {
+		Geodetic2DBounds bbox = geom.getBoundingBox();
+		if (bbox != null && bbox.getWestLon().inDegrees() > bbox.getEastLon().inDegrees()) {
 			//System.out.println(geom.getClass().getName());
 			addTag(":Geometry spans -180/+180 longtiude line");
 			// such geometries must be sub-divided to render correctly
 		}
 	}
 
-	private void checkRingOrder(String label, LinearRing ring) {
+	private void validateLinearRing(String label, LinearRing ring) {
 		if (verbose) {
-			if (ring.clockwise()) {
-				addTag(":" + label + " points in clockwise order");
-				return;
-			}
+			addTag(":" + label + " points in " +
+					(ring.clockwise() ? "clockwise" : "counter-clockwise") + " order");
+			/*
 			List<Point> list = new ArrayList<Point>(ring.getPoints());
 			Collections.reverse(list);
+			// this test always appear true
+			// appears if not clockwise then always appears to be in counter-clockwise order
 			if (new LinearRing(list).clockwise())
 				addTag(":" + label + " points in counter-clockwise order");
+			*/
+		}
+		if (ring.clippedAtDateLine())
+			addTag(":" + label + " clipped at DateLine");
+		try {
+			List<Point> pts = ring.getPoints();
+			final int n = pts.size();
+			if (n > 2 && !pts.get(0).equals(pts.get(n - 1))) {
+				List<Point> newPts = new ArrayList<Point>(n + 1);
+				newPts.addAll(pts);
+				newPts.add(pts.get(0)); // add first point to end
+				pts = newPts;
+            	addTag(":" + label + " must start and end with the same point");
+			}
+			// validate linear ring topology for self-intersection
+			new LinearRing(pts, true);
+			// error -> LinearRing can not self-intersect
+		} catch(IllegalArgumentException e) {
+			addTag(":" + e.getMessage());
 		}
 	}
 
@@ -976,7 +1034,7 @@ public class KmlMetaDump implements IKml {
         return null;
     }
 
-    private static void dumpException(IOException e) {
+    private static void dumpException(Exception e) {
 		String msg = e.getMessage();
 		if (msg != null)
 			System.out.println("\t*** " + e.getClass().getName() + ": " + msg);
@@ -1072,6 +1130,14 @@ public class KmlMetaDump implements IKml {
 			if (className != null &&
 					(className.startsWith("org.mitre.giscore.events.") ||
 					className.startsWith("org.mitre.giscore.input.kml."))) {
+				// truncate long error message in KmlInputStream.handleGeometry()
+				if (msg.startsWith("Failed geometry: ")) {
+					ThrowableInformation ti = event.getThrowableInformation();
+					if (ti != null && ti.getThrowable() != null)
+						msg = ti.getThrowable().getMessage();
+					else
+						msg = "Bad geometry";
+				}
 				addTag(":" + msg);
 			}
 			// event.getThrowableStrRep();
