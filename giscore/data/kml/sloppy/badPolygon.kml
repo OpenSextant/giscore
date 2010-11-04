@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Bad polygon examples:
+1. Inner ring not contained within outer ring
+2. Inner rings in Polygon overlap with each other
+3. Points intersect each other making bow-tie polygon
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+  <Placemark>
+    <name>1</name>
+    <description>Inner ring not contained within outer ring</description>
+    <Polygon>
+        <outerBoundaryIs>
+            <LinearRing>
+                <coordinates>
+	              -122.432885303019,37.8019316061803,0
+        	      -122.432762847554,37.8019476932246,0
+	              -122.432719843168,37.8017374462006,0
+	              -122.432841863906,37.8017213314352,0
+	              -122.432885303019,37.8019316061803,0
+            	    </coordinates>
+            </LinearRing>
+        </outerBoundaryIs>
+        <innerBoundaryIs>
+            <LinearRing>
+                <coordinates>
+	              -122.43293945401,37.801983684521,0
+	              -122.432564131101,37.8020327731402,0
+	              -122.432499536494,37.801715236748,0
+	              -122.43287136387,37.8016634915437,0
+	              -122.43293945401,37.801983684521,0
+	            </coordinates>
+            </LinearRing>
+        </innerBoundaryIs>
+    </Polygon>
+  </Placemark>
+
+  <Placemark>
+    <name>2</name>
+    <description>Inner rings in Polygon must not overlap with each other</description>
+    <Polygon>
+        <outerBoundaryIs>
+            <LinearRing>
+                <coordinates>
+	              -122.43193945401,37.801983684521,0
+	              -122.431564131101,37.8020327731402,0
+	              -122.431499536494,37.801715236748,0
+	              -122.43187136387,37.8016634915437,0
+	              -122.43193945401,37.801983684521,0
+            	    </coordinates>
+            </LinearRing>
+        </outerBoundaryIs>
+        <innerBoundaryIs>
+            <LinearRing>
+                <coordinates>
+              -122.431714248439,37.8019544341044,0
+              -122.431592404659,37.8019694509363,0
+              -122.431548777661,37.8017591041777,0
+              -122.431671453253,37.8017428443014,0
+              -122.431714248439,37.8019544341044,0
+	            </coordinates>
+            </LinearRing>
+        </innerBoundaryIs>
+
+        <innerBoundaryIs>
+            <LinearRing>
+		<coordinates>
+			-122.4316909349952,37.80198362027129,0 -122.4316144448009,37.80198753643767,0
+			-122.4316062613816,37.80193017073825,0 -122.4316807843092,37.80192101072328,0
+			-122.4316909349952,37.80198362027129,0 
+		</coordinates>
+            </LinearRing>
+        </innerBoundaryIs>
+    </Polygon>
+  </Placemark>
+
+   <Placemark>
+    <name>3</name>
+    <description>points intersect each other making bow-tie polygon</description>
+    <Polygon>
+      <outerBoundaryIs>
+        <LinearRing>
+        <coordinates>
+          -122.43193945401,37.802983684521
+          -122.431499536494,37.802715236748
+          -122.431564131101,37.8030327731402
+          -122.43187136387,37.8026634915437
+          -122.43193945401,37.802983684521
+        </coordinates>
+        </LinearRing>
+      </outerBoundaryIs>
+    </Polygon>
+    </Placemark>
+
+</Document>
+</kml>

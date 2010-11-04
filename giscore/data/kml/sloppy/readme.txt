@@ -21,4 +21,9 @@ Well-formed XML documents (passes schema validation)
     Well-formed KML and valid with respect to KML XML schema but with gx:Track
     coord-when mismatch in addition to gx:SimpleArrayData with an incorrect length 
     with respect to number of coord/when elements.
+ badPolygon.kml
+    Well-formed KML and valid with respect to KML XML schema but has following errors:
+    * Inner ring not contained within outer ring
+    * Inner rings in Polygon must not overlap with each other
+    * Polygon inner ring points self-intersect.
 
