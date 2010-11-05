@@ -676,7 +676,6 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		while (true) {
 			next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
-                System.out.println(sm.toString());//debug
 				return sm;
 			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
