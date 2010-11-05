@@ -32,10 +32,12 @@ import org.apache.commons.lang.StringUtils;
  * 
  * @author DRAND
  */
-public class ContainerStart extends Common {
+public class ContainerStart extends Common implements IContainerType {
 	private static final long serialVersionUID = 1L;
 	
 	private String type;
+
+    private boolean open;
 
     /**
 	 * Empty ctor for data IO.  Constructor must be followed by call to {@code readData()}
@@ -75,6 +77,23 @@ public class ContainerStart extends Common {
 		this.type = type;
 	}
 
+	/**
+	 * Specifies whether a Container (Document or Folder) appears closed or open when first loaded into the Places panel.
+	 * false=collapsed (the default), true=expanded. This element applies only to Document, Folder, and NetworkLink. 
+	 * @return whether the Container appears open or closed
+	 */
+    public boolean isOpen() {
+        return open;
+    }
+
+	/**
+	 * Set open flag.
+	 * @param open True if container appears open when first loaded
+	 */
+    public void setOpen(boolean open) {
+        this.open = open;
+    }
+
     /*
 	 * (non-Javadoc)
 	 *
@@ -113,5 +132,5 @@ public class ContainerStart extends Common {
 		super.writeData(out);
 		out.writeString(type);
 	}
-
+    
 }

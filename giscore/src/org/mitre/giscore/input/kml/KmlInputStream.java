@@ -395,8 +395,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			if (ee.getEventType() == XMLStreamReader.START_ELEMENT) {
 				StartElement sl = ee.asStartElement();
 				QName qname = sl.getName();
-				//System.out.println(localname);//debug
-				if (!handleProperties(cs, ee, qname)) {
+				if (OPEN.equals(qname.getLocalPart())) {
+					if (isTrue(getElementText(qname)))
+						cs.setOpen(true);
+				} else if (!handleProperties(cs, ee, qname)) {
 					// Ignore other attributes
 				}
             }
@@ -1879,6 +1881,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 							Geometry geom = handleGeometry(el);
 							if (geom != null) geometries.add(geom);
 						} catch (RuntimeException rte) {
+							// IllegalStateException or IllegalArgumentException
 							log.warn("Failed geometry: " + tag, rte);
 						}
 					}

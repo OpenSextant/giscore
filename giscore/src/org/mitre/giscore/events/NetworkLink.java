@@ -31,13 +31,14 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * 
  * @author DRAND
  */
-public class NetworkLink extends Feature {
+public class NetworkLink extends Feature implements IContainerType {
 
 	private static final long serialVersionUID = 1L;
 	private boolean refreshVisibility = false;
 	private boolean flyToView = false;
+	private boolean open;
 	private TaggedMap link;
-	
+
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.events.Feature#getType()
 	 */
@@ -73,6 +74,23 @@ public class NetworkLink extends Feature {
 	public void setFlyToView(boolean flyToView) {
 		this.flyToView = flyToView;
 	}
+
+	/**
+	 * Specifies whether a Container (Document or Folder) appears closed or open when first loaded into the Places panel.
+	 * false=collapsed (the default), true=expanded. This element applies only to Document, Folder, and NetworkLink.
+	 * @return whether the Container appears open or closed
+	 */
+    public boolean isOpen() {
+        return open;
+    }
+
+	/**
+	 * Set open flag.
+	 * @param open True if container appears open when first loaded
+	 */
+    public void setOpen(boolean open) {
+        this.open = open;
+    }
 
 	/**
      * Get Link property TaggedMap. TaggedMap includes the child elements

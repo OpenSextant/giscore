@@ -228,8 +228,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 // so if container is unknown then use Document type.
                 tag = IKml.FOLDER.equalsIgnoreCase(tag) ? IKml.FOLDER : IKml.DOCUMENT;
             }
-            writer.writeStartElement(tag);
+            writer.writeStartElement(tag);			
             List<Element> elements = handleAttributes(containerStart, tag);
+
             for(Element el : elements) {
                 if (el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX))
             	    handleXmlElement(el);
@@ -355,6 +356,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             Boolean visibility = feature.getVisibility();
             if (visibility != null && !visibility)
                 handleSimpleElement(VISIBILITY, "0"); // default=1
+
+			if (feature instanceof IContainerType && ((IContainerType)feature).isOpen()) {
+				// only applicable to Document, Folder, or NetworkLink
+				handleSimpleElement(OPEN, "1"); // default=0
+			}
 
             // handle atom attributes if defined and remove from list
             Element author = null;
