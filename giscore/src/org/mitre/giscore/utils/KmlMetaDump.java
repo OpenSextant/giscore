@@ -82,6 +82,7 @@ import java.util.*;
  *  <li> Inner ring not contained within outer ring (warn)
  *  <li> Inner rings in Polygon must not overlap with each other (warn)
  *  <li> Line clipped at DateLine (info)
+ *  <li> [Line|Inner/Outer Ring|LinearRing] has duplicate consecutive points (warn)
  *  <li> LinearRing can not self-intersect (warn)
  *  <li> LinearRing must start and end with the same point (error)
  *  <li> Nested MultiGeometries (info)
@@ -571,7 +572,7 @@ public class KmlMetaDump implements IKml {
             }
         } else if (cl != Comment.class) {
             // ignore: Comment objects but capture others
-            addTag(cl); // e.g. Schema, NetworkLinkControl
+            addTag(cl); // e.g. NetworkLinkControl
         }
         lastObjClass = gisObj.getClass();
 	}
@@ -705,8 +706,31 @@ public class KmlMetaDump implements IKml {
 				if ((byte)3 == flags) break; // both bits set. stop checking
         	}
 		} else if (geom instanceof Line) {
-			 if (((Line)geom).clippedAtDateLine())
+            final Line line = (Line) geom;
+            if (line.clippedAtDateLine())
 				addTag(":Line clipped at DateLine");
+            if (line.getNumPoints() > 1) {
+                List<Point> pts = line.getPoints();
+                final int n = pts.size();
+                // check if point list has duplicate consecutive points
+                int dups = 0;
+                Point last = pts.get(0);
+                for (int i=1; i < n; i++) {
+                    Point pt = pts.get(i);
+                    if (last.equals(pt)) {
+                        dups++;
+                        if (verbose)
+                            System.out.println("Duplicate point at index: " + i);
+                        else {
+                            addTag(":Line has duplicate consecutive points");
+                            break;
+                        }
+                    }
+                    last = pt;
+                }
+                if (verbose)
+                    System.out.printf("%d duplicate points out of %d%n", dups, n);
+            }
 		} else if (geom instanceof LinearRing) {
 			LinearRing ring = (LinearRing)geom;
 			validateLinearRing("LinearRing", ring);
@@ -741,6 +765,27 @@ public class KmlMetaDump implements IKml {
 		try {
 			List<Point> pts = ring.getPoints();
 			final int n = pts.size();
+            
+            // check if point list has duplicate consecutive points
+            int dups = 0;
+            Point last = pts.get(0);
+            for (int i=1; i < n; i++) {
+                Point pt = pts.get(i);
+                if (last.equals(pt)) {
+                    dups++;
+                    if (verbose)
+                        System.out.println("Duplicate point at index: " + i);
+                    else {
+                        addTag(":" + label + " has duplicate consecutive points");
+                        break;
+                    }
+                }
+                last = pt;
+            }
+            if (verbose)
+                System.out.printf("%d duplicate points out of %d%n", dups, n);
+
+            // first/last point not the same 
 			if (n > 2 && !pts.get(0).equals(pts.get(n - 1))) {
 				List<Point> newPts = new ArrayList<Point>(n + 1);
 				newPts.addAll(pts);
@@ -748,6 +793,7 @@ public class KmlMetaDump implements IKml {
 				pts = newPts;
             	addTag(":" + label + " must start and end with the same point");
 			}
+            
 			// validate linear ring topology for self-intersection
 			new LinearRing(pts, true);
 			// error -> LinearRing can not self-intersect
