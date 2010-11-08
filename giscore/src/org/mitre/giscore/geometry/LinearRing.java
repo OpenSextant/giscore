@@ -15,13 +15,6 @@
  ***************************************************************************/
 package org.mitre.giscore.geometry;
 
-import java.awt.geom.Line2D;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -29,6 +22,13 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.awt.geom.Line2D;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * The LinearRing class represents an ordered list of Geodetic2DPoint points for input
@@ -186,7 +186,11 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
                     // make sure non-adjacent segments do not intersect
                     inv = Line2D.Double.linesIntersect(x1, y1, x2, y2, x3, y3, x4, y4);
                 }
-                if (inv) throw new IllegalArgumentException("LinearRing can not self-intersect.");
+                if (inv) {
+                    if (log.isDebugEnabled())
+                        log.debug(String.format("LinearRing self-intersects at i=%d j=%d", i, j));
+                    throw new IllegalArgumentException("LinearRing can not self-intersect");
+                }
             }
         }
     }
