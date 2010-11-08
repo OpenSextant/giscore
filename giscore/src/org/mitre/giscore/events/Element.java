@@ -18,10 +18,6 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.*;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.mitre.giscore.IStreamVisitor;
@@ -29,6 +25,13 @@ import org.mitre.giscore.Namespace;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
+
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * An element represents an XML element found in an XML type document such
@@ -230,12 +233,15 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
         StringBuilder b = new StringBuilder();
         b.append("Element [");
         if (namespace != null)
-            b.append("Namespace=").append(namespace.getPrefix()).append(":").append(namespace.getURI()).append(", ");
+            b.append("Namespace=").append(namespace.getPrefix()).append(':').append(namespace.getURI()).append(", ");
         b.append("name=").append(name);
         if (!attributes.isEmpty())
             b.append(", attributes=").append(attributes);
-        if (text != null)
-            b.append(", text=").append(text);
+        if (text != null) {
+            String txtout = text.trim();
+            if (txtout.length() != 0)
+                b.append(", text=").append(text);
+        }
         if (!children.isEmpty())
             b.append('\n').append("  children=").append(children);
         b.append(']');
