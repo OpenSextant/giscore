@@ -49,7 +49,7 @@ public abstract class KmlBaseReader implements IKml {
 
 	static {
 		final String[] labels = {
-				"clientVersion", "5.2.1.1547",
+				"clientVersion", "5.2.1.1588",
 				"kmlVersion",   "2.2",
 				"clientName",   "Google+Earth",
 				"language",     "en"};
@@ -326,6 +326,7 @@ public abstract class KmlBaseReader implements IKml {
                     // then need to keep track of parent URL in addition
                     // to the relative link to match against the KMZ file entries.
                     uri = new UrlRef(baseUrl, href).getURI();
+                    System.err.println("XXX:" + uri);
                 } else {
                     //System.out.println("XXX: uncompressed: base="+ baseUrl);//debug
                     // what if from networklink that was compressed??

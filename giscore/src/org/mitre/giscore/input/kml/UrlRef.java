@@ -133,7 +133,8 @@ public final class UrlRef implements java.io.Serializable {
     private static final String ACCEPT_STRING = MIME_TYPE_KML + ", " + MIME_TYPE_KMZ + ", image/*, */*";
 
     // "GoogleEarth/5.2.1.1329(Windows;Microsoft Windows (5.1.2600.3);en-US;kml:2.2;client:Free;type:default)";
-    public static final String USER_AGENT = "GoogleEarth/5.2.1.1547(Windows;Microsoft Windows (5.1.2600.3);en-US;kml:2.2;client:Free;type:default)";
+    // "GoogleEarth/5.2.1.1547(Windows;Microsoft Windows (5.1.2600.3);en-US;kml:2.2;client:Free;type:default)";
+    public static final String USER_AGENT = "GoogleEarth/5.2.1.1588(Windows;Microsoft Windows (5.1.2600.3);en-US;kml:2.2;client:Free;type:default)";
 
     /**
      * Convert URL to "kmz" URI with URL of parent KMZ and the kmz file path
