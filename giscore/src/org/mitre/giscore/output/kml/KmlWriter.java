@@ -288,10 +288,16 @@ public class KmlWriter implements IGISOutputStream {
 	}
 
 	/**
-	 * Normalize URLs from internal URIs. Only IGISObjects that haves URL
-	 * attributes may be affected (i.e., NetworkLink, Overlay, and Style)
-     * and only if original href had a relative URL which gets rewritten to
-     * include the parent KML/KMZ document.
+	 * Normalize URLs from internal URIs as rewritten in KmlReader if applicable.
+     * Only IGISObjects that haves URL attributes may be affected (i.e.,
+     * NetworkLink, Overlay, and Style) and only if original href had a
+     * relative URL which gets rewritten to include the parent KML/KMZ document.
+     * <P>
+     * For example, given a relative URL href=child.kml in NetworkLink
+     * root KML document (doc.kml) from base resource URL http://target/test.kmz
+     * gets rewritten as kmzhttp://target/test.kmz?file=child.kml from which to
+     * resolve the child.kml document. The normalized form of this URI is the
+     * original "child.href" value.
 	 * 
 	 * @param o IGISObject to normalize 
 	 */
