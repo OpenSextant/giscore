@@ -89,7 +89,7 @@ import java.util.List;
  * {@code extrude}, and {@code altitudeMode} properties are maintained on the associated
  * Geometry. 
  * <p>
- * Feature properties (i.e., {@code name, description, visibility, Camera/LookAt,
+ * Feature properties (i.e., {@code name, description, open, visibility, Camera/LookAt,
  * atom:author, atom:link, xal:AddressDetails, styleUrl, inline Styles, Region,
  * TimeStamp/TimeSpan} elements) in addition to the geometry are parsed and
  * set on the Feature object.
@@ -107,7 +107,7 @@ import java.util.List;
  * will be associated only with the last {@code Schema} referenced.
  * <p> 
  * Unsupported tags include the following:
- *  {@code address, Metadata, open, phoneNumber, Snippet, snippet}. 
+ *  {@code address, Metadata, phoneNumber, Snippet, snippet}. 
  * These tags are consumed but discarded.
  * <p>
  *
@@ -134,7 +134,6 @@ import java.util.List;
  *
  * @author DRAND
  * @author J.Mathews
- *
  */
 public class KmlInputStream extends XmlInputStream implements IKml {
     public static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);

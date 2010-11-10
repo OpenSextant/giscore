@@ -61,7 +61,7 @@ import java.util.Queue;
  * seen. At that point the styles are output after the element's attributes and
  * before any content.
  * <p/>
- * The geometry visitors are invoked by the feature vistor via the Geometry
+ * The geometry visitors are invoked by the feature visitor via the Geometry
  * accept method.
  * <p/>
  * Elements such as atom:author, atom:link, xal:AddressDetails, and gx: extensions
@@ -69,7 +69,7 @@ import java.util.Queue;
  *
  * <h4>Notes/Limitations:</h4>
  *  -A few tags are not yet supported on features so are omitted from output:
- *  {@code address, ListStyle, Metadata, open, phoneNumber, Snippet, and snippet}.<br/>
+ *  {@code address, Metadata, phoneNumber, Snippet, and snippet}.<br/>
  * -Warns if shared styles appear in Folders. According to OGC KML specification
  *  shared styles shall only appear within a Document [OGC 07-147r2 section 6.4].
  *
