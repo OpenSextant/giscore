@@ -174,7 +174,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Visit a DocumentStart object
      *
      * @param documentStart
-     * @throws RuntimeException if there is an error with the underlying XML
+     * @throws RuntimeException if the current XML state does not allow Namespace writing
+     *          or if there is an error with the underlying XML
      */
 	@Override
 	public void visit(DocumentStart documentStart) {
@@ -252,7 +253,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			 try {
 				 // postpone writing out LAT_LON_BOX element until there is a child element
 				 // likewise don't write Region element unless we have LAT_LON_BOX or Lod
-				 List<String> waitingList = new java.util.LinkedList<String>();
+				 LinkedList<String> waitingList = new LinkedList<String>();
 				 waitingList.add(REGION);
 				 waitingList.add(LAT_LON_ALT_BOX);
 				 handleTaggedElement(NORTH, region, waitingList);
@@ -647,7 +648,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			// if null or default clampToGround then ignore
 			handleAltitudeMode(go.getAltitudeMode());
             // postpone writing out LAT_LON_BOX element until there is a child element
-            Queue<String> waitingList = new java.util.LinkedList<String>();
+            Queue<String> waitingList = new LinkedList<String>();
             waitingList.add(LAT_LON_BOX);
             handleNonNullSimpleElement(NORTH, go.getNorth(), waitingList);
             handleNonNullSimpleElement(SOUTH, go.getSouth(), waitingList);
@@ -1194,12 +1195,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		handleNonNullSimpleElement(tag, map.get(tag));
 	}
 
-	private void handleTaggedElement(String tag, TaggedMap map, List<String> waitingList) throws XMLStreamException {
+	private void handleTaggedElement(String tag, TaggedMap map, LinkedList<String> waitingList) throws XMLStreamException {
 		String content = map.get(tag);
 		if (content != null) {
             if (waitingList != null) {
 				while (!waitingList.isEmpty()) {
-					writer.writeStartElement(waitingList.remove(0));
+					writer.writeStartElement(waitingList.removeFirst());
 				}
 			}
             handleSimpleElement(tag, content);
