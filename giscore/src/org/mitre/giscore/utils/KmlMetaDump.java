@@ -710,18 +710,18 @@ public class KmlMetaDump implements IKml {
             if (line.clippedAtDateLine())
 				addTag(":Line clipped at DateLine");
             if (line.getNumPoints() > 1) {
+                // check if point list has duplicate consecutive points
                 List<Point> pts = line.getPoints();
                 final int n = pts.size();
-                // check if point list has duplicate consecutive points
                 int dups = 0;
                 Point last = pts.get(0);
                 for (int i=1; i < n; i++) {
                     Point pt = pts.get(i);
                     if (last.equals(pt)) {
-                        dups++;
-                        if (verbose)
+                        if (verbose) {
                             System.out.println("Duplicate point at index: " + i);
-                        else {
+                            dups++;
+                        } else {
                             addTag(":Line has duplicate consecutive points");
                             break;
                         }
@@ -772,10 +772,10 @@ public class KmlMetaDump implements IKml {
             for (int i=1; i < n; i++) {
                 Point pt = pts.get(i);
                 if (last.equals(pt)) {
-                    dups++;
-                    if (verbose)
+                    if (verbose) {
                         System.out.println("Duplicate point at index: " + i);
-                    else {
+                        dups++;
+                    } else {
                         addTag(":" + label + " has duplicate consecutive points");
                         break;
                     }
@@ -1177,7 +1177,9 @@ public class KmlMetaDump implements IKml {
 					(className.startsWith("org.mitre.giscore.events.") ||
 					className.startsWith("org.mitre.giscore.input.kml."))) {
 				// truncate long error message in KmlInputStream.handleGeometry()
-				if (msg.startsWith("Failed geometry: ")) {
+				if (msg.startsWith("comma found instead of whitespace between tuples before"))
+					msg = msg.substring(0,48);
+				else if (msg.startsWith("Failed geometry: ")) {
 					ThrowableInformation ti = event.getThrowableInformation();
 					if (ti != null && ti.getThrowable() != null)
 						msg = ti.getThrowable().getMessage();
