@@ -109,12 +109,22 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         if (box.getNorthLat().inRadians() == box.getSouthLat().inRadians())
             log.warn("Bounding box not a polygon - north and south points are the same.");
 
+        double elev = 0;
+        boolean is3d = false;
+        if (box instanceof Geodetic3DBounds) {
+            Geodetic3DBounds bbox = (Geodetic3DBounds)box;
+            // use max elevation as elevation of points
+            elev = bbox.maxElev; // (bbox.minElev + bbox.maxElev) / 2.0;
+            // using 1e-3 meters for elevation test for precision up to 1 millimeter (below this is treated as 2D with 0 elevation)
+            is3d = Math.abs(elev) > 1e-3;
+        }
+
         final List<Point> points = new ArrayList<Point>(5);
-        final Point firstPt = new Point(new Geodetic2DPoint(box.getWestLon(), box.getSouthLat()));
+        final Point firstPt = createPoint(box.getWestLon(), box.getSouthLat(), is3d, elev);
         points.add(firstPt);
-        points.add(new Point(new Geodetic2DPoint(box.getWestLon(), box.getNorthLat())));
-        points.add(new Point(new Geodetic2DPoint(box.getEastLon(), box.getNorthLat())));
-        points.add(new Point(new Geodetic2DPoint(box.getEastLon(), box.getSouthLat())));
+        points.add(createPoint(box.getWestLon(), box.getNorthLat(), is3d, elev));
+        points.add(createPoint(box.getEastLon(), box.getNorthLat(), is3d, elev));
+        points.add(createPoint(box.getEastLon(), box.getSouthLat(), is3d, elev));
         points.add(firstPt);
         init(points, false);
     }
@@ -208,7 +218,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         if (validateTopology) validateTopology(pts);
         else {
             int n = pts.size();
-            // ring expected to be closed, i.e. that beginning and ending point are equal
+            // ring expected to e closed, i.e. that beginning and ending point are equal
             if (!pts.get(0).equals(pts.get(n - 1)))
                 log.warn("LinearRing should start and end with the same point");
         }
@@ -383,6 +393,10 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         return (this.overlaps(that) ||
                 this.contains(that.pointList.get(0).asGeodetic2DPoint()) ||
                 that.contains(this.pointList.get(0).asGeodetic2DPoint()));
+    }
+
+    private static Point createPoint(Longitude lon, Latitude lat, boolean is3d, double elev) {
+		 return new Point(is3d ? new Geodetic3DPoint(lon, lat, elev) : new Geodetic2DPoint(lon, lat));
     }
 
     /**
