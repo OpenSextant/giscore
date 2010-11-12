@@ -179,14 +179,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		ms_containers.add(DOCUMENT);
 
 		// basic tags in Feature that are skipped but consumed
-		ms_attributes.add(OPEN);
+		ms_attributes.add(OPEN); // note special handling for Folders, Documents or NetworkLinks 
 		ms_attributes.add(ADDRESS);
 		ms_attributes.add(PHONE_NUMBER);
 		ms_attributes.add(METADATA);
 		ms_attributes.add(SNIPPET);		// Snippet
 		ms_attributes.add("snippet");	// snippet (deprecated in 2.2)
 		// Note: KML Schema shows Snippet is deprecated but Google Earth documentation and examples
-		// suggestion snippet (lower case 's') is deprecated instead...
+		// suggestion snippet (lowercase 's') is deprecated instead...
         // http://code.google.com/apis/kml/documentation/kmlreference.html#snippet
 
 		// all posible elements that extend kml:AbstractGeometryType base type in KML Schema
@@ -1572,7 +1572,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				String localname = qName.getLocalPart();
 				// Note: if element is aliased Placemark then metadata fields won't be saved
 				// could treat as ExtendedData if want to preserve this data.
-				if (!handleProperties(fs, ee, qName)) {
+                if (network && OPEN.equals(localname)) {
+                    if (isTrue(getElementText(qName)))
+						((NetworkLink)fs).setOpen(true);
+                }
+				else if (!handleProperties(fs, ee, qName)) {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
 						// Point, LineString, Polygon, Model, etc.
