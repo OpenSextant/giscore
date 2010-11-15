@@ -33,7 +33,7 @@ import org.apache.commons.io.IOUtils;
  * 
  * @author DRAND
  */
-public class ZipUtils {
+public final class ZipUtils {
 	
     /**
      * Outputting data to zip
