@@ -287,38 +287,31 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 		case FLOAT:
 			if (val instanceof Number) {
 				return dfmt.format((Number) val);
-			} else {
-				return val.toString();
 			}
+			break;
 		case INT:
 		case UINT:
 			if (val instanceof Integer) {
 				return Integer.toString((Integer) val);
-			} else {
-				return val.toString();
 			}
+			break;
 		case SHORT:
 		case USHORT:
 			if (val instanceof Short) {
 				return Short.toString((Short) val);
-			} else {
-				return val.toString();
 			}
+			break;
 		case BOOL:
 			if (val instanceof Boolean) {
 				return Boolean.toString((Boolean) val);
-			} else {
-				val.toString();
 			}
+			break;
 		case DATE:
 			if (val instanceof Date) {
 				return fmt.format((Date) val);
-			} else {
-				return val.toString();
 			}
-		default:
-			return val.toString();
 		}
+		return val.toString();
 	}
 
 	/**
