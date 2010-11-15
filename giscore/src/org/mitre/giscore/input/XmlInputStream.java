@@ -342,7 +342,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 * @throws XMLStreamException
 	 *             if there is an error with the underlying XML.
 	 */
-	public void skipNextElement(XMLEventReader element, QName name)
+	protected void skipNextElement(XMLEventReader element, QName name)
 			throws XMLStreamException {
 		while (true) {
 			XMLEvent next = element.nextEvent();
