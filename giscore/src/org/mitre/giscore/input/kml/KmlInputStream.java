@@ -327,6 +327,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 							return comment;
 					*/
 				}
+			} catch (ArrayIndexOutOfBoundsException e) {
+				// if have wrong encoding can end up here
+				if (log.isDebugEnabled())
+					log.debug("Unexpected parse error", e);
+				return null;
 			} catch (NoSuchElementException e) {
 				return null;
 			} catch (XMLStreamException e) {
@@ -423,7 +428,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 return true;            
             } else if (localname.equals(DESCRIPTION)) {
                 feature.setDescription(getElementText(name));
-                return true;
+				return true;
             } else if (localname.equals(VISIBILITY)) {
 				if (isTrue(stream.getElementText()))
                 	feature.setVisibility(Boolean.TRUE);
@@ -1250,7 +1255,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		try {
 			if (ms_features.contains(elementName)) {
 				// all non-container elements that extend kml:AbstractFeatureType base type in KML Schema
-				// Placemark, NetworkLink, GroundOverlay, ScreenOverlay, PhotoOverlay 
+				// Placemark, NetworkLink, GroundOverlay, ScreenOverlay, PhotoOverlay
 				return handleFeature(e, elementName);
 			} else if (ms_containers.contains(elementName)) {
 				// all container elements that extend kml:AbstractContainerType base type in KML Schema
@@ -1284,7 +1289,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					log.debug("XXX: handle startElement with foreign namespace: " + name);
 					return getForeignElement(se);
 				}
-			}
+			}	
 		} catch (XMLStreamException e1) {
 			log.warn("Skip unexpected element: " + localname);
 			skipNextElement(stream, name);
