@@ -258,13 +258,12 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		if (gisNetworkLinks.isEmpty()) return linkedFeatures;
 
 		// keep track of URLs visited to prevent revisits
-		List<URI> visited = new ArrayList<URI>();
-		List<URI> networkLinks = new ArrayList<URI>();
+		Set<URI> visited = new HashSet<URI>();
+		LinkedList<URI> networkLinks = new LinkedList<URI>();
 		networkLinks.addAll(gisNetworkLinks);
         while (!networkLinks.isEmpty()) {
-            URI uri = networkLinks.remove(0);
-            if (!visited.contains(uri)) {
-                visited.add(uri);
+            URI uri = networkLinks.removeFirst();
+            if (visited.add(uri)) {
                 InputStream is = null;
 				try {
                     UrlRef ref = new UrlRef(uri);
@@ -386,10 +385,10 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
          *
          * @param ref UriRef for NetworkLink resource
          * @param gisObj new IGISObject object. This will never be null.
-         * @return Return true to continue parsing and recursively follow NetworkLinks,
+		 * @return Return true to continue parsing and recursively follow NetworkLinks,
          *         false stops following NetworkLinks. 
          */
-        boolean handleEvent(UrlRef ref, IGISObject gisObj);
+		boolean handleEvent(UrlRef ref, IGISObject gisObj);
     }
     
 	public Iterator<Schema> enumerateSchemata() throws IOException {
