@@ -120,6 +120,26 @@ public class TestKmlReader extends TestCase {
         assertEquals(4, linkedFeatures.size());
 	}
 
+	@Test
+	public void testUrlProxy() throws IOException {
+		URL url;
+		InputStream is;
+		Proxy proxy;
+        try {
+			SocketAddress addr = new InetSocketAddress("gatekeeper.mitre.org", 80);
+			proxy = new Proxy(Proxy.Type.HTTP, addr);
+			url = new URL("http://kml-samples.googlecode.com/svn/trunk/kml/Placemark/placemark.kml");
+			is = UrlRef.getInputStream(url, proxy);
+        } catch(Exception e) {
+            // host/service not available - skip test
+			System.err.println("INFO: remote content not accessible: skip test");
+            return;
+		}
+		KmlReader reader = new KmlReader(is, false, url, proxy);
+		List<IGISObject> features = reader.readAll(); // implicit close
+		assertFalse(features.isEmpty());
+	}
+
     /**
      * Targets of NetworkLinks may exist inside a KMZ as well as outside at
      * the same context as the KMZ resource itself so test such a KMZ file.
