@@ -15,10 +15,9 @@ import javax.imageio.ImageIO;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.*;
 import java.util.List;
 import java.util.ArrayList;
-import java.net.URI;
-import java.net.URL;
 import java.awt.image.BufferedImage;
 
 /**
@@ -73,16 +72,20 @@ public class TestKmlReader extends TestCase {
 
     @Test
 	public void testUrlNetworkLink() throws IOException {
-        // test NetworkLink that contains viewFormat + httpQuery elements which get populated in URL
-        // via KmlBaseReader.getLinkHref()
-        KmlReader reader;
+		// test NetworkLink that contains viewFormat + httpQuery elements which get populated in URL
+		// via KmlBaseReader.getLinkHref()
+		URL url;
+		InputStream is;
         try {
-            reader = new KmlReader(new URL("http://jason-stage.mitre.org:8080/kmlWeb/youAreHere.gsp"));
-        } catch(java.net.UnknownHostException e) {
-            // host not available - skip test
+			url = new URL("http://jason-stage.mitre.org:8080/kmlWeb/youAreHere.gsp");
+			is = UrlRef.getInputStream(url);
+        } catch(Exception e) {
+            // host/service not available - skip test
+			System.err.println("INFO: kmlWeb service not available: skip test");
             return;
-        }
-        // encooded as URL: http://xxx/youAreHere.gsp?clientVersion=4.3.7284.3916&kmlVersion=2.2&clientName=Google+Earth&lang=en&BBOX=0,0,0,0&CAMERA=0,0,0,0,0&Fov=0,0&width=0&height=0&terrain=0]
+		}
+		KmlReader reader = new KmlReader(is, false, url, null);
+		// networkLink URL encoded as http://xxx/youAreHere.gsp?clientVersion=5.2.1.1588&kmlVersion=2.2&clientName=Google+Earth&lang=en&BBOX=0,0,0,0&CAMERA=0,0,0&LookatHeading=0&LookatTilt=0&LookAt=0,0,0&Fov=0,0&width=0&height=0&terrain=0
         List<IGISObject> features = reader.readAll(); // implicit close
         //System.out.println("features=" + features);
         assertFalse(features.isEmpty());
@@ -90,7 +93,7 @@ public class TestKmlReader extends TestCase {
         //System.out.println("XXX: linkedFeatures=" + linkedFeatures);
         assertFalse(linkedFeatures.isEmpty());
 		List<URI> networkLinks = reader.getNetworkLinks();
-        //System.out.println("links=" + networkLinks);
+        // System.out.println("links=" + networkLinks);
         assertEquals(1, networkLinks.size());
 		//assertEquals(2, linkedFeatures.size());
     }
