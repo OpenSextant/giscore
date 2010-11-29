@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.commons.io.IOUtils;
 
+import java.net.Proxy;
 import java.net.URL;
 import java.net.URI;
 import java.util.*;
@@ -58,16 +59,34 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 
 	private ZipFile zf;
 
-	private final List<URI> gisNetworkLinks = new ArrayList<URI>();    
+	private final List<URI> gisNetworkLinks = new ArrayList<URI>();
 
-    /**
+    private Proxy proxy;
+
+	/**
 	 * Creates a <code>KmlStreamReader</code> and attempts to read
 	 * all GISObjects from a stream created from the <code>URL</code>.
 	 * @param url   the KML or KMZ URL to be opened for reading.
 	 * @throws java.io.IOException if an I/O error occurs
 	 */
 	public KmlReader(URL url) throws IOException {
-        iStream = UrlRef.getInputStream(url);
+			this(url, null);
+	}
+
+    /**
+	 * Creates a <code>KmlStreamReader</code> and attempts to read
+	 * all GISObjects from a stream created from the <code>URL</code>.
+     * 
+	 * @param url   the KML or KMZ URL to be opened for reading.
+     * @param proxy the Proxy through which this connection
+     *             will be made. If direct connection is desired,
+     *             <code>null</code> should be specified.
+     *
+	 * @throws java.io.IOException if an I/O error occurs
+	 */
+	public KmlReader(URL url, Proxy proxy) throws IOException {
+        this.proxy = proxy;
+        iStream = UrlRef.getInputStream(url, proxy);
 		try {
 			kis = new KmlInputStream(iStream);
 		} catch (IOException e) {
@@ -267,7 +286,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
                 InputStream is = null;
 				try {
                     UrlRef ref = new UrlRef(uri);
-                    is = ref.getInputStream();
+                    is = ref.getInputStream(proxy);
                     if (is == null) continue;
                     int oldSize = networkLinks.size();
                     int oldFeatSize = linkedFeatures.size();
@@ -353,6 +372,23 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 			zf = null;
 		}
 	}
+
+    /**
+     * Set proxy through which URL connections will be made for network links.
+     * If direct connection is desired,  <code>null</code> should be specified.
+     * This proxy will be used if <code>importFromNetworkLinks()</code> is called.
+     * @param proxy
+     */
+    public void setProxy(Proxy proxy) {
+        this.proxy = proxy;
+    }
+
+    /**
+     * Get proxy through which URL connections will be made for network links.
+     */
+    public Proxy getProxy() {
+        return proxy;
+    }
 
     /**
      * ImportEventHandler interface used for callers to implement handling

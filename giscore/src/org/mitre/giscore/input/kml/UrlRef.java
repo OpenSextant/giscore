@@ -221,16 +221,33 @@ public final class UrlRef implements java.io.Serializable {
 	/**
 	 * Opens a connection to this <code>UrlRef</code> and returns an
      * <code>InputStream</code> for reading from that connection.
-	 * 
+	 *
 	 * @return     an input stream for reading from the resource represented by the <code>UrlRef</code>.
 	 * @throws FileNotFoundException if referenced link was not found in the parent KMZ resource
      *          nor outside the KMZ at the same base context.
 	 * @throws IOException if an I/O error occurs
 	 */
 	public InputStream getInputStream() throws IOException {
+		return getInputStream((Proxy)null);
+	}
+
+	/**
+	 * Opens a connection to this <code>UrlRef</code> and returns an
+     * <code>InputStream</code> for reading from that connection.
+	 * 
+	 * @param      proxy the Proxy through which this connection
+	 *             will be made. If direct connection is desired,
+	 *             <code>null</code> should be specified.
+     * 
+	 * @return     an input stream for reading from the resource represented by the <code>UrlRef</code>.
+	 * @throws FileNotFoundException if referenced link was not found in the parent KMZ resource
+     *          nor outside the KMZ at the same base context.
+	 * @throws IOException if an I/O error occurs
+	 */
+	public InputStream getInputStream(Proxy proxy) throws IOException {
         // check if non-KMZ URI
         if (kmzRelPath == null)
-            return getInputStream(url);
+            return getInputStream(url, proxy);
 
         String kmzPath = kmzRelPath;
         // if whitespace appears in networkLink URLs then it's escaped to %20
@@ -239,7 +256,13 @@ public final class UrlRef implements java.io.Serializable {
         if (ind != -1) {
             kmzPath = kmzPath.replace("%20", " "); // unescape all escaped whitespace chars
         }
-        ZipInputStream zis = new ZipInputStream(url.openStream());
+        URLConnection conn = proxy == null ? url.openConnection() : url.openConnection(proxy);
+		if (conn instanceof HttpURLConnection) {
+			HttpURLConnection httpConn = (HttpURLConnection)conn;
+			httpConn.setRequestProperty("Accept", ACCEPT_STRING);
+			httpConn.setRequestProperty("User-Agent", USER_AGENT);
+		}
+		ZipInputStream zis = new ZipInputStream(conn.getInputStream());
         boolean closeOnExit = true;
         try {
             ZipEntry entry;
@@ -262,14 +285,14 @@ public final class UrlRef implements java.io.Serializable {
         // check if target exists outside of KMZ file in same context (file system or URL root).
         // e.g. http://kml-samples.googlecode.com/svn/trunk/kml/kmz/networklink/hier.kmz
         try {
-            return getInputStream(new URL(url, kmzRelPath));
+            return getInputStream(new URL(url, kmzRelPath), proxy);
         } catch (IOException ioe) {
             // attempt to find target at same context of parent failed
         }
         throw new FileNotFoundException("Relative URL not found in KMZ: " + kmzPath);
     }
 
-    /**
+	/**
      * This method gets the correct input stream for a URL.  Attempts to
 	 * determine if URL is a KMZ (compressed KML file) first by the returned
 	 * content type from the <code>URLConnection</code> and it that fails then
@@ -283,8 +306,29 @@ public final class UrlRef implements java.io.Serializable {
      *         from being fully parsed.
      */
     public static InputStream getInputStream(URL url) throws IOException {
+		return getInputStream(url, null);
+	}
+
+    /**
+     * This method gets the correct input stream for a URL.  Attempts to
+	 * determine if URL is a KMZ (compressed KML file) first by the returned
+	 * content type from the <code>URLConnection</code> and it that fails then
+	 * by checking if a .kmz extension appears at end of the file name.
+	 * If stream is for a KMZ file then the stream is advanced until the first
+	 * KML file is found in the stream.
+     *
+     * @param url The url to the KML or KMZ file
+     * @param      proxy the Proxy through which this connection
+     *             will be made. If direct connection is desired,
+     *             <code>null</code> should be specified.
+     * 
+	 * @return The InputStream used to read the KML source.
+     * @throws java.io.IOException when an I/O error prevents a document
+     *         from being fully parsed.
+     */
+	public static InputStream getInputStream(URL url, Proxy proxy) throws IOException {
         // Open the connection
-        URLConnection conn = url.openConnection();
+        URLConnection conn = proxy == null ? url.openConnection() : url.openConnection(proxy);
 
         // Set HTTP headers to emulate a typical Google Earth client
         //
@@ -987,5 +1031,5 @@ public final class UrlRef implements java.io.Serializable {
 
         return false;
     }
-   
+
 }
