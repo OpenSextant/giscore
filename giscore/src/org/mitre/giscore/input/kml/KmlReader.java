@@ -145,6 +145,30 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		baseUrl = url;
 	}
 
+	/**
+	 * Create KmlReader using provided InputStream.
+	 * 
+	 * @param is  input stream for the kml content, never <code>null</code>
+	 * @param isCompressed  True if the input stream is a compressed stream (e.g. KMZ resource)
+	 * @param baseUrl the base URL context from which relative links are resolved
+	 * @param proxy the Proxy through which this connection
+     *             will be made. If direct connection is desired,
+     *             <code>null</code> should be specified.
+	 * @throws IOException if an I/O error occurs
+	 */
+	public KmlReader(InputStream is, boolean isCompressed, URL baseUrl, Proxy proxy) throws IOException {
+		try {
+			kis = new KmlInputStream(is);
+		} catch (IOException e) {
+			IOUtils.closeQuietly(is);
+			throw e;
+		}
+		this.proxy = proxy;
+		compressed = isCompressed || is instanceof ZipInputStream;
+		iStream = is;
+		this.baseUrl = baseUrl;
+	}
+
     /**
      * Returns the encoding style of the XML data.
      * @return the character encoding, defaults to "UTF-8". Never null.
