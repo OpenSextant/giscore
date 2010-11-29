@@ -49,6 +49,7 @@ public class TestKmlMetaDump extends TestCase {
             File outFile = new File(outDir, "testLayers.kml");
             if (outFile.exists()) outFile.delete();
             app.setOutPath(outDir);
+            app.setVerbose(true);
 			app.checkSource(file);
 			assertTrue(app.getTotals().contains(IKml.MULTI_GEOMETRY));
 		}
