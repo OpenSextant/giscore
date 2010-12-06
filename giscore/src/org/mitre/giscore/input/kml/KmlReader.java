@@ -224,17 +224,21 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 			} else
 				log.debug("NetworkLink href is empty or missing");
 		} else if (gisObj instanceof Overlay) {
-			// handle GroundOverlay or ScreenOverlay href
+			// handle GroundOverlay, ScreenOverlay or PhotoOverlay href
 			Overlay o = (Overlay) gisObj;
 			TaggedMap icon = o.getIcon();
 			String href = icon != null ? getTrimmedValue(icon, HREF) : null;
 			if (href != null) {
+				// note PhotoOverlays may have entity replacements in URL
+				// see http://code.google.com/apis/kml/documentation/photos.html
+				// e.g. http://mw1.google.com/mw-earth-vectordb/kml-samples/gp/seattle/gigapxl/$[level]/r$[y]_c$[x].jpg</href>
+				// Given zoom level Google Earth client maps this URL to URLs such as this: level=1 => .../0/r0_c0.jpg and level=3 => 3/r3_c1.jpg 
 				URI uri = getLink(parent, href);
 				if (uri != null) {
 					href = uri.toString();
 					// store rewritten overlay URL back to property store
 					icon.put(HREF, href);
-					// can we have a GroundOverlay WO LINK ??
+					// can we have a GroundOverlay W/O LINK ??
 				}
 			}
 		} else if (gisObj instanceof Style) {

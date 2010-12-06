@@ -291,13 +291,9 @@ public abstract class KmlBaseReader implements IKml {
         // assumes href is not null nor zero length
         URI uri = null;
         try {
-            // escape all whitespace otherwise new URI() throws an exception
-            href = UrlRef.escapeUri(href);
-            // TODO: URI apparently cannot parse URL with '$' in path (replacing with %24 still fails)
-            // RFC2396 shows '$' allowed in path -> abs_path -> path_segment -> segment -> pchar -> "$"
-            // must escape [] and whitespace characters
-            // e.g. http://mw1.google.com/mw-earth-vectordb/kml-samples/gp/seattle/gigapxl/$[level]/r$[y]_c$[x].jpg
-            // this throws URISyntaxException
+            // must escape special characters (e.g. [], whitespace, etc.) otherwise new URI() throws URISyntaxException
+			// e.g. http://mw1.google.com/mw-earth-vectordb/kml-samples/gp/seattle/gigapxl/$[level]/r$[y]_c$[x].jpg
+            href = UrlRef.escapeUri(href);            
 
             // check if URL is absolute otherwise its relative to base URL if defined
             if (absUrlPattern.matcher(href).lookingAt()) {
@@ -326,7 +322,7 @@ public abstract class KmlBaseReader implements IKml {
                     // then need to keep track of parent URL in addition
                     // to the relative link to match against the KMZ file entries.
                     uri = new UrlRef(baseUrl, href).getURI();
-                    System.err.println("XXX:" + uri);
+                    // System.err.println("XXX:" + uri);
                 } else {
                     //System.out.println("XXX: uncompressed: base="+ baseUrl);//debug
                     // what if from networklink that was compressed??
