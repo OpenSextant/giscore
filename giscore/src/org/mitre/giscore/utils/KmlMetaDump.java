@@ -83,7 +83,7 @@ import java.util.*;
  *  <li> Inner rings in Polygon must not overlap with each other (warn)
  *  <li> Line clipped at DateLine (info)
  *  <li> [Line|Inner/Outer Ring|LinearRing] has duplicate consecutive points (warn)
- *  <li> LinearRing can not self-intersect (warn)
+ *  <li> LinearRing cannot self-intersect (warn)
  *  <li> LinearRing must start and end with the same point (error)
  *  <li> Nested MultiGeometries (info)
  *  <li> Outer ring clipped at DateLine (info)
@@ -809,7 +809,7 @@ public class KmlMetaDump implements IKml {
             
 			// validate linear ring topology for self-intersection
 			new LinearRing(pts, true);
-			// error -> LinearRing can not self-intersect
+			// error -> LinearRing cannot self-intersect
 		} catch(IllegalArgumentException e) {
 			addTag(":" + e.getMessage());
 		}
@@ -1192,6 +1192,10 @@ public class KmlMetaDump implements IKml {
 				// truncate long error message in KmlInputStream.handleGeometry()
 				if (msg.startsWith("comma found instead of whitespace between tuples before"))
 					msg = msg.substring(0,48);
+				else if (msg.startsWith("ignore invalid string in coordinate: "))
+					msg = msg.substring(0,35);
+				else if (msg.startsWith("ignore invalid character in coordinate string: "))
+					msg = msg.substring(0,45);
 				else if (msg.startsWith("Failed geometry: ")) {
 					ThrowableInformation ti = event.getThrowableInformation();
 					if (ti != null && ti.getThrowable() != null)
