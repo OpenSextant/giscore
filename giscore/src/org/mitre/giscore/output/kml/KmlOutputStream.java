@@ -41,7 +41,9 @@ import javax.xml.stream.XMLStreamException;
 import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.text.ParseException;
 import java.util.*;
 import java.util.List;
@@ -640,7 +642,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         int order = overlay.getDrawOrder();
         // don't bother to output drawOrder element if is the default value (0)
         if (order != 0) handleSimpleElement(DRAW_ORDER, Integer.toString(order));
-        handleLinkElement(ICON, overlay.getIcon());
+		handleLinkElement(ICON, overlay.getIcon());
 
         if (overlay instanceof GroundOverlay) {
             GroundOverlay go = (GroundOverlay) overlay;
@@ -696,15 +698,27 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         for (String tag : LINK_TYPE_TAGS) {
             String val = map.get(tag);
             if (val != null && val.length() != 0) {
-                if (tag.equals(HREF) && val.startsWith("kmz") && val.indexOf("file=") > 0) {
-                    // replace internal URI (which is used to associate link with parent KMZ file)
-                    // with the relative target URL from original KMZ file.
-                    try {
-                        UrlRef urlRef = new UrlRef(new URI(val));
-                        val = urlRef.getKmzRelPath();
-                    } catch (Exception e) {
-                        // ignore
-                    }
+				if (tag.equals(HREF)) {
+					if (val.startsWith("kmz") && val.indexOf("file=") > 0) {
+						// replace internal URI (which is used to associate link with parent KMZ file)
+						// with the relative target URL from original KMZ file.
+						try {
+							UrlRef urlRef = new UrlRef(new URI(val));
+							val = urlRef.getKmzRelPath();
+						} catch (Exception e) {
+							// ignore
+						}
+					}
+					if (ICON.equals(elementName)) {
+						// photo overlay URLs may have entity substitution in URLs. restore any escaping done in UrlRef.escapeUri()
+						try {
+							val = URLDecoder.decode(val, "UTF-8");
+						} catch (IllegalArgumentException e) {
+							log.warn("Failed to decode Icon URL", e);
+						} catch (UnsupportedEncodingException e) {
+							log.info("Unsupported encoding: " + e);
+						}
+					}
                 }
                 handleSimpleElement(tag, val);
             }
