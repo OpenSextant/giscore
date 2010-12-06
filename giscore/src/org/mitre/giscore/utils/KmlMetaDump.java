@@ -385,8 +385,10 @@ public class KmlMetaDump implements IKml {
         if (cl == DocumentStart.class) return; // ignore DocumentStart root element.. contents dumped above
 
         if (gisObj instanceof Common) {
-            if (gisObj instanceof Feature) features++; // PlaceMark + NetworkLink + Overlay
-            checkCommon((Common)gisObj);
+            if (gisObj instanceof Feature) {
+				features++; // PlaceMark + NetworkLink + Overlay				
+			}
+            checkCommon((Common)gisObj); // Common -> PlaceMark + NetworkLink + Overlay {Screen/Ground/Photo}, Container {Folder/Document}  
         }
 
         if (cl == Feature.class) {
@@ -547,6 +549,9 @@ public class KmlMetaDump implements IKml {
                         || go.getEast() != null || go.getWest() != null
                         || go.getRotation() != null)
                     addTag(IKml.LAT_LON_BOX);
+				AltitudeModeEnumType altMode = go.getAltitudeMode();
+				if (altMode == AltitudeModeEnumType.relativeToSeaFloor || altMode == AltitudeModeEnumType.clampToSeaFloor)
+					addTag("gx:altitudeMode");
             }
             if (ov.getIcon() == null)
                 addTag(":Overlay missing icon");
@@ -661,9 +666,16 @@ public class KmlMetaDump implements IKml {
 	}
 
 	/**
-	 * Detect dateline wrap or antimeridian spanning when geometry spans the -180/+180 longtiude line
+	 * Check geometry for various tests
 	 */
 	private void checkGeometry(Geometry geom) {
+		if (geom instanceof GeometryBase) {
+			// check for gx:relativeToSeaFloor and gx:clampToSeaFloor value which imply the gx:altitudeMode is used
+			AltitudeModeEnumType altMode = ((GeometryBase)geom).getAltitudeMode();
+			if (altMode == AltitudeModeEnumType.relativeToSeaFloor || altMode == AltitudeModeEnumType.clampToSeaFloor)
+				addTag("gx:altitudeMode");
+		}
+
 		// geom must have at least 2 points (points cannot span the line)
 		// Polygon/LineRing must have at least 4 points
 		if (geom instanceof Point || geom instanceof Model) return; // no checks for Points or Models
@@ -739,6 +751,7 @@ public class KmlMetaDump implements IKml {
 		// else System.out.println(" other geometry: " + getClassName(geom.getClass()));
 		
 		// see http://www.cadmaps.com/gisblog/?cat=10
+		// Detect dateline wrap or antimeridian spanning when geometry spans the -180/+180 longtiude line
 		Geodetic2DBounds bbox = geom.getBoundingBox();
 		if (bbox != null && bbox.getWestLon().inDegrees() > bbox.getEastLon().inDegrees()) {
 			//System.out.println(geom.getClass().getName());
@@ -833,7 +846,7 @@ public class KmlMetaDump implements IKml {
                 if (verbose) System.out.println(" Warning: styleUrl appears to contain invalid characters: " + styleUrl);
             }
         }
-        
+
         Date startTime = f.getStartTime();
         Date endTime = f.getEndTime();
         if (startTime != null || endTime != null) {
