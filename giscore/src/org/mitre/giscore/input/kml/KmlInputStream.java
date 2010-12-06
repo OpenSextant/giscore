@@ -533,6 +533,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                         if (value != null)
     						cs.putData(new SimpleField(nameAttr.getValue()), value);
                         // NOTE: if feature has mixed Data and SchemaData then Data fields will be associated with last SchemaData schema processed
+					} else {
+						// no name skip any value element
+						// TODO: if Data has id attr but no name can we use still the value ??
+						log.debug("No name attribute for Data. Skip element");
+						skipNextElement(stream, qname);
 					}
 				} else if (tag.equals(SCHEMA_DATA)) {
 					Attribute url = se.getAttributeByName(new QName(SCHEMA_URL));
@@ -546,6 +551,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                             // is URI properly encoded??
 							log.error("Failed to handle SchemaData schemaUrl=" + uri , e);
 						}
+					} else {
+						// no schemaUrl skip SchemaData element
+						// TODO: if SchemaData has SimpleData but no schemaUrl attr can we use still the value ??
+						log.debug("No schemaUrl attribute for Data. Skip element");
+						skipNextElement(stream, qname);
 					}
                 } else {
                     log.debug("ignore " + qname);
@@ -614,6 +624,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					rval = stream.getElementText();
 				}
 			}
+			// otherwise next=END_ELEMENT(2) | CHARACTERS(4)
 		}
 	}
 
@@ -1864,7 +1875,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
      *          otherwise null if no valid Geometry can be constructed
      * @throws XMLStreamException if there is an error with the underlying XML
      * @throws IllegalStateException if geometry is invalid
-     * @throws IllegalArgumentException if geometry is invalid
+     * @throws IllegalArgumentException if geometry is invalid (e.g. Line has < 2 points, etc.)
 	 */
 	@SuppressWarnings("unchecked")
 	private Geometry handleGeometry(StartElement sl) throws XMLStreamException {
