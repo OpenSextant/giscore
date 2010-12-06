@@ -199,7 +199,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
                 if (inv) {
                     if (log.isDebugEnabled())
                         log.debug(String.format("LinearRing self-intersects at i=%d j=%d", i, j));
-                    throw new IllegalArgumentException("LinearRing can not self-intersect");
+                    throw new IllegalArgumentException("LinearRing cannot self-intersect");
                 }
             }
         }
