@@ -77,7 +77,7 @@ import java.util.*;
  * Geometry checks: <br>
  * <ul>
  *  <li> Bad poly found, no outer ring (error)
- *  <li> Geometry spans -180/+180 longtiude line (dateline wrap or antimeridian spanning problem) (warn)
+ *  <li> Geometry spans -180/+180 longitude line (dateline wrap or antimeridian spanning problem) (warn)
  *  <li> Inner ring clipped at DateLine (info)
  *  <li> Inner ring not contained within outer ring (warn)
  *  <li> Inner rings in Polygon must not overlap with each other (warn)
@@ -730,17 +730,15 @@ public class KmlMetaDump implements IKml {
                 for (int i=1; i < n; i++) {
                     Point pt = pts.get(i);
                     if (last.equals(pt)) {
+						addTag(":Line has duplicate consecutive points");
                         if (verbose) {
                             System.out.println("Duplicate point at index: " + i);
                             dups++;
-                        } else {
-                            addTag(":Line has duplicate consecutive points");
-                            break;
-                        }
+                        } else break;
                     }
                     last = pt;
                 }
-                if (verbose)
+                if (verbose && dups > 0)
                     System.out.printf("%d duplicate points out of %d%n", dups, n);
             }
 		} else if (geom instanceof LinearRing) {
@@ -751,11 +749,11 @@ public class KmlMetaDump implements IKml {
 		// else System.out.println(" other geometry: " + getClassName(geom.getClass()));
 		
 		// see http://www.cadmaps.com/gisblog/?cat=10
-		// Detect dateline wrap or antimeridian spanning when geometry spans the -180/+180 longtiude line
+		// Detect dateline wrap or antimeridian spanning when geometry spans the -180/+180 longitude line
 		Geodetic2DBounds bbox = geom.getBoundingBox();
 		if (bbox != null && bbox.getWestLon().inDegrees() > bbox.getEastLon().inDegrees()) {
-			//System.out.println(geom.getClass().getName());
-			addTag(":Geometry spans -180/+180 longtiude line");
+			if (verbose) System.out.println("Geometry spans -180/+180 longitude line");
+			addTag(":Geometry spans -180/+180 longitude line");
 			// such geometries must be sub-divided to render correctly
 		}
 	}
