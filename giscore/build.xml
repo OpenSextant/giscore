@@ -3,8 +3,8 @@
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="giscore" default="compile">
 
 	<!-- Remove and reinstate ivy:buildnumber should that ever start working again -->
-	<property name="previous.revision" value="0.5.26" />
-	<property name="ivy.new.revision" value="0.5.27" />
+	<property name="previous.revision" value="0.5.25" />
+	<property name="ivy.new.revision" value="0.5.26" />
 	
 	<property name="proxy.host" value="gatekeeper.mitre.org" />
 	<property name="proxy.port" value="80" />
@@ -50,7 +50,9 @@
 	</target>
 
 	<target name="init.proxy">
-		<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" proxyuser="${proxy.user}" proxypassword="${proxy.pass}" nonproxyhosts="${proxy.nonProxyHosts}" />
+		<setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}" 
+			proxyuser="${proxy.user}" proxypassword="${proxy.pass}" 
+			nonproxyhosts="${proxy.nonProxyHosts}" />
 	</target>
 
 	<target name="clean">
@@ -241,11 +243,13 @@
 	<target name="publish" depends="pom, javadoc, sourcejar" 
 		description="Publish directly to a repository">		
 		<echo>Publishing revision ${ivy.new.revision}</echo>
-		<ivy:publish resolver="maven-proxy-local" revision="${ivy.new.revision}" conf="compile" overwrite="false">
+		<ivy:publish resolver="maven-proxy-local" revision="${ivy.new.revision}" 
+			warnonmissing="true" conf="compile" overwrite="false">
 			<artifacts pattern="rel/[artifact].[ext]" />
 			<artifacts pattern="rel/jars/[artifact].[ext]" />
 		</ivy:publish>
-		<ivy:publish resolver="maven-proxy-local-extra" revision="${ivy.new.revision}" conf="pubextra" publishivy="false" overwrite="false">
+		<ivy:publish resolver="maven-proxy-local-extra" revision="${ivy.new.revision}" 
+			warnonmissing="true" conf="pubextra" publishivy="false" overwrite="false">
 			<artifacts pattern="rel/[artifact]-[type].[ext]" />
 		</ivy:publish>	
 	</target>
