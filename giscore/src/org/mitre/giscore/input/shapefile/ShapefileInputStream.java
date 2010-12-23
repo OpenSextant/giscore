@@ -18,7 +18,6 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.shapefile;
 
-import com.esri.arcgis.interop.AutomationException;
 import org.apache.commons.io.IOUtils;
 import org.mitre.giscore.IAcceptSchema;
 import org.mitre.giscore.events.IGISObject;
@@ -179,10 +178,9 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * @param accepter
 	 *
 	 * @throws IOException if an I/O error occurs
-	 * @throws AutomationException
 	 */
 	private void initialize(File dir, IAcceptSchema accepter)
-			throws IOException, AutomationException {
+			throws IOException {
 		workingDir = dir;
 		this.accepter = accepter;
 		
