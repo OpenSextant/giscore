@@ -12,6 +12,7 @@ import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.input.kml.UrlRef;
+import org.mitre.giscore.output.atom.IAtomConstants;
 import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
@@ -936,7 +937,12 @@ public class KmlMetaDump implements IKml {
         for (Element e : f.getElements()) {
             String prefix = e.getPrefix();
             String name = e.getName();
-            if (StringUtils.isNotEmpty(prefix)) name = prefix + ":" + name;
+            if (StringUtils.isNotEmpty(prefix)) {
+                if (IAtomConstants.ATOM_URI_NS.equals(e.getNamespaceURI()))
+                    prefix = "atom"; // use atom regardless of prefix
+                name = prefix + ":" + name;
+            }
+
             addTag(name);
         }
 
