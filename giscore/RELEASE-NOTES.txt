@@ -91,3 +91,42 @@ KmlMetaDump.java
 
 ------------------------------------------------------------------------------
 
+Release 0.5.26
+
+This release fixes minor bugs in KML handling and updated geodesy library with Geodetic3DBounds fixes.
+
+LinearRing
+-fixed LinearRing(Geodetic2DBounds box) to check for 3D bbox and create 3d points accordingly at max elevation height
+
+KmlInputStream
+-handle ArrayIndexOutOfBoundsException in read() such that read gracefully fails
+
+KmlReader
+-Added KmlReader(InputStream is, boolean isCompressed, URL baseUrl, Proxy proxy) constr
+
+KmlMetaDump
+-added custom log4j Appender to capture warn/errors logged by KML classes and add them to summary of errors/warnings.
+-updated checkGeometry() to check Lines, Polygons and LinearRings.
+-added check for duplicate consecutive points
+-added checks:
+ * comma found instead of whitespace between tuples (error)
+ * ignore invalid character in coordinate string (error)
+ * ignore invalid string in coordinate (error)
+ * Line clipped at DateLine (info)
+ * Inner rings in Polygon must not overlap with each other (warn)
+ * LinearRing must start and end with the same point (error)
+ * LinearRing can not self-intersect (warn)
+ * Bad poly found, no outer ring (error)
+
+Add support for "open" elemenent on KML input and output for containers
+-Added IContainerType with changes to NetworkLink, ContainerStart, KmlInputStream, and KmlOutputStream
+
+XmlInputStream
+-Change skipNextElement() accessibility from public to protected
+
+Added java.net.Proxy to UrlRef/KmlReader to proxy URL connections
+
+Updated dependency: itf-geodesy 1.9.14 -> 1.9.16 with Geodetic3DBounds fixes
+
+------------------------------------------------------------------------------
+
