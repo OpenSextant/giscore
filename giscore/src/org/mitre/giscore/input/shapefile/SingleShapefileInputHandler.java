@@ -119,7 +119,8 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
      * input directory and base filename (not including .shp extension) as
      * base name for .shp, .dbf, and .prj files. 
      * @param inputDirectory input directory, must exist
-     * @param shapefilename base shape file name, never null or blank string
+     * @param shapefilename base shape file name (never null or blank string)
+	 * 				without the .shp extension
      * @throws IllegalArgumentException if Input directory is null or does not exist
      *              or if shapefilename is null or blank string.
      * @throws IOException if an I/O error occurs
