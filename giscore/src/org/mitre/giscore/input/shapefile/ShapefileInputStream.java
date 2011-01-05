@@ -156,17 +156,17 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * Ctor
 	 * 
 	 * @param file
-	 *            the location of the the shapefile
+	 *            the location of the shapefile(s) as individual .shp file or directory
 	 * @param accepter
 	 * 				a function that determines if a schema should be used,
 	 * 				may be <code>null</code>
 	 * @throws IOException if an I/O error occurs
+	 * @throws IllegalArgumentException if file argument is <code>null</code>
 	 */
 	public ShapefileInputStream(File file, IAcceptSchema accepter)
 			throws IOException {
 		if (file == null) {
-			throw new IllegalArgumentException(
-					"file should never be null");
+			throw new IllegalArgumentException("file argument should never be null");
 		}
 		usingTemp = false;
 		initialize(file, accepter);
@@ -174,21 +174,31 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	
 	/**
 	 * Initialize the input stream
-	 * @param dir
+	 * @param file
+	 *            the location of the shapefile(s) as individual .shp file or directory
 	 * @param accepter
 	 *
 	 * @throws IOException if an I/O error occurs
+	 * @throws IllegalArgumentException if file argument does not exist, not shape file,
+	 * 			or no shape files in directory
 	 */
-	private void initialize(File dir, IAcceptSchema accepter)
+	private void initialize(File file, IAcceptSchema accepter)
 			throws IOException {
-		workingDir = dir;
 		this.accepter = accepter;
-		
-		shapefiles = workingDir.listFiles(new FileFilter() {
-			public boolean accept(File pathname) {
-				return pathname.getName().endsWith(".shp");
-			}
-		});
+		if (file.isDirectory()) {
+			workingDir = file;
+			shapefiles = workingDir.listFiles(new FileFilter() {
+				public boolean accept(File pathname) {
+					return pathname.getName().endsWith(".shp");
+				}
+			});
+			// review: should we throw exception if no shape files found (shapefiles.length == 0) ??
+		} else if (file.isFile() && file.getName().endsWith(".shp")) {
+			workingDir = file.getParentFile();
+			shapefiles = new File[] { file };
+		} else {
+			throw new IllegalArgumentException("Invalid shapefile location");
+		}
 	}
 
 	public void close() {
