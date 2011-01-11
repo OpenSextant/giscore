@@ -6,6 +6,10 @@
 
 	This is a valid KML document wrt to the KML XSD but some
 	of the coordinate values are questionable wrt KML Reference.
+	
+	Annotations in placemark descriptions as to how Google Earth
+	6.0.1.2032 (beta) interprets those values.  Note interpretation
+	of some of the edge cases may change in future releases.
 
 	This KML displays all Placemarks in Google Earth with default
 	values for all questionable locations under its lax parsing.
@@ -15,17 +19,19 @@
 	* extra values in lon,lat,elev tuple (google earth ignores ,'s after elevation value)
 	* invalid strings or characters before/after the values
 	* invalid strings instead of numeric lat/lon values (google earth uses 0)
-        * LineString or LinearRing or Polygon with single point.
-          Google Earth treats these features as a point w/o an icon.
+	* LineString or LinearRing or Polygon with single point.
+	  Google Earth treats these features as a point w/o an icon.
 	* LinearRing or Polygon with only 2 or 3 points.
-          Google Earth treats these features as a LineString.
+	  Google Earth treats these features as a LineString.
 	* LinearRing where first and last points are not the same
-          which becomes an open line segment vs a closed ring.
+	  which becomes an open line segment vs a closed ring.
 	  KML Reference: LinearRing coordinate: "The last coordinate must be the same as the first coordinate."
+	  	  
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
-    <Document>
-	<Style id="sn_ylw-pushpin">
+  <Document>
+    <open>1</open>
+    <Style id="sn_ylw-pushpin">
 		<LineStyle>
 			<color>ff0000ff</color>
 			<width>4</width>
@@ -33,7 +39,10 @@
 		<PolyStyle>
 			<color>bf0000ff</color>
 		</PolyStyle>
-	</Style>
+    </Style>
+
+    <Folder>
+	<name>Points</name>
 
         <Placemark>
             <name>point1</name>
@@ -53,7 +62,7 @@
 
         <Placemark>
             <name>point3a</name>
-            <description>exponents in values allowed</description>
+            <description>exponents in values allowed (E-1)</description>
             <Point>
                 <coordinates>1,2,7.76166643845E-1</coordinates>
             </Point>
@@ -61,7 +70,7 @@
 
         <Placemark>
             <name>point3b</name>
-            <description>exponents in values allowed</description>
+            <description>exponents in values allowed (E+3)</description>
             <Point>
                 <coordinates>1,2,0.776166643845E+3</coordinates>
             </Point>
@@ -85,7 +94,7 @@
 
         <Placemark>
             <name>point5</name>
-            <description>interpreted as [3,4,5]</description>
+            <description>[3,4,5ddd] interpreted as [3,4,5]</description>
             <Point>
                 <coordinates>3,4,5ddd</coordinates>
             </Point>
@@ -125,8 +134,7 @@
 
         <Placemark>
             <name>point8</name>
-	    <!-- not sure what 180 latitude really means -->
-            <description>[10,200,300] as [10,*180*,300]</description>
+            <description>[10,200,300] shown on map at -170 Lon / -20 Lat w/no icon</description>
             <Point>
                 <coordinates>10,200,300</coordinates>
             </Point>
@@ -142,7 +150,8 @@
 
         <Placemark>
             <name>point9</name>
-            <description>[200,45,300] as [*180*,45,300]</description>
+            <description>[200,45,300] shown on map @ -160 Lon / +45 Lat w/no icon</description>
+            <!-- shouldn't 200 longitude be normalized as -170 not -160 ?? -->
             <Point>
                 <coordinates>200,45,300</coordinates>
             </Point>
@@ -150,7 +159,7 @@
 
         <Placemark>
             <name>point9b</name>
-            <description>[3000,45,300] as [*180*,45,300]</description>
+            <description>[3000,45,300] shown on map @ -120 Lon / +45 Lat w/no icon</description>
             <Point>
                 <coordinates>3000,45,300</coordinates>
             </Point>
@@ -172,8 +181,33 @@
             </Point>
         </Placemark>
 
+    <Placemark>
+      <name>PointNoLabel</name>
+      <description>
+	<![CDATA[Shows same behavior on map as line/ring/polygon w/1 pt.<P>
+	See <a href="#Line3">Line3</a> or <a href="#polygon1">polygon1</a>.]]>
+      </description>
+      <Style>
+        <IconStyle>
+          <Icon />
+        </IconStyle>
+        <LabelStyle>
+          <scale>0</scale>
+        </LabelStyle>
+      </Style>
+      <Point>
+        <coordinates>5.2,2.02,0</coordinates>
+      </Point>
+    </Placemark>
+
+    </Folder>
+
+    <Folder>
+	<name>Lines</name>
+
         <Placemark>
             <name>Line1</name>
+            <description>[1 2 3] as [1,0,0 2,0,0 3,0,0]</description>
             <LineString>
 		<extrude>0</extrude>
 		<tessellate>1</tessellate>
@@ -184,6 +218,7 @@
 
         <Placemark>
             <name>Line2</name>
+            <description>[10 20 30] as [10,0,0 20,0,0 30,0,0]</description>
             <LineString>
 		<extrude>0</extrude>
 		<tessellate>1</tessellate>
@@ -192,12 +227,11 @@
             </LineString>
         </Placemark>
 
-        <Placemark>
+        <Placemark id="Line3">
             <name>Line3</name>
-            <description>LineString with single point</description>
-            <!-- google earth treats this as a point w/o an icon -->
+            <description>LineString with single point treated as a point w/no icon</description>
+            <!-- google earth treats this as a point w/no icon -->
             <LineString>
-		<extrude>0</extrude>
 		<tessellate>1</tessellate>
                 <coordinates>4,2,0</coordinates>
             </LineString>
@@ -206,9 +240,8 @@
         <Placemark>
             <name>Line4</name>
             <description>[1,2,3,4] as [1,2,3 4,0,0]</description>
-            <!-- LineString with 4 coordinate values -->
+            <!-- LineString with single tuple w/4 coordinate components -->
             <LineString>
-		<extrude>0</extrude>
 		<tessellate>1</tessellate>
                 <coordinates>1,2,3,4</coordinates>
             </LineString>
@@ -219,7 +252,6 @@
             <description>[1, 2, 3, 4, 5, 6] as [1,2,3 4,5,6]</description>
             <!-- LineString with , separating coordinate -->
             <LineString>
-		<extrude>0</extrude>
 		<tessellate>1</tessellate>
                 <coordinates>1, 2, 3, 4, 5, 6</coordinates>
             </LineString>
@@ -227,11 +259,10 @@
 
 	<Placemark>
 		<name>line6</name>
-		<description>Shown to compare polygon3 and ring3</description>
+		<description>Red extruded line shown to compare polygon3 and ring3</description>
 		<styleUrl>#sn_ylw-pushpin</styleUrl>
 		<LineString>
 			<extrude>1</extrude>
-			<tessellate>1</tessellate>
 			<altitudeMode>relativeToGround</altitudeMode>
 			<coordinates>
 				-77.05664315070867,38.87171704418493,25
@@ -241,9 +272,14 @@
 		</LineString>
 	</Placemark>
 
+    </Folder>
+
+    <Folder>
+	<name>Rings</name>
+
     <Placemark>
       <name>ring1</name>
-      <description>ring with single point</description>
+      <description>ring with single point [treated same as line string with single coordinate]</description>
       <!-- Google Earth treats this as a point SAME AS LINE STRING WITH SINGLE POINT -->
       <LinearRing>
         <extrude>1</extrude>
@@ -253,7 +289,7 @@
 
     <Placemark>
       <name>ring2</name>
-      <description>ring with only 2 points</description>
+      <description>ring with only 2 points [treated as line]</description>
       <!-- google earth treats this as a line -->
       <LinearRing>
         <extrude>1</extrude>
@@ -263,8 +299,8 @@
 
   <Placemark>
     <name>ring3</name>
-    <description>ring with only 3 points</description>
-    <!-- google earth treats this as a 2 line segments -->
+    <description>ring with only 3 points [shown as white line w/2 segments]</description>
+    <!-- google earth treats this as line with 2 line segments -->
     <Style>
 	<LineStyle>
 		<width>4</width>
@@ -305,9 +341,14 @@
             </LinearRing>
     </Placemark>
 
-    <Placemark>
+    </Folder>
+
+    <Folder>
+	<name>Polygons</name>
+
+    <Placemark id="polygon1">
       <name>polygon1</name>
-      <description>polygon with only single point</description>
+      <description>polygon with only single point [shown as point w/no icon]</description>
       <!-- google earth treats this as a point w/o icon -->
       <Polygon>
         <altitudeMode>relativeToGround</altitudeMode>
@@ -321,11 +362,12 @@
 
     <Placemark>
       <name>polygon2</name>
-      <description>polygon with only 2 points</description>
+      <description>polygon with only 2 points [shown as a line]</description>
       <!-- google earth treats this as a line -->
       <Polygon>
         <extrude>1</extrude>
-        <altitudeMode>relativeToGround</altitudeMode>
+	<tessellate>1</tessellate>
+	<altitudeMode>relativeToGround</altitudeMode>
         <outerBoundaryIs>
           <LinearRing>
             <coordinates>5,2,0 5.5,2,0</coordinates>
@@ -336,8 +378,8 @@
 
   <Placemark>
     <name>polygon3</name>
-    <description>polygon with only 3 points</description>
-    <!-- google earth treats this as a 2 line segments -->
+    <description>polygon with only 3 points [shown as blue line w/2 segments]</description>
+    <!-- google earth treats this as 2 line segments -->
     <Style>
 	<LineStyle>
 		<color>ffff0000</color>
@@ -364,7 +406,7 @@
 
   <Placemark>
     <name>polygon4</name>
-    <description>polygon with no outer boundary</description>
+    <description>polygon with no outer boundary [treated as empty polygon]</description>
     <!-- google earth will not display any feature on map for this
          which is same as not having any inner rings at all.
       -->
@@ -382,21 +424,7 @@
     </Polygon>
   </Placemark>
 
-    <Placemark>
-      <name>PointNoLabel</name>
-      <description>Shows same behavior on map as line/ring/polygon w/1 pt. See Line3 or polygon1.</description>
-      <Style>
-        <IconStyle>
-          <Icon />
-        </IconStyle>
-        <LabelStyle>
-          <scale>0</scale>
-        </LabelStyle>
-      </Style>
-      <Point>
-        <coordinates>5.2,2.02,0</coordinates>
-      </Point>
-    </Placemark>
+    </Folder>
 
-    </Document>
+  </Document>
 </kml>
