@@ -18,25 +18,41 @@ See also http://kml-samples.googlecode.com/svn/trunk/morekml/
 
 Summary of tags and properties used in KML collection
 
+	Bad poly found, no outer ring
 	Camera altitudeMode cannot be clampToGround [ATC 54.2]
 	Container end date is later than that of its ancestors
 	Feature inherits container time
 	Feature uses inline Style
 	Feature uses inline StyleMap
-	Geometry spans -180/+180 longtiude line
+	Geometry spans -180/+180 longitude line
+	Ignoring invalid altitudeMode value: clampedToGround
+	Inner ring not contained within outer ring
+	Inner rings in Polygon must not overlap with each other
 	Invalid LookAt values
+	Invalid coordinate: 200.0
+	Invalid coordinate: 3000.0
 	Invalid time range: start > end
+	Line clipped at DateLine
+	Line has duplicate consecutive points
+	LinearRing cannot self-intersect
+	LinearRing must start and end with the same point
+	Nested MultiGeometries
 	NetworkLink missing Link
 	Out of order elements
+	Outer ring has duplicate consecutive points
 	Overlay missing icon
 	Region has invalid LatLonAltBox
+	Suspicious Schema name characters
 	Suspicious Style id characters
 	Suspicious StyleMap highlight URL characters
 	Suspicious StyleMap id characters
 	Suspicious StyleMap normal URL characters
 	Suspicious styleUrl characters
+	comma found instead of whitespace between tuples
 	gx:SimpleArrayData has incorrect length
 	gx:Track coord-when mismatch
+	ignore invalid character in coordinate string
+	ignore invalid string in coordinate
 
 	BalloonStyle		MultiPoint
 	Camera			NetworkLink
@@ -53,12 +69,14 @@ Summary of tags and properties used in KML collection
         ListStyle		StyleMap
         LookAt			TimeSpan
         Model			TimeStamp
-        MultiGeometry		atom:author
-	xal:AddressDetails	atom:link
-        gx:LatLonQuad		gx:Tour
-        gx:TimeSpan		gx:Track
-        gx:balloonVisibility	gx:TimeStamp
-        gx:MultiTrack
+        MultiGeometry
+
+        atom:author		gx:SimpleArrayData
+        atom:link		gx:TimeSpan
+        gx:altitudeMode		gx:TimeStamp
+        gx:balloonVisibility	gx:Tour
+        gx:LatLonQuad		gx:Track
+        gx:MultiTrack		xal:AddressDetails
 
 ----------------------------------------------------------------------------------------------------
 
@@ -88,6 +106,8 @@ data\kml\balloon\balloonstyle-color-inline.kml
 
 data\kml\balloon\balloonstyle-color-shared.kml
 
+	Feature uses inline Style
+	--
 	BalloonStyle         1
 	Placemark            1
 	Point                1
@@ -134,23 +154,18 @@ data\kml\BalloonStyle\simpleBalloonStyles.kml
 	Style                5
 	# features=5
 
-data\kml\bbox.kml
-
-	LinearRing           12
-	Placemark            12
-	# features=12
-
 data\kml\Camera\golden-gate.kml
 
 	Camera altitudeMode cannot be clampToGround [ATC 54.2]
-	Camera               10
+	--
+	Camera               11
 	Placemark            10
 	# features=10
 
 data\kml\ExtendedData\data-ext-ns.kml
-DEBUG [main] (KmlInputStream.java:548) - skip {http://campsites.com}number
-DEBUG [main] (KmlInputStream.java:548) - skip {http://campsites.com}parkingSpaces
-DEBUG [main] (KmlInputStream.java:548) - skip {http://campsites.com}tentSites
+	DEBUG [main] (KmlInputStream.java:548) - skip {http://campsites.com}number
+	DEBUG [main] (KmlInputStream.java:548) - skip {http://campsites.com}parkingSpaces
+	DEBUG [main] (KmlInputStream.java:548) - skip {http://campsites.com}tentSites
 
 	Placemark            1
 	Point                1
@@ -233,8 +248,8 @@ data\kml\feature-anchor\feature-anchor-semi.kmz
 	# features=7
 
 data\kml\FeatureType\life-of-a-feature-view-data.kml
+	DEBUG [main] (KmlReader.java:166) - NetworkLink href is empty or missing
 
-DEBUG [main] (KmlReader.java:166) - NetworkLink href is empty or missing
 	NetworkLink missing Link
 	Overlay missing icon
 	--
@@ -273,8 +288,8 @@ data\kml\GroundOverlay\etna.kmz
 	# features=1
 
 data\kml\gx\all-gx.kml
-DEBUG [main] (KmlInputStream.java:1758) - Handle tag data gx:altitudeMode
-DEBUG [main] (KmlInputStream.java:1758) - Handle tag data gx:altitudeMode
+	DEBUG [main] (KmlInputStream.java:1758) - Handle tag data gx:altitudeMode
+	DEBUG [main] (KmlInputStream.java:1758) - Handle tag data gx:altitudeMode
 
 	Camera altitudeMode cannot be clampToGround [ATC 54.2]
 	Feature uses inline Style
@@ -297,15 +312,17 @@ DEBUG [main] (KmlInputStream.java:1758) - Handle tag data gx:altitudeMode
 	gx:TimeStamp         1
 	gx:Tour              11
 	gx:Track             1
+	gx:altitudeMode      1
 	gx:balloonVisibility 1
 	# features=8
 
 data\kml\gx\altitudemode_reference.kml
-DEBUG [main] (KmlInputStream.java:1698) - Handle gx:altitudeMode
+	DEBUG [main] (KmlInputStream.java:1698) - Handle gx:altitudeMode
 
         Line                 1
         LookAt               1
         Placemark            1
+	gx:altitudeMode      1
         # features=1
 
 data\kml\gx\sample_tour.kml
@@ -319,18 +336,6 @@ data\kml\gx\sample_tour.kml
         # features=1
 
 data\kml\gx\trackData.kml
-org.mitre.giscore.events.StyleMap@fe64b9[
-  mappings={normal=#track_n, highlight=#track_h}
-  id=track
-]
-org.mitre.giscore.events.StyleMap@186db54[
-  mappings={normal=#multiTrack_n, highlight=#multiTrack_h}
-  id=multiTrack
-]
-org.mitre.giscore.events.StyleMap@a97b0b[
-  mappings={normal=#waypoint_n, highlight=#waypoint_h}
-  id=waypoint
-]
 
 	Feature uses inline Style
 	--
@@ -342,6 +347,7 @@ org.mitre.giscore.events.StyleMap@a97b0b[
 	Schema               1
 	Style                7
 	StyleMap             3
+	gx:SimpleArrayData   1
 	gx:TimeSpan          2
 	gx:Track             1
 	# features=1
@@ -438,8 +444,8 @@ data\kml\kmz\iconStyle\styled_placemark.kmz
 	# features=1
 
 data\kml\kmz\networklink\hier.kmz
-DEBUG [main] (KmlReader.java:262) - Parse networkLink: file:/C:/projects/giscore/data/kml/kmz/networklink/hier.kmz/within.kml
-DEBUG [main] (KmlReader.java:262) - Parse networkLink: file:/C:/projects/giscore/data/kml/kmz/networklink/hier.kmz/outside.kml
+	DEBUG [main] (KmlReader.java:262) - Parse networkLink: file:/C:/projects/giscore/data/kml/kmz/networklink/hier.kmz/within.kml
+	DEBUG [main] (KmlReader.java:262) - Parse networkLink: file:/C:/projects/giscore/data/kml/kmz/networklink/hier.kmz/outside.kml
 
         url=outside.kml
         url=within.kml
@@ -637,14 +643,14 @@ data\kml\Model\MackyBldg.kmz
 
 data\kml\Model\SharedTextures.kmz
 
-	LookAt               2
+	LookAt               3
 	Model                2
 	Placemark            2
 	# features=2
 
 data\kml\MultiGeometry\emptyGeom.kml
-DEBUG [main] (KmlInputStream.java:1823) - No valid geometries in MultiGeometry
-DEBUG [main] (KmlInputStream.java:1828) - Convert MultiGeometry to single geometry
+	DEBUG [main] (KmlInputStream.java:1823) - No valid geometries in MultiGeometry
+	DEBUG [main] (KmlInputStream.java:1828) - Convert MultiGeometry to single geometry
 
 	Placemark            2
 	Point                1
@@ -689,6 +695,8 @@ data\kml\MultiGeometry\MultiGeomMixed-Pentagon.kml
 
 data\kml\MultiGeometry\NestedMultiGeoms.kml
 
+	Nested MultiGeometries
+	--
 	Line                 2
 	MultiGeometry        1
 	Placemark            1
@@ -696,8 +704,12 @@ data\kml\MultiGeometry\NestedMultiGeoms.kml
 	# features=1
 
 data\kml\MultiGeometry\polygon-point.kml
+	DEBUG [main] (LinearRing.java:201) - LinearRing self-intersects at i=0 j=59
 
 	Feature uses inline Style
+	LinearRing can not self-intersect
+	Outer ring has duplicate consecutive points
+	--
 	LineStyle            1
 	MultiGeometry        1
 	Placemark            1
@@ -805,7 +817,6 @@ data\kml\NetworkLink\multiLevelNetworkLinks2.kmz
 data\kml\NetworkLink\nlc.kml
 
 	NetworkLinkControl   1
-	# features=1
 
 data\kml\NetworkLink\placemark.kml
 
@@ -822,9 +833,9 @@ data\kml\NetworkLink\visibility.kml
 	# features=3
 
 data\kml\Placemark\AllElements.kml
-	DEBUG [main] (KmlInputStream.java:487) - skip AddressDetails
 
 	Region has invalid LatLonAltBox
+	--
 	LookAt               1
 	Placemark            1
 	Point                1
@@ -832,12 +843,14 @@ data\kml\Placemark\AllElements.kml
 	TimeSpan             1
 	atom:author          1
 	atom:link            1
+	xal:AddressDetails   1
 	# features=1
 
 data\kml\Placemark\clippedAtDateLine.kml
 
 	Feature uses inline Style
-	Geometry spans -180/+180 longtiude line
+	Geometry spans -180/+180 longitude line
+	Line clipped at DateLine
 	--
 	Line                 2
 	LineStyle            2
@@ -1027,6 +1040,9 @@ data\kml\Region\minlodpixels.kmz
 data\kml\Region\polygon-fade.kml
 
 	Feature uses inline Style
+	LinearRing can not self-intersect
+	Outer ring has duplicate consecutive points
+	--
 	Placemark            1
 	PolyStyle            1
 	Polygon              1
@@ -1037,6 +1053,9 @@ data\kml\Region\polygon-fade.kml
 data\kml\Region\polygon-min-max.kml
 
 	Feature uses inline Style
+	LinearRing cannot self-intersect
+	Outer ring has duplicate consecutive points
+	--
 	Placemark            1
 	PolyStyle            1
 	Polygon              1
@@ -1045,8 +1064,12 @@ data\kml\Region\polygon-min-max.kml
 	# features=1
 
 data\kml\Region\polygon-simple.kml
+	DEBUG [main] (LinearRing.java:201) - LinearRing self-intersects at i=0 j=53
 
 	Feature uses inline Style
+	LinearRing cannot self-intersect
+	Outer ring has duplicate consecutive points
+	--
 	Placemark            1
 	PolyStyle            1
 	Polygon              1
@@ -1057,6 +1080,9 @@ data\kml\Region\polygon-simple.kml
 data\kml\Region\polygon-swap-fade.kml
 
 	Feature uses inline Style
+	LinearRing cannot self-intersect
+	Outer ring has duplicate consecutive points
+	--
 	LineStyle            2
 	Placemark            2
 	PolyStyle            2
@@ -1068,6 +1094,9 @@ data\kml\Region\polygon-swap-fade.kml
 data\kml\Region\polygon-swap-pop.kml
 
 	Feature uses inline Style
+	LinearRing cannot self-intersect
+	Outer ring has duplicate consecutive points
+	--
 	LineStyle            2
 	Placemark            2
 	PolyStyle            2
@@ -1092,7 +1121,6 @@ data\kml\Region\ScreenOverlay\continents.kmz
 
 	Document             1
 	Folder               2
-	ListStyle            1
 	Line                 4
 	Placemark            4
 	Region               8
@@ -1117,6 +1145,8 @@ data\kml\Schema\AllTypes.kml
 
 data\kml\Schema\MixedTypes.kml
 
+	Suspicious Schema name characters
+	--
 	ExtendedData         1
 	Placemark            1
 	Point                1
@@ -1127,6 +1157,7 @@ data\kml\Schema\schemadata-trailhead.kml
 
 	BalloonStyle         1
 	ExtendedData         2
+	LookAt               1
 	Placemark            2
 	Point                2
 	Schema               1
@@ -1216,6 +1247,16 @@ java.lang.IllegalArgumentException: Angle 52.35987755982989 radians is too big
 	Style                5
 	# features=40
 
+data\kml\sloppy\badPolygon.kml
+
+	Inner ring not contained within outer ring
+	Inner rings in Polygon must not overlap with each other
+	LinearRing cannot self-intersect
+	--
+	Placemark            3
+	Polygon              3
+	# features=3
+
 data\kml\sloppy\badTrack.kml
 
 	gx:SimpleArrayData has incorrect length
@@ -1234,8 +1275,11 @@ data\kml\sloppy\bluedevil20080812-short2.kml
 	INFO [main] (AltitudeModeEnumType.java:40) - Ignoring invalid altitudeMode value: clampedToGround
 	--
 	Feature uses inline Style
+	Ignoring invalid altitudeMode value: clampedToGround
+	Line has duplicate consecutive points
 	Out of order elements
 	Overlay missing icon
+	Skip unexpected element: name
 	--
 	Document             1
 	Folder               2
@@ -1263,16 +1307,14 @@ data\kml\sloppy\n.kml
 
 	Placemark            4
 	Point                4
+	Region               1
 	# features=4
 
 data\kml\sloppy\police.kml
-org.mitre.giscore.events.StyleMap@19106c7[
-  mappings={normal=#default+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png, highlight=#hi+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png}
-  id=map+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png
-]
  WARN [main] (KmlInputStream.java:1289) - Skip unexpected element: altitudeMode
 
 	Feature uses inline Style
+	Skip unexpected element: altitudeMode
 	Suspicious Style id characters
 	Suspicious StyleMap highlight URL characters
 	Suspicious StyleMap id characters
@@ -1291,7 +1333,10 @@ data\kml\sloppy\pred.kml
  WARN [main] (KmlInputStream.java:2160) - comma found instead of whitespace between tuples before -81.9980316162109
 
 	Feature uses inline Style
+	comma found instead of whitespace between tuples
+	--
 	BalloonStyle         1
+	ExtendedData         1
 	IconStyle            1
 	Line                 1
 	LineStyle            1
@@ -1312,10 +1357,6 @@ data\kml\Style\iconStyle.kmz
 
 data\kml\Style\inline-stylemap.kml
 
-org.mitre.giscore.events.StyleMap@60420f[
-  mappings={}
-  id=<null>
-]
 	Feature uses inline StyleMap
 	--
 	Placemark            1
@@ -1469,6 +1510,7 @@ data\kml\time\time-inherit2.kml
 	Document             1
 	Folder               5
 	IconStyle            3
+	ListStyle            1
 	Placemark            13
 	Point                13
 	Style                4
@@ -1539,6 +1581,12 @@ data\kml\time\YearMonthDates.kml
 	TimeStamp            3
 	# features=4
 
+data\kml\xal\gaddr.kml
+
+	Placemark            1
+	Point                1
+	xal:AddressDetails   1
+	# features=1
 data\kml\xmlns\earth-google-com-kml-21.kml
 
 	Placemark            1
