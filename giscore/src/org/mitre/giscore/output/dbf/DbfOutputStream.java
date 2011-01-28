@@ -18,18 +18,9 @@
  ***************************************************************************************/
 package org.mitre.giscore.output.dbf;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.nio.ByteOrder;
-import java.text.DateFormat;
-import java.text.DecimalFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.TimeZone;
-import java.util.Date;
-import java.util.Collection;
-import java.util.ArrayList;
-
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import org.apache.commons.io.IOUtils;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
@@ -43,7 +34,18 @@ import org.mitre.giscore.utils.FieldCachingObjectBuffer;
 import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.utils.SafeDateFormat;
 import org.mitre.giscore.utils.StringHelper;
-import org.apache.commons.io.IOUtils;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteOrder;
+import java.text.DateFormat;
+import java.text.DecimalFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.TimeZone;
 
 /**
  * Output a DBF file using the gisoutputstream interface.
@@ -300,10 +302,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 						writeField(stream, "f", 1);
 				} else {
 					String data = getString(row.getData(field));
-					if (data == null)
-						writeField(stream, "", 32);
-					else
-						writeField(stream, data, 32);
+                    writeField(stream, data, 32);
 				}
 			}
 			row = (Row) buffer.read();
@@ -334,6 +333,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		}
 	}
 
+    @Nullable
 	private Boolean getBoolean(Object data) {
 		if (data instanceof Boolean) {
 			return (Boolean) data;
@@ -349,6 +349,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		}
 	}
 
+    @NonNull
 	private String getString(Object data) {
 		if (data == null) {
 			return "";
@@ -377,6 +378,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 		}
 	}
 
+    @Nullable
 	private Number getNumber(Object data) {
 		if (data == null) {
 			return null;
