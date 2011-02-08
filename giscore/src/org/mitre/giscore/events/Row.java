@@ -18,16 +18,9 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
@@ -35,6 +28,14 @@ import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
+
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents the most basic tabular data. 
@@ -167,11 +168,8 @@ public class Row extends AbstractObject implements IDataSerializable {
 			throw new IllegalArgumentException(
 					"field should never be null or empty");
 		}
-		Object value = extendedData.get(field);
-		if (ObjectUtils.NULL.equals(value))
-			return null;
-		else
-			return value;
+		final Object value = extendedData.get(field);
+		return ObjectUtils.NULL.equals(value) ? null : value;
 	}
 
     /**
@@ -181,12 +179,14 @@ public class Row extends AbstractObject implements IDataSerializable {
      * @return the previous value associated with <tt>field</tt>, or
      *         <tt>null</tt> if there was no mapping for <tt>field</tt>.
      */
+    @Nullable
     public Object removeData(SimpleField field) {
 		if (field == null) {
 			throw new IllegalArgumentException(
 					"field should never be null or empty");
 		}
-		return extendedData.remove(field);
+        final Object value = extendedData.remove(field);
+        return ObjectUtils.NULL.equals(value) ? null : value;
     }
 
 	/*
