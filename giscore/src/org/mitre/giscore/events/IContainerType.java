@@ -19,4 +19,10 @@ public interface IContainerType {
 	 * @param open True if container appears open when first loaded
 	 */
     void setOpen(boolean open);
+
+    /**
+     * Returns type of container
+     * @return the type, never null
+     */
+    String getType();
 }
