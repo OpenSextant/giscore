@@ -45,6 +45,8 @@ import java.util.*;
  *  <li> End container with no matching start container (error)
  *  <li> Feature inherits time from parent container (info)
  *  <li> Feature uses inline [Style|StyleMap) (info)
+ *  <li> Feature uses merged shared/inline Style (info)
+ *  <li> Feature uses shared Style (info)
  *  <li> gx:SimpleArrayData has incorrect length (error)
  *  <li> gx:Track coord-when mismatch (error)
  *  <li> ignore invalid character in coordinate string (error)
@@ -66,7 +68,10 @@ import java.util.*;
  *  <li> Overlay does not contain Icon element (info)
  *  <li> Region has invalid LatLonAltBox (error)
  *  <li> Region has invalid Lod
+ *  <li> Shared styles in Folder not allowed [ATC 7] (warning)
+ *  <li> Shared styles must have 'id' attribute [ATC 7] (warning)
  *  <li> Starting container tag with no matching end container (error)
+ *  <li> StyleUrl must contain '#' with identifier reference
  *  <li> Suspicious Schema id characters
  *  <li> Suspicious Schema name characters
  *  <li> Suspicious Style id characters (warning)
@@ -97,7 +102,8 @@ import java.util.*;
  * http://code.google.com/apis/kml/documentation/kmlreference.html) such
  * as in coordinates element which states "Do not include spaces between the
  * three values that describe a coordinate", etc. Likewise, the OGC KML Best
- * Practices and KML Test Suite have additional restrictions. <p/>
+ * Practices and KML Test Suite have additional restrictions some of which
+ * are being checked. <p/>
  *
  * If logger is at debug level then all info, warnings and parsing messages will be logged.
  *
@@ -115,6 +121,7 @@ public class KmlMetaDump implements IKml {
 	private int features;
 	private boolean verbose;
 	private Class<? extends IGISObject> lastObjClass;
+    private StyleSelector lastStyle; // style if lastObjClass was Style or StyleMap
 
 	private boolean inheritsTime;
 	private Date containerStartDate;
@@ -386,10 +393,7 @@ public class KmlMetaDump implements IKml {
         if (cl == DocumentStart.class) return; // ignore DocumentStart root element.. contents dumped above
 
         if (gisObj instanceof Common) {
-            if (gisObj instanceof Feature) {
-				features++; // PlaceMark + NetworkLink + Overlay				
-			}
-            checkCommon((Common)gisObj); // Common -> PlaceMark + NetworkLink + Overlay {Screen/Ground/Photo}, Container {Folder/Document}  
+            checkCommon((Common)gisObj); // Common -> Placemark + NetworkLink + Overlay {Screen/Ground/Photo}, Container {Folder/Document}
         }
 
         if (cl == Feature.class) {
@@ -581,6 +585,7 @@ public class KmlMetaDump implements IKml {
             addTag(cl); // e.g. NetworkLinkControl
         }
         lastObjClass = gisObj.getClass();
+        lastStyle = gisObj instanceof  StyleSelector ? (StyleSelector)gisObj : null;
 	}
 
     private void checkElements(Feature f) {
@@ -837,15 +842,32 @@ public class KmlMetaDump implements IKml {
 			addTag(":NetworkLink missing Link");
 	}
 
+    /**
+     * Check Common object including: Placemark, Overlay {Screen/Ground/Photo}, NetworkLink,
+     * and Container {Folder/Document}.
+     */
     private void checkCommon(Common f) {
         String styleUrl = f.getStyleUrl();
-        if (styleUrl != null && styleUrl.startsWith("#")) {
-            if (!UrlRef.isIdentifier(styleUrl.substring(1))) {
-                addTag(":Suspicious styleUrl characters");
-                if (verbose) System.out.println(" Warning: styleUrl appears to contain invalid characters: " + styleUrl);
+        if (styleUrl != null) {
+            /*
+             If the style is in the same file, uses a # reference.
+             If the style is defined in an external file, uses a full URL along with # referencing.
+             styleUrl must contain '#' for id reference as in following cases:
+              <styleUrl>#myIconStyleID</styleUrl>
+              <styleUrl>http://someserver.com/somestylefile.xml#restaurant</styleUrl>
+              <styleUrl>eateries.kml#my-lunch-spot</styleUrl>
+            */
+            int ind = styleUrl.indexOf('#');
+            if (ind == 0) {
+                // local reference
+                if (!UrlRef.isIdentifier(styleUrl.substring(1))) {
+                    addTag(":Suspicious styleUrl characters");
+                    if (verbose) System.out.println(" Warning: styleUrl appears to contain invalid characters: " + styleUrl);
+                }
+            } else if (ind == -1) {
+                addTag(":StyleUrl must contain '#' with identifier reference");
             }
         }
-
         Date startTime = f.getStartTime();
         Date endTime = f.getEndTime();
         if (startTime != null || endTime != null) {
@@ -946,9 +968,71 @@ public class KmlMetaDump implements IKml {
             addTag(name);
         }
 
-        //if (lastObj instanceof StyleSelector) {
-        if (lastObjClass == Style.class || lastObjClass == StyleMap.class)
-            addTag(":Feature uses inline " + getClassName(lastObjClass)); // Style or StyleMap
+        if (f instanceof Feature) {
+            features++; // count of Placemark + NetworkLink + Overlay
+            if (StringUtils.isNotBlank(f.getStyleUrl())) {
+                // if (lastObjClass == Style.class || lastObjClass == StyleMap.class)
+                if (lastStyle != null)
+                    addTag(":Feature uses merged shared/inline Style");
+                else
+                    addTag(":Feature uses shared Style");
+            }
+        }
+
+        // if (lastObj instanceof StyleSelector) {
+        // if (lastObjClass == Style.class || lastObjClass == StyleMap.class) {
+        // note due to special handling of Styles and StyleMaps - these appear BEFORE a Container or Feature containing it
+        if (lastStyle != null) {
+            // first check: Document, Folder or NetworkLink
+            if (f instanceof IContainerType) {
+                /*
+                ATC 7: Shared style definition
+                'shared' style definition (any element that may substitute for kml:AbstractStyleSelectorGroup)
+                 satisfies all of the following constraints:
+                    -its parent element is kml:Document;
+                    -it has an 'id' attribute value.
+
+                Reference: OGC Constraint OGC-07-147r2: cl. 6.4
+                Shared styles shall only be encoded within a Document
+
+                http://code.google.com/apis/kml/documentation/kmlreference.html#document
+                Do not put shared styles within a Folder.
+                */
+                final String csType = ((IContainerType) f).getType();
+                if (IKml.FOLDER.equals(csType)) {
+                    addTag(":Shared styles in Folder not allowed [ATC 7]");
+                } else if (IKml.NETWORK_LINK.equals(csType)) {
+                    // NetworkLinks with inline style: assumed allowed
+                    addTag(":NetworkLink uses inline " + getClassName(lastObjClass)); // Style or StyleMap
+                } else if (IKml.DOCUMENT.equals(csType) && StringUtils.isBlank(lastStyle.getId())) {
+                    // || StringUtils.isBlank(f.getStyleUrl())
+                    /*
+                    A style defined as the child of a <Document> is called a "shared style."
+
+                    For a kml:Style or kml:StyleMap that applies to a kml:Document, the kml:Document itself
+                    must explicitly reference a shared style.
+
+                    <Document>
+                     <Style id="myPrettyDocument">
+                      <ListStyle> ... </ListStyle>
+                     </Style>
+                     <styleUrl#myPrettyDocument">
+                     ...
+                    </Document>
+                     */
+                    addTag(":Shared styles must have 'id' attribute [ATC 7]");
+                }
+            } else {
+                // otherwise must be Placemark or Overlay {Screen/Ground/Photo}
+                // Style defined within a Feature is called an "inline style"
+                // and applies only to the Feature that contains it.
+                if (!(f instanceof Feature)) {
+                    System.err.println("XXX: Style should appear before Features only");
+                    if (verbose) System.out.println("XXX: Style should appear before Features only");
+                }
+                addTag(":Feature uses inline " + getClassName(lastObjClass)); // Style or StyleMap
+            }
+        }
     }
 
     /**
@@ -1112,7 +1196,7 @@ public class KmlMetaDump implements IKml {
 
 	public static void usage() {
 		System.out.println("Usage: java KmlMetaDump [options] <file, directory, or URL..>");
-		System.out.println("\nIf a directory is choosen that all kml/kmz files in any subfolder will be examined");
+		System.out.println("\nIf a directory is choosen then all kml/kmz files in any subfolder will be examined");
 		System.out.println("\nOptions:");
 		System.out.println("  -o<path-to-output-directory>");
 		System.out.println("     Writes KML/KMZ to file in specified directory using");
