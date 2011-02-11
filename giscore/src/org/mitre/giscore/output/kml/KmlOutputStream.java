@@ -66,17 +66,21 @@ import java.util.Queue;
  * The geometry visitors are invoked by the feature visitor via the Geometry
  * accept method.
  * <p/>
+ * Following KML tags are supported: description, Document, ExtendedData,
+ * Folder, Line, NetworkLink, Placemark, Point, Polygon, Schema, Snippet, etc.
+ * <p/>
  * Elements such as atom:author, atom:link, xal:AddressDetails, and gx: extensions
  * must be added to the Feature object as {@link Element} objects.
  *
  * <h4>Notes/Limitations:</h4>
  *  -A few tags are not yet supported on features so are omitted from output:
- *  {@code address, Metadata, phoneNumber, Snippet, and snippet}.<br/>
+ *  {@code address, Metadata, and phoneNumber}.<br/>
+ * -Limited support for NetworkLinkControl.<br/>
  * -Warns if shared styles appear in Folders. According to OGC KML specification
  *  shared styles shall only appear within a Document [OGC 07-147r2 section 6.4].
  *
- * @author DRAND
  * @author J.Mathews
+ * @author DRAND
  */
 public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	private static final Logger log = LoggerFactory.getLogger(KmlOutputStream.class);
@@ -390,7 +394,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             if (link != null) handleXmlElement(link);
             // todo: handle kml:address
             if (addressDetails != null) handleXmlElement(addressDetails);
-            // todo: handle kml:Snippet
+			// Note Snippet vs snippet inconsistent which form is deprecated
+			// see http://code.google.com/p/kml-samples/issues/detail?id=356
+			handleNonEmptySimpleElement(SNIPPET, feature.getSnippet());
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
             handleAbstractView(feature.getViewGroup()); // LookAt or Camera AbstractViewGroup
             Date startTime = feature.getStartTime();

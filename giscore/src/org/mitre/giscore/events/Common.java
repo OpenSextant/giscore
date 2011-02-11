@@ -46,6 +46,7 @@ public abstract class Common extends Row {
 
 	protected String name;
 	protected String description;
+	private String snippet;
 	private Boolean visibility;
 	protected Date startTime;
 	protected Date endTime;
@@ -84,6 +85,14 @@ public abstract class Common extends Row {
 	 */
 	public void setDescription(String description) {
 		this.description = description;
+	}
+
+	public String getSnippet() {
+		return snippet;
+	}
+
+	public void setSnippet(String snippet) {
+		this.snippet = snippet;
 	}
 
 	/**

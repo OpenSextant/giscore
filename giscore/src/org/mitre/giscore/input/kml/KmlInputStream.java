@@ -89,8 +89,9 @@ import java.util.List;
  * {@code extrude}, and {@code altitudeMode} properties are maintained on the associated
  * Geometry. 
  * <p>
- * Feature properties (i.e., {@code name, description, open, visibility, Camera/LookAt,
- * atom:author, atom:link, xal:AddressDetails, styleUrl, inline Styles, Region,
+ * Feature properties (i.e., {@code name, description, open, visibility,
+ * Camera/LookAt, atom:author, atom:link, xal:AddressDetails, styleUrl,
+ * inline/shared Styles, Region, Snippet, snippet,
  * TimeStamp/TimeSpan} elements) in addition to the geometry are parsed and
  * set on the Feature object.
  * Style and StyleMap supported on Features (Placemarks, Containers, etc.)
@@ -107,7 +108,7 @@ import java.util.List;
  * will be associated only with the last {@code Schema} referenced.
  * <p> 
  * Unsupported tags include the following:
- *  {@code address, Metadata, phoneNumber, Snippet, snippet}. 
+ *  {@code address, Metadata, phoneNumber}.
  * These tags are consumed but discarded.
  * <p>
  *
@@ -132,8 +133,8 @@ import java.util.List;
  * seconds field in the dateTime ({@code YYYY-MM-DDThh:mm:ssZ}) format but Google Earth is lax in its rules.
  * Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC.
  *
- * @author DRAND
  * @author J.Mathews
+ * @author DRAND
  */
 public class KmlInputStream extends XmlInputStream implements IKml {
     public static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
@@ -183,8 +184,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		ms_attributes.add(ADDRESS);
 		ms_attributes.add(PHONE_NUMBER);
 		ms_attributes.add(METADATA);
-		ms_attributes.add(SNIPPET);		// Snippet
-		ms_attributes.add("snippet");	// snippet (deprecated in 2.2)
+		//ms_attributes.add(SNIPPET);	// Snippet
+		//ms_attributes.add("snippet");	// snippet (deprecated in 2.2)
 		// Note: KML Schema shows Snippet is deprecated but Google Earth documentation and examples
 		// suggestion snippet (lowercase 's') is deprecated instead...
         // http://code.google.com/apis/kml/documentation/kmlreference.html#snippet
@@ -459,6 +460,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 return true;
 			} else if (localname.equals(EXTENDED_DATA)) {
                 handleExtendedData(feature, name);
+                return true;
+			} else if (localname.equals("Snippet")) { // kml:Snippet (deprecated)
+				feature.setSnippet(getElementText(name));
+                return true;
+			} else if (localname.equals("snippet")) { // kml:snippet
+				feature.setSnippet(getElementText(name));
                 return true;
             } else {
 				//StartElement sl = ee.asStartElement();
