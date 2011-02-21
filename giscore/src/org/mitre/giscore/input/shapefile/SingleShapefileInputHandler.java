@@ -358,6 +358,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         readDouble(buffer, ByteOrder.LITTLE_ENDIAN);  // mMin (not used)
         readDouble(buffer, ByteOrder.LITTLE_ENDIAN);  // mMax (not used)
         // See if the shapeType is valid and whether the points are 3D
+        // check below throws IllegalArgumentException if lat/lon angles > 8.0 * PI
         Geodetic2DBounds bbox;
         if (is3D) {
             Geodetic3DPoint sw = new Geodetic3DPoint(new Longitude(xMin, Angle.DEGREES),
