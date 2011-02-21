@@ -84,6 +84,8 @@ import java.util.*;
  * <ul>
  *  <li> Bad poly found, no outer ring (error)
  *  <li> Geometry spans -180/+180 longitude line (dateline wrap or antimeridian spanning problem) (warn)
+ *  <li> GroundOverlay fails to satisfy east > west constraint [ATC 11]
+ *  <li> GroundOverlay spans -180/+180 longitude line
  *  <li> Inner ring clipped at DateLine (info)
  *  <li> Inner ring not contained within outer ring (warn)
  *  <li> Inner rings in Polygon must not overlap with each other (warn)
@@ -552,8 +554,19 @@ public class KmlMetaDump implements IKml {
                 GroundOverlay go = (GroundOverlay) ov;
                 if (go.getNorth() != null || go.getSouth() != null
                         || go.getEast() != null || go.getWest() != null
-                        || go.getRotation() != null)
+                        || go.getRotation() != null) {
                     addTag(IKml.LAT_LON_BOX);
+					if (go.getEast() != null && go.getWest() != null) {
+						if (go.crossDateLine())
+							addTag(":GroundOverlay spans -180/+180 longitude line");
+						// verify constraint: kml:east > kml:west
+						// Reference: OGC-07-147r2: cl. 11.3.2 ATC 11: LatLonBox
+						else if (go.getEast() < go.getWest())
+							addTag(":GroundOverlay fails to satisfy east > west constraint [ATC 11]");
+					}
+					if (go.getNorth() != null && go.getSouth() != null && go.getNorth() < go.getSouth())
+						addTag(":GroundOverlay fails to satisfy North > South constraint [ATC 11]");
+				}
 				AltitudeModeEnumType altMode = go.getAltitudeMode();
 				if (altMode == AltitudeModeEnumType.relativeToSeaFloor || altMode == AltitudeModeEnumType.clampToSeaFloor)
 					addTag("gx:altitudeMode");
