@@ -184,11 +184,6 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		ms_attributes.add(ADDRESS);
 		ms_attributes.add(PHONE_NUMBER);
 		ms_attributes.add(METADATA);
-		//ms_attributes.add(SNIPPET);	// Snippet
-		//ms_attributes.add("snippet");	// snippet (deprecated in 2.2)
-		// Note: KML Schema shows Snippet is deprecated but Google Earth documentation and examples
-		// suggestion snippet (lowercase 's') is deprecated instead...
-        // http://code.google.com/apis/kml/documentation/kmlreference.html#snippet
 
 		// all posible elements that extend kml:AbstractGeometryType base type in KML Schema
 		ms_geometries.add(POINT);
@@ -465,6 +460,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				feature.setSnippet(getElementText(name));
                 return true;
 			} else if (localname.equals("snippet")) { // kml:snippet
+				// http://code.google.com/apis/kml/documentation/kmlreference.html#snippet
 				feature.setSnippet(getElementText(name));
                 return true;
             } else {

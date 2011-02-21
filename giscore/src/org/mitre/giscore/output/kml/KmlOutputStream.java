@@ -396,8 +396,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             if (link != null) handleXmlElement(link);
             // todo: handle kml:address
             if (addressDetails != null) handleXmlElement(addressDetails);
-			// Note Snippet vs snippet inconsistent which form is deprecated
-			// see http://code.google.com/p/kml-samples/issues/detail?id=356
+			// Use snippet. Snippet is deprecated.
 			handleNonEmptySimpleElement(SNIPPET, feature.getSnippet());
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
             handleAbstractView(feature.getViewGroup()); // LookAt or Camera AbstractViewGroup
