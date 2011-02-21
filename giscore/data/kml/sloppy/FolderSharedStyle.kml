@@ -36,6 +36,7 @@ although Google Earth client ignores this restriction.
         </Style>
         <Placemark>
             <name>Placemark 1</name>
+            <description>If icon is not Blue Arrow then Style did not apply</description>
             <styleUrl>#blue_arrow</styleUrl>
             <Point>
                 <coordinates>-119.232195,36.016021,0</coordinates>
