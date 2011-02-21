@@ -83,7 +83,9 @@ import java.util.Queue;
  * @author DRAND
  */
 public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
+
 	private static final Logger log = LoggerFactory.getLogger(KmlOutputStream.class);
+	private static final boolean debug = log.isDebugEnabled();
 
     private final List<IGISObject> waitingElements = new ArrayList<IGISObject>();
 
@@ -614,7 +616,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleXmlElement(element);
             } else {
                 // REVIEW: handle non-kml element as comment for now .. any other namespaces to support??
-                if (log.isDebugEnabled()) {
+				if (debug) {
                     String prefix = element.getPrefix();
                     String name = element.getName();
                     if (StringUtils.isNotEmpty(prefix)) name += " " + element.getNamespace();
@@ -658,10 +660,37 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             // postpone writing out LAT_LON_BOX element until there is a child element
             Queue<String> waitingList = new LinkedList<String>();
             waitingList.add(LAT_LON_BOX);
-            handleNonNullSimpleElement(NORTH, go.getNorth(), waitingList);
-            handleNonNullSimpleElement(SOUTH, go.getSouth(), waitingList);
-            handleNonNullSimpleElement(EAST, go.getEast(), waitingList);
-            handleNonNullSimpleElement(WEST, go.getWest(), waitingList);
+			// verify constraints: 1) kml:north > kml:south, and 2) kml:east > kml:west
+			// Reference: OGC-07-147r2: cl. 11.3.2 ATC 11: LatLonBox
+			Double north = go.getNorth();
+			Double south = go.getSouth();
+			if (north != null && south != null && north < south) {
+				Double t = north;
+				north = south;
+				south = t;
+				log.debug("fails LatLonBox constraint: north > south");
+			}
+			Double east = go.getEast();
+			Double west = go.getWest();
+			// if bounds cross IDL (anti-meridian) then GE wraps wrong direction
+			if (east != null && west != null && east < west) {
+				if (go.crossDateLine()) {
+					log.debug("GroundOverlay crosses IDL");
+					if (west > 0) west -= 360;
+					// TODO: this works in GE 6.0 but violates schema validation constraint kml:west value >= -180
+					// Must be consistent with handling in KmlInputStream.handleLatLonBox()
+					// e.g. west = 125 (Korea), east = -117 (San Francisco) then hack in Google subtracts 360 from west (e.g. -235)
+				} else {
+					Double t = east;
+					east = west;
+					west = t;
+					log.debug("fails LatLonBox constraint: east > west");
+				}
+			}
+			handleNonNullSimpleElement(NORTH, north, waitingList);
+			handleNonNullSimpleElement(SOUTH, south, waitingList);
+			handleNonNullSimpleElement(EAST, east, waitingList);
+			handleNonNullSimpleElement(WEST, west, waitingList);
             handleNonNullSimpleElement(ROTATION, go.getRotation(), waitingList);
             if (waitingList.isEmpty()) writer.writeEndElement();
         } else if (overlay instanceof PhotoOverlay) {
