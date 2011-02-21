@@ -24,7 +24,10 @@ Summary of tags and properties used in KML collection
 	Feature inherits container time
 	Feature uses inline Style
 	Feature uses inline StyleMap
+	Feature uses merged shared/inline Style
+	Feature uses shared Style
 	Geometry spans -180/+180 longitude line
+	GroundOverlay spans -180/+180 longitude line
 	Ignoring invalid altitudeMode value: clampedToGround
 	Inner ring not contained within outer ring
 	Inner rings in Polygon must not overlap with each other
@@ -38,10 +41,13 @@ Summary of tags and properties used in KML collection
 	LinearRing must start and end with the same point
 	Nested MultiGeometries
 	NetworkLink missing Link
+	NetworkLink uses inline Style
 	Out of order elements
 	Outer ring has duplicate consecutive points
 	Overlay missing icon
 	Region has invalid LatLonAltBox
+	Shared styles in Folder not allowed [ATC 7]
+	Shared styles must have 'id' attribute [ATC 7]	
 	Suspicious Schema name characters
 	Suspicious Style id characters
 	Suspicious StyleMap highlight URL characters
@@ -82,6 +88,9 @@ Summary of tags and properties used in KML collection
 
 data\kml\atom\sevenWonders-atom-link.kml
 
+	Feature uses shared Style
+	Shared styles in Folder not allowed [ATC 7]
+	--
 	IconStyle            1
 	Placemark            7
 	Point                7
@@ -106,7 +115,7 @@ data\kml\balloon\balloonstyle-color-inline.kml
 
 data\kml\balloon\balloonstyle-color-shared.kml
 
-	Feature uses inline Style
+	Feature uses shared Style
 	--
 	BalloonStyle         1
 	Placemark            1
@@ -134,7 +143,7 @@ data\kml\balloon\noballoon.kml
 
 data\kml\BalloonStyle\displayMode.kml
 
-	Feature uses inline Style
+	Feature uses shared Style
 	--
 	BalloonStyle         3
 	Document             1
@@ -146,7 +155,7 @@ data\kml\BalloonStyle\displayMode.kml
 
 data\kml\BalloonStyle\simpleBalloonStyles.kml
 
-	Feature uses inline Style
+	Feature uses shared Style
 	--
 	BalloonStyle         5
 	Placemark            5
@@ -337,7 +346,7 @@ data\kml\gx\sample_tour.kml
 
 data\kml\gx\trackData.kml
 
-	Feature uses inline Style
+	Feature uses shared Style
 	--
 	IconStyle            6
 	LabelStyle           1
@@ -354,7 +363,7 @@ data\kml\gx\trackData.kml
 
 data\kml\ItemIcon\kitchensink.kmz
 
-	Feature uses inline Style
+	Feature uses shared Style
 	--
 	Placemark            12
 	Point                12
@@ -1235,7 +1244,18 @@ java.lang.IllegalArgumentException: Angle 52.35987755982989 radians is too big
  WARN [main] (KmlInputStream.java:1508) - Failed geometry: Feature data=[name = polygon4, description = polygon with no outer boundary]
  java.lang.IllegalStateException: Bad poly found, no outer ring
 
+	Bad poly found, no outer ring
 	Feature uses inline Style
+	Feature uses shared Style
+	Invalid coordinate: 200.0
+	Invalid coordinate: 3000.0
+	LinearRing must start and end with the same point
+	comma found instead of whitespace between tuples
+	ignore invalid character in coordinate string
+	ignore invalid string in coordinate
+	--
+	Document             1
+	Folder               4
 	IconStyle            1
 	LabelStyle           1
 	Line                 9
@@ -1245,7 +1265,7 @@ java.lang.IllegalArgumentException: Angle 52.35987755982989 radians is too big
 	Point                19
 	PolyStyle            3
 	Style                5
-	# features=40
+	# features=32
 
 data\kml\sloppy\badPolygon.kml
 
@@ -1279,6 +1299,7 @@ data\kml\sloppy\bluedevil20080812-short2.kml
 	Line has duplicate consecutive points
 	Out of order elements
 	Overlay missing icon
+	Shared styles in Folder not allowed [ATC 7]
 	Skip unexpected element: name
 	--
 	Document             1
@@ -1366,7 +1387,7 @@ data\kml\Style\inline-stylemap.kml
 
 data\kml\Style\noicon.kml
 
-	Feature uses inline Style
+	Feature uses shared Style
 	--
 	IconStyle            1
 	LabelStyle           1
@@ -1389,7 +1410,7 @@ data\kml\Style\overrideStyles.kml
 
 data\kml\Style\SharedStyle.kml
 
-	Feature uses inline Style
+	Feature uses shared Style
 	--
 	BalloonStyle         1
 	IconStyle            1
@@ -1403,6 +1424,7 @@ data\kml\Style\SharedStyle.kml
 data\kml\Style\style-merging.kml
 
 	Feature uses inline Style
+	Feature uses merged shared/inline Style
 	--
 	BalloonStyle         2
 	IconStyle            1
@@ -1419,7 +1441,7 @@ data\kml\Style\style-merging.kml
 
 data\kml\Style\styledLineString.kml
 
-	Feature uses inline Style
+	Feature uses shared Style
 	--
 	Line                 1
 	LineStyle            1
@@ -1506,6 +1528,7 @@ data\kml\time\nestedInherits.kml
 data\kml\time\time-inherit2.kml
 
 	Feature inherits container time
+	Feature uses shared Style
 	--
 	Document             1
 	Folder               5
@@ -1521,6 +1544,7 @@ data\kml\time\time-inherit2.kml
 data\kml\time\time-inherits.kml
 
 	Feature inherits container time
+	GroundOverlay spans -180/+180 longitude line
 	--
 	Folder               4
 	GroundOverlay        6
@@ -1530,6 +1554,8 @@ data\kml\time\time-inherits.kml
 
 data\kml\time\time-span-overlay.kml
 
+	GroundOverlay spans -180/+180 longitude line
+	--
 	GroundOverlay        12
 	LatLonBox            12
 	TimeSpan             12
