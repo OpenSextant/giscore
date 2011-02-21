@@ -120,7 +120,7 @@ public class GroundOverlay extends Overlay {
 
     /**
      * Set overlay bounding box from Geodetic2DBounds. If bbox
-     * is 3d then sets overlay altitude to max elevation. 
+     * is 3d then sets overlay altitude to max elevation and assumes absolute MSL.
      * @param bbox
      * @throws IllegalArgumentException if bbox is null  
      */
@@ -165,6 +165,23 @@ public class GroundOverlay extends Overlay {
         }
         return bbox;
     }
+
+	/**
+	 * Test for Longitude wrap at International Date Line (IDL).
+	 * Line segments always connect following the shortest path around the globe,
+	 * so IDL crossing is when a sign change between longitude end points.
+	 * @return true if ground overlay east-west bounds cross the International Date Line
+	 */
+	public boolean crossDateLine() {
+		boolean idlWrap = false;
+		if (west != null && east != null) {
+			double lonRad1 = Math.toRadians(west);
+			double lonRad2 = Math.toRadians(east);
+			// It is a wrap if any segment that changes lon sign has an endpoint on the line
+			if (lonRad1 < 0.0 && lonRad2 >= 0.0 || lonRad2 < 0.0 && lonRad1 >= 0.0) idlWrap = true;
+		}
+		return idlWrap;
+	}
 
 	/**
 	 * @return the rotation
