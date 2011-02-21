@@ -123,7 +123,7 @@ public interface IKml {
 	static final String SIMPLE_DATA = "SimpleData";
 	static final String SIMPLE_FIELD = "SimpleField";
 	static final String SIZE = "size";
-	static final String SNIPPET = "Snippet";
+	static final String SNIPPET = "snippet"; // (*) Snippet is deprecated in KML 2.2
 	static final String SOUTH = "south";
 	static final String STYLE = "Style";
 	static final String STYLE_MAP = "StyleMap";
