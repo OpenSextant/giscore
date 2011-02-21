@@ -35,14 +35,15 @@ import java.util.zip.ZipEntry;
 import java.io.*;
 
 /**
- * Wrapper to <code>KmlInputStream</code> that handles various house cleaning of parsing KML and KMZ sources.
+ * Wrapper to {@link KmlInputStream} that handles various house cleaning of parsing
+ * KML and KMZ sources.  Caller does not need to know if target is KML or KMZ resource.
  * <p/>
  * Handles the following tasks:
  * <ul>
  * <li>read from KMZ/KML files or URLs transparently
  * <li>re-writing of URLs inside KMZ files to resolve relative URLs
- * <li>rewrites URLs of NetworkLinks, IconStyle, and Screen/GroundOverlays with respect to parent URL.
- *   Use <code>UrlRef</code> to get InputStream of links and resolve URI to original URL.
+ * <li>rewrites relative URLs of NetworkLinks, IconStyle, and Screen/GroundOverlays with respect to parent URL.
+ *   Use {@link UrlRef} to get InputStream of links and resolve URI to original URL.
  * <li>recursively read all features from referenced NetworkLinks
  * </ul>
  *
