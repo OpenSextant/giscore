@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Example where GroundOverlay spans -180/+180 longitude line
+ See http://code.google.com/p/earth-issues/issues/detail?id=1145
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+<Document>
+ <GroundOverlay>
+	<name>GroundOverlay west=124</name>
+	<visibility>0</visibility>
+	<description>North: 40
+South: 34
+East: -115
+West: 125
+	</description>
+	<LatLonBox>
+		<north>40</north>
+		<south>34</south>
+		<east>-115</east>
+		<west>125</west>
+	</LatLonBox>
+ </GroundOverlay>
+ 
+ <GroundOverlay>
+	<name>GroundOverlay west=-235</name>
+	<description>North: 40
+South: 34
+East: -115
+West: -235
+	</description>
+	<LatLonBox>
+		<north>40</north>
+		<south>34</south>
+		<east>-115</east>
+		<west>-235</west>
+	</LatLonBox>
+ </GroundOverlay>
+</Document>
+</kml>
