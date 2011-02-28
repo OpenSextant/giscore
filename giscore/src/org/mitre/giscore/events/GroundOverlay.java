@@ -47,6 +47,8 @@ public class GroundOverlay extends Overlay {
 
 	private AltitudeModeEnumType altitudeMode; // default (clampToGround)
 
+	private static final double TWO_PI = 2.0 * Math.PI;  // 360 degrees
+
     /**
 	 * @return the type
 	 */
@@ -55,7 +57,7 @@ public class GroundOverlay extends Overlay {
 	}
 
 	/**
-	 * @return the north
+	 * @return the latitude of the north edge of the bounding box, in decimal degrees
 	 */
     @CheckForNull
 	public Double getNorth() {
@@ -71,7 +73,7 @@ public class GroundOverlay extends Overlay {
 	}
 
 	/**
-	 * @return the south
+	 * @return the latitude of the south edge of the bounding box, in decimal degrees
 	 */
     @CheckForNull
 	public Double getSouth() {
@@ -87,7 +89,7 @@ public class GroundOverlay extends Overlay {
 	}
 
 	/**
-	 * @return the east
+	 * @return longitude of the east edge of the bounding box, in decimal degrees
 	 */
     @CheckForNull
 	public Double getEast() {
@@ -103,7 +105,7 @@ public class GroundOverlay extends Overlay {
 	}
 
 	/**
-	 * @return the west
+	 * @return longitude of the west edge of the bounding box, in decimal degrees
 	 */
     @CheckForNull
 	public Double getWest() {
@@ -168,20 +170,32 @@ public class GroundOverlay extends Overlay {
 
 	/**
 	 * Test for Longitude wrap at International Date Line (IDL).
-	 * Line segments always connect following the shortest path around the globe,
-	 * so IDL crossing is when a sign change between longitude end points.
+	 * IDL crossing is when a sign changes between longitude end points.
 	 * @return true if ground overlay east-west bounds cross the International Date Line
 	 */
 	public boolean crossDateLine() {
-		boolean idlWrap = false;
-		if (west != null && east != null) {
-			double lonRad1 = Math.toRadians(west);
-			double lonRad2 = Math.toRadians(east);
-			// It is a wrap if any segment that changes lon sign has an endpoint on the line
-			if (lonRad1 < 0.0 && lonRad2 >= 0.0 || lonRad2 < 0.0 && lonRad1 >= 0.0) idlWrap = true;
-		}
-		return idlWrap;
+		return west != null && east != null
+				&& normalize(west) >= 0.0 && normalize(east) < 0.0;
 	}
+
+	/** Reduce angle in degrees to normalized range in radians [-PI .. +PI)
+     *
+     * @param degrees angle value in degrees
+     * @return normalized value in radians (-PI .. PI)
+     */
+    static double normalize(double degrees) {
+		double rad = Math.toRadians(degrees);
+        // This is somewhat arbitrary to limit angles to 4 revolutions
+        if (Math.abs(rad) <= (4.0 * TWO_PI)) {
+			while (rad >= Math.PI) rad -= TWO_PI;
+			// Normalize west - check west < -180 degrees and add 360.
+			// Example: 125 degrees west longitude can also be expressed as -235.
+			// This is auto-checked in KmlInputStream.handleLatLonBox()
+			// but unknown if set directly or from non-KML sources.
+			while (rad < -Math.PI) rad += TWO_PI;
+		}
+        return rad;
+    }
 
 	/**
 	 * @return the rotation
