@@ -1856,7 +1856,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                         } else if (EAST.equals(sename)) {
                             overlay.setEast(angle);
                         } else if (WEST.equals(sename)) {
-							// normalize west - check west < -180 and add 360. reverse hack/fix in KmlOutputStream for bug in Google Earth crossing IDL
+							// normalize west - value < -180 and add 360.
+							// reverse hack/fix in KmlOutputStream for bug in Google Earth crossing IDL
 							// must be consistent with handling in KmlOutputStream.handleOverlay()
 							if (angle < -180) {
 								log.debug("Normalized GroundOverlay west value");
