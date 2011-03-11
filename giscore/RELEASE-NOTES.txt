@@ -96,10 +96,10 @@ Release 0.5.26
 This release fixes minor bugs in KML handling and updated geodesy library with Geodetic3DBounds fixes.
 
 LinearRing
--fixed LinearRing(Geodetic2DBounds box) to check for 3D bbox and create 3d points accordingly at max elevation height
+-Fixed LinearRing(Geodetic2DBounds box) to check for 3D bbox and create 3d points accordingly at max elevation height
 
 KmlInputStream
--handle ArrayIndexOutOfBoundsException in read() such that read gracefully fails
+-Handle ArrayIndexOutOfBoundsException in read() such that read gracefully fails
 
 KmlReader
 -Added KmlReader(InputStream is, boolean isCompressed, URL baseUrl, Proxy proxy) constr
@@ -118,7 +118,7 @@ KmlMetaDump
  * LinearRing can not self-intersect (warn)
  * Bad poly found, no outer ring (error)
 
-Add support for "open" elemenent on KML input and output for containers
+Add support for "open" element on KML input and output for containers
 -Added IContainerType with changes to NetworkLink, ContainerStart, KmlInputStream, and KmlOutputStream
 
 XmlInputStream
@@ -127,6 +127,35 @@ XmlInputStream
 Added java.net.Proxy to UrlRef/KmlReader to proxy URL connections
 
 Updated dependency: itf-geodesy 1.9.14 -> 1.9.16 with Geodetic3DBounds fixes
+
+------------------------------------------------------------------------------
+
+Release 0.5.27
+
+This release fixes minor bugs and enhancements in KML and Shape file handling.
+
+ShapefileInputStream
+-Allow file argument in constructor to be directory or single .shp file
+
+Added getType() to IContainerType interface
+
+Add support for Snippet/snippet in KmlInputStream/KmlOutputStream
+
+Added crossDateLine() to GroundOverlay
+
+Updated KmlOutputStream.handleOverlay() and KmlInputStream.handleLatLonBox
+to normalize LatLonBox coords if needed.
+
+KmlMetaDump
+- Added checks:
+  * Feature uses merged shared/inline Style (info)
+  * Feature uses shared Style (info)
+  * Shared styles in Folder not allowed [ATC 7] (warning)
+  * Shared styles must have 'id' attribute [ATC 7] (warning)
+  * StyleUrl must contain '#' with identifier reference
+  * GroundOverlay fails to satisfy east > west constraint [ATC 11]
+  * GroundOverlay fails to satisfy north > south constraint [ATC 11]
+  * GroundOverlay spans -180/+180 longitude line
 
 ------------------------------------------------------------------------------
 
