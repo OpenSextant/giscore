@@ -11,14 +11,18 @@ public class TestUrlRef extends TestCase {
 
     public void testEscapeUri() {
         String uri = "#foo%20";
-        assertTrue(uri.equals(UrlRef.escapeUri(uri)));
-        
+        assertEquals(uri, UrlRef.escapeUri(uri));
+
+        // these URIs should be escaped and not same as original string        
         String[] uris = {
                 "foo?x=<B>{String} to [encode]</B>",
                 "http://localhost/foo?x=|^\\"
         };
+
         for(String id : uris) {
-            assertFalse(id.equals(UrlRef.escapeUri(id)));
+            // assertFalse(id.equals(UrlRef.escapeUri(id)));
+            if (id.equals(UrlRef.escapeUri(id)))
+                failSame("URI=" + id + ":");
         }
     }
 
