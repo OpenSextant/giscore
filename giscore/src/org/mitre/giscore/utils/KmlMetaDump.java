@@ -66,7 +66,7 @@ import java.util.*;
  *  <li> NetworkLink missing or empty HREF (info)
  *  <li> Out of order elements (error)
  *  <li> Overlay does not contain Icon element (info)
- *  <li> Region has invalid LatLonAltBox (error)
+ *  <li> Region has invalid LatLonAltBox [ATC 8] (error)
  *  <li> Region has invalid Lod
  *  <li> Shared styles in Folder not allowed [ATC 7] (warning)
  *  <li> Shared styles must have 'id' attribute [ATC 7] (warning)
@@ -106,9 +106,9 @@ import java.util.*;
  * as in coordinates element which states "Do not include spaces between the
  * three values that describe a coordinate", etc. Likewise, the OGC KML Best
  * Practices and KML Test Suite have additional restrictions some of which
- * are being checked. <p/>
+ * are being checked. <p>
  *
- * If logger is at debug level then all info, warnings and parsing messages will be logged.
+ * If logger is at debug level then all info, warnings and parsing messages will be logged. <p>
  *
  * ATC x-x errors/warnings reference those defined in the OGC KML 2.2 Abstract Test Suite
  * Reference OGC 07-134r2 available at http://www.opengeospatial.org/standards/kml
@@ -986,8 +986,10 @@ public class KmlMetaDump implements IKml {
             features++; // count of Placemark + NetworkLink + Overlay
             if (StringUtils.isNotBlank(f.getStyleUrl())) {
                 // if (lastObjClass == Style.class || lastObjClass == StyleMap.class)
-                if (lastStyle != null)
+                if (lastStyle != null) {
                     addTag(":Feature uses merged shared/inline Style");
+					if (verbose) System.out.println(" Feature uses merged shared/inline Style");
+				}
                 else
                     addTag(":Feature uses shared Style");
             }
@@ -1015,6 +1017,7 @@ public class KmlMetaDump implements IKml {
                 final String csType = ((IContainerType) f).getType();
                 if (IKml.FOLDER.equals(csType)) {
                     addTag(":Shared styles in Folder not allowed [ATC 7]");
+                    if (verbose) System.out.println(" Warning: Shared styles in Folder not allowed [ATC 7]");
                 } else if (IKml.NETWORK_LINK.equals(csType)) {
                     // NetworkLinks with inline style: assumed allowed
                     addTag(":NetworkLink uses inline " + getClassName(lastObjClass)); // Style or StyleMap
@@ -1035,6 +1038,7 @@ public class KmlMetaDump implements IKml {
                     </Document>
                      */
                     addTag(":Shared styles must have 'id' attribute [ATC 7]");
+                    if (verbose) System.out.println(" Warning: Shared styles must have 'id' attribute [ATC 7]");
                 }
             } else {
                 // otherwise must be Placemark or Overlay {Screen/Ground/Photo}
@@ -1085,7 +1089,7 @@ public class KmlMetaDump implements IKml {
 				// 1. kml:north > kml:south; lat range: +/- 90
 				// 2. kml:east > kml:west;   lon range: +/- 180
 				if (north < south || east < west) {
-					addTag(":Region has invalid LatLonAltBox");
+					addTag(":Region has invalid LatLonAltBox [ATC 8]");
 					if (verbose) System.out.println(" Error: LatLonAltBox fails to satisfy constraints [ATC 8]"); 
 				}
 			}
@@ -1093,17 +1097,17 @@ public class KmlMetaDump implements IKml {
 			double maxAlt = handleTaggedElement(IKml.MAX_ALTITUDE, region, 0);
 			// check constraint: (3) kml:minAltitude <= kml:maxAltitude;
 			if (minAlt > maxAlt) {
-				addTag(":Region has invalid LatLonAltBox");
+				addTag(":Region has invalid LatLonAltBox [ATC 8]");
 				if (verbose) System.out.println(" Error: LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) [ATC 8.3]");
 			}
-            // check constraint: (4)
-            //  if kml:minAltitude and kml:maxAltitude are both present,
+			// check constraint: (4)
+			//  if kml:minAltitude and kml:maxAltitude are both present,
 			//  then kml:altitudeMode does not have the value "clampToGround".
-            if (region.get(IKml.MIN_ALTITUDE) != null && region.get(IKml.MAX_ALTITUDE) != null
-                    && CLAMP_TO_GROUND.equals(region.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND))) {
-                addTag(":Region has invalid LatLonAltBox");
+			if (region.get(IKml.MIN_ALTITUDE) != null && region.get(IKml.MAX_ALTITUDE) != null
+	                    && CLAMP_TO_GROUND.equals(region.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND))) {
+				addTag(":Region has invalid LatLonAltBox [ATC 8]");
 				if (verbose) System.out.println(" Warn: LatLonAltBox fails to satisfy constraint (altMode != " + CLAMP_TO_GROUND + ") [ATC 8.4]");
-            }
+			}
 		} catch (NumberFormatException nfe) {
 			addTag(":Region has invalid LatLonAltBox");
 			if (verbose) System.out.println(" Error: " + nfe.getMessage());
