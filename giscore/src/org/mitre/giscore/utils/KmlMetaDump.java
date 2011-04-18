@@ -67,7 +67,8 @@ import java.util.*;
  *  <li> Out of order elements (error)
  *  <li> Overlay does not contain Icon element (info)
  *  <li> Region has invalid LatLonAltBox [ATC 8] (error)
- *  <li> Region has invalid Lod
+ *  <li> Region has invalid LatLonAltBox: non-numeric value (error)
+ *  <li> Region has invalid Lod: non-numeric value (error)
  *  <li> Shared styles in Folder not allowed [ATC 7] (warning)
  *  <li> Shared styles must have 'id' attribute [ATC 7] (warning)
  *  <li> Starting container tag with no matching end container (error)
@@ -165,8 +166,9 @@ public class KmlMetaDump implements IKml {
 		processKmlSource(new KmlReader(url), url.getFile());
 	}
 
-	public void checkSource(File file) throws IOException {
+	public void checkSource(File file) {
 		if (file.isDirectory()) {
+			// System.out.println("XXX: check dir: " + file);//debug
 			for (File f : file.listFiles())
 				if (f.isDirectory())
 					checkSource(f);
@@ -177,7 +179,12 @@ public class KmlMetaDump implements IKml {
 				}
 		} else {
 			System.out.println(file.getAbsolutePath());
-			processKmlSource(new KmlReader(file), file.getName());
+			try {
+				processKmlSource(new KmlReader(file), file.getName());
+			} catch (IOException e) {
+				dumpException(e);
+				System.out.println();
+			}
 		}
 	}
 
@@ -558,8 +565,13 @@ public class KmlMetaDump implements IKml {
                         || go.getRotation() != null) {
                     addTag(IKml.LAT_LON_BOX);
 					if (go.getEast() != null && go.getWest() != null) {
-						if (go.crossDateLine())
+						if (go.crossDateLine()) {
 							addTag(":GroundOverlay spans -180/+180 longitude line");
+							if (verbose) System.out.println(" GroundOverlay spans -180/+180 longitude line");
+							// e.g. west >= 0 && east < 0
+							// note associated bug:
+							// http://code.google.com/p/earth-issues/issues/detail?id=1145
+						}
 						// verify constraint: kml:east > kml:west
 						// Reference: OGC-07-147r2: cl. 11.3.2 ATC 11: LatLonBox
 						else if (go.getEast() <= go.getWest())
@@ -1109,7 +1121,7 @@ public class KmlMetaDump implements IKml {
 				if (verbose) System.out.println(" Warn: LatLonAltBox fails to satisfy constraint (altMode != " + CLAMP_TO_GROUND + ") [ATC 8.4]");
 			}
 		} catch (NumberFormatException nfe) {
-			addTag(":Region has invalid LatLonAltBox");
+			addTag(":Region has invalid LatLonAltBox: non-numeric value");
 			if (verbose) System.out.println(" Error: " + nfe.getMessage());
 		}
 		
@@ -1127,7 +1139,7 @@ public class KmlMetaDump implements IKml {
 				addTag(":minLodPixels must be less than maxLodPixels in Lod [ATC 39]");
 			}
 		} catch (NumberFormatException nfe) {
-			addTag(":Region has invalid Lod");
+			addTag(":Region has invalid Lod: non-numeric value");
 			if (verbose) System.out.println(" Error: " + nfe.getMessage());
 		}
 	}
@@ -1291,7 +1303,7 @@ public class KmlMetaDump implements IKml {
 			LocationInfo location = event.getLocationInformation();
 			if (location == null) return;
 			String className = location.getClassName();
-			// only kml classes (e.g. org.mitre.giscore.input.kml.KmlInputStream)
+			// log only KML classes (e.g. org.mitre.giscore.input.kml.KmlInputStream)
 			if (className != null &&
 					(className.startsWith("org.mitre.giscore.events.") ||
 					className.startsWith("org.mitre.giscore.input.kml."))) {
@@ -1302,7 +1314,15 @@ public class KmlMetaDump implements IKml {
 					msg = msg.substring(0,35);
 				else if (msg.startsWith("ignore invalid character in coordinate string: "))
 					msg = msg.substring(0,45);
-				else if (msg.startsWith("Failed geometry: ")) {
+				else if (msg.startsWith("Invalid coordinate: ")) {
+					String tMessage = getFormattedMsg(event);
+					if (tMessage == null) {
+						// for summary strip off the specific invalid coordinate value
+						msg = msg.substring(0,18);
+					} else {
+						msg = tMessage;
+					}
+				} else if (msg.startsWith("Failed geometry: ")) {
 					ThrowableInformation ti = event.getThrowableInformation();
 					if (ti != null && ti.getThrowable() != null)
 						msg = ti.getThrowable().getMessage();
@@ -1312,6 +1332,26 @@ public class KmlMetaDump implements IKml {
 				addTag(":" + msg);
 			}
 			// event.getThrowableStrRep();
+		}
+
+		private String getFormattedMsg(LoggingEvent event) {
+			// ERROR [main] (KmlInputStream.java:2321) - Invalid coordinate: -122.212
+			// java.lang.IllegalArgumentException: Latitude value exceeds pole value
+			ThrowableInformation ti = event.getThrowableInformation();
+			if (ti == null) return null;
+			Throwable t = ti.getThrowable();
+			if (t instanceof IllegalArgumentException) {
+				final String tMessage = t.getMessage();
+				if (StringUtils.isNotBlank(tMessage)) {
+					// java.lang.IllegalArgumentException: Angle 686162.5993066976 radians is too big
+					if (tMessage.startsWith("Angle ") && tMessage.endsWith("radians is too big"))
+						return "Angle radians is too big";
+					// else if (tMessage.equals("Latitude value exceeds pole value"))
+					// TODO: do we want to filter/reformat any other errors?
+					return tMessage;
+				}
+			}
+			return null;
 		}
 
 		public void close() {
