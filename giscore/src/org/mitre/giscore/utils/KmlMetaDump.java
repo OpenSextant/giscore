@@ -225,6 +225,10 @@ public class KmlMetaDump implements IKml {
 	}
 
 	private void addTag(String tag) {
+		addTag(tag, false);
+	}
+
+	private void addTag(String tag, boolean verboseMode) {
 		if (tag != null) {
 			Integer val = tagSet.get(tag);
 			if (val == null)
@@ -232,6 +236,10 @@ public class KmlMetaDump implements IKml {
 			else
 				val = Integer.valueOf(val.intValue() + 1);
 			tagSet.put(tag, val);
+			if (verbose && verboseMode) {
+				if (tag.startsWith(":")) tag = tag.substring(1);
+				System.out.printf(" %s%n", tag);
+			}
 		}
 	}
 
@@ -295,7 +303,7 @@ public class KmlMetaDump implements IKml {
 			}
 		}
 		if (!containers.isEmpty())
-			addTag(":Starting container tag with no matching end container");
+			addTag(":Starting container tag with no matching end container", true);
 		
 		resetSourceState();
 
@@ -396,7 +404,7 @@ public class KmlMetaDump implements IKml {
         if (gisObj instanceof WrappedObject) {
             // unwrap wrapped gis objects
             gisObj = ((WrappedObject) gisObj).getObject();
-            addTag(":Out of order elements");
+            addTag(":Out of order elements", true);
         }
 		final Class<? extends IGISObject> cl = gisObj.getClass();
         if (verbose) System.out.println(gisObj);
@@ -459,7 +467,7 @@ public class KmlMetaDump implements IKml {
 					if (containerStartDate != null) {
 						if (verbose) System.out.println(" Overriding parent container start date");
 						if (startTime.compareTo(containerStartDate) < 0)
-							addTag(":Container start date is earlier than that of its ancestors");
+							addTag(":Container start date is earlier than that of its ancestors", true);
 					}
 					// log.debug("use container start date");
 				}
@@ -468,7 +476,7 @@ public class KmlMetaDump implements IKml {
 				if (endTime != null && containerEndDate != null) {
 					if (verbose) System.out.println(" Overriding parent container end date");
 					if (endTime.compareTo(containerEndDate) > 0)
-						addTag(":Container end date is later than that of its ancestors");
+						addTag(":Container end date is later than that of its ancestors", true);
 				}
 				// override any previous end date
 				containerEndDate = endTime;
@@ -493,7 +501,7 @@ public class KmlMetaDump implements IKml {
                 ContainerStart cs = containers.pop();
                 if (verbose) System.out.println(containers.size() + "-end container " + cs.getType());
             } else {
-                addTag(":end container with no matching start container");
+                addTag(":end container with no matching start container", true);
             }
 
             if (inheritsTime) {
@@ -566,8 +574,7 @@ public class KmlMetaDump implements IKml {
                     addTag(IKml.LAT_LON_BOX);
 					if (go.getEast() != null && go.getWest() != null) {
 						if (go.crossDateLine()) {
-							addTag(":GroundOverlay spans -180/+180 longitude line");
-							if (verbose) System.out.println(" GroundOverlay spans -180/+180 longitude line");
+							addTag(":GroundOverlay spans -180/+180 longitude line", true);
 							// e.g. west >= 0 && east < 0
 							// note associated bug:
 							// http://code.google.com/p/earth-issues/issues/detail?id=1145
@@ -575,17 +582,17 @@ public class KmlMetaDump implements IKml {
 						// verify constraint: kml:east > kml:west
 						// Reference: OGC-07-147r2: cl. 11.3.2 ATC 11: LatLonBox
 						else if (go.getEast() <= go.getWest())
-							addTag(":GroundOverlay fails to satisfy east > west constraint [ATC 11]");
+							addTag(":GroundOverlay fails to satisfy east > west constraint [ATC 11]", true);
 					}
 					if (go.getNorth() != null && go.getSouth() != null && go.getNorth() <= go.getSouth())
-						addTag(":GroundOverlay fails to satisfy North > South constraint [ATC 11]");
+						addTag(":GroundOverlay fails to satisfy North > South constraint [ATC 11]", true);
 				}
 				AltitudeModeEnumType altMode = go.getAltitudeMode();
 				if (altMode == AltitudeModeEnumType.relativeToSeaFloor || altMode == AltitudeModeEnumType.clampToSeaFloor)
 					addTag("gx:altitudeMode");
             }
             if (ov.getIcon() == null)
-                addTag(":Overlay missing icon");
+                addTag(":Overlay missing icon", true);
         } else if (cl == Element.class) {
             Element e = (Element)gisObj;
             String prefix = e.getPrefix();
@@ -1324,6 +1331,8 @@ public class KmlMetaDump implements IKml {
 					}
 				} else if (msg.startsWith("Failed geometry: ")) {
 					ThrowableInformation ti = event.getThrowableInformation();
+					// WARN [main] (KmlInputStream.java:1913) - Failed geometry: LinearRing
+					//java.lang.IllegalArgumentException: LinearRing must contain at least 4 Points
 					if (ti != null && ti.getThrowable() != null)
 						msg = ti.getThrowable().getMessage();
 					else
