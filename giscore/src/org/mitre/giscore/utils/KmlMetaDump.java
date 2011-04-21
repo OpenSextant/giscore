@@ -946,12 +946,17 @@ public class KmlMetaDump implements IKml {
                     (2) 0 <= kml:tilt <= 90;
                     (3) if kml:altitudeMode does not have the value "clampToGround", then the kml:altitude element is present
                 */
-                double tilt = handleTaggedElement(IKml.TILT, viewGroup, 0, 180);
-                if (tilt < 0 || tilt > 90) {
-                    // (2) 0 <= kml:tilt <= 90;
-                    addTag(":Invalid LookAt values");
-                    if (verbose) System.out.format(" Error: Invalid tilt value in LookAt: %f [ATC 38.2]%n", tilt);
-                }
+				try {
+					double tilt = handleTaggedElement(IKml.TILT, viewGroup, 0, 180);
+					if (tilt < 0 || tilt > 90) {
+						// (2) 0 <= kml:tilt <= 90;
+						addTag(":Invalid LookAt values");
+						if (verbose) System.out.format(" Error: Invalid tilt value in LookAt: %f [ATC 38.2]%n", tilt);
+					}
+				} catch (NumberFormatException nfe) {
+					addTag(":LookAt has invalid tilt: non-numeric value");
+					if (verbose) System.out.println(" Error: " + nfe.getMessage());
+				}
                if (!CLAMP_TO_GROUND.equals(viewGroup.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND)) &&
                            viewGroup.get(IKml.ALTITUDE) == null) {
                     // (3) if kml:altitudeMode does not have the value "clampToGround", then the kml:altitude element is present
@@ -1119,19 +1124,19 @@ public class KmlMetaDump implements IKml {
 				addTag(":Region has invalid LatLonAltBox [ATC 8]");
 				if (verbose) System.out.println(" Error: LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) [ATC 8.3]");
 			}
-			// check constraint: (4)
-			//  if kml:minAltitude and kml:maxAltitude are both present,
-			//  then kml:altitudeMode does not have the value "clampToGround".
-			if (region.get(IKml.MIN_ALTITUDE) != null && region.get(IKml.MAX_ALTITUDE) != null
-	                    && CLAMP_TO_GROUND.equals(region.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND))) {
-				addTag(":Region has invalid LatLonAltBox [ATC 8]");
-				if (verbose) System.out.println(" Warn: LatLonAltBox fails to satisfy constraint (altMode != " + CLAMP_TO_GROUND + ") [ATC 8.4]");
-			}
 		} catch (NumberFormatException nfe) {
 			addTag(":Region has invalid LatLonAltBox: non-numeric value");
 			if (verbose) System.out.println(" Error: " + nfe.getMessage());
 		}
-		
+		// check constraint: (4)
+		//  if kml:minAltitude and kml:maxAltitude are both present,
+		//  then kml:altitudeMode does not have the value "clampToGround".
+		if (region.get(IKml.MIN_ALTITUDE) != null && region.get(IKml.MAX_ALTITUDE) != null
+					&& CLAMP_TO_GROUND.equals(region.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND))) {
+			addTag(":Region has invalid LatLonAltBox [ATC 8]");
+			if (verbose) System.out.println(" Warn: LatLonAltBox fails to satisfy constraint (altMode != " + CLAMP_TO_GROUND + ") [ATC 8.4]");
+		}
+
 		try {
 			/*
 			Test ATC 39: Lod constraint:
@@ -1157,7 +1162,7 @@ public class KmlMetaDump implements IKml {
 
 	private static double handleTaggedElement(String tag, TaggedMap region, int defaultValue, int maxAbsValue) throws NumberFormatException {
 		String val = region.get(tag);
-		if (val != null && val.length() != 0) {
+		if (val != null && !val.isEmpty()) {
 			double rv;
 			try {
 				rv = Double.parseDouble(val);
