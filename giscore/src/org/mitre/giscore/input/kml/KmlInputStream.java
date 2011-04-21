@@ -634,7 +634,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * Handle AbstractView (Camera or LookAt) element
 	 * @param feature
-	 * @param name
+	 * @param name the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleAbstractView(Common feature, QName name)
@@ -646,7 +646,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * Handle KML Region
 	 * @param feature
-	 * @param name
+	 * @param name the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleRegion(Common feature, QName name)
@@ -677,7 +677,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * @param cs
 	 * @param ee
-	 * @param name
+	 * @param name the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private StyleMap handleStyleMap(Common cs, XMLEvent ee, QName name)
@@ -707,7 +707,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * @param sm
-	 * @param name
+	 * @param name the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleStyleMapPair(StyleMap sm, QName name) throws XMLStreamException {
@@ -904,7 +904,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * 
 	 * @param cs
 	 * @param ee
-	 * @param name
+	 * @param name the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 * @return
 	 */
@@ -975,7 +975,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
     /**
 	 * @param style
-	 * @param qname
+	 * @param qname the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handlePolyStyle(Style style, QName qname) throws XMLStreamException {
@@ -1022,7 +1022,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * @param style
-	 * @param qname
+	 * @param qname the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleLabelStyle(Style style, QName qname) throws XMLStreamException {
@@ -1054,7 +1054,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * @param style
-	 * @param qname
+	 * @param qname the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleLineStyle(Style style, QName qname) throws XMLStreamException {
@@ -1091,7 +1091,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * @param style
-	 * @param qname
+	 * @param qname the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleBalloonStyle(Style style, QName qname) throws XMLStreamException {
@@ -1123,10 +1123,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
     /**
 	 * Get the href subelement from the Icon element.
-	 * 
+	 *
+	 * @param qname the qualified name of this event
 	 * @return the href, <code>null</code> if not found.
 	 * @throws XMLStreamException if there is an error with the underlying XML.
-	 * @param qname
 	 */
 	private String parseIconHref(QName qname) throws XMLStreamException {
 		String href = null;
@@ -1146,7 +1146,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
 	/**
-	 * Parse the color from a kml file, in AABBGGRR order.
+	 * Parse the color from a kml file, in {@code AABBGGRR} order.
 	 * 
 	 * @param cstr
 	 *            a hex encoded string, must be exactly 8 characters long.
@@ -1172,7 +1172,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
     /**
 	 * @param style
-	 * @param name
+	 * @param name the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleIconStyle(Style style, QName name) throws XMLStreamException {
