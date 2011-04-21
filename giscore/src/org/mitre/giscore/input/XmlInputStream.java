@@ -289,10 +289,30 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 */
 	protected String getNonEmptyElementText() throws XMLStreamException {
 		String elementText = stream.getElementText();
-		if (elementText == null || elementText.length() == 0)
+		if (elementText == null || elementText.isEmpty())
 			return null;
 		elementText = elementText.trim();
-		return elementText.length() == 0 ? null : elementText;
+		return elementText.isEmpty() ? null : elementText;
+	}
+
+	/**
+	 * Returns Integer from stream if valid otherwise {@code null}
+	 *
+	 * @return Integer value, otherwise null
+	 * @throws XMLStreamException
+	 *             if the current event is not a START_ELEMENT
+	 */
+	protected Integer getIntegerElementValue(String localName)
+			throws XMLStreamException {
+		String elementText = getNonEmptyElementText();
+		if (elementText != null) {
+			try {
+				return Integer.parseInt(elementText);
+			} catch (NumberFormatException nfe) {
+				log.warn("Ignoring bad value for " + localName + ": " + nfe);
+			}
+		}
+		return null;
 	}
 
 	protected Double getDoubleElementValue(String localName)

@@ -1613,8 +1613,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 							((Overlay) fs).setColor(parseColor(stream
 									.getElementText()));
 						} else if (DRAW_ORDER.equals(localname)) {
-							((Overlay) fs).setDrawOrder(Integer.parseInt(stream
-									.getElementText()));
+							Integer val = getIntegerElementValue(DRAW_ORDER);
+							if (val != null)
+								((Overlay) fs).setDrawOrder(val);
 						} else if (ICON.equals(localname)) {
 							((Overlay) fs).setIcon(handleTaggedData(qName)); // Icon
 						}
