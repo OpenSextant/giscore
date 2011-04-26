@@ -438,7 +438,7 @@ public class KmlMetaDump implements IKml {
             // properties of parent NetworkLink such as time, region, etc.
         } else if (cl == ContainerStart.class) {
             ContainerStart cs = (ContainerStart) gisObj;
-            addTag(((ContainerStart) gisObj).getType()); // Documemnt | Folder
+            addTag(((ContainerStart) gisObj).getType()); // Document | Folder
             containers.push(cs);
             Date startTime = cs.getStartTime();
             Date endTime = cs.getEndTime();
@@ -759,7 +759,7 @@ public class KmlMetaDump implements IKml {
 		} else if (geom instanceof Line) {
             final Line line = (Line) geom;
             if (line.clippedAtDateLine())
-				addTag(":Line clipped at DateLine");
+				addTag(":Line clipped at DateLine", true);
             if (line.getNumPoints() > 1) {
                 // check if point list has duplicate consecutive points
                 List<Point> pts = line.getPoints();
@@ -791,8 +791,7 @@ public class KmlMetaDump implements IKml {
 		// Detect dateline wrap or antimeridian spanning when geometry spans the -180/+180 longitude line
 		Geodetic2DBounds bbox = geom.getBoundingBox();
 		if (bbox != null && bbox.getWestLon().inDegrees() > bbox.getEastLon().inDegrees()) {
-			if (verbose) System.out.println("Geometry spans -180/+180 longitude line");
-			addTag(":Geometry spans -180/+180 longitude line");
+			addTag(":Geometry spans -180/+180 longitude line", true);
 			// such geometries must be sub-divided to render correctly
 		}
 	}
@@ -857,7 +856,7 @@ public class KmlMetaDump implements IKml {
 		if (link != null) {
 			String href = link.get(HREF);
 			if (href == null)
-				addTag(":NetworkLink missing or empty HREF");
+				addTag(":NetworkLink missing or empty HREF", true);
 			else {
                 String url;
                 try {
@@ -872,7 +871,7 @@ public class KmlMetaDump implements IKml {
             }
 		}
 		else
-			addTag(":NetworkLink missing Link");
+			addTag(":NetworkLink missing Link", true);
 	}
 
     /**
@@ -898,7 +897,7 @@ public class KmlMetaDump implements IKml {
                     if (verbose) System.out.println(" Warning: styleUrl appears to contain invalid characters: " + styleUrl);
                 }
             } else if (ind == -1) {
-                addTag(":StyleUrl must contain '#' with identifier reference");
+                addTag(":StyleUrl must contain '#' with identifier reference", true);
             }
         }
         Date startTime = f.getStartTime();
@@ -922,7 +921,7 @@ public class KmlMetaDump implements IKml {
               Features with no time properties inherit the time
               of its ancestors if they have time constraints.
             */
-            addTag(":Feature inherits container time");
+            addTag(":Feature inherits container time", true);
         }
         // otherwise feature doesn't have timeStamp or timeSpans
 
@@ -1011,11 +1010,10 @@ public class KmlMetaDump implements IKml {
             if (StringUtils.isNotBlank(f.getStyleUrl())) {
                 // if (lastObjClass == Style.class || lastObjClass == StyleMap.class)
                 if (lastStyle != null) {
-                    addTag(":Feature uses merged shared/inline Style");
-					if (verbose) System.out.println(" Feature uses merged shared/inline Style");
+                    addTag(":Feature uses merged shared/inline Style", true);
 				}
                 else
-                    addTag(":Feature uses shared Style");
+                    addTag(":Feature uses shared Style", true);
             }
         }
 
@@ -1044,7 +1042,7 @@ public class KmlMetaDump implements IKml {
                     if (verbose) System.out.println(" Warning: Shared styles in Folder not allowed [ATC 7]");
                 } else if (IKml.NETWORK_LINK.equals(csType)) {
                     // NetworkLinks with inline style: assumed allowed
-                    addTag(":NetworkLink uses inline " + getClassName(lastObjClass)); // Style or StyleMap
+                    addTag(":NetworkLink uses inline " + getClassName(lastObjClass), true); // Style or StyleMap
                 } else if (IKml.DOCUMENT.equals(csType) && StringUtils.isBlank(lastStyle.getId())) {
                     // || StringUtils.isBlank(f.getStyleUrl())
                     /*
@@ -1072,7 +1070,7 @@ public class KmlMetaDump implements IKml {
                     System.err.println("XXX: Style should appear before Features only");
                     if (verbose) System.out.println("XXX: Style should appear before Features only");
                 }
-                addTag(":Feature uses inline " + getClassName(lastObjClass)); // Style or StyleMap
+                addTag(":Feature uses inline " + getClassName(lastObjClass), true); // Style or StyleMap
             }
         }
     }
@@ -1106,7 +1104,7 @@ public class KmlMetaDump implements IKml {
 				// 0.00001 (1e-5) degree dif =~ 1 meter
 				// if n/s/e/w values all 0's then ignore LatLonAltBox
 				if (north != 0 || south != 0 || east != 0 || west != 0)
-					addTag(":LatLonAltBox appears to be very small area");
+					addTag(":LatLonAltBox appears to be very small area", true);
 			} else {
 				// Test ATC 8: Region - LatLonAltBox
 				// Check valid Region-LatLonAltBox values:
@@ -1148,7 +1146,7 @@ public class KmlMetaDump implements IKml {
 			double maxLodPixels = handleTaggedElement(IKml.MAX_LOD_PIXELS, region, -1);
 			if (maxLodPixels == -1) maxLodPixels = Integer.MAX_VALUE; // -1 = infinite
 			if (minLodPixels >= maxLodPixels) {
-				addTag(":minLodPixels must be less than maxLodPixels in Lod [ATC 39]");
+				addTag(":minLodPixels must be less than maxLodPixels in Lod [ATC 39]", true);
 			}
 		} catch (NumberFormatException nfe) {
 			addTag(":Region has invalid Lod: non-numeric value");
