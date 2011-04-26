@@ -40,7 +40,7 @@ public abstract class Overlay extends Feature {
 	
 	private TaggedMap icon;
 	private Color color;
-	private int drawOrder = 0;
+	private int drawOrder;
 
 	/**
      * Get Icon properties which may include href, refreshMode, refreshInterval,
@@ -88,6 +88,9 @@ public abstract class Overlay extends Feature {
 	}
 
 	/**
+	 * Defines the draw order. Draw order is the stacking order overlapping
+	 * overlays. Overlays with higher @{code drawOrder} values are
+	 * drawn on top of overlays with lower @{code drawOrder} values.
 	 * @param drawOrder
 	 *            the drawOrder to set
 	 */
