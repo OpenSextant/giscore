@@ -134,7 +134,6 @@ import java.util.List;
  * Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC.
  *
  * @author J.Mathews
- * @author DRAND
  */
 public class KmlInputStream extends XmlInputStream implements IKml {
     public static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
@@ -1598,12 +1597,16 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				else if (!handleProperties(fs, ee, qName)) {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
-						// Point, LineString, Polygon, Model, etc.
+						// geometry:: Point, LineString, LinearRing, Polygon, MultiGeometry, Model
                         try {
                             Geometry geo = handleGeometry(sl);
                             if (geo != null) {
                                 fs.setGeometry(geo);
                             }
+						} catch (XMLStreamException xe) {
+							log.warn("Failed XML parsing: skip geometry " + localname);
+							log.debug("", xe);
+							skipNextElement(stream, qName);
                         } catch (RuntimeException rte) {
                             // IllegalStateException or IllegalArgumentException
                             log.warn("Failed geometry: " + fs, rte);
@@ -1891,7 +1894,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	@SuppressWarnings("unchecked")
 	private Geometry handleGeometry(StartElement sl) throws XMLStreamException {
 		QName name = sl.getName();
-		String localname = name.getLocalPart();		
+		String localname = name.getLocalPart();
+		// localname must match: { Point, MultiGeometry, Model }, or { LineString, LinearRing, Polygon }
 		// note: gx:altitudeMode may be found within geometry elements but doesn't appear to affect parsing
 		if (localname.equals(POINT)) {
 			return parseCoordinate(name);
@@ -1905,6 +1909,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
 					StartElement el = (StartElement) event;
 					String tag = el.getName().getLocalPart();
+					// tag must match: Point, LineString, LinearRing, Polygon, MultiGeometry, or Model
 					if (ms_geometries.contains(tag)) {
 						try {
 							Geometry geom = handleGeometry(el);
@@ -1969,6 +1974,15 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		}
 	}
 
+	/**
+	 * Construct Geometry from the KML
+	 * @param name  the qualified name of this event
+	 * @param localname local part of this <code>QName</code>
+	 * @return geometry
+	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 * @exception IllegalArgumentException if geometry is invalid (e.g. no valid coordinates)
+	 * @throws IllegalStateException if Bad poly found (e.g. no outer ring)
+	 */
 	private GeometryBase getGeometryBase(QName name, String localname) throws XMLStreamException {
 		if (localname.equals(LINE_STRING)) {
 			GeometryGroup geom = parseCoordinates(name);
@@ -1976,7 +1990,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				Point pt = geom.points.get(0);
 				log.info("line with single coordinate converted to point: " + pt);
 				return getGeometry(geom, pt);
-			} else return getGeometry(geom, new Line(geom.points));
+			} else {
+				// if geom.size() == 0 throws IllegalArgumentException
+				return getGeometry(geom, new Line(geom.points));
+			}
 		} else if (localname.equals(LINEAR_RING)) {
 			GeometryGroup geom = parseCoordinates(name);
 			if (geom.size() == 1) {
@@ -1986,7 +2003,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			} else if (geom.size() != 0 && geom.size() < 4) {
 				log.info("ring with " + geom.size() + " coordinates converted to line: " + geom);
 				return getGeometry(geom, new Line(geom.points));
-			} else return getGeometry(geom, new LinearRing(geom.points));
+			} else {
+				// if geom.size() == 0 throws IllegalArgumentException
+				return getGeometry(geom, new LinearRing(geom.points));
+			}
 		} else if (localname.equals(POLYGON)) {
 			// contains one outer ring and 0 or more inner rings
 			LinearRing outer = null;
@@ -2014,6 +2034,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 							Line line = new Line(geom.points);
 							return getGeometry(geom, line);
 						}
+						// if geom.size() == 0 throws IllegalArgumentException
 						outer = new LinearRing(geom.points);
 					} else if (sename.equals(INNER_BOUNDARY_IS)) {
 						GeometryGroup innerRing = parseCoordinates(qname);
@@ -2112,14 +2133,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * the block. The stream will be positioned after the element when this
 	 * returns.
 	 *
-	 * @param name  the qualified name of this event
+	 * @param qname  the qualified name of this event
      * @param geom GeomBase, never null
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private void parseCoordinates(QName name, GeometryGroup geom) throws XMLStreamException {
+	private void parseCoordinates(QName qname, GeometryGroup geom) throws XMLStreamException {
 		while (true) {
 			XMLEvent event = stream.nextEvent();
-			if (foundEndTag(event, name)) {
+			if (foundEndTag(event, qname)) {
 				break;
 			}
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
@@ -2127,7 +2148,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				if (COORDINATES.equals(localPart)) {
 					String text = getNonEmptyElementText();
 					if (text != null) geom.points = parseCoord(text);
-					skipNextElement(stream, name);
+					skipNextElement(stream, qname);
 					break;
 				}
 				else if (ALTITUDE_MODE.equals(localPart)) {
@@ -2153,13 +2174,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * the block. The stream will be positioned after the element when this
 	 * returns.
 	 *
-	 * @param name  the qualified name of this event
+	 * @param qname  the qualified name of this event
 	 * @return the list coordinates, empty list if no valid coordinates are found
      * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
-	private GeometryGroup parseCoordinates(QName name) throws XMLStreamException {
+	private GeometryGroup parseCoordinates(QName qname) throws XMLStreamException {
 		GeometryGroup geom = new GeometryGroup();
-		parseCoordinates(name, geom);
+		parseCoordinates(qname, geom);
 		return geom;
 	}
 
@@ -2226,7 +2247,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * Extra whitespace is allowed anywhere in the string.
 	 * Invalid text in input is ignored.
 	 *
-	 * @param coord
+	 * @param coord Coordinate string
 	 * @return list of coordinates
 	 */
     @NonNull
