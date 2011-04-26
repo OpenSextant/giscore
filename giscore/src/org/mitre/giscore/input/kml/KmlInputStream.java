@@ -1154,6 +1154,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private Color parseColor(String cstr) {
 		if (cstr == null) return null;
         cstr = cstr.trim();
+		if (cstr.startsWith("#")) {
+			// skip over '#' prefix used for HTML color codes allowed by Google Earth
+			// but invalid wrt KML XML Schema.
+			log.debug("Skip '#' in color code: " + cstr);
+			cstr = cstr.substring(1);
+		}
         if (cstr.length() == 8)
             try {
                 int alpha = Integer.parseInt(cstr.substring(0, 2), 16);
