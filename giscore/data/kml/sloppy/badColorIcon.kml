@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ kml:colorType is xsd:hexBinary length=4 but as with other lax parsing
+ google earth allows some invalid values such as "#ff0000ff".
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+        <Placemark>
+            <name>Placemark1</name>
+            <Style>
+                <IconStyle>
+		    <color>#ff0000ff</color>
+                    <Icon>
+                        <href>http://maps.google.com/mapfiles/kml/shapes/airports.png</href>
+                    </Icon>
+                </IconStyle>
+            </Style>
+            <Point>
+                <coordinates>48.11412666499677,29.00529522966973,0</coordinates>
+            </Point>
+        </Placemark>
+</kml>
