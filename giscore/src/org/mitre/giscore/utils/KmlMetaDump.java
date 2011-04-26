@@ -72,22 +72,22 @@ import java.util.*;
  *  <li> Shared styles in Folder not allowed [ATC 7] (warning)
  *  <li> Shared styles must have 'id' attribute [ATC 7] (warning)
  *  <li> Starting container tag with no matching end container (error)
- *  <li> StyleUrl must contain '#' with identifier reference
- *  <li> Suspicious Schema id characters
- *  <li> Suspicious Schema name characters
+ *  <li> StyleUrl must contain '#' with identifier reference (error)
+ *  <li> Suspicious Schema id characters (warning)
+ *  <li> Suspicious Schema name characters (warning)
  *  <li> Suspicious Style id characters (warning)
  *  <li> Suspicious StyleMap [normal|highlight] URL characters (warning)
  *  <li> Suspicious StyleMap id characters (warning)
  *  <li> Suspicious styleUrl characters (warning)
- *  <li> Unknown Track element: XXX (warn)
+ *  <li> Unknown Track element: XXX (warning)
  * </ul>
  * Geometry checks: <br>
  * <ul>
  *  <li> Bad poly found, no outer ring (error)
  *  <li> Geometry spans -180/+180 longitude line (dateline wrap or antimeridian spanning problem) (warn)
- *  <li> GroundOverlay fails to satisfy east > west constraint [ATC 11]
- *  <li> GroundOverlay fails to satisfy north > south constraint [ATC 11]
- *  <li> GroundOverlay spans -180/+180 longitude line
+ *  <li> GroundOverlay fails to satisfy east > west constraint [ATC 11] (warn)
+ *  <li> GroundOverlay fails to satisfy north > south constraint [ATC 11] (warn)
+ *  <li> GroundOverlay spans -180/+180 longitude line (info)
  *  <li> Inner ring clipped at DateLine (info)
  *  <li> Inner ring not contained within outer ring (warn)
  *  <li> Inner rings in Polygon must not overlap with each other (warn)
@@ -179,6 +179,10 @@ public class KmlMetaDump implements IKml {
 				}
 		} else {
 			System.out.println(file.getAbsolutePath());
+			if (file.length() == 0) {
+				System.out.println("\t*** Skip zero length file");
+				return;
+			}
 			try {
 				processKmlSource(new KmlReader(file), file.getName());
 			} catch (IOException e) {
@@ -544,6 +548,8 @@ public class KmlMetaDump implements IKml {
             if (id != null && !UrlRef.isIdentifier(id)) {
                 addTag(":Suspicious Style id characters");
                 if (verbose) System.out.println(" Warning: Style id appears to contain invalid characters: " + id);
+				// id="hi+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png" :: invalid chars => +=:/
+				// id="earth/environmental_sciencePlacemark" :: invalid char => '/'
             }
         } else if (cl == StyleMap.class) {
             addTag(cl);
@@ -771,14 +777,14 @@ public class KmlMetaDump implements IKml {
                     if (last.equals(pt)) {
 						addTag(":Line has duplicate consecutive points");
                         if (verbose) {
-                            System.out.println("Duplicate point at index: " + i);
+                            System.out.println(" Duplicate point at index: " + i);
                             dups++;
                         } else break;
                     }
                     last = pt;
                 }
                 if (verbose && dups > 0)
-                    System.out.printf("%d duplicate points out of %d%n", dups, n);
+                    System.out.printf(" %d duplicate points out of %d%n", dups, n);
             }
 		} else if (geom instanceof LinearRing) {
 			LinearRing ring = (LinearRing)geom;
@@ -810,7 +816,7 @@ public class KmlMetaDump implements IKml {
 			*/
 		}
 		if (ring.clippedAtDateLine())
-			addTag(":" + label + " clipped at DateLine");
+			addTag(":" + label + " clipped at DateLine", true);
 		try {
 			List<Point> pts = ring.getPoints();
 			final int n = pts.size();
@@ -847,7 +853,8 @@ public class KmlMetaDump implements IKml {
 			new LinearRing(pts, true);
 			// error -> LinearRing cannot self-intersect
 		} catch(IllegalArgumentException e) {
-			addTag(":" + e.getMessage());
+			// LinearRing fails validation
+			addTag(":" + e.getMessage(), true);
 		}
 	}
 
@@ -882,22 +889,34 @@ public class KmlMetaDump implements IKml {
         String styleUrl = f.getStyleUrl();
         if (styleUrl != null) {
             /*
-             If the style is in the same file, uses a # reference.
+             styleUrl = xsd:anyURI type: an anyURI value can be absolute or relative,
+             and may have an optional fragment identifier (i.e., URI Reference).
+             Note: Spaces are, in principle, allowed in the lexical space of anyURI,
+             however, their use is highly discouraged (unless they are encoded by %20).
+
+             If the style is in the same file, uses a # reference, but Google Earth does not enforce this.
              If the style is defined in an external file, uses a full URL along with # referencing.
              styleUrl must contain '#' for id reference as in following cases:
               <styleUrl>#myIconStyleID</styleUrl>
               <styleUrl>http://someserver.com/somestylefile.xml#restaurant</styleUrl>
-              <styleUrl>eateries.kml#my-lunch-spot</styleUrl>
+              <styleUrl>eateries.kml#del my-lunch-spot</styleUrl>
+              <styleUrl>root://styleMaps#default+nicon=0x307+hicon=0x317</styleUrl> KML 2.0 style
             */
             int ind = styleUrl.indexOf('#');
-            if (ind == 0) {
-                // local reference
-                if (!UrlRef.isIdentifier(styleUrl.substring(1))) {
-                    addTag(":Suspicious styleUrl characters");
-                    if (verbose) System.out.println(" Warning: styleUrl appears to contain invalid characters: " + styleUrl);
-                }
-            } else if (ind == -1) {
+			if (ind == -1) {
+				// google earth allows this but this is an error wrt XML syntax
                 addTag(":StyleUrl must contain '#' with identifier reference", true);
+			} else {
+                // check local reference: id reference should match NCName production in [Namespaces in XML]
+				// match xsd:ID type for "id" attribute. The base type of ID is NCName.
+				// Google Earth allows invalid characters in the "id" attribute and associated references
+				// ind = 0 relative identifier and ind > 0: styleUrl can be absolute URL to style identifier
+				// URL = [scheme://domain:port/path?query_string]#fragment_id
+                if (!UrlRef.isIdentifier(styleUrl.substring(ind+1))) {
+                    addTag(":Suspicious styleUrl characters");
+                    if (verbose) System.out.println(" ZZZ:Warning: styleUrl appears to contain invalid characters: " + styleUrl);
+					// e.g. #earth/environmental_sciencePlacemark
+                }
             }
         }
         Date startTime = f.getStartTime();
@@ -974,10 +993,10 @@ public class KmlMetaDump implements IKml {
                 */
                 if (CLAMP_TO_GROUND.equals(viewGroup.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND))) {
                     // (2) the value of kml:altitudeMode is not "clampToGround".
-                    addTag(":Camera altitudeMode cannot be " + CLAMP_TO_GROUND + " [ATC 54.2]"); // warning
+                    addTag(":Camera altitudeMode cannot be " + CLAMP_TO_GROUND + " [ATC 54.2]", true); // warning
                }
             } else {
-                addTag(":Invalid ViewGroup tag: " + tag);
+                addTag(":Invalid ViewGroup tag: " + tag, true);
             }
 
             // check view for gx:extensions
