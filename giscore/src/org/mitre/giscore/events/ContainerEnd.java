@@ -60,6 +60,6 @@ public class ContainerEnd implements IGISObject {
 	 */
 	@Override
 	public String toString() {
-		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
+		return "[ContainerEnd]";
 	}
 }
