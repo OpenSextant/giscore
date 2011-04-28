@@ -1025,7 +1025,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Handle Geometry attributes common to Point, Line, LinearRing, and Polygon namely
      * extrude, tessellate, and altitudeMode.  Note tessellate tag is not applicable to Point
-     * geometry and will be ignored is set on Points.
+     * geometry and will be ignored if set on Points.
      *
      * @param geom
      * @throws XMLStreamException if there is an error with the underlying XML.
