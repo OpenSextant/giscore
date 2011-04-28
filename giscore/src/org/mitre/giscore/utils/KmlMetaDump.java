@@ -163,7 +163,11 @@ public class KmlMetaDump implements IKml {
 
 	public void checkSource(URL url) throws IOException {
 		System.out.println(url);
-		processKmlSource(new KmlReader(url), url.getFile());
+		String name = url.getFile();
+		// TODO: if url ends with '/' and servlet/etc. responding with KML then need appropriate name to save locally
+		int ind = name.lastIndexOf('/');
+		if (ind > 0) name = name.substring(ind + 1); // strip off path
+		processKmlSource(new KmlReader(url), name);
 	}
 
 	public void checkSource(File file) {
@@ -1336,6 +1340,7 @@ public class KmlMetaDump implements IKml {
 			if (className != null &&
 					(className.startsWith("org.mitre.giscore.events.") ||
 					className.startsWith("org.mitre.giscore.input.kml."))) {
+				// TODO: log XmlInputStream errors/warnings if keeping counts
 				// truncate long error message in KmlInputStream.handleGeometry()
 				if (msg.startsWith("comma found instead of whitespace between tuples before"))
 					msg = msg.substring(0,48);
@@ -1351,6 +1356,9 @@ public class KmlMetaDump implements IKml {
 					} else {
 						msg = tMessage;
 					}
+				// (LinearRing.java:201) - LinearRing self-intersects at i=21 j=22
+				//} else if (msg.contains("LinearRing self-intersects")) {
+					//msg = "XXX: " + msg;
 				} else if (msg.startsWith("Failed geometry: ")) {
 					ThrowableInformation ti = event.getThrowableInformation();
 					// WARN [main] (KmlInputStream.java:1913) - Failed geometry: LinearRing
