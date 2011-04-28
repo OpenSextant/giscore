@@ -419,7 +419,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		String localname = name.getLocalPart(); // never null
         try {
             if (localname.equals(NAME)) {
-                feature.setName(getNonEmptyElementText());
+				// sometimes markup found in names (e.g. <name><B>place name</B></name>)
+				// where is should be in the description and/or BalloonStyle
+                feature.setName(getElementText(name));
                 return true;            
             } else if (localname.equals(DESCRIPTION)) {
                 feature.setDescription(getElementText(name));
