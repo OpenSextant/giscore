@@ -1312,7 +1312,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				}
 			}	
 		} catch (XMLStreamException e1) {
-			log.warn("Skip unexpected element: " + localname);
+			log.warn("Skip element: " + localname);
+			log.debug("", e1);
 			skipNextElement(stream, name);
 		}
 
