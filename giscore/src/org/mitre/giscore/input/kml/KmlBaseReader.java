@@ -44,6 +44,7 @@ public abstract class KmlBaseReader implements IKml {
 
 	/**
 	 * holder for names of supported httpQuery fields as of 2/19/09 in Google Earth 5.0.11337.1968 with KML 2.2
+	 * httpQuery names unchanged as of April 2011 with Google Earth 6.0.2.2074.
 	 */
 	private static final Map<String,String> httpQueryLabels = new HashMap<String,String>();
 
@@ -60,6 +61,7 @@ public abstract class KmlBaseReader implements IKml {
 
 	/**
 	 * names of supported viewFormat fields as of 2/19/09 in Google Earth 5.0.11337.1968 with KML 2.2
+	 * viewFormat names unchanged as of April 2011 with Google Earth 6.0.2.2074.
 	 * see http://code.google.com/apis/kml/documentation/kmlreference.html#link
 	 */
 	private static final List<String> viewFormatLabels = Arrays.asList(
@@ -259,8 +261,14 @@ public abstract class KmlBaseReader implements IKml {
 					if (ind != -1) {
 						String key = viewFormat.substring(i + 1, ind);
 						if (viewFormatLabels.contains(key)) {
-							// insert "0" as replacement value for key (e.g. bboxWest, lookatLon. etc.)
-							buf.append('0');
+							// insert "0" as replacement value for viewFormat fields (e.g. bboxWest, lookatLon. etc.)
+							// see http://code.google.com/apis/kml/documentation/kmlreference.html#viewformat
+							// TODO: might want better defaults for fields such as {horiz/vert}Fov, {horiz/vert}Pixels, etc.
+							// otherwise might not get useful results.
+							if ("terrainEnabled".equals(key))
+								buf.append('1');
+							else
+								buf.append('0');
 							i = ind;
 							continue;
 						}
