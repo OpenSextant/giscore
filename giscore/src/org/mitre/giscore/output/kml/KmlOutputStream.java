@@ -1369,8 +1369,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     }
 
     /**
+	 * Writes out IconStyle portion of the Style.
+	 * If the Style iconUrl is null then no Icon element is generated which
+	 * uses the default icon (e.g. yellow pin). If iconUrl is blank or empty
+	 * string then an empty <Icon/> element is generated instead otherwise
+	 * the specified URL is added to <Icon> element.
+	 *
      * @param style icon Style element to be written
      * @throws XMLStreamException if there is an error with the underlying XML
+	 * @see Style#setIconStyle(java.awt.Color, Double, Double, String)
      */
     protected void handleIconStyleElement(Style style)
             throws XMLStreamException {
@@ -1382,8 +1389,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             handleSimpleElement(HEADING, formatDouble(heading));
         String iconUrl = style.getIconUrl();
         if (iconUrl != null) {
-            // if want empty Icon tag then include a blank href
-            if (iconUrl.length() == 0)
+            // if want empty Icon tag then include a blank href ("")
+            if (iconUrl.isEmpty())
                 writer.writeEmptyElement(ICON);
             else {
                 writer.writeStartElement(ICON);

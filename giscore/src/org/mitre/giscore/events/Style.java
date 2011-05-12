@@ -159,7 +159,9 @@ public class Style extends StyleSelector {
 	 * @param scale
 	 *            the scale of the icon, nullable.
 	 * @param url
-	 *            the url of the icon, nullable.
+	 *            the url of the icon, nullable. If url is empty string or blank
+	 *            then an empty <Icon/> element would appear in KML output.
+	 *            If {@code null} then no <Icon> will appear in IconStyle (using default icon).
 	 */
 	public void setIconStyle(Color color, Double scale, String url) {
 		setIconStyle(color, scale, null, url);
@@ -176,7 +178,11 @@ public class Style extends StyleSelector {
 	 *            heading (i.e. icon rotation) in degrees. Default=0 (North).
 	 *            Values range from 0 to 360 degrees, nullable. 
 	 * @param url
-	 *            the url of the icon, nullable.
+	 *            the url of the icon, nullable. If url is blank or empty string
+	 *            then an empty <Icon/> element would appear in corresponding KML output.
+	 *            If {@code null} then no <Icon> will appear in IconStyle (using default icon).
+	 *
+	 * @see org.mitre.giscore.output.kml.KmlOutputStream#handleIconStyleElement(Style)
 	 */
 	public void setIconStyle(Color color, Double scale, Double heading, String url) {
 		iconColor = color;
