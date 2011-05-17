@@ -32,6 +32,7 @@ import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.output.XmlOutputStreamBase;
 import org.mitre.giscore.output.atom.IAtomConstants;
 import org.mitre.giscore.utils.SafeDateFormat;
+import org.mitre.itf.geodesy.Geodetic2DCircle;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
 import org.slf4j.Logger;
@@ -91,6 +92,23 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     private transient SafeDateFormat dateFormatter;
+
+	private static final int NUM_CIRCLE_POINTS;
+
+	static {
+		int numPoints = 32;
+		// store preference for # points in generated circles
+		String value = System.getProperty("giscore.circle.numPoints");
+		if (StringUtils.isNotBlank(value)) {
+			try {
+				numPoints = Integer.parseInt(value);
+				if (numPoints < 4) numPoints = 4;
+			} catch(NumberFormatException nfe) {
+				log.warn("Invalid value for giscore.circle.numPoints " + value);
+			}
+		}
+		NUM_CIRCLE_POINTS = numPoints;
+	}
 
     /**
      * prefix associated with gx extension namespace if such namespace is provided
@@ -923,17 +941,45 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
     }
 
-    /*
+    /**
      * Handle the output of a circle
      *
      * @param circle the circle, never <code>null</code>
      */
-	/*
     @Override
     public void visit(Circle circle) {
-        // todo: use circle hints to output as linearRing, Polygon, etc.
+		if (circle != null) {
+			try {
+				// use circle hints to output as LinearRing, Polygon, etc.
+				Circle.HintType hint = circle.getHint();
+				Geodetic2DCircle c = new Geodetic2DCircle(circle.getCenter(), circle.getRadius());
+				// store preference for # points in generated circles in System.property (default=32)
+				final String coordinates = handleCoordinates(c.boundary(NUM_CIRCLE_POINTS));
+				if (hint == Circle.HintType.LINE) {
+					writer.writeStartElement(LINE_STRING);
+					handleGeometryAttributes(circle);
+					handleSimpleElement(COORDINATES, coordinates);
+					writer.writeEndElement();
+				} else if (hint == Circle.HintType.RING) {
+					writer.writeStartElement(LINEAR_RING);
+					handleGeometryAttributes(circle);
+					handleSimpleElement(COORDINATES, coordinates);
+					writer.writeEndElement();
+				} else {
+					writer.writeStartElement(POLYGON); // default
+					handleGeometryAttributes(circle);
+					writer.writeStartElement(OUTER_BOUNDARY_IS);
+					writer.writeStartElement(LINEAR_RING);
+					handleSimpleElement(COORDINATES, coordinates);
+					writer.writeEndElement();
+					writer.writeEndElement();
+					writer.writeEndElement();
+				}
+			} catch (XMLStreamException e) {
+				throw new RuntimeException(e);
+			}
+		}
     }
-    */
 
 	/**
      * Output a multigeometry, represented by a geometry bag
@@ -1045,8 +1091,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (extrude != null)
             handleSimpleElement(EXTRUDE, extrude ? "1" : "0");
 		Boolean tessellate = geom.getTessellate();
-        if (tessellate != null && !(geom instanceof Point))
+        if (tessellate != null && geom.getClass() != Point.class) {
+			// note: Circle extends Point but circles treated as Line, Ring or Polygon
             handleSimpleElement(TESSELLATE, tessellate ? "1" : "0");
+		}
 		handleAltitudeMode(geom.getAltitudeMode());
     }
 
@@ -1103,6 +1151,21 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         return b.toString();
     }
 
+	/**
+     * output the coordinates. The coordinates are output as lon,lat[,altitude]
+     * and are separated by spaces
+     *
+     * @param coordinates an iterator over the points, never <code>null</code>
+     * @return the coordinates as a string
+     */
+    private String handleCoordinates(Iterable<Geodetic2DPoint> coordinates) {
+        StringBuilder b = new StringBuilder();
+		for (Geodetic2DPoint point : coordinates) {
+            handleSingleCoordinate(b, point);
+        }
+        return b.toString();
+    }
+
     /**
      * Output a single coordinate
      *
@@ -1110,21 +1173,24 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @param point Point to be formatted for output
      */
     private void handleSingleCoordinate(StringBuilder b, Point point) {
-        if (b.length() > 0) {
+		handleSingleCoordinate(b, point.getCenter());
+    }
+
+	private void handleSingleCoordinate(StringBuilder b, Geodetic2DPoint p2d) {
+		if (b.length() > 0) {
             b.append(' ');
         }
-        Geodetic2DPoint p2d = point.getCenter();
         b.append(formatDouble(p2d.getLongitudeAsDegrees()));
         b.append(',');
         b.append(formatDouble(p2d.getLatitudeAsDegrees()));
-        if (point.getCenter() instanceof Geodetic3DPoint) {
-            Geodetic3DPoint p3d = (Geodetic3DPoint) point.getCenter();
+        if (p2d instanceof Geodetic3DPoint) {
+            Geodetic3DPoint p3d = (Geodetic3DPoint) p2d;
             b.append(',');
             b.append(formatDouble(p3d.getElevation()));
         }
-    }
+	}
 
-    /**
+	/**
      * Visit a Schema object
      *
      * @param schema Schema to visit, never null
