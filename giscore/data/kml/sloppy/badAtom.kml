@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Uses atom namespace without declaring the namespace
+-->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>7 Wonders</name>
+    <atom:link href="http://maps.google.com/maps/ms?msa=0&amp;msid=110361148976516148039.00043a624b5af0cc1e56b" />
+    <Placemark>
+      <name>Cairo, Egypt</name>
+      <description>The Great Pyramid of Giza</description>
+      <!-- takes atom:link of parent Folder -->
+      <Point>
+        <coordinates>31.246099,30.0982</coordinates>
+      </Point>
+    </Placemark>
+  </Document>
+</kml>
