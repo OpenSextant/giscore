@@ -59,12 +59,8 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	protected InputStream is;
 	protected XMLEventReader stream;
 
-    /**
-     * Encoding style of the XML data (defaults to "UTF-8").
-     * Must never be null.
-     */
     @NonNull
-    protected String encoding = "UTF-8";
+	private String encoding = "UTF-8";
 
 	/**
 	 * Ctor
@@ -126,6 +122,16 @@ public abstract class XmlInputStream extends GISInputStreamBase {
     public String getEncoding() {
         return encoding;
     }
+
+	protected void setEncoding(String encoding) {
+		if (StringUtils.isNotBlank(encoding)) {
+			log.debug("set encoding=" + encoding);
+			this.encoding = encoding;
+		} else {
+			// otherwise assume UTF-8
+			log.debug("null/empty encoding. assuming UTF-8");
+		}
+	}
 
 	/**
 	 * Is this event a matching end tag?

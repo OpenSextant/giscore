@@ -230,11 +230,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				ev = stream.nextEvent(); // Actually advance
                 if (ev != null && ev.isStartDocument()) {
                     StartDocument doc = (StartDocument)ev;
-                    if (doc.encodingSet()) {
-                        String encoding = doc.getCharacterEncodingScheme(); // default UTF-8
-                        if (StringUtils.isNotBlank(encoding))
-                            this.encoding = encoding;
-                    }
+                    if (doc.encodingSet())
+						setEncoding(doc.getCharacterEncodingScheme()); // default UTF-8
                 }
 				ev = stream.peek();
 			}
@@ -324,8 +321,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				}
 			} catch (ArrayIndexOutOfBoundsException e) {
 				// if have wrong encoding can end up here
-				if (log.isDebugEnabled())
-					log.debug("Unexpected parse error", e);
+				log.debug("Unexpected parse error", e);
 				return null;
 			} catch (NoSuchElementException e) {
 				return null;
@@ -365,6 +361,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 		while (true) {
 			XMLEvent ne = stream.peek();
+
 			// Found end tag, sometimes a container has no other content
 			if (foundEndTag(ne, name)) {
 				break;
@@ -398,7 +395,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					if (isTrue(getElementText(qname)))
 						cs.setOpen(true);
 				} else if (!handleProperties(cs, ee, qname)) {
-					// Ignore other attributes
+					// Ignore other container elements
+					log.debug("ignore " + qname);
 				}
             }
 		}
