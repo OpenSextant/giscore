@@ -1588,6 +1588,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
         
 		while (true) {
 			XMLEvent ee = stream.nextEvent();
+			// Note: if element has undeclared namespace then throws XMLStreamException
+			// Message: http://www.w3.org/TR/1999/REC-xml-names-19990114#ElementPrefixUnbound
 			if (foundEndTag(ee, name)) {
 				break; // End of feature
 			}
