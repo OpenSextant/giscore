@@ -25,9 +25,7 @@ import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.Namespace;
 import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.XmlInputStream;
 import org.mitre.giscore.input.kml.IKml;
@@ -47,6 +45,8 @@ import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.*;
 
 /**
@@ -68,7 +68,7 @@ public class TestKmlOutputStream extends TestGISBase {
     @Test
 	public void testElement() throws IOException, XMLStreamException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		KmlOutputStream kos = new KmlOutputStream(bos, KmlOutputStream.ISO_8859_1);
+		KmlOutputStream kos = new KmlOutputStream(bos, XmlOutputStreamBase.ISO_8859_1);
         try {
             DocumentStart ds = new DocumentStart(DocumentType.KML);
 			Namespace gxNs = Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT);
@@ -126,6 +126,9 @@ public class TestKmlOutputStream extends TestGISBase {
 			Point pt = (Point)f2.getGeometry();
 			assertEquals(AltitudeModeEnumType.clampToSeaFloor, pt.getAltitudeMode());
 			kis.close();
+		} catch (AssertionError ae) {
+			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
+			throw ae;
         } finally {
 			if (kos != null)
 				kos.close();
@@ -284,6 +287,58 @@ public class TestKmlOutputStream extends TestGISBase {
 		} finally {
 			IOUtils.closeQuietly(fs);
 			if (autoDelete && file.exists()) file.delete();
+		}
+	}
+
+	@Test
+	public void testCircleOutput() throws XMLStreamException, IOException {
+		Point pt = getRandomPoint();
+		Circle c = new Circle(pt.getCenter(), 1000.0);
+		c.setTessellate(true);
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		kos.write(new ContainerStart(IKml.DOCUMENT));
+		try {
+			Feature f = new Feature();
+			f.setName("P1");
+			f.setDescription("this is a test placemark");
+			// circle Hint = polygon (default)
+			f.setGeometry(c);
+			kos.write(f);
+			f.setName("P2");
+			c.setHint(Circle.HintType.LINE);
+			kos.write(f);
+			kos.write(new ContainerEnd());
+		} finally {
+		    kos.close();
+        }
+
+		try {
+			KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+			assertNotNull(kis.read()); // skip DocumentStart
+			assertNotNull(kis.read()); // skip Document
+			IGISObject obj1 = kis.read(); // Placemark w/Circle as Polygon
+			IGISObject obj2 = kis.read(); // Placemark w/Circle as LineString
+			kis.close();
+			assert(obj1 instanceof Feature);
+			Feature f = (Feature)obj1;
+			Geometry geom = f.getGeometry();
+			// by default the KmlOutputStream converts Circle into Polygon with 33 points
+			assertTrue(geom instanceof Polygon);
+			Polygon poly = (Polygon)geom;
+			assertTrue(poly.getTessellate());
+			assertEquals(kos.getNumCirclePoints(), poly.getNumPoints());
+
+			assert(obj2 instanceof Feature);
+			f = (Feature)obj2;
+			geom = f.getGeometry();
+			assertTrue(geom instanceof Line);
+			Line line = (Line)geom;
+			assertTrue(line.getTessellate());
+			assertEquals(kos.getNumCirclePoints(), line.getNumPoints());
+		} catch (AssertionError ae) {
+			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
+			throw ae;
 		}
 	}
 
@@ -455,16 +510,53 @@ public class TestKmlOutputStream extends TestGISBase {
         File out = new File("testOutput/testMultiGeometries.kml");
         KmlOutputStream os = new KmlOutputStream(new FileOutputStream(out),
                 XmlOutputStreamBase.ISO_8859_1);
+		List<Feature> feats;
         try {
-            List<Feature> feats = getMultiGeometries();
             os.write(new DocumentStart(DocumentType.KML));
             os.write(new ContainerStart(IKml.DOCUMENT));
-            for (Feature f : feats) {
+			feats = getMultiGeometries();
+			for (Feature f : feats) {
                 os.write(f);
             }
         } finally {
             os.close();
         }
+
+		KmlInputStream kis = new KmlInputStream(new FileInputStream(out));
+		assertNotNull(kis.read()); // skip DocumentStart
+		assertNotNull(kis.read()); // skip Document
+		for (Feature expected : feats) {
+			IGISObject current = kis.read();
+			assertTrue(current instanceof Feature);
+			// Note: GeometryBag with Multiple Points converted to MultiPoint geometry on reading
+			// but number of points must be the same
+			Geometry geom = expected.getGeometry();
+			// System.out.format("%n%s %d %d%n", expected.getName(), geom.getNumPoints(), ((Feature)current).getGeometry().getNumPoints());
+			// Note: circles are written as Polygons, Line, or LinearRings depending on the hint preference so number of points is *NOT* the same
+			// and GeometryBags of only multiple points are converted to single MultiPoint Geometry so geometries are *NOT* the same
+			boolean testFeature = true;
+			if (geom instanceof GeometryBag) {
+				int pointCount = 0;
+				for (Geometry g : (GeometryBag)geom) {
+					// System.out.println("XXX: " + g.getClass().getName());
+					if (g instanceof Circle) {
+						// System.out.println("XXX: skip circle");
+						testFeature = false;
+						break;
+					}
+					if (g.getClass() == Point.class) pointCount++;
+				}
+				if (pointCount == geom.getNumParts()) {
+					// GeometryBags of multiple points are converted to single MultiPoint Geometry so geometries are *NOT* the same
+					// and cannot be compared using checkApproximatelyEquals()
+					// System.out.println("XXX: skip multiPoints");
+					assertEquals(pointCount, ((Feature) current).getGeometry().getNumPoints());
+					testFeature = false;
+				}
+			} // else System.out.println("other: " + geom.getClass().getName()); // e.g. MultiLine, MultiPoint, etc.
+			if (testFeature) checkApproximatelyEquals(expected, current);
+		}
+		kis.close();
     }
 
 }
