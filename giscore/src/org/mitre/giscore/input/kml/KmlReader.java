@@ -30,7 +30,6 @@ import java.net.URL;
 import java.net.URI;
 import java.util.*;
 import java.util.zip.ZipInputStream;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipEntry;
 import java.io.*;
 
@@ -58,11 +57,9 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 
 	private final KmlInputStream kis;
 
-	private ZipFile zf;
-
 	private final List<URI> gisNetworkLinks = new ArrayList<URI>();
 
-    private Proxy proxy;
+	private Proxy proxy;
 
 	/**
 	 * Creates a <code>KmlStreamReader</code> and attempts to read
@@ -108,21 +105,27 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	@SuppressWarnings("unchecked")
 	public KmlReader(File file) throws IOException {
 		if (file.getName().toLowerCase().endsWith(".kmz")) {
-			zf = new ZipFile(file);
-			Enumeration<ZipEntry> e = (Enumeration<ZipEntry>) zf.entries();
-			while (e.hasMoreElements()) {
-				ZipEntry entry = e.nextElement();
+			// Note: some "KMZ" files fail validation using ZipFile but work with ZipInputStream
+			ZipInputStream zis = new ZipInputStream(new FileInputStream(file));
+			ZipEntry entry;
+			while ((entry = zis.getNextEntry()) != null) {
 				// simply find first kml file in the archive
 				// see note on KMZ in UrlRef.getInputStream() method for more detail
 				if (entry.getName().toLowerCase().endsWith(".kml")) {
-					iStream = zf.getInputStream(entry);
+					iStream = zis;
 					// indicate that the stream is for a KMZ compressed file
 					compressed = true;
 					break;
 				}
 			}
-			if (iStream == null)
+			if (iStream == null) {
+				try {
+					zis.close();
+				} catch (IOException ioe) {
+					// ignore
+				}
 				throw new FileNotFoundException("Failed to find KML content in file: " + file);
+			}
 		} else {
 			// treat as normal .kml text file
 			iStream = new BufferedInputStream(new FileInputStream(file));
@@ -393,14 +396,6 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 			kis.close();
 			IOUtils.closeQuietly(iStream);
 			iStream = null;
-		}
-		if (zf != null) {
-			try {
-				zf.close();
-			} catch (Exception e) {
-                log.warn("failed to close ZipFile stream", e);
-			}
-			zf = null;
 		}
 	}
 
