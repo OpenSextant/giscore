@@ -3,12 +3,10 @@
  *
  *  Created: Jan 30, 2009
  *
- *  @author DRAND
- *
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -97,12 +95,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
 	static {
 		int numPoints = 32;
-		// store preference for # points in generated circles
+		// store preference for # points in generated circles [default = 32]
+		// note: generated number points is one more than this count since first and last points must be the same
 		String value = System.getProperty("giscore.circle.numPoints");
 		if (StringUtils.isNotBlank(value)) {
 			try {
 				numPoints = Integer.parseInt(value);
-				if (numPoints < 4) numPoints = 4;
+				if (numPoints < 3) numPoints = 3; // cannot allow less than 3 points
 			} catch(NumberFormatException nfe) {
 				log.warn("Invalid value for giscore.circle.numPoints " + value);
 			}
@@ -954,7 +953,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				Circle.HintType hint = circle.getHint();
 				Geodetic2DCircle c = new Geodetic2DCircle(circle.getCenter(), circle.getRadius());
 				// store preference for # points in generated circles in System.property (default=32)
-				final String coordinates = handleCoordinates(c.boundary(NUM_CIRCLE_POINTS));
+				// note: number points is one more than count since first and last points must be the same
+				StringBuilder b = new StringBuilder();
+				Geodetic2DPoint firstPt = null;
+				for (Geodetic2DPoint point : c.boundary(NUM_CIRCLE_POINTS)) {
+					if (firstPt == null) firstPt = point;
+					handleSingleCoordinate(b, point);
+				}
+				if (firstPt != null) handleSingleCoordinate(b, firstPt);
+				String coordinates = b.toString();
 				if (hint == Circle.HintType.LINE) {
 					writer.writeStartElement(LINE_STRING);
 					handleGeometryAttributes(circle);
@@ -1146,21 +1153,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             throws XMLStreamException {
         StringBuilder b = new StringBuilder();
         for (Point point : coordinateList) {
-            handleSingleCoordinate(b, point);
-        }
-        return b.toString();
-    }
-
-	/**
-     * output the coordinates. The coordinates are output as lon,lat[,altitude]
-     * and are separated by spaces
-     *
-     * @param coordinates an iterator over the points, never <code>null</code>
-     * @return the coordinates as a string
-     */
-    private String handleCoordinates(Iterable<Geodetic2DPoint> coordinates) {
-        StringBuilder b = new StringBuilder();
-		for (Geodetic2DPoint point : coordinates) {
             handleSingleCoordinate(b, point);
         }
         return b.toString();
@@ -1569,5 +1561,16 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     public boolean isWaiting() {
         return !waitingElements.isEmpty();
     }
+
+	/**
+	 * Returns number of points used to represent a {@link Circle} geometry,
+	 * which can be output either as a LineString, LinearRing, or Polygon
+	 * depending on the hint. Number includes first point twice since circle
+	 * must start and end at same point.
+	 * @return number of points used to represent a Circle geometry.
+	 */
+	public int getNumCirclePoints() {
+		return NUM_CIRCLE_POINTS + 1;
+	}
 
 }
