@@ -321,8 +321,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				}
 			} catch (ArrayIndexOutOfBoundsException e) {
 				// if have wrong encoding can end up here
-				log.debug("Unexpected parse error", e);
-				return null;
+				//log.warn("Unexpected parse error", e);
+				throw new IOException(e);
 			} catch (NoSuchElementException e) {
 				return null;
 			} catch (XMLStreamException e) {
@@ -1308,7 +1308,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					log.debug("XXX: handle startElement with foreign namespace: " + name);
 					return getForeignElement(se);
 				}
-			}	
+			}
 		} catch (XMLStreamException e1) {
 			log.warn("Skip element: " + localname);
 			log.debug("", e1);
@@ -1640,7 +1640,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 									((GroundOverlay) fs).setAltitude(new Double(text));
 								}
 							} else if (ALTITUDE_MODE.equals(localname)) {
-								// note: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
+								// TODO: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
 								((GroundOverlay) fs).setAltitudeMode(
                                         getNonEmptyElementText());
 							}
@@ -1778,12 +1778,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
     private boolean handleExtension(TaggedMap map, StartElement se, QName qname) throws XMLStreamException {
         String ns = qname.getNamespaceURI();
         // TODO: allow other extensions for TaggedMaps besides gx namespace ?
-        if (!ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
-            skipNextElement(stream, qname);
+        if (ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+			return handleElementExtension(map, (Element) getForeignElement(se), null);
         } else {
-            return handleElementExtension(map, (Element) getForeignElement(se), null);
+			skipNextElement(stream, qname);
+			return false;
         }
-        return false;
     }
 
     private boolean handleElementExtension(TaggedMap map, Element el, String namePrefix) {
@@ -1826,6 +1826,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
             if (ALTITUDE_MODE.equals(eltname)) {
                 // handle altitudeMode as special case. store w/o prefix since handled as a single attribute
                 // if have gx:altitudeMode and altitudeMode then altitudeMode overrides gx:altitudeMode
+				// Note Google Earth deliberately generates Placemarks with both gx:altitudeMode and altitudeMode
+				// for backward compatibility breaking strict conformance to the official OGC KML 2.2 Schema !!!
+				// see http://code.google.com/p/earth-issues/issues/detail?id=1182
                 if (map.containsKey(ALTITUDE_MODE)) {
                     log.debug("Element has duplicate altitudeMode defined"); // ignore but return as element processed
                     return true;
@@ -1970,8 +1973,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                         if (point != null)
                             model.setLocation(point);
                     } else if (localPart.equals(ALTITUDE_MODE)) {
+						// TODO: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
                         model.setAltitudeMode(getNonEmptyElementText());
-                        // also works for gx:altitudeMode values
                     }
 					// todo: Orientation, Scale, Link, ResourceMap
 				}                        
@@ -2050,6 +2053,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						if (innerRing.size() != 0)
 							inners.add(new LinearRing(innerRing.points));
 					} else if (sename.equals(ALTITUDE_MODE)) {
+						// TODO: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
 						geom.altitudeMode = getNonEmptyElementText();
 					} else if (EXTRUDE.equals(sename)) {
 						if (isTrue(stream.getElementText()))
@@ -2213,7 +2217,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				break;
 			}
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
-				String localPart = event.asStartElement().getName().getLocalPart();
+				final QName qName = event.asStartElement().getName();
+				String localPart = qName.getLocalPart();
 				if (COORDINATES.equals(localPart)) {
 					String text = getNonEmptyElementText();
 					// allow sloppy KML with whitespace appearing before/after
@@ -2224,8 +2229,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					break;
 				}
 				 else if (ALTITUDE_MODE.equals(localPart)) {
-					// note: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
-					altitudeMode = getNonEmptyElementText();					
+					// Note: handle kml:altitudeMode and gx:altitudeMode
+					// if have both forms then uses old form from KML namespace
+					// TODO: consider reversing this and overriding kml:altitudeMode with gx:altitudeMode
+					// but would need any explicit checks for altitudeMode to handle extensions....
+					if (altitudeMode == null || ms_kml_ns.contains(qName.getNamespaceURI()))
+						altitudeMode = getNonEmptyElementText();
+					else log.debug("Skip duplicate value for " + qName);
 				}
 				else if (EXTRUDE.equals(localPart)) {
 					if (isTrue(stream.getElementText()))
