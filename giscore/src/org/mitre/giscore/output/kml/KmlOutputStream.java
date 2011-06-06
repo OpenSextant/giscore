@@ -1108,14 +1108,19 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	private void handleAltitudeMode(AltitudeModeEnumType altitudeMode) throws XMLStreamException {
 		// if null or default (clampToGround) then ignore
 		// if gx:AltitudeMode extension (clampToSeaFloor, relativeToSeaFloor) then output a with gx namespace
+		// NOTE: only these two enumeration values for gx:AltitudeMode as of 1-Jun-2011
 		if (altitudeMode != null) {
 			if (altitudeMode == AltitudeModeEnumType.relativeToGround || altitudeMode == AltitudeModeEnumType.absolute) {
 				handleSimpleElement(ALTITUDE_MODE, altitudeMode);
 			} else if (altitudeMode == AltitudeModeEnumType.clampToSeaFloor || altitudeMode == AltitudeModeEnumType.relativeToSeaFloor) {
-                if (gxNamespace != null)
-                    writer.writeStartElement(gxNamespace.getPrefix(), ALTITUDE_MODE, gxNamespace.getURI());
-                else
-                    writer.writeStartElement("gx", ALTITUDE_MODE, NS_GOOGLE_KML_EXT);
+				if (gxNamespace != null)
+					writer.writeStartElement(gxNamespace.getPrefix(), ALTITUDE_MODE, gxNamespace.getURI());
+				else {
+					writer.writeStartElement(ALTITUDE_MODE);
+					writer.writeDefaultNamespace(NS_GOOGLE_KML_EXT);
+                    // writer.writeStartElement("gx", ALTITUDE_MODE, NS_GOOGLE_KML_EXT);
+					// writer.writeNamespace("gx", NS_GOOGLE_KML_EXT);
+				}
                 handleCharacters(altitudeMode.toString());
                 writer.writeEndElement();
 				//log.warn("gx:altitudeMode values not supported in KML output: " + altitudeMode);
