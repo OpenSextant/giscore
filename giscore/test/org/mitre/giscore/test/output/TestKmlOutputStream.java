@@ -45,6 +45,7 @@ import java.util.Date;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.*;
@@ -138,6 +139,45 @@ public class TestKmlOutputStream extends TestGISBase {
         //Assert.assertTrue(kml.contains(IKml.NS_GOOGLE_KML_EXT));
 	}
 
+	@Test
+	public void testGxElementNsDeclared() throws IOException, XMLStreamException {
+		outputGxElement(true);
+	}
+
+	@Test
+	public void testGxElementNsUndeclared() throws IOException, XMLStreamException {
+		outputGxElement(false);
+	}
+
+	private void outputGxElement(boolean declareNamespace) throws IOException, XMLStreamException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		if (declareNamespace) {
+			DocumentStart ds = new DocumentStart(DocumentType.KML);
+			Namespace gxNs = Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT);
+			ds.getNamespaces().add(gxNs);
+            kos.write(ds);
+		}
+		Feature f = new Feature();
+		Point cp = new Point(random3dGeoPoint());
+		cp.setAltitudeMode(AltitudeModeEnumType.clampToSeaFloor);
+		f.setGeometry(cp);
+		kos.write(f);
+		kos.close();
+		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+		try {
+			assertNotNull(kis.read()); // skip DocumentStart
+			IGISObject obj = kis.read(); // Placemark
+			kis.close();
+			assert(obj instanceof Feature);
+			checkApproximatelyEquals(f, obj);
+			// System.out.println(bos.toString("UTF-8")); // debug
+		} catch (AssertionError ae) {
+			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
+			throw ae;
+		}
+	}
+
     @Test
 	public void testRowData() throws XMLStreamException, IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -157,7 +197,7 @@ public class TestKmlOutputStream extends TestGISBase {
         kos.write(row);
         kos.write(new ContainerEnd());
         kos.close();
-        String kml = bos.toString();
+        String kml = bos.toString("UTF-8");
         // System.out.println(kml);
         Assert.assertTrue(kml.contains(IKml.EXTENDED_DATA));
         Assert.assertTrue(kml.contains("hello"));
