@@ -128,8 +128,7 @@ public class Point extends GeometryBase {
 
 	/**
 	 * This method returns a Geodetic2DPoint that is at the center of this
-	 * Geometry object's Bounding Box, or null if the bounding box is not
-	 * defined.
+	 * Geometry object's Bounding Box.
 	 * 
 	 * @return Geodetic2DPoint at the center of this Geometry object
 	 */
