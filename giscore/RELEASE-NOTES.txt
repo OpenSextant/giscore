@@ -175,6 +175,7 @@ KmlOutputStream
 -Handle Circle geometry and generate Line/Ring/Poly depending on circle hints types
 -Added getNumCirclePoints()
 -Corrected output order of elements for ListStyle
+-Fix order of gx:balloonVisibility in output
 
 KmlMetaDump
 -Fixed bug that aborted scan of directories if failed to open a file
