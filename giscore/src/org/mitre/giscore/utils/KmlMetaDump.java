@@ -738,7 +738,7 @@ public class KmlMetaDump implements IKml {
 		if (geom instanceof Polygon) {
 			Polygon poly = (Polygon) geom;
 			LinearRing outerRing = poly.getOuterRing();
-			validateLinearRing("Outer ring", outerRing);			
+			validateLinearRing("Outer ring", outerRing);
 			// Verify that all the inner rings are in counter-clockwise point order, are fully
         	// contained in the outer ring, and are non-intersecting with each other.
 			List<LinearRing> rings = poly.getLinearRings();
@@ -787,8 +787,8 @@ public class KmlMetaDump implements IKml {
                     }
                     last = pt;
                 }
-                if (verbose && dups > 0)
-                    System.out.printf(" %d duplicate points out of %d%n", dups, n);
+                if (verbose && dups != 0)
+                    System.out.printf("XXX: %d duplicate points out of %d%n", dups, n);
             }
 		} else if (geom instanceof LinearRing) {
 			LinearRing ring = (LinearRing)geom;
@@ -841,7 +841,7 @@ public class KmlMetaDump implements IKml {
                 }
                 last = pt;
             }
-            if (verbose)
+            if (verbose && dups != 0)
                 System.out.printf("%d duplicate points out of %d%n", dups, n);
 
             // first/last point not the same 
