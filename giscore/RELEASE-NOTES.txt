@@ -74,7 +74,7 @@ Polygon
  Puts outer ring points in clockwise order and inner ring points in ccw order
 
 KmlInputStream
--fix interpreting kml elements as non-kml/foreign elements if kml root element does not declare explicit kml namespace
+-fix interpreting KML elements as non-kml/foreign elements if kml root element does not declare explicit kml namespace
 
 KmlOutputStream
 -Properly escape schema id value in output
@@ -156,6 +156,33 @@ KmlMetaDump
   * GroundOverlay fails to satisfy east > west constraint [ATC 11]
   * GroundOverlay fails to satisfy north > south constraint [ATC 11]
   * GroundOverlay spans -180/+180 longitude line
+
+------------------------------------------------------------------------------
+
+Release 0.5.28
+
+This release fixes minor bugs and enhancements in KML handling including a bug in the Point geometry class.
+
+KmlInputStream
+-Fixed parsing drawOrder in GroundOverlay allowing whitespace in value and catching exception for non-numeric values
+-Allow '#' prefix in color values as does Google Earth
+-Add better handling of HTML markup in name field
+
+KmlReader
+-Replace ZipFile with ZipInputStream which is not as strict in validation of zip header fields
+
+KmlOutputStream
+-Handle Circle geometry and generate Line/Ring/Poly depending on circle hints types
+-Added getNumCirclePoints()
+-Corrected output order of elements for ListStyle
+
+KmlMetaDump
+-Fixed bug that aborted scan of directories if failed to open a file
+-Fixed parsing tilt in LookAt with non-numeric values
+
+Point
+-Simplified null check logic forcing "pt" field to always be non-null
+-Fixed NullPointerException in equals(Point) if argument was null
 
 ------------------------------------------------------------------------------
 
