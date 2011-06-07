@@ -1395,10 +1395,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      */
     private void handleListStyleElement(Style style) throws XMLStreamException {
         writer.writeStartElement(LIST_STYLE);
-        handleColor(BG_COLOR, style.getListBgColor());
         Style.ListItemType listItemType = style.getListItemType();
         if (listItemType != null)
             handleSimpleElement(LIST_ITEM_TYPE, listItemType.toString());
+		handleColor(BG_COLOR, style.getListBgColor());
         writer.writeEndElement();
     }
 
