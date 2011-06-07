@@ -26,6 +26,13 @@ public class TestBaseGeometry extends TestGISBase {
 
     private static final double EPSILON = 1E-5;
 
+	@Test
+    public void testNullPointCompare() throws Exception {
+		Point pt = getRandomPoint();
+		Point other = null;
+		assertFalse(pt.equals(other));
+	}
+
     @Test
 	public void testPointLineCreation() throws Exception {
 		Point cp = getRandomPoint();
