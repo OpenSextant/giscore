@@ -388,10 +388,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				handleSimpleElement(OPEN, "1"); // default=0
 			}
 
-            // handle atom attributes if defined and remove from list
+            // handle atom attributes and gx:balloonVisibility if defined and remove from list
             Element author = null;
             Element link = null;
             Element addressDetails = null;
+			Element balloonVisibility = null;
             for(Iterator<Element>it = elements.iterator(); it.hasNext(); ) {
                 Element el = it.next();
                 // remove atom:attributes in post-xml element dump
@@ -407,7 +408,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                         ADDRESS_DETAILS.equals(el.getName())) {
                     addressDetails = el;
                     it.remove(); // remove from list - marked as processed
-                }
+                } else if (NS_GOOGLE_KML_EXT.equals(el.getNamespaceURI()) &&
+						"balloonVisibility".equals(el.getName())) {
+					balloonVisibility = el;
+					it.remove(); // remove from list - marked as processed
+				}
             }
             if (author != null) handleXmlElement(author);
             if (link != null) handleXmlElement(link);
@@ -450,6 +455,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
 			handleRegion(feature.getRegion());
             handleExtendedData(feature);
+
+			if (balloonVisibility != null) {
+				// gx:balloonVisibility extends kml:AbstractFeatureSimpleExtensionGroup
+				// and follows kml:ExtendedData
+				handleXmlElement(balloonVisibility);
+			}
+
+			// todo: other gx extensions that extend features should probably be output here and removed from the list
+			// check out what other extended tags are possible..
 
             return elements;
         } catch (XMLStreamException e) {
