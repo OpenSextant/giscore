@@ -5,7 +5,7 @@
  *
  * The program is provided "as is" without any warranty express or implied,
  * including the warranty of non-infringement and the implied warranties of
- * merchantibility and fitness for a particular purpose.  The Copyright
+ * merchantability and fitness for a particular purpose.  The Copyright
  * owner will not be liable for any damages suffered by you as a result of
  * using the Program.  In no event will the Copyright owner be liable for
  * any special, indirect or consequential damages or lost profits even if
@@ -38,6 +38,7 @@ public class Point extends GeometryBase {
 
 	private static final long serialVersionUID = 1L;
 
+	@NonNull
 	private Geodetic2DPoint pt; // or extended Geodetic3DPoint
 
 	/**
@@ -47,7 +48,7 @@ public class Point extends GeometryBase {
 	 * @see SimpleObjectOutputStream
 	 */
 	public Point() {
-		// 
+		pt = new Geodetic2DPoint();
 	}
 
 	/**
@@ -166,7 +167,7 @@ public class Point extends GeometryBase {
 	 */
 	@Override
 	public int hashCode() {
-		return pt == null ? 0 : pt.hashCode();
+		return pt.hashCode();
 	}
 
 	/**
@@ -178,7 +179,7 @@ public class Point extends GeometryBase {
 	 * @return true if specified Point is equal in value to this Point.
 	 */
 	public boolean equals(Point that) {
-		return pt == null ? that != null && that.pt == null : this.pt.equals(that.pt);
+		return that != null && this.pt.equals(that.pt);
 	}
 
 	/**
