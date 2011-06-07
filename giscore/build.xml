@@ -207,7 +207,7 @@
 				<path refid="project.classpath" />
 			</classpath>
 			<formatter type="plain" />
-			<!--formatter type="xml" /-->
+			<formatter type="xml" />
 
 			<batchtest fork="yes" todir="${testoutput}">
 				<fileset dir="${test}" includes="**/Test*Kml*.java **/Test*Kmz*.java" />
