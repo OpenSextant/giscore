@@ -113,15 +113,15 @@ public class Circle extends Point {
 
 	/**
 	 * This method is used to test whether two Circle are equal in the sense
-	 * that have the same coordinate value and radius.
+	 * that have the same center coordinate value and radius.
 	 *
 	 * @param that
 	 *            Circle to compare against this one.
 	 * @return true if specified Circle is equal in value to this Circle.
 	 */
 	public boolean equals(Circle that) {
-		return this.getCenter().equals(that.getCenter()) && (Double.compare(this.radius, that.radius) == 0 ||
-                        Math.abs(this.radius - that.radius) <= DELTA);
+		return that != null && (this.getCenter().equals(that.getCenter()) && (Double.compare(this.radius, that.radius) == 0 ||
+                        Math.abs(this.radius - that.radius) <= DELTA));
 	}
 
 	/**
