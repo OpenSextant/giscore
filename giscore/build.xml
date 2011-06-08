@@ -2,6 +2,8 @@
 
 <project xmlns:ivy="antlib:org.apache.ivy.ant" name="giscore" default="compile">
 
+	<property file="local.properties"/>
+
 	<!-- Remove and reinstate ivy:buildnumber should that ever start working again -->
 	<property name="previous.revision" value="0.5.28" />
 	<property name="ivy.new.revision" value="0.5.29" />
@@ -23,6 +25,7 @@
 	<property name="test.classes" value="${build}/test" />
 	<property name="testoutput" value="${basedir}/testOutput" />
 	<property name="testdeploy" value="C:/apache-tomcat-5.5.23-giscore-rmi/webapps/giscore" />
+	<property name="test.excludes" value="**/TestGISBase.java **/TestShapefileBase.java"/>
 
 	<path id="project.classpath">
 		<fileset dir="lib">
@@ -210,8 +213,7 @@
 			<formatter type="xml" />                            
 			<batchtest fork="yes" todir="${testoutput}">
 				<fileset dir="${test}"
-					excludes="**/TestGISBase.java
-						**/TestShapefileBase.java"
+					excludes="${test.excludes}"
 				/>
 			</batchtest>
 		</junit>
@@ -310,6 +312,5 @@
 			<formatter type="xml" outfile="${build}/clirr.xml"/>
 		</clirr>
 	</target>
-
 
 </project>
