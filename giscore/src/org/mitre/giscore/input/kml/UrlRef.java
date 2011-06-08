@@ -6,7 +6,7 @@
  *  (C) Copyright MITRE Corporation 2006
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -252,8 +252,8 @@ public final class UrlRef implements java.io.Serializable {
         String kmzPath = kmzRelPath;
         // if whitespace appears in networkLink URLs then it's escaped to %20
         // so need to convert back to spaces to match exactly how it is stored in KMZ file
-        int ind = kmzPath.indexOf("%20");
-        if (ind != -1) {
+        final boolean isEscaped = kmzPath.contains("%20");
+        if (isEscaped) {
             kmzPath = kmzPath.replace("%20", " "); // unescape all escaped whitespace chars
         }
         URLConnection conn = proxy == null ? url.openConnection() : url.openConnection(proxy);
@@ -268,7 +268,7 @@ public final class UrlRef implements java.io.Serializable {
             ZipEntry entry;
             while ((entry = zis.getNextEntry()) != null) {
                 String name = entry.getName();
-                if (ind != -1)
+                if (isEscaped)
                     name = name.replace("%20", " "); // unescape all escaped whitespace chars
                 // find matching KML file in archive
                 if (kmzPath.equals(name)) {
