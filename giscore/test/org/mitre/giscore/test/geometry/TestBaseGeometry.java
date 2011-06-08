@@ -33,6 +33,29 @@ public class TestBaseGeometry extends TestGISBase {
 		assertFalse(pt.equals(other));
 	}
 
+	@Test
+    public void testNullCircleCompare() throws Exception {
+		Circle circle = new Circle(random3dGeoPoint(), 1000.0);
+		Circle other = null;
+		assertFalse(circle.equals(other));
+	}
+
+	@Test
+    public void testNullLineCompare() throws Exception {
+		Point cp = getRandomPoint();
+		List<Point> pts = new ArrayList<Point>();
+		for (int i=0; i < 5; i++) {
+			Point pt = getRingPoint(cp, i, 5, .3, .4);
+            assertEquals(1, pt.getNumParts());
+            assertEquals(1, pt.getNumPoints());
+            assertEquals(pt.asGeodetic2DPoint(), pt.getCenter());
+			pts.add(pt);
+        }
+		Line line = new Line(pts);
+		Line other = null;
+		assertFalse(line.equals(other));
+	}
+
     @Test
 	public void testPointLineCreation() throws Exception {
 		Point cp = getRandomPoint();
