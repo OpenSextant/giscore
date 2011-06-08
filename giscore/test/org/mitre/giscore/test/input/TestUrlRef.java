@@ -16,10 +16,7 @@ package org.mitre.giscore.test.input;
 
 import junit.framework.TestCase;
 
-import java.io.InputStream;
-import java.io.File;
-import java.io.StringWriter;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
@@ -73,19 +70,22 @@ public class TestUrlRef extends TestCase {
 			File file = new File("data/kml/kmz/dir/content.kmz");
 			URL url = file.toURI().toURL();
 			UrlRef ref = new UrlRef(url, "kml/hi.kml");
-			URI uri = ref.getURI();
+
 			assertTrue(ref.isKmz());
 			assertEquals("kml/hi.kml", ref.getKmzRelPath());
 			// URL: file:/C:/projects/giscore/data/kml/kmz/dir/content.kmz
 			assertEquals(url, ref.getURL());
 
 			//System.out.println(ref);
-			// file:/C:/projects/transfusion/trunk/mediate/data/kml/kmz/dir/content.kmz/kml/hi.kml			
+			// ref=file:/C:/projects/giscore/data/kml/kmz/dir/content.kmz/kml/hi.kml
 			assertTrue(ref.toString().endsWith("kml/kmz/dir/content.kmz/kml/hi.kml"));
-			// URI: kmzfile:/C:/projects/giscore/data/kml/kmz/dir/content.kmz?file=kml/hi.kml
+
+			// uri=kmzfile:/C:/projects/giscore/data/kml/kmz/dir/content.kmz?file=kml/hi.kml
+			URI uri = ref.getURI();
 			assertNotNull(uri);
-			assertTrue(uri.toString().startsWith("kmz"));
-			assertTrue(uri.toString().endsWith("kml/kmz/dir/content.kmz?file=kml/hi.kml"));
+			final String uriString = uri.toString();
+			assertTrue(uriString.startsWith("kmz"));
+			assertTrue(uriString.endsWith("kml/kmz/dir/content.kmz?file=kml/hi.kml"));
 
 			// now construct UrlRef from special URI to validate every field gets set correctly
 			UrlRef ref2 = new UrlRef(uri);
@@ -98,7 +98,7 @@ public class TestUrlRef extends TestCase {
 			StringWriter writer = new StringWriter();
 			IOUtils.copy(is, writer);
 			// check for expected contents within KML document
-			assertTrue(writer.toString().indexOf("This is the location of my office.") != -1);
+			assertTrue(writer.toString().contains("This is the location of my office."));
 		} catch (MalformedURLException e) {
 			fail("Failed to construct URL");
 		} catch (URISyntaxException e) {
@@ -109,6 +109,27 @@ public class TestUrlRef extends TestCase {
 			IOUtils.closeQuietly(is);
 		}
     }
+
+	/**
+	 * Test UrlRef with KMZ resources for links that don't exist
+	 */
+	public void testKmzBadHref() throws URISyntaxException, MalformedURLException {
+		File file = new File("data/kml/kmz/dir/content.kmz");
+		if (!file.exists()) fail("file not found: " + file);
+		URL url = file.toURI().toURL();
+		UrlRef ref = new UrlRef(url, "kml/notfound.kml");
+		InputStream is = null;
+		try {
+			is = ref.getInputStream();
+			fail("Method should fail with FileNotFoundException");
+		} catch (FileNotFoundException e) {
+			// this should fail and get here
+		} catch (IOException e) {
+			fail("Expected to throw FileNotFoundException but threw IOException instead");
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
+	}
 
 	public void testDynamicURL() {
         try {
