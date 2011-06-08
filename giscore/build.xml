@@ -200,19 +200,20 @@
 			<assertions>
 			  <enable package="org.mitre.giscore"/>
 			</assertions>
-			<jvmarg value="-DkeepTempFiles=true" />
+			<jvmarg value="-DkeepTempFiles=false" />
 			<classpath>
 				<pathelement path="${build.classes}" />
 				<pathelement path="${test.classes}" />
 				<path refid="project.classpath" />
 			</classpath>
 			<formatter type="plain" />
-			<formatter type="xml" />
-
+			<formatter type="xml" />                            
 			<batchtest fork="yes" todir="${testoutput}">
-				<fileset dir="${test}" includes="**/Test*Kml*.java **/Test*Kmz*.java" />
+				<fileset dir="${test}"
+					excludes="**/TestGISBase.java
+						**/TestShapefileBase.java"
+				/>
 			</batchtest>
-
 		</junit>
 	</target>
 
@@ -242,10 +243,6 @@
 	<target name="publish" depends="pom, javadoc, sourcejar" 
 		description="Publish directly to a repository">		
 		<echo>Publishing revision ${ivy.new.revision}</echo>
-
-		<available file="C:/tools/ant-1.7.1/lib/commons-httpclient-3.0.jar" type="file" property="has.commons"/>
-		<fail unless="has.commons" message="commons jars *NOT* found in ant/lib. Required to publish."/>
-
 		<ivy:publish resolver="maven-proxy-local" revision="${ivy.new.revision}" 
 			warnonmissing="true" conf="compile" overwrite="false">
 			<artifacts pattern="rel/[artifact].[ext]" />
