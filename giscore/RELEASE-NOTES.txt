@@ -161,7 +161,8 @@ KmlMetaDump
 
 Release 0.5.28
 
-This release fixes minor bugs and enhancements in KML handling including a bug in the Point geometry class.
+This release fixes minor bugs and enhancements in KML handling. Also fixes
+NullPointerException bugs in two geometry classes.
 
 KmlInputStream
 -Fixed parsing drawOrder in GroundOverlay allowing whitespace in value and catching exception for non-numeric values
@@ -180,6 +181,9 @@ KmlOutputStream
 KmlMetaDump
 -Fixed bug that aborted scan of directories if failed to open a file
 -Fixed parsing tilt in LookAt with non-numeric values
+
+Circle
+-Fixed NullPointerException in equals(Circle) if argument was null
 
 Point
 -Simplified null check logic forcing "pt" field to always be non-null
