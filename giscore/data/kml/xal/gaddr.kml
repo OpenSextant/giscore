@@ -25,8 +25,8 @@
               <xal:Locality>
                 <xal:LocalityName>Mountain View</xal:LocalityName>
                 <xal:Thoroughfare>
-                  <xal:ThoroughfareName>Amphitheatre Pkwy</xal:ThoroughfareName>
                   <xal:ThoroughfareNumber>1600</xal:ThoroughfareNumber>
+                  <xal:ThoroughfareName>Amphitheatre Pkwy</xal:ThoroughfareName>
                 </xal:Thoroughfare>
                 <xal:PostalCode>
                   <xal:PostalCodeNumber>94043</xal:PostalCodeNumber>
