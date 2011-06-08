@@ -44,11 +44,13 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
     
 	private static final long serialVersionUID = 1L;
 
+	@NonNull
     private transient Namespace namespace;
 
 	/**
 	 * The name of the element
 	 */
+	@NonNull
 	private String name;
 	
 	/**
@@ -106,10 +108,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
      *      may be <code>null</code>. 
      */
     public void setNamespace(Namespace namespace) {
-        if (namespace == null) {
-            namespace = Namespace.NO_NAMESPACE;
-        }
-        this.namespace = namespace;
+        this.namespace = namespace == null ? Namespace.NO_NAMESPACE : namespace;
     }
 
 	/**
@@ -140,7 +139,8 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	}
 
 	/**
-	 * @param name the name to set
+	 * @param name the name to set. Names must conform to name construction
+	 * rules in the XML 1.0 specification as it applies to an XML element.
      * 
      * @throws IllegalArgumentException if name is blank string or <tt>null</tt>.
 	 */
@@ -232,8 +232,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	public String toString() {
         StringBuilder b = new StringBuilder();
         b.append("Element [");
-        if (namespace != null)
-            b.append("Namespace=").append(namespace.getPrefix()).append(':').append(namespace.getURI()).append(", ");
+		b.append("Namespace=").append(namespace.getPrefix()).append(':').append(namespace.getURI()).append(", ");
         b.append("name=").append(name);
         if (!attributes.isEmpty())
             b.append(", attributes=").append(attributes);
@@ -260,7 +259,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		result = prime * result
 				+ ((children == null) ? 0 : children.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + ((namespace == null) ? 0 : namespace.hashCode());
+		result = prime * result + namespace.hashCode();
 		result = prime * result + ((text == null) ? 0 : text.hashCode());
 		return result;
 	}
@@ -287,10 +286,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 				return false;
 		} else if (!name.equals(other.name))
 			return false;
-		if (namespace == null) {
-			if (other.namespace != null)
-				return false;
-		} else if (!namespace.equals(other.namespace))
+		if (!namespace.equals(other.namespace))
 			return false;
 		if (text == null) {
 			if (other.text != null)
@@ -315,6 +311,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
         } else
             namespace = Namespace.NO_NAMESPACE;
 		name = in.readString();
+		assert name != null;
 		text = in.readString();
 		int count = in.readInt();
 		for(int i = 0; i < count; i++) {
