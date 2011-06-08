@@ -136,19 +136,20 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	}
 
 	/**
-	 * Tests whether this geometry is a container of otherGeom such as
+	 * Tests whether this geometry is a container of another geometry such as
 	 * MultiPolygon is a container of Polygons, MultiPoint is a container of
 	 * Point, etc.
 	 * 
 	 * @param otherGeom
 	 *            the geometry from which to test if this is a container for
-	 * @return true if the geometry of this object is a "proper" container for
-	 *         otherGeom features Point, Line, LinearRing, Polygon are treated
-	 *         as primitive features and not considered "proper" containers
-	 *         though Lines are contain points, polygons contain LinearRings,
+	 *
+	 * @return <tt>true</tt> if the geometry of this object is a "proper" container for
+	 *         @{code otherGeom}. Features Point, Line, LinearRing, Polygon are
+	 *         treated as primitive features and not considered "proper" containers
+	 *         though Lines contain points, polygons contain LinearRings,
 	 *         etc.
 	 * 
-	 *         By default return false and override only for container
+	 *         By default return <tt>false</tt> and override only for container
 	 *         Geometries (e.g. MultiPolygon, MultiPoint, etc.)
 	 */
 	public boolean containerOf(Geometry otherGeom) {
@@ -162,7 +163,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 * The toString method returns a String representation of this object
 	 * suitable for debugging
 	 * 
-	 * @return String containing Geometry object type, bounding coordintates,
+	 * @return String containing Geometry object type, bounding coordinates,
 	 *         and number of parts.
 	 */
 	public abstract String toString();
@@ -172,7 +173,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 *
 	 * @param obj
 	 *            Geometry to compare against this one.
-	 * @return true if specified Geometry is equal in value to this Geometry.
+	 * @return <tt>true</tt> if specified Geometry is equal in value to this Geometry.
 	 */
 	@Override
 	public boolean equals(Object obj) {
@@ -274,7 +275,7 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 
 	/**
 	 * @return the component points for the given geometry.
-     *  May return empty list but never null.
+     *  May return empty list but never <tt><null/tt>.
 	 */
     @NonNull
 	public abstract List<Point> getPoints();
@@ -285,9 +286,6 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 	 */
     @Nullable
 	public Geometry getPart(int i) {
-		if (i == 0)
-			return this;
-		else
-			return null;
+		return i == 0 ? this : null;
 	}
 }
