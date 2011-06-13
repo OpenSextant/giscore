@@ -53,6 +53,8 @@ public abstract class Common extends Row {
 	protected String styleUrl;
 	private TaggedMap viewGroup;
 	private TaggedMap region;
+
+	@NonNull
 	private List<Element> elements = new ArrayList<Element>();
 
 	/**
@@ -196,7 +198,6 @@ public abstract class Common extends Row {
 	 */
     @NonNull
 	public List<Element> getElements() {
-        assert elements != null;
 		return elements;
 	}
 
@@ -275,8 +276,7 @@ public abstract class Common extends Row {
 		int result = super.hashCode();
 		result = prime * result
 				+ ((description == null) ? 0 : description.hashCode());
-		result = prime * result
-				+ ((elements == null) ? 0 : elements.hashCode());
+		result = prime * result + elements.hashCode(); // elements never null
 		result = prime * result + ((endTime == null) ? 0 : endTime.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((region == null) ? 0 : region.hashCode());
@@ -306,11 +306,6 @@ public abstract class Common extends Row {
 			if (other.description != null)
 				return false;
 		} else if (!description.equals(other.description))
-			return false;
-		if (elements == null) {
-			if (other.elements != null)
-				return false;
-		} else if (!elements.equals(other.elements))
 			return false;
 		if (endTime == null) {
 			if (other.endTime != null)
@@ -346,6 +341,8 @@ public abstract class Common extends Row {
 			if (other.visibility != null)
 				return false;
 		} else if (!visibility.equals(other.visibility))
+			return false;
+		if (!elements.equals(other.elements))
 			return false;
 		return true;
 	}
@@ -391,7 +388,7 @@ public abstract class Common extends Row {
             b.append(region);
             b.append('\n');
         }
-        if (elements != null && !elements.isEmpty()) {
+        if (!elements.isEmpty()) {
             b.append(" elements = ");
             b.append(elements);
             b.append('\n');
