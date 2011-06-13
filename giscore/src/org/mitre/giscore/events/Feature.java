@@ -41,10 +41,11 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
 public class Feature extends Common {
 	private static final long serialVersionUID = 1L;
 
+	private StyleSelector style;
     private Geometry geometry;
 
-    /**
-     * Constructs a basic Feature that may contain a geometry.
+	/**
+     * Constructs a basic Feature that may contain a geometry and a style.
      * In KML this represents a Placemark.
      */
     public Feature() {
@@ -62,6 +63,7 @@ public class Feature extends Common {
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
 		super.readData(in);
+		style = (StyleSelector) in.readObject();
 		geometry = (Geometry) in.readObject();
 	}
 
@@ -74,6 +76,7 @@ public class Feature extends Common {
 	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
+		out.writeObject(style);
 		out.writeObject(geometry);
 	}
 
@@ -91,6 +94,23 @@ public class Feature extends Common {
 	 */
 	public void setGeometry(Geometry geometry) {
 		this.geometry = geometry;
+	}
+
+	/**
+	 * Get inline Style or StyleMap for this Feature
+	 * @return the Style or StyleMap
+	 */
+    @CheckForNull
+	public StyleSelector getStyle() {
+		return style;
+	}
+
+	/**
+	 * Set inline style to use with this Feature.
+	 * @param style
+	 */
+	public void setStyle(StyleSelector style) {
+		this.style = style;
 	}
 
 	/**
@@ -113,12 +133,13 @@ public class Feature extends Common {
 	 */
 	public boolean approximatelyEquals(Feature other) {
 		EqualsBuilder eb = new EqualsBuilder();
-		boolean fields = eb.append(description, other.description) //
-				.append(name, other.name) //
-				.append(schema, other.schema) //
-				.append(styleUrl, other.styleUrl) // 
-				.append(endTime, other.endTime) //
-				.append(startTime, other.startTime).isEquals();
+		boolean fields = eb.append(description, other.description)
+				.append(name, other.name)
+				.append(schema, other.schema)
+				.append(styleUrl, other.styleUrl)
+				.append(endTime, other.endTime)
+				.append(startTime, other.startTime)
+				.append(style, other.style).isEquals();
 
 		if (!fields)
 			return false;
@@ -176,6 +197,10 @@ public class Feature extends Common {
 		    b.append(" geometry class=[");
 		    b.append(geometry.getClass().getName());
             b.append("]\n\t  center=").append(geometry.getCenter());
+            b.append('\n');
+        }
+		if (style != null) {
+		    b.append(" style=").append(style);
             b.append('\n');
         }
         return b.toString();
