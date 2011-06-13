@@ -20,10 +20,7 @@ package org.mitre.giscore.events;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.apache.commons.lang.builder.ToStringBuilder;
-import org.apache.commons.lang.builder.ToStringStyle;
 import org.mitre.giscore.IStreamVisitor;
-
 
 /**
  * End of a container which should be associated with corresponding
