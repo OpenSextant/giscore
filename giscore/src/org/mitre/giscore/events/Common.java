@@ -110,7 +110,7 @@ public abstract class Common extends Row {
 	public void setStyleUrl(String styleUrl) {
         styleUrl = StringUtils.trimToNull(styleUrl);
         // test if url relative identifier not starting with '#' then prepend '#' to url
-        if (styleUrl != null && !styleUrl.startsWith("#") && UrlRef.isIdentifier(styleUrl)) {
+        if (styleUrl != null && !styleUrl.startsWith("#") && UrlRef.isIdentifier(styleUrl, true)) {
             log.debug("fix StyleUrl identifier as local reference");
             styleUrl = "#" + styleUrl;
         }
