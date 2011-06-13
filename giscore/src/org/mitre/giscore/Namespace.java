@@ -50,6 +50,10 @@
  created by Jason Hunter <jhunter_AT_jdom_DOT_org> and
  Brett McLaughlin <brett_AT_jdom_DOT_org>.  For more information
  on the JDOM Project, please see <http://www.jdom.org/>.
+
+ Changes:
+  -Added changes from v1.44 (JDOM 1.1.1) with synchronized blocks around access to namespaces.
+
  */
 package org.mitre.giscore;
 
@@ -153,6 +157,16 @@ public final class Namespace {
             throw new IllegalArgumentException("The xml prefix can only be bound to " +
              "http://www.w3.org/XML/1998/namespace");
         }
+
+	/*
+        // The erratum to Namespaces in XML 1.0 that suggests this
+        // next check is controversial. Not everyone accepts it.
+        if (uri.equals("http://www.w3.org/XML/1998/namespace")) {
+            throw new IllegalNameException(uri, "Namespace URI",
+             "The http://www.w3.org/XML/1998/namespace must be bound to " +
+             "the xml prefix.");
+        }
+	*/
         
         // Finally, store and return
         Namespace ns = new Namespace(prefix, uri);
