@@ -51,7 +51,9 @@ public class Line extends GeometryBase implements Iterable<Point> {
 	
     private static final Logger log = LoggerFactory.getLogger(Line.class);
 
+	@NonNull
     private List<Point> pointList;
+
     private boolean idlWrap;  // International Date Line Wrap
 
 	/**
@@ -59,7 +61,7 @@ public class Line extends GeometryBase implements Iterable<Point> {
      * to initialize the object instance otherwise object is invalid.
 	 */
 	public Line() {
-		//
+		pointList = Collections.emptyList();
 	}
 
     /**
@@ -207,6 +209,6 @@ public class Line extends GeometryBase implements Iterable<Point> {
 
 	@Override
 	public int getNumPoints() {
-		return pointList != null ? pointList.size() : 0;
+		return pointList.size();
 	}
 }
