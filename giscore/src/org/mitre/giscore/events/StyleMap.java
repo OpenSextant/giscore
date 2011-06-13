@@ -35,6 +35,10 @@ import org.slf4j.LoggerFactory;
  * normal and highlighted styles for a placemark, so that the highlighted
  * version appears when the user mouses over the icon in Google Earth client.
  *
+ * <h4>Notes/Limitations:</h4>
+ *  Does not support inline Styles in StyleMaps only referenced styles via URLs
+ *  as typically used in all generated KML.
+ *
  * @author DRAND
  */
 public class StyleMap extends StyleSelector {
@@ -80,8 +84,9 @@ public class StyleMap extends StyleSelector {
 			throw new IllegalArgumentException(
 					"url should never be null or empty");
 		}
-        // test if url relative identifier not starting with '#' then prepend '#' to url
-        if (!url.startsWith("#") && UrlRef.isIdentifier(url)) {
+		// try to auto-fix bad KML. test if url relative identifier not starting
+		// with '#' then prepend '#' to url
+        if (!url.startsWith("#") && UrlRef.isIdentifier(url, true)) {
             url = "#" + url;
             log.debug("fix StyleMap url identifier as local reference: " + url);
         }
