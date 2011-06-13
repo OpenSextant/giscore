@@ -16,6 +16,10 @@
  ***************************************************************************************/
 
 /*
+ This class contains several slightly modified helper methods directly
+ from the JDOM 1.1 Verifier.java source code clearly marked at the end
+ of this class starting with isXMLNameCharacter().
+
  $Id: Verifier.java,v 1.55 2007/11/10 05:28:59 jhunter Exp $
 
 Copyright (C) 2000-2007 Jason Hunter & Brett McLaughlin.
@@ -233,15 +237,15 @@ public final class UrlRef implements java.io.Serializable {
 
 	/**
 	 * Opens a connection to this <code>UrlRef</code> and returns an
-     * <code>InputStream</code> for reading from that connection.
+	 * <code>InputStream</code> for reading from that connection.
 	 * 
 	 * @param      proxy the Proxy through which this connection
 	 *             will be made. If direct connection is desired,
 	 *             <code>null</code> should be specified.
-     * 
+	 * 
 	 * @return     an input stream for reading from the resource represented by the <code>UrlRef</code>.
 	 * @throws FileNotFoundException if referenced link was not found in the parent KMZ resource
-     *          nor outside the KMZ at the same base context.
+	 *          nor outside the KMZ at the same base context.
 	 * @throws IOException if an I/O error occurs
 	 */
 	public InputStream getInputStream(Proxy proxy) throws IOException {
@@ -293,7 +297,7 @@ public final class UrlRef implements java.io.Serializable {
     }
 
 	/**
-     * This method gets the correct input stream for a URL.  Attempts to
+	 * This method gets the correct input stream for a URL.  Attempts to
 	 * determine if URL is a KMZ (compressed KML file) first by the returned
 	 * content type from the <code>URLConnection</code> and it that fails then
 	 * by checking if a .kmz extension appears at end of the file name.
@@ -523,9 +527,24 @@ public final class UrlRef implements java.io.Serializable {
      * (e.g. StyleMap referencing local identifier of a Style).
      * 
      * @param str  the String to check, may be null
-     * @return true if string matches a identifier reference
+     * @return true if string matches an XML identifier reference
      */
-    public static boolean isIdentifier(String str) {
+	public static boolean isIdentifier(String str) {
+		return isIdentifier(str, false);
+	}
+
+	/**
+     * Test for relative identifier. True if string matches the set
+     * of strings for NCName production in [Namespaces in XML].
+     * Useful to test if target is reference to identifier in KML document
+     * (e.g. StyleMap referencing local identifier of a Style).
+     *
+     * @param str  the String to check, may be null
+     * @param allowWhitespace Flag to allow whitespace in identifier other than first character
+     *		Whitespace isn't allowed by the spec but often appears in many public KML documents.
+     * @return true if string matches an XML identifier reference
+     */
+    public static boolean isIdentifier(String str, boolean allowWhitespace) {
         /*
          * check if string matches NCName production
          *  NCName ::=  (Letter | '_') (NCNameChar)*  -- An XML Name, minus the ":"
@@ -556,9 +575,9 @@ public final class UrlRef implements java.io.Serializable {
                     return false;
                 }
             }
-            else if (!isXMLNameCharacter(c)) {
-            // if (c != '.' && c != '-' && c != '_' && !Character.isLetterOrDigit(c)) {
-                return false;
+            else if (!isXMLNameCharacter(c) && (!allowWhitespace || c != ' ')) {
+		// if (c != '.' && c != '-' && c != '_' && !Character.isLetterOrDigit(c)) {
+                    return false;
             }
         }
         return true;
