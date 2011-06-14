@@ -86,8 +86,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	private static final Logger log = LoggerFactory.getLogger(KmlOutputStream.class);
 	private static final boolean debug = log.isDebugEnabled();
 
-    private final List<IGISObject> waitingElements = new ArrayList<IGISObject>();
-
     private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     private transient SafeDateFormat dateFormatter;
 
@@ -451,7 +449,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
             handleNonNullSimpleElement(STYLE_URL, feature.getStyleUrl());
             // if feature has inline style needs to write here
-            handleWaitingElements(containerType);
+			if (feature instanceof Feature) {
+				Feature f = (Feature)feature;
+				StyleSelector style = f.getStyle();
+				if (style instanceof Style) {
+					handle((Style) style);
+				} else if (style instanceof StyleMap) {
+					handle((StyleMap) style);
+				}
+			}
 
 			handleRegion(feature.getRegion());
             handleExtendedData(feature);
@@ -828,39 +834,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		writer.writeEndElement();
 	}
     */
-
-    /**
-     * Handle elements that have been deferred. Style information is stored as
-     * found and output on the next feature or container.
-     *
-     * @param containerType type of Container were visiting if (Feature is a Document or Folder) otherwise null
-     * @throws XMLStreamException if there is an error with the underlying XML
-     * @throws IllegalStateException if invalid element is found in waitingElements list
-     */
-    private void handleWaitingElements(String containerType) throws XMLStreamException {
-        for (int i = waitingElements.size() - 1; i >= 0; i--) {
-            IGISObject element = waitingElements.get(i);
-			if (element instanceof StyleSelector) {
-				StyleSelector style = (StyleSelector)element;
-				if (containerType != null && StringUtils.isNotBlank(style.getId()) && FOLDER.equals(containerType)) {
-					// http://code.google.com/apis/kml/documentation/kmlreference.html#document
-					// see definition of Shared Styles in OGC KML specification [OGC 07-147r2 section 6.4]
-					// shared styles should only appear in Documents
-					log.warn("Do not put shared styles within a Folder. Fails OGC constraint.");
-				}
-				if (element instanceof Style) {
-					handle((Style) element);
-				} else if (element instanceof StyleMap) {
-					handle((StyleMap) element);
-				}
-			}
-			else {
-                throw new IllegalStateException("Unknown kind of deferred element: "
-                        + element.getClass());
-            }
-        }
-        waitingElements.clear();
-    }
 
     /**
      * Handle the output of a polygon
@@ -1247,11 +1220,16 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     /**
      * Visit a Style object
-     * @param style Style to visit, never null
+     * @param style Style to visit
      */
     @Override
     public void visit(Style style) {
-        waitingElements.add(style);
+		if (style != null)
+			try {
+				handle(style);
+			} catch (XMLStreamException e) {
+				throw new RuntimeException(e);
+			}
     }
 
     /**
@@ -1512,11 +1490,16 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
     /**
      * Visit a StyleMap object
-     * @param styleMap StyleMap to visit, never null
+     * @param styleMap StyleMap to visit
      */
     @Override
     public void visit(StyleMap styleMap) {
-        waitingElements.add(styleMap);
+		if (styleMap != null)
+			try {
+				handle(styleMap);
+			} catch (XMLStreamException e) {
+				throw new RuntimeException(e);
+			}
     }
 
     /**
@@ -1572,13 +1555,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         } catch (XMLStreamException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * @return true if there are any elements on the waitingElements list
-     */
-    public boolean isWaiting() {
-        return !waitingElements.isEmpty();
     }
 
 	/**

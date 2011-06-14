@@ -6,7 +6,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -20,7 +20,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.events.Comment;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.geometry.Point;
@@ -60,21 +59,6 @@ import java.util.List;
  * <li>A new feature
  * </ul>
  * <p>
- * There are some interesting behaviors needed to make this work properly. The
- * stream needs to buffer data before returning. For example, KML contains
- * elements like {@link Style} and {@link StyleMap} that are part of the feature.
- * To handle this correctly on output, these elements need to be earlier in the output stream
- * than the container (or feature) itself. If these elements are out of order on input
- * then a {@link WrappedObject} is created that enclosed a {@code Style} or {@code StyleMap}
- * element that requires handling by caller to unwrap. By default a {@code WrappedObject}
- * is treated as a {@link Comment}.
- * <p>
- * This is handled in the KML stream by buffering those elements before the
- * container (or feature). The container (and feature) handlers return the top
- * element in the stack, not necessarily the container or feature. Additionally,
- * the read method always empties the stack before looking for another element
- * to return.
- * <p>
  * The actual handling of containers and other features has some uniform
  * methods. Every feature in KML can have a set of common attributes and
  * additional elements. The
@@ -87,16 +71,18 @@ import java.util.List;
  * transmitted as tuples of two or three elements. The formatting of these is
  * consistent and is handled by {@link #parseCoordinates(QName)}. {@code Tessellate},
  * {@code extrude}, and {@code altitudeMode} properties are maintained on the associated
- * Geometry. 
+ * Geometry.
  * <p>
  * Feature properties (i.e., {@code name, description, open, visibility,
  * Camera/LookAt, atom:author, atom:link, xal:AddressDetails, styleUrl,
  * inline/shared Styles, Region, Snippet, snippet,
  * TimeStamp/TimeSpan} elements) in addition to the geometry are parsed and
  * set on the Feature object.
- * Style and StyleMap supported on Features (Placemarks, Containers, etc.)
+ * Style and StyleMap supported on Features (Placemarks, Documents, Folders, etc.)
  * with IconStyle, ListStyle, etc.
- *
+ * <p>
+ * If elements (e.g. {@code Style} or {@code StyleMap}) are out of order on input
+ * that same order is preserved while enumerating elements in reading.
  * <p>
  * <h4>Notes/Limitations:</h4>
  * <p>
@@ -106,26 +92,25 @@ import java.util.List;
  * per Feature but note that although uncommon, KML allows features to define multiple
  * Schemas. Features with mixed {@code Data} and/or multiple {@code SchemaData} elements
  * will be associated only with the last {@code Schema} referenced.
- * <p> 
+ * <p>
  * Unsupported tags include the following:
  *  {@code address, Metadata, phoneNumber}.
  * These tags are consumed but discarded.
  * <p>
- *
  * Some support for gx KML extensions (e.g. Track, MultiTrack, Tour, etc.). Also {@code gx:altitudeMode}
  * is handle specially and stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry,
  * and GroundOverlay.
- * <p> 
+ * <p>
  * {@code StyleMaps} with inline Styles or nested StyleMaps are not supported.
  * StyleMaps must specify {@code styleUrl}.
- * <p> 
+ * <p>
  * Limited support for {@code PhotoOverlay} which creates an basic overlay object
  * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
  * ImagePyramid, Point, shape, etc).
  * <p>
  * Limited support for {@code Model} geometry type. Keeps only location and altitude
  * properties.
- * <p> 
+ * <p>
  * Limited support for {@code NetworkLinkControl} which creates an object wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
  * <p>
@@ -139,13 +124,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
     public static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
 
     private static final Set<String> ms_kml_ns = new HashSet<String>(7);
-    
+
     static {
     	ms_kml_ns.add("http://earth.google.com/kml/2.1");
     	ms_kml_ns.add("http://earth.google.com/kml/2.2");
     	ms_kml_ns.add("http://earth.google.com/kml/2.3");
     	ms_kml_ns.add("http://earth.google.com/kml/3.0");
-    	
+
     	ms_kml_ns.add("http://www.opengis.net/kml/2.2");
     	ms_kml_ns.add("http://www.opengis.net/kml/2.3");
     	ms_kml_ns.add("http://www.opengis.net/kml/3.0");
@@ -157,7 +142,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private Map<String, String> schemaAliases;
 	private final Map<String, Schema> schemata = new HashMap<String, Schema>();
 
-	// stores current altitudeMode value for last geometry parsed 
+	// stores current altitudeMode value for last geometry parsed
 	//private transient String altitudeMode;
 
 	private static final List<SimpleDateFormat> ms_dateFormats = new ArrayList<SimpleDateFormat>(6);
@@ -179,7 +164,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		ms_containers.add(DOCUMENT);
 
 		// basic tags in Feature that are skipped but consumed
-		ms_attributes.add(OPEN); // note special handling for Folders, Documents or NetworkLinks 
+		ms_attributes.add(OPEN); // note special handling for Folders, Documents or NetworkLinks
 		ms_attributes.add(ADDRESS);
 		ms_attributes.add(PHONE_NUMBER);
 		ms_attributes.add(METADATA);
@@ -212,8 +197,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * Creates a <code>KmlInputStream</code>
 	 * and saves its argument, the input stream
-	 * <code>input</code>, for later use. 
-	 * 
+	 * <code>input</code>, for later use.
+	 *
 	 * @param input
 	 *            input stream for the kml file, never <code>null</code>
 	 * @throws IOException if an I/O or parsing error occurs
@@ -252,14 +237,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			}
 			@SuppressWarnings("unchecked")
 			Iterator<Namespace> niter = first.getNamespaces();
-			while(niter.hasNext()) {                                    
+			while(niter.hasNext()) {
 				Namespace ns = niter.next();
                 String prefix = ns.getPrefix();
                 if (StringUtils.isBlank(prefix)) continue;
                 // assuming that namespace prefixes are unique in the source KML document since it would violate
                 // the XML unique attribute constraint and not even load in Google Earth.
                 try {
-                    org.mitre.giscore.Namespace gnamespace = 
+                    org.mitre.giscore.Namespace gnamespace =
                         org.mitre.giscore.Namespace.getNamespace(prefix, ns.getNamespaceURI());
                     ds.getNamespaces().add(gnamespace);
                 } catch (IllegalArgumentException e) {
@@ -270,15 +255,6 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		} catch (XMLStreamException e) {
 			throw new IOException(e);
 		}
-	}
-
-	/**
-	 * Push an object back into the read queue
-	 * 
-	 * @param o object to push onto queue
-	 */
-	public void pushback(IGISObject o) {
-		addFirst(o);
 	}
 
 	/**
@@ -312,8 +288,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                     }
                     /*
                     // saving comments messes up the junit tests so comment out for now
-                    break;
-                    case XMLStreamReader.COMMENT:
+                    } else if (XMLStreamReader.COMMENT == type) {
                         IGISObject comment = handleComment(e);
 						if (comment != null)
 							return comment;
@@ -345,7 +320,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
     /**
 	 * Read elements until we find a feature or a schema element. Use the name
 	 * and description data to set the equivalent data on the container start.
-	 * 
+	 *
 	 * @param e
 	 * @return
 	 * @throws XMLStreamException if there is an error with the underlying XML.
@@ -355,7 +330,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		QName name = se.getName();
 		String containerTag = name.getLocalPart();
 		ContainerStart cs = new ContainerStart(containerTag); // Folder or Document
-		addFirst(cs);
+		addLast(cs);
 		Attribute id = se.getAttributeByName(ID_ATTR);
 		if (id != null) cs.setId(id.getValue());
 
@@ -406,7 +381,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Handle the elements found in all features
-	 * 
+	 *
 	 * @param feature
 	 * @param ee
 	 * @param name  the qualified name of this event
@@ -420,7 +395,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				// sometimes markup found in names (e.g. <name><B>place name</B></name>)
 				// where is should be in the description and/or BalloonStyle
                 feature.setName(getElementText(name));
-                return true;            
+                return true;
             } else if (localname.equals(DESCRIPTION)) {
                 feature.setDescription(getElementText(name));
 				return true;
@@ -513,7 +488,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				QName qname = se.getName();
 				String tag = qname.getLocalPart();
 				/*
-				 * xmlns:prefix handling. skips namespaces other than parent namespace (e.g. http://www.opengis.net/kml/2.2) 
+				 * xmlns:prefix handling. skips namespaces other than parent namespace (e.g. http://www.opengis.net/kml/2.2)
 				 */
 				if (rootNS != null && !rootNS.equals(qname.getNamespaceURI())) {
 					// ignore extended data elements other namespace other than root namespace
@@ -530,7 +505,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 	skipNextElement(stream, qname);
 				} else if (tag.equals(DATA)) {
 					Attribute nameAttr = se.getAttributeByName(new QName(NAME));
-					if (nameAttr != null) {                        
+					if (nameAttr != null) {
 						String value = parseValue(qname);
                         if (value != null)
     						cs.putData(new SimpleField(nameAttr.getValue()), value);
@@ -579,7 +554,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		XMLEvent next;
 		if (uri.startsWith("#")) uri = uri.substring(1);
 		Schema schema = schemata.get(uri);
-		
+
 		while (true) {
 			next = stream.nextEvent();
 			if (foundEndTag(next, qname)) {
@@ -683,7 +658,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			throws XMLStreamException {
 		XMLEvent next;
 		StyleMap sm = new StyleMap();
-		if (cs != null) addFirst(sm);
+		if (cs != null) {
+			if (cs instanceof Feature) {
+				// inline StyleMap for Placemark, NetworkLink, GroundOverlay, etc.
+				((Feature)cs).setStyle(sm);
+			} else addLast(sm);
+		}
+		// otherwise out of order StyleMap
+
 		StartElement sl = ee.asStartElement();
 		Attribute id = sl.getAttributeByName(ID_ATTR);
 		if (id != null) {
@@ -701,7 +683,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					handleStyleMapPair(sm, ie.getName());
 				}
 			}
-		}        
+		}
 	}
 
 	/**
@@ -721,20 +703,16 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				if (foundStartTag(se, KEY)) {
                     // key: type="kml:styleStateEnumType" default="normal"/>
                     // styleStateEnumType: [normal] or highlight
-					key = getNonEmptyElementText();					
+					key = getNonEmptyElementText();
 				} else if (foundStartTag(se, STYLE_URL)) {
                     value = getNonEmptyElementText(); // type=anyURI
 				}
-				// does not support inline Styles within StyleMap. Only styleUrls.
+				// TODO: does not support inline Styles within StyleMap. Only styleUrls.
 			}
 			XMLEvent ne = stream.peek();
 			if (foundEndTag(ne, name)) {
 				if (value != null) {
                     if (key == null) {
-                        if (sm.containsKey(StyleMap.NORMAL)) {
-                            log.warn("StyleMap already has normal definition. Ignore keyless value=" + value);
-                            continue;
-                        }
                         key = StyleMap.NORMAL; // default
                     } else if (key.equalsIgnoreCase(StyleMap.NORMAL))
                         key = StyleMap.NORMAL;
@@ -743,10 +721,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                     else
                         log.warn("Unknown StyleMap key: " + key);
 
-                    // note if styleUrl is "local reference" and does not have '#' prefix
-                    // then it will be pre-pended to the URL
-
-					sm.put(key, value);
+					if (sm.containsKey(key)) {
+						log.warn("StyleMap already has " + key + " definition. Ignore value=" + value);
+						// Google Earth keeps the first pair for a given key
+					} else {
+						// note if styleUrl is "local reference" and does not have '#' prefix
+						// then it will be pre-pended to the URL.
+						sm.put(key, value);
+					}
 				}
 				return;
 			}
@@ -884,7 +866,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		} catch (DatatypeConfigurationException ce) {
 			// if unable to create factory then try brute force
 			log.error("Failed to get DatatypeFactory", ce);
-			// note this does not correctly handle dateTime (YYYY-MM-DDThh:mm:sszzzzzz) format 
+			// note this does not correctly handle dateTime (YYYY-MM-DDThh:mm:sszzzzzz) format
 			ParseException e = null;
 			for (DateFormat fmt : ms_dateFormats) {
 				try {
@@ -900,7 +882,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * Get the style data and push the style onto the buffer so it is returned
 	 * first, before its container or placemark
-	 * 
+	 *
 	 * @param cs
 	 * @param ee
 	 * @param name the qualified name of this event
@@ -919,7 +901,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
             // if so must be consistent in feature.setStyleUrl() and handleStyleMapPair(), etc.
 			style.setId(id.getValue());
 		}
-		if (cs != null) addFirst(style);
+		if (cs != null) {
+			if (cs instanceof Feature) {
+				// inline Style for Placemark, NetworkLink, GroundOverlay, etc.
+				((Feature)cs).setStyle(style);
+			} else addLast(style);
+		}
+		// otherwise out of order style
+
 		while (true) {
 			next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
@@ -1003,7 +992,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Determine if an element value is true or false
-	 * 
+	 *
 	 * @param val
 	 *            the value, may be <code>null</code>
 	 * @return <code>true</code> if the value is the single character "1" or "true".
@@ -1011,7 +1000,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private boolean isTrue(String val) {
 		// xsd:boolean· can have the following legal literals {true, false, 1, 0}.
 		if (val != null) {
-			val = val.trim();                   
+			val = val.trim();
 			//if ("1".equals(val)) return true;
 			//else if ("0".equals(val)) return false;
 			return "1".equals(val) || val.equalsIgnoreCase("true");
@@ -1146,7 +1135,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Parse the color from a kml file, in {@code AABBGGRR} order.
-	 * 
+	 *
 	 * @param cstr
 	 *            a hex encoded string, must be exactly 8 characters long.
 	 * @return the color value, null if value is null, empty or invalid
@@ -1170,7 +1159,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
             } catch (IllegalArgumentException ex) {
                 // fall through and log bad value
             }
-        
+
         log.warn("Invalid color value: " + cstr);
         return null;
 	}
@@ -1236,7 +1225,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param e current XML element
 	 * @return IGISObject representing current element,
 	 * 			NullObject if failed to parse and unable to skip to end tag for that element
-	 * @throws XMLStreamException if there is an error with the underlying XML. 
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 * @throws IOException if encountered NetworkLinkControl or out of order Style element
 	 * 			and failed to skip to end tag for that element.
 	 */
@@ -1287,15 +1276,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			} else if (STYLE.equals(localname)) {
 				log.debug("Out of order element: " + localname);
 				// note this breaks the strict ordering required by KML 2.2
-				// if return out of order Style then KmlOutputStream queues Styles and attaches to next Feature
-				// which in case of out of order Styles is already written to the stream so
-				// we return as WrappedObject which forces caller to either do special handling
-				// or treat as a Comment.
-				return new WrappedObject(handleStyle(null, se, name));
+				return handleStyle(null, se, name);
 			} else if (STYLE_MAP.equals(localname)) {
 				log.debug("Out of order element: " + localname);
-				// this messes up the way Style+StyleMap are added to last Feature written
-				return new WrappedObject(handleStyleMap(null, se, name));
+				// note this breaks the strict ordering required by KML 2.2
+				return handleStyleMap(null, se, name);
 			} else {
 				String namespace = name.getNamespaceURI();
 				if (ms_kml_ns.contains(namespace)) {
@@ -1303,7 +1288,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					XMLEvent next = stream.nextTag();
 					if (next != null && next.getEventType() == XMLEvent.START_ELEMENT) {
 						return handleStartElement(next);
-					}  
+					}
 				} else {
 					log.debug("XXX: handle startElement with foreign namespace: " + name);
 					return getForeignElement(se);
@@ -1318,7 +1303,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		// return non-null NullObject to skip but not end parsing...
 		return NullObject.getInstance();
 	}
-	
+
 	private IGISObject handleNetworkLinkControl(XMLEventReader stream, QName name) throws XMLStreamException {
 		NetworkLinkControl c = new NetworkLinkControl();
 		// if true indicates we're parsing the Update element
@@ -1449,7 +1434,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					Attribute fname = se.getAttributeByName(new QName(NAME));
 					String fieldname = fname != null ? fname.getValue() : "gen" + gen++;
 					// http://code.google.com/apis/kml/documentation/kmlreference.html#simplefield
-					// If either the type or the name is omitted, the field is ignored. 
+					// If either the type or the name is omitted, the field is ignored.
 					try {
 						SimpleField field = new SimpleField(fieldname);
 						Attribute type = se.getAttributeByName(new QName(TYPE));
@@ -1500,7 +1485,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				schemaAliases.put(name, parent);
 			}
 		}
-		
+
 		return readSaved();
 	}
 
@@ -1582,10 +1567,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		}
 
 		QName name = se.getName();
-		addFirst(fs);
+		addLast(fs);
 		Attribute id = se.getAttributeByName(ID_ATTR);
 		if (id != null) fs.setId(id.getValue());
-        
+
 		while (true) {
 			XMLEvent ee = stream.nextEvent();
 			// Note: if element has undeclared namespace then throws XMLStreamException
@@ -1692,7 +1677,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Process the attributes from the start element to create a screen location
-	 * 
+	 *
 	 * @param sl
 	 *            the start element
 	 * @return the location, never <code>null</code>.
@@ -1799,7 +1784,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
         String ns = el.getNamespaceURI();
         // use "gx" handle regardless of what KML uses for gx namespace
         if (ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) prefix = "gx";
-        
+
         if (!el.getChildren().isEmpty()) {
             boolean found = false;
             String eltname = el.getName();
@@ -1846,7 +1831,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Handle a lat lon box with north, south, east and west elements.
-	 * 
+	 *
 	 * @param overlay
 	 * @param name  the qualified name of this event
      * @throws XMLStreamException if there is an error with the underlying XML
@@ -1895,7 +1880,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Parse and process the geometry for the feature and store in the feature
-	 * 
+	 *
 	 * @param sl StartElement
      * @return Geometry associated with this element
      *          otherwise null if no valid Geometry can be constructed
@@ -1933,7 +1918,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					}
 				}
 			}
-            // if no valid geometries then return null 
+            // if no valid geometries then return null
             if (geometries.isEmpty()) {
                 log.debug("No valid geometries in MultiGeometry");
                 return null;
@@ -1950,7 +1935,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					allpoints = false;
 					break;
 				}
-			}                             
+			}
 			if (allpoints) {
 				return new MultiPoint((List) geometries);
 			} else {
@@ -1977,7 +1962,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                         model.setAltitudeMode(getNonEmptyElementText());
                     }
 					// todo: Orientation, Scale, Link, ResourceMap
-				}                        
+				}
             }
             return model;
 		} else {
@@ -2076,10 +2061,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
 	/**
-	 * Map properties of GeometryGroup onto the created <code>GeometryBase</code> 
+	 * Map properties of GeometryGroup onto the created <code>GeometryBase</code>
 	 * @param group
-	 * @param geom GeometryBase, never null 
-	 * @return filled in GeometryBase object  
+	 * @param geom GeometryBase, never null
+	 * @return filled in GeometryBase object
 	 */
 	private static GeometryBase getGeometry(GeometryGroup group, GeometryBase geom) {
 		if (group != null) {
@@ -2132,7 +2117,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 }
             }
         }
-        
+
         if (longitude == null && latitude == null) return null;
         if (longitude == null) longitude = new Longitude();
         else if (latitude == null) latitude = new Latitude();
@@ -2260,7 +2245,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * Coordinate parser that matches the loose parsing of coordinates in Google Earth.
 	 * KML reference states "Do not include spaces within a [coordinate] tuple" yet
 	 * Google Earth allows whitespace to appear anywhere in the input or commas
-     * to appear between tuples (e.g 1,2,3,4,5,6 -> 1,2,3  4,5,6). 
+     * to appear between tuples (e.g 1,2,3,4,5,6 -> 1,2,3  4,5,6).
 	 * State machine-like parsing keeps track of what part of the coordinate
 	 * had been found so far.
 	 * Extra whitespace is allowed anywhere in the string.
@@ -2279,7 +2264,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		double elev = 0;
 		Longitude lon = null;
 		Latitude lat = null;
-        // note the NumberStreamTokenizer introduces some floating-error: e.g. 5.5 -> 5.499999999999999         
+        // note the NumberStreamTokenizer introduces some floating-error: e.g. 5.5 -> 5.499999999999999
 		try {
 			while (st.nextToken() != NumberStreamTokenizer.TT_EOF) {
 				switch (st.ttype) {

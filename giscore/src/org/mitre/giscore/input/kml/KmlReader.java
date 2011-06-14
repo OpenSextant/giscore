@@ -6,7 +6,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -41,7 +41,8 @@ import java.io.*;
  * <ul>
  * <li>read from KMZ/KML files or URLs transparently
  * <li>re-writing of URLs inside KMZ files to resolve relative URLs
- * <li>rewrites relative URLs of NetworkLinks, IconStyle, and Screen/GroundOverlays with respect to parent URL.
+ * <li>rewrites relative URLs of NetworkLinks, inline or shared IconStyles, and
+ * 	 Screen/GroundOverlays with respect to parent URL.
  *   Use {@link UrlRef} to get InputStream of links and resolve URI to original URL.
  * <li>recursively read all features from referenced NetworkLinks
  * </ul>
@@ -74,7 +75,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
     /**
 	 * Creates a <code>KmlStreamReader</code> and attempts to read
 	 * all GISObjects from a stream created from the <code>URL</code>.
-     * 
+     *
 	 * @param url   the KML or KMZ URL to be opened for reading.
      * @param proxy the Proxy through which this connection
      *             will be made. If direct connection is desired,
@@ -151,11 +152,11 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 
 	/**
 	 * Create KmlReader using provided InputStream.
-	 * 
+	 *
 	 * @param is  input stream for the kml content, never <code>null</code>
 	 * @param isCompressed  True if the input stream is a compressed stream (e.g. KMZ resource)
  	 *				in which case relative links are resolved with respect to the baseUrl
-     *              as KMZ "ZIP" entries as opposed to using the baseUrl as the parent URL context only. 
+     *              as KMZ "ZIP" entries as opposed to using the baseUrl as the parent URL context only.
 	 * @param baseUrl the base URL context from which relative links are resolved
 	 * @param proxy the Proxy through which URL connections
      *             will be made. If direct connection is desired,
@@ -212,7 +213,13 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		IGISObject gisObj = inputStream.read();
 		if (gisObj == null) return null;
 
-		if (gisObj instanceof NetworkLink) {
+		if (gisObj.getClass() == Feature.class) {
+			Feature f = (Feature)gisObj;
+			StyleSelector style = f.getStyle();
+			// handle IconStyle href if defined
+			if (style instanceof Style)
+				checkStyle(parent, (Style)style);
+		} else if (gisObj instanceof NetworkLink) {
 			// handle NetworkLink href
 			NetworkLink link = (NetworkLink) gisObj;
 			// adjust URL with httpQuery and viewFormat parameters
@@ -227,6 +234,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 				} else log.debug("duplicate NetworkLink href");
 			} else
 				log.debug("NetworkLink href is empty or missing");
+			// Note: NetworkLinks can have inline Styles & StyleMaps
 		} else if (gisObj instanceof Overlay) {
 			// handle GroundOverlay, ScreenOverlay or PhotoOverlay href
 			Overlay o = (Overlay) gisObj;
@@ -236,7 +244,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 				// note PhotoOverlays may have entity replacements in URL
 				// see http://code.google.com/apis/kml/documentation/photos.html
 				// e.g. http://mw1.google.com/mw-earth-vectordb/kml-samples/gp/seattle/gigapxl/$[level]/r$[y]_c$[x].jpg</href>
-				// Given zoom level Google Earth client maps this URL to URLs such as this: level=1 => .../0/r0_c0.jpg and level=3 => 3/r3_c1.jpg 
+				// Given zoom level Google Earth client maps this URL to URLs such as this: level=1 => .../0/r0_c0.jpg and level=3 => 3/r3_c1.jpg
 				URI uri = getLink(parent, href);
 				if (uri != null) {
 					href = uri.toString();
@@ -245,28 +253,34 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 					// can we have a GroundOverlay W/O LINK ??
 				}
 			}
+			// Note: Overlays can have inline Styles & StyleMaps
 		} else if (gisObj instanceof Style) {
-			// handle IconStyle href
-			Style style = (Style)gisObj;
-			if (style.hasIconStyle()) {
-				String href = style.getIconUrl();
-                // rewrite relative URLs with UrlRef to include context with parent source
-                // note: could also use URI.isAbsolute() to test rel vs abs URL
-				if (StringUtils.isNotBlank(href) && !absUrlPattern.matcher(href).lookingAt()) {
-					//System.out.println("XXX: Relative iconStyle href: " + href);
-					URI uri = getLink(parent, href);
-					if (uri != null) {
-						href = uri.toString();
-						// store rewritten overlay URL back to property store
-						style.setIconStyle(style.getIconColor(), style.getIconScale(), href);
-					}
-				}
-			}
+			// handle IconStyle href if defined
+			checkStyle(parent, (Style)gisObj);
 		}
+		// no normalization for StyleMaps needed for now
+
 		return gisObj;
 	}
 
-    /**
+	private void checkStyle(UrlRef parent, Style style) {
+		if (style.hasIconStyle()) {
+			String href = style.getIconUrl();
+			// rewrite relative URLs with UrlRef to include context with parent source
+			// note: could also use URI.isAbsolute() to test rel vs abs URL
+			if (StringUtils.isNotBlank(href) && !absUrlPattern.matcher(href).lookingAt()) {
+				//System.out.println("XXX: Relative iconStyle href: " + href);
+				URI uri = getLink(parent, href);
+				if (uri != null) {
+					href = uri.toString();
+					// store rewritten overlay URL back to property store
+					style.setIconStyle(style.getIconColor(), style.getIconScale(), href);
+				}
+			}
+		}
+	}
+
+	/**
 	 * Recursively imports KML objects from all visited NetworkLinks starting
      * from the base KML document.  This must be called after reader is closed
      * otherwise an IllegalArgumentException will be thrown.
@@ -300,7 +314,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 * from the base KML document.  This must be called after reader is closed
 	 * otherwise an IllegalArgumentException will be thrown.
 	 *
-	 * @param handler ImportEventHandler is called when a new GISObject is parsed 
+	 * @param handler ImportEventHandler is called when a new GISObject is parsed
      * @return list of visited networkLink URIs if no callback handler is specified,
      *      empty list if no reachable networkLinks are found or non-null call handler is provided
 	 * @throws IllegalArgumentException if reader is still opened
@@ -436,7 +450,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
      *            return true;
      *       }
      *    });</pre>
-     * 
+     *
      * @see KmlReader#importFromNetworkLinks(ImportEventHandler)
      */
     public static interface ImportEventHandler {
@@ -448,11 +462,11 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
          * @param ref UriRef for NetworkLink resource
          * @param gisObj new IGISObject object. This will never be null.
 		 * @return Return true to continue parsing and recursively follow NetworkLinks,
-         *         false stops following NetworkLinks. 
+         *         false stops following NetworkLinks.
          */
 		boolean handleEvent(UrlRef ref, IGISObject gisObj);
     }
-    
+
 	public Iterator<Schema> enumerateSchemata() throws IOException {
 		throw new UnsupportedOperationException();
 	}
