@@ -22,7 +22,7 @@ public class TestUrlRef extends TestCase {
         for(String id : uris) {
             // assertFalse(id.equals(UrlRef.escapeUri(id)));
             if (id.equals(UrlRef.escapeUri(id)))
-                failSame("URI=" + id + ":");
+                failSame("URI expected to be different but same: URI=" + id + ":");
         }
     }
 
@@ -45,7 +45,7 @@ public class TestUrlRef extends TestCase {
         for(String id : ids) {
             assertTrue(UrlRef.isIdentifier(id));
         }
-        
+
         String[] badIds = {
             null, "", " ", "124_Must start with alpha",
             "_\uABFF",
@@ -55,5 +55,10 @@ public class TestUrlRef extends TestCase {
         for(String id : badIds) {
             assertFalse(UrlRef.isIdentifier(id));
         }
+	}
+
+	public void testIsIdentifierWithWhitespace() {
+		assertFalse(UrlRef.isIdentifier("This has whitespace"));
+		assertTrue(UrlRef.isIdentifier("This has whitespace", true));
     }
 }
