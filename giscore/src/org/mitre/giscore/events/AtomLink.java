@@ -1,5 +1,5 @@
 /****************************************************************************************
- *  Link.java
+ *  AtomLink.java
  *
  *  Created: Jul 19, 2010
  *
@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2010
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -32,28 +32,28 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 /**
  * Represent an atom link including the relationship, type and href information.
- * 
+ *
  * @author DRAND
  */
 public class AtomLink implements IDataSerializable, Serializable {
-    
+
 	private static final long serialVersionUID = 1L;
 	private URL href;
 	private MimeType type;
 	private String rel;
 	private String hreflang;
-	
+
 	/**
 	 * Default ctor
 	 */
 	public AtomLink() {
 	}
-	
+
 	/**
 	 * Basic ctor
 	 * @param href the link, never <code>null</code>
 	 * @param rel the relationship
-     * @throws IllegalArgumentException if href is null
+	 * @throws IllegalArgumentException if href is null
 	 */
 	public AtomLink(URL href, String rel) {
 		if (href == null) {
@@ -62,44 +62,49 @@ public class AtomLink implements IDataSerializable, Serializable {
 		this.href = href;
 		this.rel = rel;
 	}
-	
+
 	/**
 	 * @return the href
 	 */
 	public URL getHref() {
 		return href;
 	}
+
 	/**
 	 * @param href the href to set
 	 */
 	public void setHref(URL href) {
 		this.href = href;
 	}
+
 	/**
 	 * @return the type
 	 */
 	public MimeType getType() {
 		return type;
 	}
+
 	/**
 	 * @param type the type to set
 	 */
 	public void setType(MimeType type) {
 		this.type = type;
 	}
+
 	/**
 	 * @return the rel
 	 */
 	public String getRel() {
 		return rel;
 	}
+
 	/**
 	 * @param rel the rel to set
 	 */
 	public void setRel(String rel) {
 		this.rel = rel;
 	}
-    
+
 	/**
 	 * @return the hreflang
 	 */

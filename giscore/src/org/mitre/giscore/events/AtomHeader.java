@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2010
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -36,9 +36,9 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * for the GeoAtom input and output streams and will probably be ignored by the
  * other streams. This is not an attempt to perfectly represent the data found
  * in an atom feed (see the ROME library for that), this is rather a good faith
- * attempt to consume and produce atom data primarily aimed at opensearch 
+ * attempt to consume and produce atom data primarily aimed at opensearch
  * applications.
- * 
+ *
  * @author DRAND
  */
 public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
@@ -61,7 +61,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	public AtomHeader() {
         // caller must set id, selflink, updated otherwise object is invalid
 	}
-	
+
 	/**
 	 * Ctor
 	 * @param id
@@ -92,9 +92,9 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	}
 
 	public void accept(IStreamVisitor visitor) {
-		visitor.visit(this);		
+		visitor.visit(this);
 	}
-	
+
 	/**
 	 * @return the id
 	 */
@@ -215,7 +215,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	public void setElements(List<Element> elements) {
 		this.elements = elements == null ? new ArrayList<Element>() : elements;;
 	}
-	
+
 	/**
 	 * @return the namespaces
 	 */

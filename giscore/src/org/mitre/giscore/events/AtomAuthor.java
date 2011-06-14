@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2010
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -32,7 +32,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 /**
  * Represents an atom author's information
- * 
+ *
  * @author DRAND
  */
 public class AtomAuthor implements IDataSerializable, Serializable {
@@ -49,7 +49,7 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 	public AtomAuthor() {
         // caller must set name otherwise object is not valid
 	}
-	
+
 	public AtomAuthor(String name, String email) {
 		if (name == null || name.trim().length() == 0) {
 			throw new IllegalArgumentException(
@@ -167,5 +167,5 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 		out.writeString(email);
 		out.writeString(uri != null ? uri.toASCIIString() : null);
 	}
-	
+
 }
