@@ -200,7 +200,10 @@ public class Feature extends Common {
             b.append('\n');
         }
 		if (style != null) {
-		    b.append(" style=").append(style);
+		    b.append(" style class=");
+			b.append(style.getClass().getName());
+			if (style.getId() != null)
+				b.append(" id=").append(style.getId());
             b.append('\n');
         }
         return b.toString();
