@@ -18,7 +18,6 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.kml;
 
-
 /**
  * Container for element and attribute names used in KML
  *
@@ -34,7 +33,7 @@ public interface IKml {
     static final String NS_GOOGLE_KML_EXT = "http://www.google.com/kml/ext/2.2";
     static final String NS_OASIS_XAL = "urn:oasis:names:tc:ciq:xsdschema:xAL:2.0";
 
-    static final String ADDRESS_DETAILS = "AddressDetails";
+	static final String ADDRESS_DETAILS = "AddressDetails";
 	static final String ADDRESS = "address";
 	static final String ALTITUDE = "altitude";
 	static final String ALTITUDE_MODE = "altitudeMode";
@@ -145,5 +144,9 @@ public interface IKml {
 	static final String WEST = "west";
 	static final String WHEN = "when";
 	static final String WIDTH = "width";
+
+	// Google KML extensions xmlns:gx="http://www.google.com/kml/ext/2.2"
+	static final String MULTI_TRACK = "MultiTrack";
+	static final String TRACK = "Track";
 
 }
