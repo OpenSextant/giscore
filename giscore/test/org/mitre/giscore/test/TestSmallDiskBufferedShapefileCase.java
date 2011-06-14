@@ -46,9 +46,10 @@ import org.mitre.giscore.output.IGISOutputStream;
 public class TestSmallDiskBufferedShapefileCase {
 
 	@Test public void testSmallCase() throws Exception {
-		File outputDir = new File("testOutput/t" + System.currentTimeMillis());
+		final long timestamp = System.currentTimeMillis();
+		File outputDir = new File("testOutput/tst/tmp" + timestamp);
 		outputDir.mkdirs();
-		File output = new File(outputDir, "test.zip");
+		File output = new File("testOutput/tst/shapes" + timestamp + ".zip");
 		OutputStream os = new FileOutputStream(output);
 		ZipOutputStream zos = new ZipOutputStream(os);
 		GISFactory.inMemoryBufferSize.set(2000);
