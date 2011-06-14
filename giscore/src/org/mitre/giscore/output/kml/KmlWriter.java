@@ -6,7 +6,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -64,13 +64,13 @@ public class KmlWriter implements IGISOutputStream {
 	private boolean compressed;
 
     /**
-	 * Construct a KmlWriter which starts writing a KML document into
+	 * Construct a <tt>KmlWriter</tt> which starts writing a KML document into
 	 * the specified KML or KMZ file.  If file name ends with .kmz or .zip extension
 	 * then a compressed KMZ (ZIP) file is produced with the main KML document
 	 * stored as "doc.kml" in the root directory. <p/>
 	 *
-	 * For details on .KMZ files see "Creating a .kmz Archive" section
-	 * of http://code.google.com/apis/kml/documentation/kml_21tutorial.html
+	 * For details on .KMZ files see tutorial at
+	 * http://code.google.com/apis/kml/documentation/kmzarchives.html
 	 *
 	 * @param file the file to be opened for writing.
      * @param encoding the encoding to use, if null default encoding (UTF-8) is assumed
@@ -200,33 +200,26 @@ public class KmlWriter implements IGISOutputStream {
 	public void write(IGISObject object) {
 		if (kos == null) throw new IllegalStateException("cannot write after stream is closed");
 		// log.info("> Write: " + object.getClass().getName());
-        if (object instanceof ContainerStart) {
-            if (waiting != null) {
-                kos.write(waiting);
-            }
-            waiting = (ContainerStart)object;
-        } else {
-            if (waiting != null) {
-                if (object instanceof ContainerEnd && !kos.isWaiting()) {
-					// if have ContainerStart followed by ContainerEnd then ignore empty container
-                    // unless have waiting elements to flush (e.g. Styles)
-                    waiting = null;
-                    return;
-                }
-                /*
-                if (object instanceof Style) {
-                    // write style first so becomes attached to container
-                    log.info("XXX: print style before container...");
-                    kos.write(object);
-                    object = null;
-                }
-                */
-                kos.write(waiting);
-                waiting = null;
-            }
-            //if (object != null)
-            kos.write(object);
-        }
+		if (object != null) {
+			if (object instanceof ContainerStart) {
+				if (waiting != null) {
+					kos.write(waiting);
+				}
+				waiting = (ContainerStart)object;
+			} else {
+				if (waiting != null) {
+					if (object instanceof ContainerEnd) {
+						// if have ContainerStart followed by ContainerEnd then ignore empty container
+						// unless have waiting elements to flush (e.g. Styles)
+						waiting = null;
+						return;
+					}
+					kos.write(waiting);
+					waiting = null;
+				}
+				kos.write(object);
+			}
+		}
     }
 
     /**
@@ -288,8 +281,8 @@ public class KmlWriter implements IGISOutputStream {
 	}
 
 	/**
-	 * Normalize URLs from internal URIs as rewritten in KmlReader if applicable.
-     * Only IGISObjects that haves URL attributes may be affected (i.e.,
+	 * Normalize and restore URLs from internal URIs as rewritten in {@link org.mitre.giscore.input.kml.KmlReader#read()}
+     * if applicable. Only IGISObjects that haves URL attributes may be affected (i.e.,
      * NetworkLink, Overlay, and Style) and only if original href had a
      * relative URL which gets rewritten to include the parent KML/KMZ document.
      * <P>
@@ -302,7 +295,13 @@ public class KmlWriter implements IGISOutputStream {
 	 * @param o IGISObject to normalize 
 	 */
 	public static void normalizeUrls(IGISObject o) {
-		if (o instanceof NetworkLink) {
+		if (o.getClass() == Feature.class) {
+			Feature f = (Feature)o;
+			StyleSelector style = f.getStyle();
+			// handle IconStyle href if defined
+			if (style instanceof Style)
+				checkStyle((Style)style);
+		} else if (o instanceof NetworkLink) {
 			NetworkLink nl = (NetworkLink) o;
 			TaggedMap link = nl.getLink();
 			if (link != null) {
@@ -311,21 +310,27 @@ public class KmlWriter implements IGISOutputStream {
 				// this package (e.g. with Google Earth client).
 				if (href != null) link.put(IKml.HREF, href);
 			}
+			// Note: NetworkLinks can have inline Styles & StyleMaps but no normalization needed at this time
 		} else if (o instanceof Overlay) {
-			// handle GroundOverlay or ScreenOverlay href
+			// handle GroundOverlay, PhotoOverlay, or ScreenOverlay href
 			Overlay ov = (Overlay) o;
 			TaggedMap icon = ov.getIcon();
 			if (icon != null) {
 				String href = fixHref(icon.get(IKml.HREF));
 				if (href != null) icon.put(IKml.HREF, href);
 			}
+			// Note: Overlays can have inline Styles & StyleMaps but no normalization needed at this time
 		} else if (o instanceof Style) {
-			Style style = (Style) o;
-			if (style.hasIconStyle()) {
-				String href = fixHref(style.getIconUrl());
-				if (href != null)
-					style.setIconStyle(style.getIconColor(), style.getIconScale(), href);
-			}
+			// normalize iconStyle hrefs
+			checkStyle((Style) o);
+		}
+	}
+
+	private static void checkStyle(Style style) {
+		if (style.hasIconStyle()) {
+			String href = fixHref(style.getIconUrl());
+			if (href != null)
+				style.setIconStyle(style.getIconColor(), style.getIconScale(), href);
 		}
 	}
 }
