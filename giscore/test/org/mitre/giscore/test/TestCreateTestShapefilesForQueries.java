@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -54,20 +54,20 @@ import org.mitre.giscore.output.IGISOutputStream;
  * @author DRAND
  */
 public class TestCreateTestShapefilesForQueries {
+
 	static class CNS implements IContainerNameStrategy {
-		@Override
 		public String deriveContainerName(List<String> path, FeatureKey feature) {
 			return feature.getGeoclass().getSimpleName();
 		}
-
 	}
 
 	@Test
 	public void createShapefiles() throws IOException {
 		int count = 5;
-		File temp = new File("c:/temp/tst/tmp" + System.currentTimeMillis());
+		final long timestamp = System.currentTimeMillis();
+		File temp = new File("testOutput/tst/tmp" + timestamp);
 		temp.mkdirs();
-		File zip = new File("c:/temp/tst/shapes" + System.currentTimeMillis()
+		File zip = new File("testOutput/tst/shapes" + timestamp
 				+ ".zip");
 		OutputStream os = new FileOutputStream(zip);
 		ZipOutputStream zos = new ZipOutputStream(os);
