@@ -1,3 +1,17 @@
+/****************************************************************************************
+ *  KmlMetaDump.java
+ *
+ *  (C) Copyright MITRE Corporation 2009
+ *
+ *  The program is provided "as is" without any warranty express or implied, including
+ *  the warranty of non-infringement and the implied warranties of merchantability and
+ *  fitness for a particular purpose.  The Copyright owner will not be liable for any
+ *  damages suffered by you as a result of using the Program.  In no event will the
+ *  Copyright owner be liable for any special, indirect or consequential damages or
+ *  lost profits even if the Copyright owner has been advised of the possibility of
+ *  their occurrence.
+ *
+ ***************************************************************************************/
 package org.mitre.giscore.utils;
 
 import org.apache.commons.lang.StringUtils;
@@ -1275,7 +1289,7 @@ public class KmlMetaDump implements IKml {
 
 	public static void usage() {
 		System.out.println("Usage: java KmlMetaDump [options] <file, directory, or URL..>");
-		System.out.println("\nIf a directory is choosen then all kml/kmz files in any subfolder will be examined");
+		System.out.println("\nIf a directory is chosen then all kml/kmz files in any subfolder will be examined");
 		System.out.println("\nOptions:");
 		System.out.println("  -o<path-to-output-directory>");
 		System.out.println("     Writes KML/KMZ to file in specified directory using");
