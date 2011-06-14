@@ -194,13 +194,13 @@ public class TestKmlReader extends TestCase {
 		File file = new File("data/kml/NetworkLink/multiLevelNetworkLinks2.kmz");
 		KmlReader reader = new KmlReader(file);
 		List<IGISObject> objs = reader.readAll(); // implicit close
-		assertEquals(6, objs.size());
+		assertEquals(5, objs.size());
 		List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
 		List<URI> networkLinks = reader.getNetworkLinks();
 
 		assertEquals(2, networkLinks.size());
-		assertEquals(9, linkedFeatures.size());
-		IGISObject o = linkedFeatures.get(8);
+		assertEquals(7, linkedFeatures.size());
+		IGISObject o = linkedFeatures.get(6);
 		assertTrue(o instanceof Feature);
 		Feature ptFeat = (Feature)o;
 		Geometry geom = ptFeat.getGeometry();
@@ -219,7 +219,7 @@ public class TestKmlReader extends TestCase {
 		File file = new File("data/kml/NetworkLink/multiLevelNetworkLinks2.kmz");
 		KmlReader reader = new KmlReader(file);
 		List<IGISObject> objs = reader.readAll(); // implicit close
-		assertEquals(6, objs.size());
+		assertEquals(5, objs.size());
 		final List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
             reader.importFromNetworkLinks(new KmlReader.ImportEventHandler() {
             public boolean handleEvent(UrlRef ref, IGISObject gisObj) {
@@ -230,8 +230,8 @@ public class TestKmlReader extends TestCase {
 		List<URI> networkLinks = reader.getNetworkLinks();
 
 		assertEquals(2, networkLinks.size());
-		assertEquals(9, linkedFeatures.size());
-		IGISObject o = linkedFeatures.get(8);
+		assertEquals(7, linkedFeatures.size());
+		IGISObject o = linkedFeatures.get(6);
 		assertTrue(o instanceof Feature);
 		Feature ptFeat = (Feature)o;
 		Geometry geom = ptFeat.getGeometry();
@@ -313,11 +313,13 @@ public class TestKmlReader extends TestCase {
 			System.out.println(" >" + o.getClass().getName());
 		}
 		System.out.println();
-        */
-		assertEquals(3, features.size());
+		*/
+		assertEquals(2, features.size());
+
 		IGISObject obj = features.get(1);
-		assertTrue(obj instanceof Style);
-		Style style = (Style)obj;
+		assertTrue(obj instanceof Feature);
+		Feature f = (Feature)obj;
+		Style style = (Style)f.getStyle();
 		assertTrue(style.hasIconStyle());
 		String href = style.getIconUrl();
 		assertNotNull(href);

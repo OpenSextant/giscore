@@ -301,9 +301,9 @@ public class TestKmlWriter extends TestGISBase {
 			KmlReader reader = new KmlReader(input);
 			List<IGISObject> objs = reader.readAll(); // implicit close
 
-			//System.out.println(features);
-			//System.out.println("# features=" + features.size());
-			assertEquals(15, objs.size());
+			//System.out.println("# features=" + objs.size());
+			//System.out.println(objs);
+			assertEquals(9, objs.size());
 
 			/*
 			 Structure of KML objects:
