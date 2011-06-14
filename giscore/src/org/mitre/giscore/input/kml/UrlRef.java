@@ -91,15 +91,15 @@ import java.util.zip.ZipInputStream;
 
 /**
  * <code>UrlRef</code> manages the encoding/decoding of internally created
- * KML/KMZ URLs to preserve the association between the
- * parent KMZ file and its relative file reference. Handles getting an inputStream
- * to KML linked resources whether its a fully qualified URL or a entry in a KMZ file.
+ * KML/KMZ URLs to preserve the association between the parent KMZ file 
+ * and its relative file reference. Handles getting an inputStream to KML 
+ * linked resources whether its a fully qualified URL or a entry in a KMZ file.
  * <p/>
  * If <code>KmlReader</code> is used to read a KMZ resource then href values for
  * relative URLs will be rewritten as special URIs such that the links can be fetched
  * later using <code>UrlRef</code> to wrap the URI. A UrlRef is created for each linked
- * resource (e.g. NetworkLink, GroundOverlay, ScreenOverlay, IconStyle, etc.) during
- * reading and an internal URI is used to reference the resource.  If the parent
+ * resource (e.g. NetworkLink, GroundOverlay, ScreenOverlay, Style with IconStyle, etc.)
+ * during reading and an internal URI is used to reference the resource.  If the parent
  * file/URL is a KMZ file and link is a relative URL then the association is preserved
  * otherwise the URL is treated normally.
  * <p/>
@@ -110,12 +110,12 @@ import java.util.zip.ZipInputStream;
  * UrlRef strips the "kmz" prefix and the "?file=" suffix from the URI resolving
  * the resource as having a parent URL as <code>http://server/test.kmz</code>
  * and a relative link to the file as <code>kml/include.kml</code>.
- * <p/> 
+ * <p/>
  * Use <code>getURI()</code> to get the internal URI and <code>getUrl()</code>
  * to return the original URL.
  * <p/>
- * Includes static validation methods copied from org.jdom.Verifier: {@code isXMLNameCharacter()},
- * {@code isXMLNameStartCharacter()}, etc.
+ * Includes static validation methods with minor modifications from org.jdom.Verifier:
+ * {@code isXMLNameCharacter()}, {@code isXMLNameStartCharacter()}, etc.
  *
  * @author Jason Mathews
  */
@@ -533,7 +533,7 @@ public final class UrlRef implements java.io.Serializable {
 		return isIdentifier(str, false);
 	}
 
-	/**
+    /**
      * Test for relative identifier. True if string matches the set
      * of strings for NCName production in [Namespaces in XML].
      * Useful to test if target is reference to identifier in KML document
@@ -541,7 +541,8 @@ public final class UrlRef implements java.io.Serializable {
      *
      * @param str  the String to check, may be null
      * @param allowWhitespace Flag to allow whitespace in identifier other than first character
-     *		Whitespace isn't allowed by the spec but often appears in many public KML documents.
+     *		Whitespace isn't allowed by the spec but often appears in many public KML documents
+     *		(this is generated and allowed by Google Earth) so allow relaxing the rules.
      * @return true if string matches an XML identifier reference
      */
     public static boolean isIdentifier(String str, boolean allowWhitespace) {
@@ -576,7 +577,7 @@ public final class UrlRef implements java.io.Serializable {
                 }
             }
             else if (!isXMLNameCharacter(c) && (!allowWhitespace || c != ' ')) {
-		// if (c != '.' && c != '-' && c != '_' && !Character.isLetterOrDigit(c)) {
+                    // if (c != '.' && c != '-' && c != '_' && !Character.isLetterOrDigit(c)) {
                     return false;
             }
         }
@@ -613,7 +614,7 @@ public final class UrlRef implements java.io.Serializable {
     public static boolean isXMLNameCharacter(char c) {
 
       return (isXMLLetter(c) || isXMLDigit(c) || c == '.' || c == '-' 
-                             || c == '_' || isXMLCombiningChar(c)
+                             || c == '_' || /* c == ':' || */ isXMLCombiningChar(c) 
                              || isXMLExtender(c));
     }
 
@@ -628,7 +629,10 @@ public final class UrlRef implements java.io.Serializable {
      */
     public static boolean isXMLNameStartCharacter(char c) {
 
-      return (isXMLLetter(c) || c == '_');
+	// NOTE: JDOM implementation has this production allowing names to begin with
+	// colons which is Namespaces in XML Recommendation disallows. 
+
+      return (isXMLLetter(c) || c == '_' /* || c ==':' */ );
 
     }
 
