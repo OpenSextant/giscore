@@ -202,7 +202,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 			return false;
 		if (!super.equals(obj))
 			return false;
-		Common other = (Common) obj;
+		Row other = (Row) obj;
 		if (schema == null) {
 			if (other.schema != null)
 				return false;
