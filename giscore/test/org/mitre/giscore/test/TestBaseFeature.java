@@ -1,10 +1,10 @@
 package org.mitre.giscore.test;
 
+import junit.framework.Assert;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
-import org.mitre.giscore.events.Feature;
-import org.mitre.giscore.events.TaggedMap;
-import org.mitre.giscore.events.AltitudeModeEnumType;
+
+import org.mitre.giscore.events.*;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.geometry.Point;
 
@@ -15,6 +15,27 @@ import java.util.Date;
  * Date: Sep 28, 2009 2:12:09 PM
  */
 public class TestBaseFeature {
+
+	@Test
+	public void testEquals() {
+		Feature f = new Feature();
+		f.setStyle(new Style()); // add empty style
+		f.setId("foo");
+		Feature f2 = new Feature();
+		f2.setId("bar");
+		Assert.assertFalse(f.equals(f2));
+
+		Feature f3 = new Feature();
+		f3.setStyle(new Style()); // add empty style
+		f3.setId("foo");
+		assertEquals(f, f3);
+		assertEquals(f.hashCode(), f3.hashCode());
+
+		Row row = new Row();
+		row.setId("foo");
+		Assert.assertFalse(f.equals(row));
+		Assert.assertFalse(row.equals(f));
+	}
 
     @Test
     public void testGetSetDates() {
