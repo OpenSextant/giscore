@@ -19,9 +19,13 @@
 package org.mitre.giscore.events;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.mitre.giscore.IStreamVisitor;
+import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.apache.commons.lang.StringUtils;
@@ -34,17 +38,20 @@ import org.apache.commons.lang.StringUtils;
  */
 public class ContainerStart extends Common implements IContainerType {
 	private static final long serialVersionUID = 1L;
-	
+
+	@NonNull
 	private String type;
 
     private boolean open;
+
+	private List<StyleSelector> styles;
 
     /**
 	 * Empty ctor for data IO.  Constructor must be followed by call to {@code readData()}
      * to initialize the object instance otherwise object is invalid.
 	 */
 	public ContainerStart() {
-		// 
+		type = IKml.DOCUMENT; // default
 	}
 	
     /**
@@ -94,6 +101,31 @@ public class ContainerStart extends Common implements IContainerType {
         this.open = open;
     }
 
+	/**
+	 * Gets style elements that are children for this container
+	 * @return list of styles, read-only empty list is returned if no styles are defined
+	 */
+	@NonNull
+	public List<StyleSelector> getStyles() {
+		return styles == null ? Collections.<StyleSelector>emptyList() : styles;
+	}
+
+	public void setStyles(List<StyleSelector> styles) {
+		this.styles = styles;
+	}
+
+	/**
+	 * Append style to list of styles. Initializes the list if this is the
+	 * first style.
+	 * @param style Style or StyleMap to add to container
+	 */
+	public void addStyle(StyleSelector style) {
+		if (style != null) {
+			if (styles == null) styles = new LinkedList<StyleSelector>();
+			styles.add(style);
+		}
+	}
+
     /*
 	 * (non-Javadoc)
 	 *
@@ -108,8 +140,40 @@ public class ContainerStart extends Common implements IContainerType {
         b.append("  type=").append(type);
         return b.toString(); 
     }
-	
-    public void accept(IStreamVisitor visitor) {
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (getClass() != obj.getClass())
+			return false;
+		if (!super.equals(obj))
+			return false;
+		ContainerStart other = (ContainerStart) obj;
+		if (open != other.open)
+			return false;
+		if (!type.equals(other.type))
+			return false;
+		if (styles == null) {
+			if (other.styles != null)
+				return false;
+		} else if (!styles.equals(other.styles))
+			return false;
+		return true;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result + type.hashCode(); // never null
+		result = prime * result + (open ? 1231 : 1237);
+		result = prime * result + ((styles == null || styles.isEmpty())
+				? 0 : styles.hashCode());
+		return result;
+	}
+
+	public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
     }
 
@@ -122,6 +186,9 @@ public class ContainerStart extends Common implements IContainerType {
 			IllegalAccessException {
 		super.readData(in);
 		type = in.readString();
+		// readString should never return null but enforce our nonNull contract and check anyway
+		if (type == null) type = IKml.DOCUMENT; // default
+		styles = (List<StyleSelector>)in.readObjectCollection();
 	}
 
 	/* (non-Javadoc)
@@ -131,6 +198,7 @@ public class ContainerStart extends Common implements IContainerType {
 	public void writeData(SimpleObjectOutputStream out) throws IOException {	
 		super.writeData(out);
 		out.writeString(type);
+		out.writeObjectCollection(styles);
 	}
-    
+
 }
