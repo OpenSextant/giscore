@@ -41,6 +41,33 @@ public abstract class AbstractObject implements IDataSerializable, IGISObject {
         this.id = id;
     }
 
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!(obj instanceof AbstractObject))
+			return false;
+		AbstractObject other = (AbstractObject) obj;
+		if (id == null) {
+			if (other.id != null)
+				return false;
+		} else if (!id.equals(other.id))
+			return false;
+		return true;
+	}
+
+	/**
+     * Returns a hash code for this <code>AbstractObject</code>.
+     *
+     * @return  a hash code value for this object, equal to the
+     *          hash code of its <code>id</code> or
+	 *          0 if <code>id</code> is <tt>null</tt>.
+     */
+	@Override
+	public int hashCode() {
+		return (id == null) ? 0 : id.hashCode();
+	}
+
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
