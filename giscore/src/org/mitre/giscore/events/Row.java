@@ -196,7 +196,24 @@ public class Row extends AbstractObject implements IDataSerializable {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		return EqualsBuilder.reflectionEquals(this, obj);
+		if (this == obj)
+			return true;
+		if (getClass() != obj.getClass())
+			return false;
+		if (!super.equals(obj))
+			return false;
+		Common other = (Common) obj;
+		if (schema == null) {
+			if (other.schema != null)
+				return false;
+		} else if (!schema.equals(other.schema))
+			return false;
+		if (extendedData == null) {
+			if (other.extendedData != null)
+				return false;
+		} else if (!extendedData.equals(other.extendedData))
+			return false;
+		return true;
 	}
 
 	/*
@@ -206,7 +223,12 @@ public class Row extends AbstractObject implements IDataSerializable {
 	 */
 	@Override
 	public int hashCode() {
-		return HashCodeBuilder.reflectionHashCode(this);
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((schema == null) ? 0 : schema.hashCode());
+		result = prime * result + ((extendedData == null) ? 0 : extendedData.hashCode());
+		return result;
 	}
 
 	/*
