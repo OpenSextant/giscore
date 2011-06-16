@@ -11,9 +11,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 
 /**
  * Test base geometry classes with geometry creation and various
@@ -27,39 +25,30 @@ public class TestBaseGeometry extends TestGISBase {
     private static final double EPSILON = 1E-5;
 
 	@Test
-    public void testNullPointCompare() throws Exception {
+    public void testNullPointCompare() {
 		Point pt = getRandomPoint();
 		Point other = null;
 		assertFalse(pt.equals(other));
 	}
 
 	@Test
-    public void testNullCircleCompare() throws Exception {
+    public void testNullCircleCompare() {
 		Circle circle = new Circle(random3dGeoPoint(), 1000.0);
 		Circle other = null;
 		assertFalse(circle.equals(other));
 	}
 
 	@Test
-    public void testNullLineCompare() throws Exception {
-		Point cp = getRandomPoint();
-		List<Point> pts = new ArrayList<Point>();
-		for (int i=0; i < 5; i++) {
-			Point pt = getRingPoint(cp, i, 5, .3, .4);
-            assertEquals(1, pt.getNumParts());
-            assertEquals(1, pt.getNumPoints());
-            assertEquals(pt.asGeodetic2DPoint(), pt.getCenter());
-			pts.add(pt);
-        }
+    public void testNullLineCompare() {
+		List<Point> pts = createPoints();
 		Line line = new Line(pts);
 		Line other = null;
 		assertFalse(line.equals(other));
 	}
 
-    @Test
-	public void testPointLineCreation() throws Exception {
+	private static List<Point> createPoints() {
 		Point cp = getRandomPoint();
-		List<Point> pts = new ArrayList<Point>();
+		List<Point> pts = new ArrayList<Point>(5);
 		for (int i=0; i < 5; i++) {
 			Point pt = getRingPoint(cp, i, 5, .3, .4);
             assertEquals(1, pt.getNumParts());
@@ -67,6 +56,12 @@ public class TestBaseGeometry extends TestGISBase {
             assertEquals(pt.asGeodetic2DPoint(), pt.getCenter());
 			pts.add(pt);
         }
+		return pts;
+	}
+
+	@Test
+	public void testPointLineCreation() {
+		List<Point> pts = createPoints();
 
         // construct MultiPoint
         MultiPoint mp = new MultiPoint(pts);
@@ -116,7 +111,7 @@ public class TestBaseGeometry extends TestGISBase {
 	}
 
     @Test
-    public void testCircle() throws Exception {
+    public void testCircle() {
         Point pt = getRandomPoint();
 		Circle c = new Circle(pt.getCenter(), 10000.0);
         assertEquals(pt.asGeodetic2DPoint(), c.getCenter());
@@ -134,7 +129,7 @@ public class TestBaseGeometry extends TestGISBase {
     }
 
     @Test
-    public void testRing() throws Exception {
+    public void testRing() {
 		List<Point> pts = new ArrayList<Point>();
 		pts.add(new Point(0.0, 0.0));
 		pts.add(new Point(0.0, 1.0));
@@ -161,7 +156,7 @@ public class TestBaseGeometry extends TestGISBase {
     }
 
     @Test
-    public void testPolygon() throws Exception {
+    public void testPolygon() {
 		List<Point> pts = new ArrayList<Point>();
         // Outer LinearRing in Polygon must be in clockwise point order
 		pts.add(new Point(0.0, 0.0));
@@ -223,7 +218,7 @@ public class TestBaseGeometry extends TestGISBase {
     */
 
     @Test
-    public void testGeometryBag() throws Exception {
+    public void testGeometryBag() {
 		List<Geometry> geometries = new ArrayList<Geometry>();
 		geometries.add(new Point(2.0, 2.0));
 		List<Point> points = new ArrayList<Point>();
@@ -244,7 +239,7 @@ public class TestBaseGeometry extends TestGISBase {
     }
 
     @Test
-    public void testMultiLine() throws Exception {
+    public void testMultiLine() {
         List<Line> lines = new ArrayList<Line>();
         List<Point> pts = new ArrayList<Point>();
         for (int i = 0; i < 10; i++) {
@@ -319,23 +314,24 @@ public class TestBaseGeometry extends TestGISBase {
         assertFalse(geo.is3D());
 	}
 
-    @Test
-    public void testModel() throws Exception {
-         Model model = new Model();
-         final Geodetic2DPoint pt = random3dGeoPoint();
-         model.setLocation(pt);
-         model.setAltitudeMode(AltitudeModeEnumType.absolute);
-         assertEquals(pt, model.getCenter());
-         assertEquals(1, model.getNumParts());
-         assertEquals(1, model.getNumPoints());
-         assertTrue(model.is3D());
-         Geodetic2DBounds bounds = model.getBoundingBox();
-         assertTrue(bounds.contains(pt));
-         assertEquals(pt, bounds.getCenter());
-     }
+	@Test
+	public void testModel() {
+		Model model = new Model();
+		final Geodetic2DPoint pt = random3dGeoPoint();
+		model.setLocation(pt);
+		model.setAltitudeMode(AltitudeModeEnumType.absolute);
+		assertEquals(pt, model.getCenter());
+		assertEquals(1, model.getNumParts());
+		assertEquals(1, model.getNumPoints());
+		assertTrue(model.is3D());
+		Geodetic2DBounds bounds = model.getBoundingBox();
+		assertNotNull(bounds);
+		assertTrue(bounds.contains(pt));
+		assertEquals(pt, bounds.getCenter());
+	}
 
     @Test
-    public void testClippedAtDateLine() throws Exception {
+    public void testClippedAtDateLine() {
         // create outline of Fiji islands which wrap international date line
 		List<Point> pts = new ArrayList<Point>();
         final Point firstPt = new Point(-16.68226928264316, 179.900033693558);
