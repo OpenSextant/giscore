@@ -662,6 +662,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			if (cs instanceof Feature) {
 				// inline StyleMap for Placemark, NetworkLink, GroundOverlay, etc.
 				((Feature)cs).setStyle(sm);
+			} else if (cs instanceof ContainerStart) {
+				// add style to container
+				((ContainerStart)cs).addStyle(sm);
 			} else addLast(sm);
 		}
 		// otherwise out of order StyleMap
@@ -905,6 +908,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			if (cs instanceof Feature) {
 				// inline Style for Placemark, NetworkLink, GroundOverlay, etc.
 				((Feature)cs).setStyle(style);
+			} else if (cs instanceof ContainerStart) {
+				// add style to container
+				((ContainerStart)cs).addStyle(style);
 			} else addLast(style);
 		}
 		// otherwise out of order style
@@ -1377,6 +1383,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
 	/**
+	 * Return Schema object populated with SimpleFields as defined
 	 * @param element
      * @param qname  the qualified name of this event
 	 * @return
@@ -1385,7 +1392,6 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private IGISObject handleSchema(StartElement element, QName qname)
 			throws XMLStreamException {
 		Schema s = new Schema();
-		addLast(s);
 		Attribute attr = element.getAttributeByName(new QName(NAME));
 		String name = getNonEmptyAttrValue(attr);
 
@@ -1486,7 +1492,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			}
 		}
 
-		return readSaved();
+		return s;
 	}
 
 	/**

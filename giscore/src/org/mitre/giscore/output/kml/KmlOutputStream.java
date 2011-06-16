@@ -366,7 +366,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      *
      * @param feature Common feature object for whom attributes will be written
      * @param containerType type of Container were visiting if (Feature is a Document or Folder) otherwise null
-     * @return list of elements initialized awith getElement() and removed those elements that were processed, empty list
+     * @return list of elements initialized with getElement() and removed those elements that were processed, empty list
      *          if no non-kml elements left.
      */
     private List<Element> handleAttributes(Common feature, String containerType) {
@@ -448,14 +448,16 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
 
             handleNonNullSimpleElement(STYLE_URL, feature.getStyleUrl());
+
             // if feature has inline style needs to write here
 			if (feature instanceof Feature) {
 				Feature f = (Feature)feature;
-				StyleSelector style = f.getStyle();
-				if (style instanceof Style) {
-					handle((Style) style);
-				} else if (style instanceof StyleMap) {
-					handle((StyleMap) style);
+				handleStyle(f.getStyle());
+			} else if (feature instanceof ContainerStart) {
+				ContainerStart cs = (ContainerStart)feature;
+				// if Container then shared styles should be output here...
+				for(StyleSelector style : cs.getStyles()) {
+					handleStyle(style);
 				}
 			}
 
@@ -477,7 +479,17 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         }
     }
 
-    private void handleExtendedData(Row feature) throws XMLStreamException {
+	private void handleStyle(StyleSelector style) throws XMLStreamException {
+		if (style != null) {
+			if (style instanceof Style) {
+				handle((Style) style);
+			} else if (style instanceof StyleMap) {
+				handle((StyleMap) style);
+			}
+		}
+	}
+
+	private void handleExtendedData(Row feature) throws XMLStreamException {
         if (feature.hasExtendedData()) {
             URI schema = feature.getSchema();
             writer.writeStartElement(EXTENDED_DATA);
@@ -1327,7 +1339,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Actually output the style
      *
-     * @param style Style object to be written
+     * @param style Style object to be written, never null
      * @throws XMLStreamException if an error occurs
      */
     private void handle(Style style) throws XMLStreamException {
@@ -1505,25 +1517,29 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Actually handle style map
      *
-     * @param styleMap StyleMap to be written
+     * @param styleMap StyleMap to be written, never null
      * @throws XMLStreamException if there is an error with the underlying XML
      */
     private void handle(StyleMap styleMap) throws XMLStreamException {
-        writer.writeStartElement(STYLE_MAP);
-        if (styleMap.getId() != null) {
-            writer.writeAttribute(ID, styleMap.getId());
-        }
-        Iterator<String> kiter = styleMap.keys();
-        while (kiter.hasNext()) {
-            String key = kiter.next();
-            String value = styleMap.get(key);
-            writer.writeStartElement(PAIR);
-            // key and url will never be null or empty
-            handleSimpleElement(KEY, key);
-            handleSimpleElement(STYLE_URL, value);
-            writer.writeEndElement();
-        }
-        writer.writeEndElement();
+		writer.writeStartElement(STYLE_MAP);
+		if (styleMap.getId() != null) {
+			writer.writeAttribute(ID, styleMap.getId());
+		}
+		String normalValue = styleMap.get(StyleMap.NORMAL);
+		if (normalValue != null) {
+			writer.writeStartElement(PAIR);
+			handleSimpleElement(KEY, StyleMap.NORMAL);
+			handleSimpleElement(STYLE_URL, normalValue);
+			writer.writeEndElement();
+		}
+		String highlightValue = styleMap.get(StyleMap.HIGHLIGHT);
+		if (highlightValue != null) {
+			writer.writeStartElement(PAIR);
+			handleSimpleElement(KEY, StyleMap.HIGHLIGHT);
+			handleSimpleElement(STYLE_URL, highlightValue);
+			writer.writeEndElement();
+		}
+		writer.writeEndElement();
     }
 
   /**

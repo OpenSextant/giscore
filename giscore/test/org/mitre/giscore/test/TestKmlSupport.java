@@ -19,6 +19,7 @@
 package org.mitre.giscore.test;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertNotNull;
 
@@ -27,6 +28,7 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
@@ -278,10 +280,12 @@ public class TestKmlSupport extends TestGISBase {
 	public void test_Style() throws XMLStreamException, IOException {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		KmlOutputStream kos = new KmlOutputStream(bos);
+
+		ContainerStart cs = new ContainerStart(IKml.DOCUMENT);
 		Style s = new Style("myStyle");
 		s.setIconStyle(Color.red, 1.4, "http://maps.google.com/mapfiles/kml/shapes/airports.png");
-		kos.write(s);
-		kos.write(new ContainerStart(IKml.DOCUMENT));
+		cs.addStyle(s);
+		kos.write(cs);
 		Feature f = createBasicFeature(Point.class);
 		f.setStyleUrl("myStyle");
 		// test auto anchor prefix '#' prepend to feature style url
@@ -298,13 +302,37 @@ public class TestKmlSupport extends TestGISBase {
 			if (o instanceof Feature) {
 				Feature f2 = (Feature)o;
 				assertEquals("#myStyle", f2.getStyleUrl());
+			} else if (o instanceof ContainerStart) {
+				final List<StyleSelector> styles = ((ContainerStart) o).getStyles();
+				assertEquals(1, styles.size());
+				assertEquals(s, styles.get(0));
 			}
 			count++;
 			// System.out.println(o);
 		}
-		assertEquals(5, count);
+		assertEquals(4, count);
 		kis.close();
     }
+
+	@Test
+	public void testContainerStyle() {
+		ContainerStart cs = new ContainerStart(IKml.DOCUMENT);
+		cs.setId("test");
+		cs.addStyle(new Style("s1"));
+		cs.addStyle(new Style("s2"));
+		ContainerStart cs2 = new ContainerStart(IKml.DOCUMENT);
+		cs2.setId("test");
+		List<StyleSelector> styles = new ArrayList<StyleSelector>(2);
+		styles.add(new Style("s1"));
+		styles.add(new Style("s2"));
+		cs2.setStyles(styles);
+		assertEquals(cs, cs2);
+		assertEquals(cs.hashCode(), cs2.hashCode());
+
+		// change to make unequal
+		cs2.setId("test2");
+		Assert.assertFalse(cs.equals(cs2));
+	}
 
 	/**
 	 * For most objects they need to be exactly the same, but for some we can 

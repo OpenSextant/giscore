@@ -55,24 +55,28 @@ public class TestKmlInputStream {
 		try {
 			IGISInputStream kis = GISFactory.getInputStream(DocumentType.KML, stream);
 
-			IGISObject firstN[] = new IGISObject[9];
+			IGISObject firstN[] = new IGISObject[6];
 			for(int i = 0; i < firstN.length; i++) {
 				firstN[i] = kis.read();
 			}
-			assertNotNull(firstN[7]); // ContainerEnd
-			assertNull(firstN[8]);
+			assertNotNull(firstN[4]); // ContainerEnd
+			assertNull(firstN[5]);
 			assertTrue(firstN[0] instanceof DocumentStart);
 			DocumentStart ds = (DocumentStart) firstN[0];
 			assertEquals(DocumentType.KML, ds.getType());
 			assertTrue(firstN[1] instanceof ContainerStart);
 			ContainerStart cs = (ContainerStart) firstN[1];
 			assertEquals(IKml.DOCUMENT, cs.getType());
-			assertTrue(firstN[2] instanceof StyleMap);
-			assertTrue(firstN[3] instanceof Style);
-			assertTrue(firstN[4] instanceof Style);
-			assertTrue(firstN[5] instanceof Feature);
-			assertTrue(firstN[6] instanceof Feature);
-			assertTrue(firstN[7] instanceof ContainerEnd);
+
+			List<StyleSelector> styles = cs.getStyles();
+			assertEquals(3, styles.size());
+			assertTrue(styles.get(0) instanceof StyleMap);
+			assertTrue(styles.get(1) instanceof Style);
+			assertTrue(styles.get(2) instanceof Style);
+
+			assertTrue(firstN[2] instanceof Feature);
+			assertTrue(firstN[3] instanceof Feature);
+			assertTrue(firstN[4] instanceof ContainerEnd);
 		} finally {
 		    IOUtils.closeQuietly(stream);
 		}

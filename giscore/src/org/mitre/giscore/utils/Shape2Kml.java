@@ -78,8 +78,9 @@ public class Shape2Kml {
 			// TODO: can add objects to temp cache for first ~50 objects after which insert
 			// a hide-child style and apply to the container to suppress large # items in GE menu list
 			needContainerEnd = true;
-			kmzos.write(new ContainerStart(IKml.DOCUMENT));
-			kmzos.write(style);
+			ContainerStart cs = new ContainerStart(IKml.DOCUMENT);
+			cs.addStyle(style);
+			kmzos.write(cs);
 			boolean otherFlag = false;
 			SimpleField sf = (labelName != null) ? new SimpleField(labelName) : null;
 			final boolean hasLineStyle = style.hasLineStyle();

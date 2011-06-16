@@ -145,9 +145,9 @@ public class ContainerStart extends Common implements IContainerType {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (getClass() != obj.getClass())
-			return false;
 		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
 			return false;
 		ContainerStart other = (ContainerStart) obj;
 		if (open != other.open)

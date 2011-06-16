@@ -485,6 +485,9 @@ public class KmlMetaDump implements IKml {
             ContainerStart cs = (ContainerStart) gisObj;
             addTag(((ContainerStart) gisObj).getType()); // Document | Folder
             containers.push(cs);
+			for (StyleSelector s : cs.getStyles()) {
+				checkStyle(s);
+			}
             Date startTime = cs.getStartTime();
             Date endTime = cs.getEndTime();
             if (startTime != null || endTime != null) {
@@ -571,59 +574,9 @@ public class KmlMetaDump implements IKml {
                 */
             }
         } else if (gisObj instanceof StyleSelector) {
-			addTag(cl);
-			if (!containers.isEmpty()
-					&& IKml.FOLDER.equals(containers.peek().getType())) {
-				/*
-                ATC 7: Shared style definition
-                'shared' style definition (any element that may substitute for kml:AbstractStyleSelectorGroup)
-                 satisfies all of the following constraints:
-                    -its parent element is kml:Document;
-                    -it has an 'id' attribute value.
-
-                Reference: OGC Constraint OGC-07-147r2: cl. 6.4
-                Shared styles shall only be encoded within a Document -> Not allowed in Folders
-
-                http://code.google.com/apis/kml/documentation/kmlreference.html#document
-                Do not put shared styles within a Folder.
-                */
-				addTag(":Shared styles in Folder not allowed [ATC 7]");
-				if (verbose) System.out.println(" Warning: Shared styles in Folder not allowed [ATC 7]");
-
-				// if only one style in Folder and style id = null then by the strict rules its an inline style
-				// (e.g. ListStyle) not a "shared" style and may be allowed. Best practice to use shared folder
-				// defined in Document and referenced via styleUrl...
-			} else if (((StyleSelector) gisObj).getId() == null) {
-				// Google KML Reference:
-				//  A style defined as the child of a <Document> is called a "shared style."
-				//  A shared style must have an id defined for it.
-				// KML spec:
-				//  For a kml:Style or kml:StyleMap that applies to a kml:Document, the kml:Document itself
-				//  must explicitly reference a shared style.
-				addTag(":Document must explicitly reference a shared style");
-				if (verbose) System.out.println(" Error: Document must explicitly reference a shared style. Inline styles only allowed in Placemarks");
-			}
-
-			if (cl == Style.class) {
-				checkStyle((Style) gisObj);
-			} else if (cl == StyleMap.class) {
-				StyleMap s = (StyleMap) gisObj;
-				String id = s.getId();
-				if (id != null && !UrlRef.isIdentifier(id)) {
-					addTag(":Suspicious StyleMap id characters");
-					if (verbose) System.out.println(" Warning: StyleMap id appears to contain invalid characters: " + id);
-				}
-				String styleUrl = s.get(StyleMap.NORMAL);
-				if (styleUrl != null && styleUrl.startsWith("#") && !UrlRef.isIdentifier(styleUrl.substring(1))) {
-					addTag(":Suspicious StyleMap normal URL characters");
-					if (verbose) System.out.println(" Warning: StyleMap normal URL appears to contain invalid characters: %s%n" + styleUrl);
-				}
-				styleUrl = s.get(StyleMap.HIGHLIGHT);
-				if (styleUrl != null && styleUrl.startsWith("#") && !UrlRef.isIdentifier(styleUrl.substring(1))) {
-					addTag(":Suspicious StyleMap highlight URL characters");
-					if (verbose) System.out.println(" Warning: StyleMap highlight URL appears to contain invalid characters: " + styleUrl);
-				}
-			}
+			// these are out of order styles
+			// all in-sequence styles + styles should be part of the container they're contained in
+			checkStyle((StyleSelector)gisObj);
         } else if (gisObj instanceof Overlay) {
             Overlay ov = (Overlay) gisObj;
             addTag(ov.getClass());
@@ -684,6 +637,64 @@ public class KmlMetaDump implements IKml {
             // ignore: Comment objects but capture others
             addTag(cl); // e.g. NetworkLinkControl
         }
+	}
+
+	private void checkStyle(StyleSelector style) {
+		final Class<? extends StyleSelector> aClass = style.getClass();
+		addTag(aClass);
+
+		if (!containers.isEmpty()
+				&& IKml.FOLDER.equals(containers.peek().getType())) {
+			/*
+			ATC 7: Shared style definition
+			'shared' style definition (any element that may substitute for kml:AbstractStyleSelectorGroup)
+			 satisfies all of the following constraints:
+				-its parent element is kml:Document;
+				-it has an 'id' attribute value.
+
+			Reference: OGC Constraint OGC-07-147r2: cl. 6.4
+			Shared styles shall only be encoded within a Document -> Not allowed in Folders
+
+			http://code.google.com/apis/kml/documentation/kmlreference.html#document
+			Do not put shared styles within a Folder.
+			*/
+			addTag(":Shared styles in Folder not allowed [ATC 7]");
+			if (verbose) System.out.println(" Warning: Shared styles in Folder not allowed [ATC 7]");
+
+			// if only one style in Folder and style id = null then by the strict rules
+			// its an inline style (e.g. ListStyle) not a "shared" style and may be allowed.
+			// Best practice is to use shared style defined in Document + referenced via styleUrl
+		} else if (style.getId() == null) {
+			// Google KML Reference:
+			//  A style defined as the child of a <Document> is called a "shared style."
+			//  A shared style must have an id defined for it.
+			// KML spec:
+			//  For a kml:Style or kml:StyleMap that applies to a kml:Document, the kml:Document itself
+			//  must explicitly reference a shared style.
+			addTag(":Document must explicitly reference a shared style");
+			if (verbose) System.out.println(" Error: Document must explicitly reference a shared style. Inline styles only allowed in Placemarks");
+		}
+
+		if (aClass == Style.class) {
+			checkStyle((Style) style);
+		} else if (aClass == StyleMap.class) {
+			StyleMap sm = (StyleMap) style;
+			String id = sm.getId();
+			if (id != null && !UrlRef.isIdentifier(id)) {
+				addTag(":Suspicious StyleMap id characters");
+				if (verbose) System.out.println(" Warning: StyleMap id appears to contain invalid characters: " + id);
+			}
+			String styleUrl = sm.get(StyleMap.NORMAL);
+			if (styleUrl != null && styleUrl.startsWith("#") && !UrlRef.isIdentifier(styleUrl.substring(1))) {
+				addTag(":Suspicious StyleMap normal URL characters");
+				if (verbose) System.out.println(" Warning: StyleMap normal URL appears to contain invalid characters: %sm%n" + styleUrl);
+			}
+			styleUrl = sm.get(StyleMap.HIGHLIGHT);
+			if (styleUrl != null && styleUrl.startsWith("#") && !UrlRef.isIdentifier(styleUrl.substring(1))) {
+				addTag(":Suspicious StyleMap highlight URL characters");
+				if (verbose) System.out.println(" Warning: StyleMap highlight URL appears to contain invalid characters: " + styleUrl);
+			}
+		}
 	}
 
 	private void checkStyle(Style s) {
