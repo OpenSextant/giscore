@@ -1,3 +1,18 @@
+/***************************************************************************
+ * $Id: $
+ *
+ * (C) Copyright MITRE Corporation 2009
+ *
+ * The program is provided "as is" without any warranty express or implied,
+ * including the warranty of non-infringement and the implied warranties of
+ * merchantability and fitness for a particular purpose.  The Copyright
+ * owner will not be liable for any damages suffered by you as a result of
+ * using the Program.  In no event will the Copyright owner be liable for
+ * any special, indirect or consequential damages or lost profits even if
+ * the Copyright owner has been advised of the possibility of their
+ * occurrence.
+ *
+ ***************************************************************************/
 package org.mitre.giscore.geometry;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
@@ -10,8 +25,8 @@ import java.io.IOException;
 
 /**
  * The Circle class represents a circular region containing three coordinates (center-point
- * latitude, center-point longitude, circle radius) with latitude and longitude
- * in the WGS84 coordinate reference system and radius in meters.
+ * latitude, center-point longitude, circle radius). Latitude and longitude
+ * in the WGS84 coordinate reference system and radius in meters. <p/>
  *
  * For reference see gml:CircleByCenterPoint or georss:circle definitions.
  *
@@ -85,7 +100,7 @@ public class Circle extends Point {
     /**
      * Get hint of how circle should be handled
      * if circe does not exist in target format (e.g. KML) in which
-     * the circle must be converted.
+     * the circle should be converted.
      * @return hint { LINE, RING, or POLYGON }
      */
     @CheckForNull
@@ -120,7 +135,8 @@ public class Circle extends Point {
 	 * @return true if specified Circle is equal in value to this Circle.
 	 */
 	public boolean equals(Circle that) {
-		return that != null && (this.getCenter().equals(that.getCenter()) && (Double.compare(this.radius, that.radius) == 0 ||
+		return that != null && (this.getCenter().equals(that.getCenter()) &&
+				(Double.compare(this.radius, that.radius) == 0 ||
                         Math.abs(this.radius - that.radius) <= DELTA));
 	}
 
