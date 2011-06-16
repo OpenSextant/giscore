@@ -31,10 +31,25 @@ public class TestBaseFeature {
 		assertEquals(f, f3);
 		assertEquals(f.hashCode(), f3.hashCode());
 
+		// add geometry to make objects different
+		f.setGeometry(new Point(37,-122));
+		Assert.assertFalse(f.equals(f3));
+
 		Row row = new Row();
 		row.setId("foo");
 		Assert.assertFalse(f.equals(row));
 		Assert.assertFalse(row.equals(f));
+	}
+
+	@Test
+	public void testNullCompare() {
+		Feature f = new Feature();
+		Feature f2 = null;
+		Assert.assertFalse(f.equals(f2));
+
+		Row row = new Row();
+		Row r2 = null;
+		Assert.assertFalse(row.equals(r2));
 	}
 
     @Test
