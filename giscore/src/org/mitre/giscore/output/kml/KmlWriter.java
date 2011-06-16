@@ -73,7 +73,7 @@ public class KmlWriter implements IGISOutputStream {
 	 * http://code.google.com/apis/kml/documentation/kmzarchives.html
 	 *
 	 * @param file the file to be opened for writing.
-     * @param encoding the encoding to use, if null default encoding (UTF-8) is assumed
+	 * @param encoding the encoding to use, if null default encoding (UTF-8) is assumed
 	 * @throws IOException if an I/O error occurs
 	 */
     public KmlWriter(File file, String encoding) throws IOException {
@@ -145,7 +145,9 @@ public class KmlWriter implements IGISOutputStream {
 	 * This must be called after entire KML for main document "doc.kml" is written.
 	 *
 	 * @param file file to write into the KMZ
-	 * @param entryName the entry name for file as it will appear in the KMZ
+	 * @param entryName the entry name for file as it will appear in the KMZ.
+	 *	This should be a root-level or relative file path (e.g. myOtherData.kml or images/image.png).
+	 *	As in any other zip file, entry names must be unique.
 	 * @throws IOException if an I/O error occurs
 	 * @throws IllegalArgumentException if arguments are null or KmlWriter is not writing
 	 * 			a compressed KMZ file
@@ -160,10 +162,11 @@ public class KmlWriter implements IGISOutputStream {
 	 *
 	 * @param is InputStream to write into the KMZ 
 	 * @param entryName the entry name for file as it will appear in the KMZ.
-	 * 					This should be a root-level or relative file path (e.g. myOtherData.kml or images/image.png).
+	 *	This should be a root-level or relative file path (e.g. myOtherData.kml or images/image.png).
+	 *	As in any other zip file, entry names must be unique.
 	 * @throws IOException if an I/O error occurs
 	 * @throws IllegalArgumentException if arguments are null
-     * @throws IllegalStateException if KmlWriter is not writing
+	 * @throws IllegalStateException if KmlWriter is not writing
 	 * 			a compressed KMZ file
 	 */
 	public void write(InputStream is, String entryName) throws IOException {
@@ -202,6 +205,7 @@ public class KmlWriter implements IGISOutputStream {
 		// log.info("> Write: " + object.getClass().getName());
 		if (object != null) {
 			if (object instanceof ContainerStart) {
+				// defer writing ContainerStart objects so empty containers can be dropped
 				if (waiting != null) {
 					kos.write(waiting);
 				}
@@ -292,9 +296,11 @@ public class KmlWriter implements IGISOutputStream {
      * resolve the child.kml document. The normalized form of this URI is the
      * original "child.href" value.
 	 * 
-	 * @param o IGISObject to normalize 
+	 * @param o IGISObject to normalize, never null
 	 */
 	public static void normalizeUrls(IGISObject o) {
+		// folowing must be in sync with "normalization" and rewriting
+		// as defined in KmlReader.read().
 		if (o.getClass() == Feature.class) {
 			Feature f = (Feature)o;
 			StyleSelector style = f.getStyle();
