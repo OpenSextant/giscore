@@ -833,6 +833,15 @@ public class KmlInputStream extends XmlInputStream implements IKml {
             // try individual date formats
             int ind = datestr.indexOf('T');
             int i;
+			/*
+				date formats:
+				0: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+				1: yyyy-MM-dd'T'HH:mm:ss'Z'
+				2: yyyy-MM-dd'T'HH:mm'Z' (dateTime format w/o seconds)
+				3: yyyy-MM-dd
+				4: yyyy-MM  (gYearMonth)
+				5: yyyy		(gYear)
+			*/
             if (ind == -1) {
                 i = 3; // if no 'T' in date then skip to date (YYYY-MM-DD) format @ index=3
             } else {
@@ -2251,14 +2260,17 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * Coordinate parser that matches the loose parsing of coordinates in Google Earth.
 	 * KML reference states "Do not include spaces within a [coordinate] tuple" yet
 	 * Google Earth allows whitespace to appear anywhere in the input or commas
-     * to appear between tuples (e.g 1,2,3,4,5,6 -> 1,2,3  4,5,6).
-	 * State machine-like parsing keeps track of what part of the coordinate
-	 * had been found so far.
-	 * Extra whitespace is allowed anywhere in the string.
-	 * Invalid text in input is ignored.
+     * to appear between tuples (e.g., <tt>1,2,3,4,5,6 -> 1,2,3  4,5,6</tt>).
+	 *
+	 * <ul>
+	 * <li> Simple state machine parsing keeps track of what part of the coordinate
+	 * 		had been found so far.
+	 * <li> Extra whitespace is allowed anywhere in the string.
+	 * <li> Invalid text in input is ignored.
+	 * </ul>
 	 *
 	 * @param coord Coordinate string
-	 * @return list of coordinates
+	 * @return list of coordinates. Returns empty list if no coordinates are valid, never null
 	 */
     @NonNull
 	public static List<Point> parseCoord(String coord) {
@@ -2270,7 +2282,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		double elev = 0;
 		Longitude lon = null;
 		Latitude lat = null;
-        // note the NumberStreamTokenizer introduces some floating-error: e.g. 5.5 -> 5.499999999999999
+        // note the NumberStreamTokenizer may introduce some floating-error (e.g., 5.5 -> 5.499999999999999)
 		try {
 			while (st.nextToken() != NumberStreamTokenizer.TT_EOF) {
 				switch (st.ttype) {
