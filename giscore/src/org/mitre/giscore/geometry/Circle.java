@@ -106,9 +106,9 @@ public class Circle extends Point {
 	public int hashCode() {
         // Note we're using approximate equals vs absolute equals on floating point number
         // so must ignore beyond ~6 decimal places in computing the hashCode, otherwise
-        // we break the equals-hashCode contract. ChangingDELTA or equals(Circle)
+        // we break the equals-hashCode contract. Changing DELTA or equals(Circle)
         // may require changing the logic used here also.
-		return super.hashCode() ^ ((int) (radius * 10e+6));
+		return 31 * super.hashCode() + ((int) (radius * 10e+6));
 	}
 
 	/**
