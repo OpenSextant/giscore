@@ -1,5 +1,5 @@
 /****************************************************************************************
- *  FeatureStart.java
+ *  Feature.java
  *
  *  Created: Jan 26, 2009
  *
@@ -49,7 +49,7 @@ public class Feature extends Common {
      * In KML this represents a Placemark.
      */
     public Feature() {
-        super();
+        //
     }
 
 	/*
@@ -122,6 +122,41 @@ public class Feature extends Common {
 
 	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((geometry == null) ? 0 : geometry.hashCode());
+		result = prime * result + ((endTime == null) ? 0 : endTime.hashCode());
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Feature other = (Feature) obj;
+		if (geometry == null) {
+			if (other.geometry != null)
+				return false;
+		} else if (other.geometry == null ||
+				!geometry.equals(other.geometry))
+			return false;
+		return true;
 	}
 
 	/**
