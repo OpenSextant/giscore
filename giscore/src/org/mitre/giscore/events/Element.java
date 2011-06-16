@@ -97,7 +97,6 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
      */
     @NonNull
     public Namespace getNamespace() {
-        assert namespace != null;
         return namespace;
     }
 
@@ -134,7 +133,6 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	 */
     @NonNull
 	public String getName() {
-        assert name != null;
 		return name;
 	}
 
@@ -180,7 +178,6 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	 */
     @NonNull
 	public List<Element> getChildren() {
-        assert children != null;
 		return children;
 	}
 
@@ -253,13 +250,10 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((attributes == null) ? 0 : attributes.hashCode());
-		result = prime * result
-				+ ((children == null) ? 0 : children.hashCode());
-		result = prime * result + ((name == null) ? 0 : name.hashCode());
-		result = prime * result + namespace.hashCode();
+		int result = attributes.hashCode(); // never null
+		result = prime * result + children.hashCode(); // never null
+		result = prime * result + name.hashCode(); // never null
+		result = prime * result + namespace.hashCode(); // never null
 		result = prime * result + ((text == null) ? 0 : text.hashCode());
 		return result;
 	}
@@ -276,15 +270,9 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		Element other = (Element) obj;
-		if (attributes == null) {
-			if (other.attributes != null)
-				return false;
-		} else if (!attributes.equals(other.attributes))
+		if (!attributes.equals(other.attributes))
 			return false;
-		if (name == null) {
-			if (other.name != null)
-				return false;
-		} else if (!name.equals(other.name))
+		if (!name.equals(other.name))
 			return false;
 		if (!namespace.equals(other.namespace))
 			return false;
@@ -293,10 +281,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 				return false;
 		} else if (!text.equals(other.text))
 			return false;
-        if (children == null) {
-			if (other.children != null)
-				return false;
-		} else if (!children.equals(other.children))
+        if (!children.equals(other.children))
 			return false;
 		return true;
 	}
@@ -311,9 +296,10 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
         } else
             namespace = Namespace.NO_NAMESPACE;
 		name = in.readString();
-		assert name != null;
+		if (name == null) throw new IOException("name field cannot be null");
 		text = in.readString();
 		int count = in.readInt();
+		attributes.clear();
 		for(int i = 0; i < count; i++) {
 			String attr = in.readString();
 			String val = in.readString();
@@ -321,7 +307,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		}
         List<Element> collection = (List<Element>) in.readObjectCollection();
         children.clear();
-        if (collection != null)
+        if (collection != null && !collection.isEmpty())
             children.addAll(collection);
 	}
 
