@@ -45,7 +45,7 @@ public abstract class AbstractObject implements IDataSerializable, IGISObject {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!(obj instanceof AbstractObject))
+		if (obj == null || !(obj instanceof AbstractObject))
 			return false;
 		AbstractObject other = (AbstractObject) obj;
 		if (id == null) {
