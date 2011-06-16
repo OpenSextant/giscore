@@ -91,9 +91,11 @@ public final class Namespace {
         new Namespace("xml", "http://www.w3.org/XML/1998/namespace");
 
     /** The prefix mapped to this namespace */
+	@NonNull
     private final String prefix;
 
     /** The URI for this namespace */
+	@NonNull
     private final String uri;
 
     /**
