@@ -13,8 +13,15 @@ Well-formed XML documents (fail schema validation)
  n.kml
  pred.kml
  police.kml
-	cvc-datatype-valid.1.2.1: invalid value for 'NCName' <Style id="***default+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png***">
+	ERROR: cvc-datatype-valid.1.2.1: invalid value for 'NCName' <Style id="***default+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png***">
 	<altitudeMode>***clampToGround***</altitudeMode>
+ udop-bigpull.kmz
+	This demonstrates duplicate ids for styles in given KML document.
+	ERROR: cvc-attribute.3: The value 'normalState' of attribute 'id' on element 'Style' is not valid with respect to its type, 'ID'.
+	 <Style id="***normalState***">
+	Also reuses same the ids in separate NetworkLinked KML documents which is legal but needs to be handled by software applying
+	styles to features.
+	Note the duplicates ids are in the networklinked KML not the root KML file (doc.kml).
 
 Well-formed XML documents (passes schema validation)
  badTrack.kml
