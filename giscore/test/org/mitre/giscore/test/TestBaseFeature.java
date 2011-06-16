@@ -19,20 +19,20 @@ public class TestBaseFeature {
 	@Test
 	public void testEquals() {
 		Feature f = new Feature();
-		f.setStyle(new Style()); // add empty style
 		f.setId("foo");
 		Feature f2 = new Feature();
+		Assert.assertFalse(f.equals(f2)); // f2 has null id
+		Assert.assertFalse(f2.equals(f)); // f2 has null id
 		f2.setId("bar");
-		Assert.assertFalse(f.equals(f2));
+		Assert.assertFalse(f.equals(f2)); // f.id != f2.id
 
 		Feature f3 = new Feature();
-		f3.setStyle(new Style()); // add empty style
 		f3.setId("foo");
 		assertEquals(f, f3);
 		assertEquals(f.hashCode(), f3.hashCode());
 
 		// add geometry to make objects different
-		f.setGeometry(new Point(37,-122));
+		f3.setGeometry(new Point(37,-122));
 		Assert.assertFalse(f.equals(f3));
 
 		Row row = new Row();
