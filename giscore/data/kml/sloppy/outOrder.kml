@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ Every element is out of sequence in this KML document
+ such as Point preceeding extrude and Placemark
+ preceeding the Style, etc.
+ -->
+<Document xmlns="http://www.opengis.net/kml/2.2">
+    <Placemark>
+        <styleUrl>#red</styleUrl>
+        <Point>
+            <coordinates>-71.238672,42.504745,13.0</coordinates>
+            <extrude>1</extrude>
+            <altitudeMode>absolute</altitudeMode>
+        </Point>
+        <name>Out of order Placemark</name>
+    </Placemark>
+    <Style id="red">
+        <IconStyle>
+            <color>ff0000ff</color>
+        </IconStyle>
+    </Style>
+</Document>
