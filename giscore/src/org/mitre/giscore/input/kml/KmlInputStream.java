@@ -2161,8 +2161,6 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				if (COORDINATES.equals(localPart)) {
 					String text = getNonEmptyElementText();
 					if (text != null) geom.points = parseCoord(text);
-					skipNextElement(stream, qname);
-					break;
 				}
 				else if (ALTITUDE_MODE.equals(localPart)) {
 					// note: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
@@ -2225,8 +2223,6 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					// lat and lon values; e.g. <coordinates>-121.9921875, 37.265625</coordinates>
 					// http://kml-samples.googlecode.com/svn/trunk/kml/ListStyle/radio-folder-vis.kml
 					if (text != null) rval = parsePointCoord(text);
-					skipNextElement(stream, name);
-					break;
 				}
 				 else if (ALTITUDE_MODE.equals(localPart)) {
 					// Note: handle kml:altitudeMode and gx:altitudeMode
