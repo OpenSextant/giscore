@@ -22,8 +22,7 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.lang.builder.EqualsBuilder;
-import org.apache.commons.lang.builder.HashCodeBuilder;
+
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -32,6 +31,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
