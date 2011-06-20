@@ -96,7 +96,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
      * @throws IllegalArgumentException error if object is not valid.
      */
 	private void init(List<Line> lines) {
-		if (lines == null || lines.size() < 1)
+		if (lines == null || lines.isEmpty())
             throw new IllegalArgumentException("MultiLine must contain at least 1 Line");
 		// Make sure all the lines have the same number of dimensions (2D or 3D)
         is3D = lines.get(0).is3D();
@@ -169,7 +169,8 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException, IllegalAccessException {
 		super.readData(in);
-		List<Line> llist = (List<Line>) in.readObjectCollection();		
+		List<Line> llist = (List<Line>) in.readObjectCollection();
+		// if for any reason list is null init() throws IllegalArgumentException
 		init(llist);
 	}
 
