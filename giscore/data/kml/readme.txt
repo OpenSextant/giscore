@@ -18,9 +18,11 @@ See also http://kml-samples.googlecode.com/svn/trunk/morekml/
 
 Summary of tags and properties used in KML collection
 
+	Angle radians is too big
 	Bad poly found, no outer ring
 	Camera altitudeMode cannot be clampToGround [ATC 54.2]
 	Container end date is later than that of its ancestors
+	Document must explicitly reference a shared style
 	Feature inherits container time
 	Feature uses inline Style
 	Feature uses inline StyleMap
@@ -32,9 +34,8 @@ Summary of tags and properties used in KML collection
 	Inner ring not contained within outer ring
 	Inner rings in Polygon must not overlap with each other
 	Invalid LookAt values
-	Invalid coordinate: 200.0
-	Invalid coordinate: 3000.0
 	Invalid time range: start > end
+	Latitude value exceeds pole value
 	Line clipped at DateLine
 	Line has duplicate consecutive points
 	LinearRing cannot self-intersect
@@ -45,9 +46,8 @@ Summary of tags and properties used in KML collection
 	Out of order elements
 	Outer ring has duplicate consecutive points
 	Overlay missing icon
-	Region has invalid LatLonAltBox
+	Region has invalid LatLonAltBox [ATC 8]
 	Shared styles in Folder not allowed [ATC 7]
-	Shared styles must have 'id' attribute [ATC 7]	
 	Suspicious Schema name characters
 	Suspicious Style id characters
 	Suspicious StyleMap highlight URL characters
@@ -193,7 +193,8 @@ data\kml\ExtendedData\data-golf.kml
 
 data\kml\ExtendedData\mti-data.kmz
 
-	Feature uses inline Style
+	Feature uses shared Style
+	Shared styles in Folder not allowed [ATC 7]
 	--
 	Document             1
 	ExtendedData         33
@@ -209,7 +210,8 @@ data\kml\ExtendedData\mti-data.kmz
 
 data\kml\ExtendedData\mti-schema-data.kmz
 
-	Feature uses inline Style
+	Feature uses shared Style
+	Shared styles in Folder not allowed [ATC 7]
 	--
 	BalloonStyle         1
 	Document             1
@@ -275,6 +277,16 @@ data\kml\FeatureType\life-of-a-feature-view-data.kml
 	ScreenOverlay        1
 	Style                1
 	# features=5
+
+data\kml\GroundOverlay\crossIDL.kml
+	DEBUG [main] (KmlInputStream.java:1862) - Normalized GroundOverlay west value
+
+	GroundOverlay spans -180/+180 longitude line
+	Overlay missing icon
+	--
+	GroundOverlay        2
+	LatLonBox            2
+	# features=2
 
 data\kml\GroundOverlay\empty.kml
 
@@ -843,7 +855,7 @@ data\kml\NetworkLink\visibility.kml
 
 data\kml\Placemark\AllElements.kml
 
-	Region has invalid LatLonAltBox
+	Region has invalid LatLonAltBox [ATC 8]
 	--
 	LookAt               1
 	Placemark            1
@@ -993,6 +1005,7 @@ data\kml\Placemark\simple_placemark.kml
 data\kml\Placemark\styled_placemark.kml
 
 	Feature uses inline Style
+	--
 	BalloonStyle         1
 	IconStyle            1
 	LabelStyle           1
@@ -1016,6 +1029,7 @@ data\kml\Polygon\polyInnerBoundaries.kml
 data\kml\Polygon\treasureIsland.kml
 
 	Feature uses inline Style
+	--
 	LineStyle            1
 	Placemark            1
 	PolyStyle            1
@@ -1214,6 +1228,26 @@ data\kml\sky\leo.kml
 	Point                1
 	# features=1
 
+data\kml\sloppy\badAtom.kml
+ WARN [main] (KmlInputStream.java:1315) - Skip element: Document
+DEBUG [main] (KmlInputStream.java:1316) - 
+javax.xml.stream.XMLStreamException: ParseError at [row,col]:[8,115]
+Message: http://www.w3.org/TR/1999/REC-xml-names-19990114#ElementPrefixUnbound?atom&atom:link
+	at com.sun.org.apache.xerces.internal.impl.XMLStreamReaderImpl.next(Unknown Source)
+	at com.sun.xml.internal.stream.XMLEventReaderImpl.peek(Unknown Source)
+	at org.mitre.giscore.input.kml.KmlInputStream.handleContainer(KmlInputStream.java:367)
+	at org.mitre.giscore.input.kml.KmlInputStream.handleStartElement(KmlInputStream.java:1284)
+	at org.mitre.giscore.input.kml.KmlInputStream.read(KmlInputStream.java:307)
+	at org.mitre.giscore.input.kml.KmlReader.read(KmlReader.java:209)
+	at org.mitre.giscore.input.kml.KmlReader.read(KmlReader.java:205)
+	at org.mitre.giscore.utils.KmlMetaDump.processKmlSource(KmlMetaDump.java:294)
+	at org.mitre.giscore.utils.KmlMetaDump.checkSource(KmlMetaDump.java:191)
+	at org.mitre.giscore.utils.KmlMetaDump.main(KmlMetaDump.java:1312)
+	*** java.io.IOException: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[9,5]
+Message: Element type "null" must be followed by either attribute specifications, ">" or "/>".
+
+	Skip element: Document
+
 data\kml\sloppy\badCoord.kml
  WARN [main] (KmlInputStream.java:2160) - comma found instead of whitespace between tuples before 4.0
  WARN [main] (KmlInputStream.java:2151) - ignore invalid string in coordinate: "ddd"
@@ -1247,8 +1281,7 @@ java.lang.IllegalArgumentException: Angle 52.35987755982989 radians is too big
 	Bad poly found, no outer ring
 	Feature uses inline Style
 	Feature uses shared Style
-	Invalid coordinate: 200.0
-	Invalid coordinate: 3000.0
+	Latitude value exceeds pole value
 	LinearRing must start and end with the same point
 	comma found instead of whitespace between tuples
 	ignore invalid character in coordinate string
@@ -1331,10 +1364,21 @@ data\kml\sloppy\n.kml
 	Region               1
 	# features=4
 
+data\kml\sloppy\outOrder.kml
+DEBUG [main] (KmlInputStream.java:1292) - Out of order element: Style
+
+	Feature uses shared Style
+	--
+	IconStyle            1
+	Placemark            1
+	Point                1
+	Style                1
+	# features=1
+
 data\kml\sloppy\police.kml
  WARN [main] (KmlInputStream.java:1289) - Skip unexpected element: altitudeMode
 
-	Feature uses inline Style
+	Feature uses shared Style
 	Skip unexpected element: altitudeMode
 	Suspicious Style id characters
 	Suspicious StyleMap highlight URL characters
@@ -1370,6 +1414,7 @@ data\kml\sloppy\pred.kml
 data\kml\Style\iconStyle.kmz
 
 	Feature uses inline Style
+	--
 	IconStyle            3
 	Placemark            3
 	Point                3
@@ -1399,7 +1444,8 @@ data\kml\Style\noicon.kml
 
 data\kml\Style\overrideStyles.kml
 
-	Feature uses inline Style
+	Feature uses merged shared/inline Style
+	Feature uses shared Style
 	--
 	IconStyle            2
 	LabelStyle           1
@@ -1423,7 +1469,6 @@ data\kml\Style\SharedStyle.kml
 
 data\kml\Style\style-merging.kml
 
-	Feature uses inline Style
 	Feature uses merged shared/inline Style
 	--
 	BalloonStyle         2
@@ -1465,8 +1510,6 @@ data\kml\Style\styled_placemark.kml
 
 data\kml\Style\styles.kml
 
-	Feature uses inline Style
-	--
 	IconStyle            1
 	ListStyle            1
 	Style                2
@@ -1554,8 +1597,6 @@ data\kml\time\time-inherits.kml
 
 data\kml\time\time-span-overlay.kml
 
-	GroundOverlay spans -180/+180 longitude line
-	--
 	GroundOverlay        12
 	LatLonBox            12
 	TimeSpan             12
@@ -1563,6 +1604,8 @@ data\kml\time\time-span-overlay.kml
 
 data\kml\time\time-stamp-point.kmz
 
+	Feature uses shared Style
+	--
 	IconStyle            3
 	ListStyle            1
 	Placemark            361
@@ -1613,6 +1656,7 @@ data\kml\xal\gaddr.kml
 	Point                1
 	xal:AddressDetails   1
 	# features=1
+
 data\kml\xmlns\earth-google-com-kml-21.kml
 
 	Placemark            1
