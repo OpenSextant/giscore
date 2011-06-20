@@ -5,7 +5,7 @@
  *
  * The program is provided "as is" without any warranty express or implied,
  * including the warranty of non-infringement and the implied warranties of
- * merchantibility and fitness for a particular purpose.  The Copyright
+ * merchantability and fitness for a particular purpose.  The Copyright
  * owner will not be liable for any damages suffered by you as a result of
  * using the Program.  In no event will the Copyright owner be liable for
  * any special, indirect or consequential damages or lost profits even if
@@ -17,6 +17,7 @@ package org.mitre.giscore.geometry;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -28,7 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
+-import java.util.List;
 
 /**
  * The MultiPoint class represents a list of geodetic Points for input and output in
@@ -50,10 +51,10 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 
     /**
 	 * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
-     * to initialize the object instance otherwise object is invalid.
+     * to initialize the object instance otherwise MultiPoint instance will remain empty.
 	 */
 	public MultiPoint() {
-		//
+		pointList = Collections.emptyList();
 	}
 
     /**
@@ -63,7 +64,7 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
      * @throws IllegalArgumentException error if object is not valid.
      */
     public MultiPoint(List<Point> pts) throws IllegalArgumentException {
-        if (pts == null || pts.size() < 1)
+        if (pts == null || pts.isEmpty())
             throw new IllegalArgumentException("MultiPoint must contain at least 1 Point");
         init(pts);
     }
@@ -154,12 +155,17 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
 		super.readData(in);
-		int pcount = in.readInt();
-		List<Point> plist = new ArrayList<Point>(pcount);
-		for(int i = 0; i < pcount; i++) {
-			plist.add((Point) in.readObject());
+		final int pcount = in.readInt();
+		if (pcount == 0) {
+			pointList = Collections.emptyList();
+			is3D = false;
+		} else {
+			List<Point> plist = new ArrayList<Point>(pcount);
+			for(int i = 0; i < pcount; i++) {
+				plist.add((Point) in.readObject());
+			}
+			init(plist);
 		}
-		init(plist);
 	}
 
 	/* (non-Javadoc)
@@ -168,22 +174,21 @@ public class MultiPoint extends Geometry implements Iterable<Point> {
 	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
-		out.writeInt(pointList != null ? pointList.size() : 0);
-		if (pointList != null)
-			for(Point p : pointList) {
-				out.writeObject(p);
-			}
+		out.writeInt(pointList.size());
+		for(Point p : pointList) {
+			out.writeObject(p);
+		}
 	}
 
 	@Override
 	public int getNumParts() {
-		return pointList != null ? pointList.size() : 0;
+		return pointList.size();
 	}
 	
 	@Override
     @Nullable
 	public Geometry getPart(int i) {
-		return pointList != null ? pointList.get(i) : null;
+		return i >= 0 && i < pointList.size() ? pointList.get(i) : null;
 	}
 
 	@Override
