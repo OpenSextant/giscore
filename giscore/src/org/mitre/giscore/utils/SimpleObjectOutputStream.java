@@ -32,8 +32,31 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Simplified Object Output Stream that saves data object
- * 
+ * Simplified Object Output Stream that saves data object. This class
+ * replaces <tt>java.io.ObjectOutputStream</tt> with a stream-lined implementation.
+ * An SimpleObjectOutputStream writes primitive data types and Java objects
+ * to an OutputStream.  The objects can be read (reconstituted) using an
+ * {@link SimpleObjectInputStream}.  Persistent storage of objects can be
+ * accomplished by using a file for the stream.  If the stream is a network
+ * socket stream, the objects can be reconstituted on another host or in another process.
+ *
+ * <p>Only objects that support the IDataSerializable interface can be
+ * written to streams.
+ *
+ * <p>The method writeObject is used to write an object to the stream.  Any
+ * object, including Strings and arrays, is written with writeObject. Multiple
+ * objects or primitives can be written to the stream.  The objects must be
+ * read back from the corresponding SimpleObjectInputStream with the same types and
+ * in the same order as they were written.
+ *
+ * <p>The writeObject method is responsible for writing the state of the object
+ * for its particular class so that the corresponding readObject method can
+ * restore it.  The method does not need to concern itself with the state
+ * belonging to the object's superclasses or subclasses.  State is saved by
+ * writing the individual fields to the ObjectOutputStream using the
+ * writeObject method or by using the methods for primitive data types
+ * supported by DataOutput.
+ *
  * @author DRAND
  */
 public class SimpleObjectOutputStream implements Closeable {
