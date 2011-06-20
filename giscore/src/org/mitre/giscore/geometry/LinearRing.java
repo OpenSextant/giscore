@@ -416,9 +416,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
     	visitor.visit(this);
     }
     
-	/**
-	 * @throws IllegalArgumentException error if point list is empty
-	 *          or number of points is less than 4
+	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
 	@SuppressWarnings("unchecked")
@@ -429,6 +427,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
 		super.readData(in);
 		idlWrap = in.readBoolean();
 		List<Point> plist = (List<Point>) in.readObjectCollection();
+		// if for any reason list is null or # points < 4 init() throws IllegalArgumentException
 		init(plist, false);
 	}
 
