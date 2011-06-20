@@ -5,7 +5,7 @@
  *
  * The program is provided "as is" without any warranty express or implied,
  * including the warranty of non-infringement and the implied warranties of
- * merchantibility and fitness for a particular purpose.  The Copyright
+ * merchantability and fitness for a particular purpose.  The Copyright
  * owner will not be liable for any damages suffered by you as a result of
  * using the Program.  In no event will the Copyright owner be liable for
  * any special, indirect or consequential damages or lost profits even if
@@ -17,6 +17,7 @@ package org.mitre.giscore.geometry;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -42,7 +43,7 @@ import java.util.*;
  */
 public class MultiLine extends Geometry implements Iterable<Line> {
 	
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(MultiLine.class);
 
     @NonNull
@@ -53,7 +54,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
      * to initialize the object instance otherwise object is invalid.
      */
     public MultiLine() {
-        //
+        lineList = Collections.emptyList();
     }
 
     /**
@@ -84,7 +85,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	 *
 	 * @return Collection of the {@code Line} objects.
 	 */
-    @NonNull
+	@NonNull
 	public Collection<Line> getLines() {
 		return Collections.unmodifiableList(lineList);
 	}
@@ -92,7 +93,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
     /**
      * Initialize
      * @param lines
-	 * @throws IllegalArgumentException error if object is not valid.
+     * @throws IllegalArgumentException error if object is not valid.
      */
 	private void init(List<Line> lines) {
 		if (lines == null || lines.size() < 1)
@@ -163,7 +164,7 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException, IllegalAccessException {
@@ -183,34 +184,30 @@ public class MultiLine extends Geometry implements Iterable<Line> {
 
 	@Override
 	public int getNumParts() {
-		return lineList != null ? lineList.size() : 0;
+		return lineList.size();
 	}
 
 	@Override
-    @Nullable
+	@Nullable
 	public Geometry getPart(int i) {
-		return lineList != null ? lineList.get(i) : null;
+		return i >= 0 && i < lineList.size() ? lineList.get(i) : null;
 	}
 	
 	@Override
 	public int getNumPoints() {
 		int count = 0;
-		if (lineList != null) {
-			for(Line l : lineList) {
-				count += l.getNumPoints();
-			}
+		for(Line l : lineList) {
+			count += l.getNumPoints();
 		}
 		return count;
 	}
 
 	@Override
-    @NonNull
+	@NonNull
 	public List<Point> getPoints() {
 		List<Point> pts = new ArrayList<Point>();
-		if (lineList != null) {
-			for(Line l : lineList) {
-				pts.addAll(l.getPoints());
-			}
+		for(Line l : lineList) {
+			pts.addAll(l.getPoints());
 		}
 		return Collections.unmodifiableList(pts);
 	}
