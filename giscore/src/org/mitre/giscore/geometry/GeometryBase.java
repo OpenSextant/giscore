@@ -103,7 +103,7 @@ public abstract class GeometryBase extends Geometry {
 		tessellate = (tessMask == 0 || tessMask == 0x10) ? Boolean.valueOf(tessMask == 0x10) : null;
 	}
 
-    /**
+	/*
 	 * (non-Javadoc)
 	 * @see SimpleObjectOutputStream#writeObject(org.mitre.giscore.utils.IDataSerializable)
 	 */
