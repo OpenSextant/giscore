@@ -168,6 +168,7 @@ public class TestBaseGeometry extends TestGISBase {
         final LinearRing ring = new LinearRing(pts, true);
         Polygon geo = new Polygon(ring, true);
         assertEquals(1, geo.getNumParts());
+        assertNotNull(geo.getPart(0));
         assertEquals(pts.size(), geo.getNumPoints());
         assertFalse(geo.is3D());
         Geodetic2DPoint cp = geo.getCenter();
@@ -230,6 +231,8 @@ public class TestBaseGeometry extends TestGISBase {
 		GeometryBag geo = new GeometryBag(geometries);
         assertEquals(2, geo.size()); // number of geometries
         assertEquals(2, geo.getNumParts()); // aggregate parts of all geometries
+        assertNotNull(geo.getPart(0));
+        assertNull(geo.getPart(2));
         assertEquals(1 + points.size(), geo.getNumPoints());
         assertFalse(geo.is3D());
 		assertTrue(geo.contains(line));
