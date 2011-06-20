@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -34,7 +34,23 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
 
 /**
- * Simplified stream that doesn't hold object references on input
+ * Simplified stream that doesn't hold object references on input. This class
+ * replaces <tt>java.io.ObjectInputStream</tt> with a stream-lined implementation.
+ * An SimpleObjectInputStream deserializes primitive data and objects previously
+ * written using an SimpleObjectOutputStream.
+ *
+ * <p>SimpleObjectInputStream is used to recover the state of those objects previously
+ * serialized. Other uses include passing objects between hosts using a socket stream
+ * or for marshaling and unmarshaling arguments and parameters in a remote communication
+ * system or caching to disk.
+ *
+ * <p>Only objects that support the IDataSerializable interface can be read from streams.
+ *
+ * <p>The method <code>readObject</code> is used to read an object from the
+ * stream.
+ *
+ * <p>Primitive data types can be read from the stream using the appropriate
+ * method on DataInput.
  * 
  * @author DRAND
  * 
@@ -67,20 +83,21 @@ public class SimpleObjectInputStream implements Closeable {
 	private final Map<String, Object> refs = new HashMap<String, Object>();
 	
 	/**
-	 * Ctor
+	 * Creates an SimpleObjectInputStream that reads from the specified InputStream.
 	 * 
-	 * @param s InputStream, never null
-	 * @throws IllegalArgumentException if s is null  
+	 * @param	in input stream to read from, never null
+	 * @throws IllegalArgumentException if in is null
 	 */
-	public SimpleObjectInputStream(InputStream s) {
-		if (s == null) {
-			throw new IllegalArgumentException("s should never be null");
+	public SimpleObjectInputStream(InputStream in) {
+		if (in == null) {
+			throw new IllegalArgumentException("in should never be null");
 		}
-		stream = new DataInputStream(s);
+		stream = new DataInputStream(in);
 	}
 
 	/**
-	 * Close the stream
+	 * Closes the input stream. Must be called to release any resources
+     * associated with the stream.
 	 */
 	public void close() {
 		IOUtils.closeQuietly(stream);
