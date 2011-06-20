@@ -225,17 +225,29 @@ public class TestBaseGeometry extends TestGISBase {
 		points.add(new Point(0.0, 0.0));
 		points.add(new Point(0.0, 1.0));
 		points.add(new Point(1.0, 0.0));
-		geometries.add(new Line(points));
+		final Line line = new Line(points);
+		geometries.add(line);
 		GeometryBag geo = new GeometryBag(geometries);
         assertEquals(2, geo.size()); // number of geometries
         assertEquals(2, geo.getNumParts()); // aggregate parts of all geometries
         assertEquals(1 + points.size(), geo.getNumPoints());
         assertFalse(geo.is3D());
+		assertTrue(geo.contains(line));
 
         // center = (1° 15' 0" E, 1° 15' 0" N)
         final Geodetic2DPoint cp = geo.getCenter();
         assertEquals(1.25, cp.getLatitudeAsDegrees(), EPSILON);
         assertEquals(1.25, cp.getLongitudeAsDegrees(), EPSILON);
+
+		geo.clear();
+		assertEquals(0, geo.size());
+        assertEquals(0, geo.getNumParts());
+		assertFalse(geo.is3D());
+
+		geometries.clear();
+		geometries.add(new Point(30.0, 40.0, 400));
+		geo = new GeometryBag(geometries);
+		assertTrue(geo.is3D());
     }
 
     @Test
