@@ -48,7 +48,8 @@ public class Model extends Geometry {
 	 * @see org.mitre.giscore.geometry.Geometry#computeBoundingBox()
 	 */
 	protected void computeBoundingBox() {
-		bbox = new Geodetic2DBounds(location);
+		if (location != null)
+			bbox = new Geodetic2DBounds(location);
 	}
 
 	public void setLocation(Geodetic2DPoint gp) {
@@ -114,7 +115,8 @@ public class Model extends Geometry {
     @Override
     @NonNull
 	public List<Point> getPoints() {
-		return Collections.singletonList(new Point(location));
+		return location == null ? Collections.<Point>emptyList()
+			: Collections.singletonList(new Point(location));
 	}
 
 	public void accept(IStreamVisitor visitor) {
@@ -177,7 +179,7 @@ public class Model extends Geometry {
 	/**
      * The toString method returns a String representation of this Object suitable for debugging
      *
-     * @return String containing Geometry Object type, bounding coordintates, and number of parts.
+     * @return String containing Geometry Object type, bounding coordinates, and number of parts.
      */
 	@Override
 	public String toString() {
