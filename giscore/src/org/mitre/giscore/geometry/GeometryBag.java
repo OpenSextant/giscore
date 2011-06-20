@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -58,15 +58,11 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 
 	/**
 	 * Ctor
-	 * @param geometries List of Geometry objects to include in the bag
-	 * @throws IllegalArgumentException error if geometries is null.
+	 * @param geometries List of Geometry objects to include in the bag,
+	 * 		if null then an empty list is created.
 	 */
 	public GeometryBag(List<Geometry> geometries) {
-		if (geometries == null) {
-			throw new IllegalArgumentException(
-					"geometries should never be null");
-		}
-		if (!geometries.isEmpty()) {
+		if (geometries != null && !geometries.isEmpty()) {
 			this.geometries.addAll(geometries);
 		}
 	}
@@ -143,7 +139,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	@Override
     @Nullable
 	public Geometry getPart(int i) {
-		return i < 0 || i >= geometries.size() ? null : geometries.get(i);
+		return i >= 0 && i < geometries.size() ? geometries.get(i) : null;
 	}
 
 	/* (non-Javadoc)
