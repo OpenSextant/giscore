@@ -5,7 +5,7 @@
  *
  * The program is provided "as is" without any warranty express or implied,
  * including the warranty of non-infringement and the implied warranties of
- * merchantibility and fitness for a particular purpose.  The Copyright
+ * merchantability and fitness for a particular purpose.  The Copyright
  * owner will not be liable for any damages suffered by you as a result of
  * using the Program.  In no event will the Copyright owner be liable for
  * any special, indirect or consequential damages or lost profits even if
@@ -24,6 +24,7 @@ import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -68,7 +69,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
      * to initialize the object instance otherwise object is invalid.
      */
     public MultiLinearRings() {
-    	//
+    	ringList = Collections.emptyList();
     }
     
     /**
@@ -131,7 +132,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 
     // Private init method shared by Constructors
     private void init(List<LinearRing> rings, boolean validateTopology) throws IllegalArgumentException {
-        if (rings == null || rings.size() < 1)
+        if (rings == null || rings.isEmpty())
             throw new IllegalArgumentException("MultiLinearRings must contain at least 1 LinearRing");
         if (validateTopology) validateTopology(rings);
         // Make sure all the rings have the same number of dimensions (2D or 3D)
@@ -206,6 +207,7 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 			ClassNotFoundException, InstantiationException, IllegalAccessException {
 		super.readData(in);
 		List<LinearRing> lrlist = (List<LinearRing>) in.readObjectCollection();
+		// if for any reason lrlist is null init() throws IllegalArgumentException
 		init(lrlist, false);
 	}
 
@@ -220,22 +222,20 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
 
 	@Override
 	public int getNumParts() {
-		return ringList != null ? ringList.size() : 0;
+		return ringList.size();
 	}
 	
 	@Override
     @CheckForNull
 	public Geometry getPart(int i) {
-		return ringList != null ? ringList.get(i) : null;
+		return i >= 0 && i < ringList.size() ? ringList.get(i) : null;
 	}
 
 	@Override
 	public int getNumPoints() {
 		int count = 0;
-		if (ringList != null) {
-			for(LinearRing ring : ringList) {
-				count += ring.getNumPoints();
-			}
+		for(LinearRing ring : ringList) {
+			count += ring.getNumPoints();
 		}
 		return count;
 	}
@@ -244,10 +244,8 @@ public class MultiLinearRings extends Geometry implements Iterable<LinearRing> {
     @NonNull
 	public List<Point> getPoints() {
 		List<Point> pts = new ArrayList<Point>();
-		if (ringList != null) {
-			for(LinearRing ring : ringList) {
-				pts.addAll(ring.getPoints());
-			}
+		for(LinearRing ring : ringList) {
+			pts.addAll(ring.getPoints());
 		}
 		return Collections.unmodifiableList(pts);
 	}
