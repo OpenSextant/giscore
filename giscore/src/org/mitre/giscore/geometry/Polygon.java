@@ -5,7 +5,7 @@
  *
  * The program is provided "as is" without any warranty express or implied,
  * including the warranty of non-infringement and the implied warranties of
- * merchantibility and fitness for a particular purpose.  The Copyright
+ * merchantability and fitness for a particular purpose.  The Copyright
  * owner will not be liable for any damages suffered by you as a result of
  * using the Program.  In no event will the Copyright owner be liable for
  * any special, indirect or consequential damages or lost profits even if
@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
  *  - Polygon rings may have mixed dimensionality but such polygons will be downgraded to 2d. <br/>
  *  - If validateTopology is selected then constructor enforces that the outer ring lists its points
  *   in the clockwise direction, and one or more fully and properly contained inner rings that
- *   list their points counter-clockwise. <br/>
+ *   list their points counter-clockwise.
  *
  * @author Jason Mathews
  */
@@ -69,7 +69,9 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
      * to initialize the object instance otherwise object is invalid.
      */
     public Polygon() {
-    	// 
+		// fields must be non-null but LinearRing with empty point list is still invalid (requires at least 4 pts)
+    	outerRing = new LinearRing();
+		ringList = Collections.emptyList();
     }
     
     /**
@@ -77,9 +79,10 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
      * object. By default, it does not do topology validation. To do validation, use alternate
      * constructor.
      *
-     * @param outerRing required outer boundary ring of polygon
+     * @param outerRing required outer boundary ring of polygon, never null
      *
-     * @throws IllegalArgumentException error if object is not valid.
+     * @throws IllegalArgumentException error if outerRing is <tt>null</tt> or not valid
+	 * 		(i.e., LinearRing requires minimum of 4 points).
      */
     public Polygon(LinearRing outerRing) throws IllegalArgumentException {
         this.outerRing = outerRing;
@@ -90,10 +93,13 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
      * This Constructor takes an outer boundary ring and initializes a Geometry object for this Polygon
      * object, performing validation checking if requested.
      *
-     * @param outerRing required outer boundary ring of polygon
-     * @param validateTopology boolean flag indicating whether validation should be performed.
+     * @param outerRing required outer boundary ring of polygon, never null
+     * @param validateTopology boolean flag indicating whether validation should be performed which
+	 * 		will check that this Polygon Object has a single outer ring that
+     * 		lists its points in the clockwise direction, and one or more fully
+	 * 		and properly contained inner rings that list their points counter-clockwise.
      *
-     * @throws IllegalArgumentException error if object is not valid.
+     * @throws IllegalArgumentException error if outerRing is <tt>null</tt> or not valid.
      */
     public Polygon(LinearRing outerRing, boolean validateTopology) throws IllegalArgumentException {
         this.outerRing = outerRing;
@@ -105,7 +111,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
      * a Geometry object for this Polygon object. By default, it does not do topology
      * validation. To do validation, use alternate constructor.
      *
-     * @param outerRing required outer boundary ring of polygon
+     * @param outerRing required outer boundary ring of polygon, never null
      * @param innerRings List of Ring objects to use for the parts of this Polygon.
      *
      * @throws IllegalArgumentException error if object is not valid.
@@ -119,7 +125,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
      * This Constructor takes an outer boundary ring with a list of rings and initializes
      * a Geometry Object for this Polygon object, performing validation checking if requested.
      *
-     * @param outerRing required outer boundary ring of polygon
+     * @param outerRing required outer boundary ring of polygon, never null
      * @param innerRings List of inner ring objects to use for the parts of this Polygon.
      * @param validateTopology boolean flag indicating whether validation should be performed.
      * 
@@ -158,7 +164,6 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
     // lists its points in the clockwise direction, and one or more fully and properly
     // contained inner rings that list their points counter-clockwise.
     private void validateTopology(List<LinearRing> rings) throws IllegalArgumentException {
-        int n = rings.size();
         // Verify that outer ring is in clockwise point order
         if (!outerRing.clockwise())
             throw new IllegalArgumentException("Outer LinearRing in Polygon must be " +
@@ -166,6 +171,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 
         // Verify that all the inner rings are in counter-clockwise point order, are fully
         // contained in the outer ring, and are non-intersecting with each other.
+		final int n = rings.size();
         for (int i = 0; i < n; i++) {
             LinearRing inner = rings.get(i);
             if (inner.clockwise())
@@ -187,10 +193,11 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 
     // Private init method shared by Constructors
     private void init(List<LinearRing> rings, boolean validateTopology) throws IllegalArgumentException {
+		// need null check here if constructor or readData() sets null value
         if (outerRing == null)
             throw new IllegalArgumentException("Polygon must contain an outer boundary ring");
         if (rings == null)
-            rings = new ArrayList<LinearRing>(0);
+            rings = Collections.emptyList();
         if (validateTopology) validateTopology(rings);
         // Make sure all the rings have the same number of dimensions (2D or 3D)
         is3D = outerRing.is3D();
@@ -262,6 +269,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 		super.readData(in);
 		outerRing = (LinearRing) in.readObject();
 		List<LinearRing> lrlist = (List<LinearRing>) in.readObjectCollection();
+		// if for any reason outRing is null init throws IllegalArgumentException
 		init(lrlist, false);
 	}
 
@@ -277,9 +285,8 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 
 	@Override
 	public int getNumParts() {
-		int pcount = 0;
-		if (outerRing != null) pcount++;
-		if (ringList != null) pcount += ringList.size();
+		int pcount = 1; // outerRing != null
+		pcount += ringList.size();
 		return pcount;
 	}
 	
@@ -296,12 +303,9 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 
 	@Override
 	public int getNumPoints() {
-		int count = 0;
-		if (outerRing != null) count += outerRing.getNumPoints();
-		if (ringList != null) {
-			for(LinearRing ring : ringList) {
-				count += ring.getNumPoints();
-			}
+		int count = outerRing.getNumPoints();
+		for(LinearRing ring : ringList) {
+			count += ring.getNumPoints();
 		}
 		return count;
 	}
@@ -310,7 +314,7 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
     @NonNull
 	public List<Point> getPoints() {
 		List<Point> rval = new ArrayList<Point>();
-		if (outerRing != null) {
+		if (outerRing.getNumPoints() != 0) {
 			List<Point> pts = outerRing.getPoints(); // returns Collections.unmodifiableList(pointList)
 			if (outerRing.clockwise() == false) {
 				pts = new ArrayList<Point>(pts); // make modifiable copy of list
@@ -319,16 +323,14 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 			}
 			rval.addAll(pts);
 		}
-		if (ringList != null) {
-			for(LinearRing ring : ringList) {
-				List<Point> pts = ring.getPoints();
-				if (ring.clockwise()) {
-					// Points are backward, reverse
-					pts = new ArrayList<Point>(pts); // make modifiable copy of list
-					Collections.reverse(pts);
-				}
-				rval.addAll(pts);
+		for(LinearRing ring : ringList) {
+			List<Point> pts = ring.getPoints();
+			if (ring.clockwise()) {
+				// Points are backward, reverse
+				pts = new ArrayList<Point>(pts); // make modifiable copy of list
+				Collections.reverse(pts);
 			}
+			rval.addAll(pts);
 		}
 		return rval;
 	}	
