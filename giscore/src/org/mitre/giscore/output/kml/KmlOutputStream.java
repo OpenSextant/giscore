@@ -691,7 +691,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Handle elements specific to an overlay feature
      *
      * @param overlay Overlay to be handled
-     * @throws XMLStreamException if an error occurs
+     * @throws XMLStreamException if there is an error with the underlying XML.
      */
     private void handleOverlay(Overlay overlay) throws XMLStreamException {
         handleColor(COLOR, overlay.getColor());
@@ -858,14 +858,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             try {
                 writer.writeStartElement(POLYGON);
                 handleGeometryAttributes(poly);
-                if (poly.getOuterRing() != null) {
-                    writer.writeStartElement(OUTER_BOUNDARY_IS);
-                    writer.writeStartElement(LINEAR_RING);
-                    handleSimpleElement(COORDINATES, handleCoordinates(poly
-                            .getOuterRing().iterator()));
-                    writer.writeEndElement();
-                    writer.writeEndElement();
-                }
+				writer.writeStartElement(OUTER_BOUNDARY_IS);
+				writer.writeStartElement(LINEAR_RING);
+				handleSimpleElement(COORDINATES, handleCoordinates(poly
+						.getOuterRing().iterator()));
+				writer.writeEndElement();
+				writer.writeEndElement();
                 if (poly.getLinearRings() != null) {
                     for (LinearRing lr : poly.getLinearRings()) {
                         writer.writeStartElement(INNER_BOUNDARY_IS);
@@ -903,7 +901,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Handle the output of a line
      *
-     * @param l the line, never <code>null</code>
+     * @param l the line, ignored if <code>null</code>
      */
     @Override
     public void visit(Line l) {
@@ -921,7 +919,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Handle the output of a point
      *
-     * @param p the point, never <code>null</code>
+     * @param p the point, ignored if <code>null</code>
+	 * @exception RuntimeException thrown if XMLStreamException is caught
      */
     @Override
     public void visit(Point p) {
@@ -942,7 +941,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Handle the output of a circle
      *
-     * @param circle the circle, never <code>null</code>
+     * @param circle the circle, ignored if <code>null</code>
      */
     @Override
     public void visit(Circle circle) {
@@ -990,7 +989,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	/**
      * Output a multigeometry, represented by a geometry bag
      *
-     * @param bag the geometry bag, never <code>null</code>
+     * @param bag the geometry bag, ignored if <code>null</code> or empty
      */
     @Override
     public void visit(GeometryBag bag) {
@@ -1007,16 +1006,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Handle the output of a MultiPoint geometry.
      *
-     * @param multiPoint the MultiPoint, never <code>null</code>
+     * @param multiPoint the MultiPoint, never <code>null</code> or empty
      */
     @Override
     public void visit(MultiPoint multiPoint) {
-        if (multiPoint != null && multiPoint.getPoints().size() != 0)
+        if (multiPoint != null && !multiPoint.getPoints().isEmpty())
             try {
                 writer.writeStartElement(MULTI_GEOMETRY);
-                for (Point point : multiPoint.getPoints()) {
-                    point.accept(this);
-                }
+				// this in turn calls visit(Point) handling extrude + altitudeMode elements for each point if needed
+            	super.visit(multiPoint);
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
                 throw new RuntimeException(e);
@@ -1026,13 +1024,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Handle the output of a MultiLine geometry.
      *
-     * @param multiLine the MultiLine, never <code>null</code>
+     * @param multiLine the MultiLine, ignored if <code>null</code> or empty
      */
     @Override
     public void visit(MultiLine multiLine) {
-        if (multiLine != null && multiLine.getLines().size() != 0)
+        if (multiLine != null && !multiLine.getLines().isEmpty())
          try {
             writer.writeStartElement(MULTI_GEOMETRY);
+			// this in turn calls visit(Line) handling extrude + altitudeMode elements for each line if needed
             super.visit(multiLine);
             writer.writeEndElement();
         } catch (XMLStreamException e) {
@@ -1043,11 +1042,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Handle the output of a MultiLinearRings geometry.
      *
-     * @param rings the MultiLinearRings, never <code>null</code>
+     * @param rings the MultiLinearRings, ignored if <code>null</code> or empty
      */
     @Override
     public void visit(MultiLinearRings rings) {
-        if (rings != null && rings.getLinearRings().size() != 0)
+        if (rings != null && !rings.getLinearRings().isEmpty())
          try {
             writer.writeStartElement(MULTI_GEOMETRY);
             super.visit(rings);
@@ -1060,11 +1059,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     /**
      * Handle the output of a MultiPolygons geometry.
      *
-     * @param polygons the MultiPolygons, never <code>null</code>
+     * @param polygons the MultiPolygons, ignored if <code>null</code> or empty
      */
     @Override
     public void visit(MultiPolygons polygons) {
-        if (polygons != null && polygons.getPolygons().size() != 0)
+        if (polygons != null && !polygons.getPolygons().isEmpty())
             try {
                 writer.writeStartElement(MULTI_GEOMETRY);
                 super.visit(polygons);
@@ -1079,7 +1078,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * extrude, tessellate, and altitudeMode.  Note tessellate tag is not applicable to Point
      * geometry and will be ignored if set on Points.
      *
-     * @param geom
+     * @param geom, never null
      * @throws XMLStreamException if there is an error with the underlying XML.
      */
     private void handleGeometryAttributes(GeometryBase geom) throws XMLStreamException {
@@ -1340,7 +1339,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Actually output the style
      *
      * @param style Style object to be written, never null
-     * @throws XMLStreamException if an error occurs
+	 * @throws XMLStreamException if there is an error with the underlying XML.
      */
     private void handle(Style style) throws XMLStreamException {
         writer.writeStartElement(STYLE);
@@ -1545,32 +1544,33 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
   /**
      * Visit a Model object
      *
-     * @param model Model to visit, never null
+     * @param model Model to visit, ignored if null
      * @throws RuntimeException if there is an error with the underlying XML
      */
     @Override
     public void visit(Model model) {
-        try {
-            Geodetic2DPoint point = model.getLocation();
-            if (point == null && model.getAltitudeMode() == null)
-                writer.writeEmptyElement(MODEL);
-            else {
-                writer.writeStartElement(MODEL);
-                // if altitudeMode is invalid/null then it will be omitted (handles gx:AltitudeMode extensions)
-                handleAltitudeMode(model.getAltitudeMode());
-                if (point != null) {
-                    writer.writeStartElement(LOCATION);
-                    handleSimpleElement(LONGITUDE, formatDouble(point.getLongitudeAsDegrees()));
-                    handleSimpleElement(LATITUDE, formatDouble(point.getLatitudeAsDegrees()));
-                    if (model.is3D())
-                        handleSimpleElement(ALTITUDE, formatDouble(((Geodetic3DPoint)point).getElevation()));
-                    writer.writeEndElement();
-                }
-                writer.writeEndElement();
-            }
-        } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
-        }
+		if (model != null)
+			try {
+				Geodetic2DPoint point = model.getLocation();
+				if (point == null && model.getAltitudeMode() == null)
+					writer.writeEmptyElement(MODEL);
+				else {
+					writer.writeStartElement(MODEL);
+					// if altitudeMode is invalid/null then it will be omitted (handles gx:AltitudeMode extensions)
+					handleAltitudeMode(model.getAltitudeMode());
+					if (point != null) {
+						writer.writeStartElement(LOCATION);
+						handleSimpleElement(LONGITUDE, formatDouble(point.getLongitudeAsDegrees()));
+						handleSimpleElement(LATITUDE, formatDouble(point.getLatitudeAsDegrees()));
+						if (model.is3D())
+							handleSimpleElement(ALTITUDE, formatDouble(((Geodetic3DPoint)point).getElevation()));
+						writer.writeEndElement();
+					}
+					writer.writeEndElement();
+				}
+			} catch (XMLStreamException e) {
+				throw new RuntimeException(e);
+			}
     }
 
 	/**
