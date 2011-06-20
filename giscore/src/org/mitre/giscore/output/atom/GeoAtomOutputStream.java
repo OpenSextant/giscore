@@ -258,7 +258,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 				alist.add(part);
 			}
 		}
-		Object link = (Object) row.getData(LINK_ATTR);
+		Object link = row.getData(LINK_ATTR);
 		Map<SimpleField, String> data = new HashMap<SimpleField, String>();
 		for (SimpleField field : row.getFields()) {
 			if (ms_builtinFields.contains(field)) continue;
