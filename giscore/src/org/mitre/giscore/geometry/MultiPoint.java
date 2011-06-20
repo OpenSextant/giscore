@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
--import java.util.List;
+import java.util.List;
 
 /**
  * The MultiPoint class represents a list of geodetic Points for input and output in
