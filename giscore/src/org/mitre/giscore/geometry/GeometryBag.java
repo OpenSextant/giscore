@@ -98,7 +98,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 * @see org.mitre.giscore.geometry.Geometry#getCenter()
 	 */
 	@Override
-    @NonNull
+	@NonNull
 	public Geodetic2DPoint getCenter() {
 		double lat = 0.0;
 		double lon = 0.0;
@@ -137,7 +137,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 * @return the referenced part
 	 */
 	@Override
-    @Nullable
+	@Nullable
 	public Geometry getPart(int i) {
 		return i >= 0 && i < geometries.size() ? geometries.get(i) : null;
 	}
@@ -155,7 +155,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	}
 
 	@Override
-    @NonNull
+	@NonNull
 	public List<Point> getPoints() {
 		List<Point> rval = new ArrayList<Point>();
 		for(Geometry geo : geometries) {
@@ -203,15 +203,16 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		return geometries.addAll(c);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Collection#clear()
+	/**
+	 * Removes all of the elements from this list (optional operation).
+     * The list will be empty after this call returns.
 	 */
 	public void clear() {
 		geometries.clear();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Collection#contains(java.lang.Object)
+	/**
+	 * Returns <tt>true</tt> if this list contains the specified element.
 	 */
 	public boolean contains(Object o) {
 		return geometries.contains(o);
@@ -224,8 +225,10 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		return geometries.containsAll(c);
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Collection#isEmpty()
+	/**
+	 * Returns <tt>true</tt> if this collection contains no elements.
+	 *
+	 * @return <tt>true</tt> if this collection contains no elements
 	 */
 	public boolean isEmpty() {
 		return geometries.isEmpty();
@@ -234,7 +237,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#iterator()
 	 */
-    @NonNull
+	@NonNull
 	public Iterator<Geometry> iterator() {
 		return geometries.iterator();
 	}
@@ -270,7 +273,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#toArray()
 	 */
-    @NonNull
+	@NonNull
 	public Object[] toArray() {
 		return geometries.toArray();
 	}
@@ -278,7 +281,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#toArray(T[])
 	 */
-    @NonNull    
+	@NonNull    
 	public <T> T[] toArray(T[] a) {
 		return geometries.toArray(a);
 	}
