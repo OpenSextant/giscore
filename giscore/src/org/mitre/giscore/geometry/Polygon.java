@@ -289,14 +289,22 @@ public class Polygon extends GeometryBase implements Iterable<LinearRing> {
 		pcount += ringList.size();
 		return pcount;
 	}
-	
+
+	/**
+	 *
+	 * @param i the desired part, 0=outerRing of polygon, 1..n=appropriate inner ring if such a ring
+	 * exists.
+	 * @return the referenced part
+	 * @throws IndexOutOfBoundsException if the index is out of range
+     *         (<tt>index &lt; 0 || index &gt;= size()</tt>)
+	 */
 	@Override
     @NonNull
 	public Geometry getPart(int i) {
-		if (i < 0)
-			throw new IllegalArgumentException("i must be non-negative");
-		else if (i == 0) 
+		if (i == 0)
 			return outerRing;
+		else if (i < 0)
+			throw new IndexOutOfBoundsException();
 		else 
 			return ringList.get(i - 1);
 	}
