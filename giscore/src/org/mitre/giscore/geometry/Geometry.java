@@ -192,11 +192,9 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 		return HashCodeBuilder.reflectionHashCode(this);
 	}
 
-	/*
+	/**
 	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.events.IGISObject#writeData(java.io.DataOutputStream)
+	 * @see SimpleObjectOutputStream#writeObject(org.mitre.giscore.utils.IDataSerializable)
 	 */
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		if (bbox == null) {
@@ -221,9 +219,8 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 
 	/*
 	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.events.IGISObject#readData(java.io.DataInputStream)
+	 *
+	 * @see org.mitre.giscore.utils.SimpleObjectInputStream#readObject()
 	 */
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
@@ -275,16 +272,16 @@ public abstract class Geometry implements VisitableGeometry, IGISObject,
 
 	/**
 	 * @return the component points for the given geometry.
-     *  May return empty list but never <tt><null/tt>.
+	 *  May return empty list but never <tt><null/tt>.
 	 */
-    @NonNull
+	@NonNull
 	public abstract List<Point> getPoints();
 	
 	/**
 	 * @param i the desired part, 0 origin
 	 * @return the referenced part
 	 */
-    @Nullable
+	@Nullable
 	public Geometry getPart(int i) {
 		return i == 0 ? this : null;
 	}

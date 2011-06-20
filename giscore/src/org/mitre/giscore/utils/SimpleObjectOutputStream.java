@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -61,17 +61,21 @@ public class SimpleObjectOutputStream implements Closeable {
 	private int cid = 1;
 	
 	/**
-	 * Ctor
-	 * @param s
+	 * Creates an ObjectOutputStream that writes to the specified OutputStream.
+	 *
+	 * @param s stream to hold the output data, never <code>null</code>
+	 * @throws	IllegalArgumentException if <code>s</code> is <code>null</code>
 	 */
 	public SimpleObjectOutputStream(OutputStream s) {
 		this(s, null);
 	}
 	
 	/**
-	 * Ctor
+	 * Creates an ObjectOutputStream that writes to the specified OutputStream.
+	 *
 	 * @param s stream to hold the output data, never <code>null</code>
 	 * @param cacher the cacher that decides what objects can be deduplicated, may be <code>null</code>
+	 * @throws	IllegalArgumentException if <code>s</code> is <code>null</code>
 	 */
 	public SimpleObjectOutputStream(OutputStream s, IObjectCacher cacher) {
 		if (s == null) {
@@ -82,7 +86,9 @@ public class SimpleObjectOutputStream implements Closeable {
 	}
 	
 	/**
-	 * Close the stream
+	 * Close the stream. This method must be called to release any resources
+     * associated with the stream.
+	 *
 	 * @throws IOException if an I/O error occurs
 	 */
 	public void close() throws IOException {
@@ -90,9 +96,17 @@ public class SimpleObjectOutputStream implements Closeable {
 	}
 	
 	/**
-	 * Write an object to the stream
-	 * @param object
-	 * @throws IOException if an I/O error occurs
+	 * Write an object to the output object stream. Default serialization
+	 * for a class is handled by its implementation of the writeObject and
+	 * the readObject methods. </p>
+	 *
+	 * All exceptions are fatal to the OutputStream, which is left in an
+	 * indeterminate state, and it is up to the caller to ignore or recover
+	 * the stream state.
+	 *
+	 * @param object object to be written in a serialized representation to the underlying stream
+	 * @throws	IOException Any exception thrown by the underlying
+     * 		OutputStream.
 	 */
 	public void writeObject(IDataSerializable object) throws IOException {
 		if (object == null) {
@@ -129,7 +143,8 @@ public class SimpleObjectOutputStream implements Closeable {
 	 * Write class information for the given object.
 	 * 
 	 * @param object
-	 * @throws IOException
+	 * @throws	IOException Any exception thrown by the underlying
+     * 		OutputStream.
 	 */
 	private void writeClass(IDataSerializable object) throws IOException {
 		Class<? extends IDataSerializable> clazz = object.getClass();
@@ -147,8 +162,8 @@ public class SimpleObjectOutputStream implements Closeable {
 	}
 	
 	/**
-	 * Write a collection of object
-	 * @param objects the object collection
+	 * Write a collection of objects
+	 * @param objects the object collection, <tt>null</tt> and empty list are handled the same
 	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeObjectCollection(Collection<? extends IDataSerializable> objects) throws IOException {
@@ -275,7 +290,8 @@ public class SimpleObjectOutputStream implements Closeable {
 	}
 
 	/**
-	 * Flush
+	 * Flushes the stream. This will write any buffered output bytes and flush
+     * through to the underlying stream.
 	 * @throws IOException if an I/O error occurs
 	 */
 	public void flush() throws IOException {

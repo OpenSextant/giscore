@@ -75,12 +75,19 @@ public abstract class GeometryBase extends Geometry {
      * Read data from SimpleObjectInputStream
      * 
      * @param in SimpleObjectInputStream
-     * 
-     * @throws IOException if an I/O error occurs
-     * @throws ClassNotFoundException
-     * @throws InstantiationException
-     * @throws IllegalAccessException
+     *
+     * @exception IOException if an I/O error occurs or if this input stream has reached the end.
+	 * @exception ClassNotFoundException if the class cannot be located
+	 * @exception  IllegalAccessException  if the class or its nullary
+     *               constructor is not accessible.
+	 * @exception  InstantiationException
+     *               if this <code>Class</code> represents an abstract class,
+     *               an interface, an array class, a primitive type, or void;
+     *               or if the class has no nullary constructor;
+     *               or if the instantiation fails for some other reason.
      * @exception IllegalArgumentException if enumerated AltitudeMode value is invalid
+	 *
+	 * @see org.mitre.giscore.utils.SimpleObjectInputStream#readObject()
      */
 	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
@@ -97,10 +104,9 @@ public abstract class GeometryBase extends Geometry {
 	}
 
     /**
-     * Writes data to SimpleObjectOutputStream
-     * @param out
-     * @throws IOException if an I/O error occurs
-     */
+	 * (non-Javadoc)
+	 * @see SimpleObjectOutputStream#writeObject(org.mitre.giscore.utils.IDataSerializable)
+	 */
 	@Override
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
