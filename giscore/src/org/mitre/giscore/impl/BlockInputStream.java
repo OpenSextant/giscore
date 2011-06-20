@@ -54,7 +54,7 @@ public class BlockInputStream extends InputStream {
 	 */
 	public int read() throws IOException {
 		if (checkBuffer())
-			return (int) (0xFF & buffer[pos++]);
+			return (0xFF & buffer[pos++]);
 		else
 			return -1;
 	}
