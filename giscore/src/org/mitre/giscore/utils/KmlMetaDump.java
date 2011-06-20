@@ -23,8 +23,6 @@ import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.*;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.input.kml.UrlRef;
@@ -42,7 +40,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
 
 /**
  * Simple KML Debugging Tool to read KML/KMZ documents by File or URL and dump statistics
