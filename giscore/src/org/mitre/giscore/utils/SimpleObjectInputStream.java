@@ -153,6 +153,7 @@ public class SimpleObjectInputStream implements Closeable {
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private IDataSerializable readClass() throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
