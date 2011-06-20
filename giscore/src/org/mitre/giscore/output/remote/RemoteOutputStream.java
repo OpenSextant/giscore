@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2010
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -43,10 +43,10 @@ public class RemoteOutputStream implements IGISOutputStream {
 	private final int BUFFER_COUNT = 100;
 	private static final AtomicInteger threadCount = new AtomicInteger();
 	
-	private List<IGISObject> buffer = new ArrayList<IGISObject>();	
-	private IRemoteableGISOutputStream realStream;
-	private OutputStream outputStream;
-	private Thread retriever = null;
+	private final List<IGISObject> buffer = new ArrayList<IGISObject>();
+	private final IRemoteableGISOutputStream realStream;
+	private final OutputStream outputStream;
+	private Thread retriever;
 	
 	public RemoteOutputStream(IRemoteableGISOutputStream realStream, OutputStream outputStream) {
 		if (realStream == null) {
@@ -79,7 +79,7 @@ public class RemoteOutputStream implements IGISOutputStream {
 
 	public void close() throws IOException {
 		// Force completion of the actual work on the remote end
-		if (buffer.size() > 0) {
+		if (!buffer.isEmpty()) {
 			realStream.write(buffer);
 			buffer.clear();
 		}
