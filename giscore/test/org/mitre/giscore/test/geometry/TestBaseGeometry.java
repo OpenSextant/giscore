@@ -233,6 +233,7 @@ public class TestBaseGeometry extends TestGISBase {
         assertEquals(1 + points.size(), geo.getNumPoints());
         assertFalse(geo.is3D());
 		assertTrue(geo.contains(line));
+		assertFalse(geo.isEmpty());
 
         // center = (1° 15' 0" E, 1° 15' 0" N)
         final Geodetic2DPoint cp = geo.getCenter();
@@ -242,6 +243,7 @@ public class TestBaseGeometry extends TestGISBase {
 		geo.clear();
 		assertEquals(0, geo.size());
         assertEquals(0, geo.getNumParts());
+		assertTrue(geo.isEmpty());
 		assertFalse(geo.is3D());
 
 		geometries.clear();
