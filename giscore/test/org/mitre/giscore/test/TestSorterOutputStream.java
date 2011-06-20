@@ -138,9 +138,9 @@ public class TestSorterOutputStream extends TestGISBase {
 		ts.put(new SimpleField("reportType", SimpleField.Type.STRING));
 		ts.put(new SimpleField("count", SimpleField.Type.INT));
 		ContainerStart cs = new ContainerStart("results");
-		Style teststyle = new Style();
-		teststyle.setLineStyle(Color.red, 1.4);
-		sos.write(teststyle);
+		Style testStyle = new Style();
+		testStyle.setLineStyle(Color.red, 1.4);
+		cs.addStyle(testStyle);
 		sos.write(cs);
 		sos.write(ts);
 		

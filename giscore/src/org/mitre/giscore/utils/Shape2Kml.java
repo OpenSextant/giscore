@@ -18,9 +18,9 @@ import java.awt.*;
 import java.io.*;
 
 /**
- * Simple Shape file-to-KML/Z Converter
+ * Simple Shape file-to-KML Converter. Convert arbitrary shape files to KMZ files.
  *
- * @author MATHEWS
+ * @author Jason Mathews, MITRE Corp.
  * Date: 1/4/11 5:19 PM
  */
 public class Shape2Kml {
@@ -88,9 +88,13 @@ public class Shape2Kml {
 			IGISObject ob;
 			while ((ob = sis.read()) != null) {
 				if (ob instanceof Feature) {
-					count++; // featureCount
 					Feature f = (Feature) ob;
 					Geometry geo = f.getGeometry();
+					if (geo == null) {
+						// null geometry
+						continue;
+					}
+					count++; // featureCount
 					Class geomClass = geo.getClass();
 					if (lastGeom != geomClass) {
 						// all feature geometries in shape file should be the same
@@ -115,12 +119,12 @@ public class Shape2Kml {
 						if (hasLineStyle) f.setStyleUrl("#style");
 						geo = line;
 						// if (ringCount == 0)...
-					} else if (geo instanceof Line /* || geo instanceof MultiLine*/ ) {
+					} else if (geo instanceof Line || geo instanceof MultiLine) {
 						if (hasLineStyle) f.setStyleUrl("#style");
 						GeometryBase base = (GeometryBase) geo;
 						//if (geo instanceof Line)
 						base.setTessellate(true);
-						// todo: need to tessellate each Line in MultiLine
+						// need to tessellate each Line in MultiLine
 						// final int numPoints = geo.getNumPoints();
 						// if (numPoints < 25) continue;
 						// System.out.println("points=" + numPoints);
