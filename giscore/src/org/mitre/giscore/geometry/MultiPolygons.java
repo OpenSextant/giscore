@@ -5,7 +5,7 @@
  *
  * The program is provided "as is" without any warranty express or implied,
  * including the warranty of non-infringement and the implied warranties of
- * merchantibility and fitness for a particular purpose.  The Copyright
+ * merchantability and fitness for a particular purpose.  The Copyright
  * owner will not be liable for any damages suffered by you as a result of
  * using the Program.  In no event will the Copyright owner be liable for
  * any special, indirect or consequential damages or lost profits even if
@@ -62,7 +62,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
      * to initialize the object instance otherwise object is invalid.
 	 */
 	public MultiPolygons() {
-		//
+		polygonList = Collections.emptyList();
 	}
 	
     /**
@@ -81,7 +81,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 	 * @throws IllegalArgumentException error if object is not valid.
      */
 	private void init(List<Polygon> polygonList) {
-		if (polygonList == null || polygonList.size() < 1)
+		if (polygonList == null || polygonList.isEmpty())
             throw new IllegalArgumentException("MultiPolygons must contain " +
                     "at least 1 Polygons object");
 		// Make sure all the polygons have the same number of dimensions (2D or 3D)
@@ -180,6 +180,7 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 			ClassNotFoundException, InstantiationException, IllegalAccessException {
 		super.readData(in);
 		List<Polygon> plist = (List<Polygon>) in.readObjectCollection();
+		// if for any reason list is null init() throws IllegalArgumentException
 		init(plist);
 	}
 
@@ -194,22 +195,20 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
 
 	@Override
 	public int getNumParts() {
-		return polygonList != null ? polygonList.size() : 0;
+		return polygonList.size();
 	}
 	
 	@Override
     @CheckForNull
 	public Geometry getPart(int i) {
-		return polygonList != null ? polygonList.get(i) : null;
+		return i >= 0 && i < polygonList.size() ? polygonList.get(i) : null;
 	}
 
 	@Override
 	public int getNumPoints() {
 		int pcount = 0;
-		if (polygonList != null) {
-			for(Polygon poly : polygonList) {
-				pcount += poly.getNumPoints();
-			}
+		for(Polygon poly : polygonList) {
+			pcount += poly.getNumPoints();
 		}
 		return pcount;
 	}
@@ -218,10 +217,8 @@ public class MultiPolygons extends Geometry implements Iterable<Polygon> {
     @NonNull
 	public List<Point> getPoints() {
 		List<Point> rval = new ArrayList<Point>();
-		if (polygonList != null) {
-			for(Polygon poly : polygonList) {
-				rval.addAll(poly.getPoints());
-			}
+		for(Polygon poly : polygonList) {
+			rval.addAll(poly.getPoints());
 		}
 		return rval;
 	}	
