@@ -47,6 +47,7 @@ public class AtomLink implements IDataSerializable, Serializable {
 	 * Default ctor
 	 */
 	public AtomLink() {
+		// expect caller to invoke readData() or setter methods
 	}
 
 	/**
