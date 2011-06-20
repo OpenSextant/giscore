@@ -5,7 +5,7 @@
  *
  * The program is provided "as is" without any warranty express or implied,
  * including the warranty of non-infringement and the implied warranties of
- * merchantibility and fitness for a particular purpose.  The Copyright
+ * merchantability and fitness for a particular purpose.  The Copyright
  * owner will not be liable for any damages suffered by you as a result of
  * using the Program.  In no event will the Copyright owner be liable for
  * any special, indirect or consequential damages or lost profits even if
@@ -54,10 +54,13 @@ import java.util.List;
  * @author Paul Silvey
  */
 public class LinearRing extends GeometryBase implements Iterable<Point> {
-	private static final long serialVersionUID = 1L;
+
+    private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(LinearRing.class);
 
+    @NonNull
     private List<Point> pointList;
+
     private boolean idlWrap;  // International Date Line Wrap
 
 	/**
@@ -134,7 +137,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
 	 * to initialize the object instance otherwise object is invalid.
 	 */
 	public LinearRing() {
-		//
+		pointList = Collections.emptyList();
 	}
 
     /**
@@ -272,7 +275,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
 
 	@Override
 	public int getNumPoints() {
-		return pointList != null ? pointList.size() : 0;
+		return pointList.size();
 	}
 
     /**
@@ -406,17 +409,19 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
      */
     public String toString() {
         return "LinearRing within " + getBoundingBox() + " consists of " +
-                (pointList == null ? 0 : pointList.size()) + " Points";
+                pointList.size() + " Points";
     }
     
     public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
     }
     
-	/* (non-Javadoc)
+	/**
+	 * @throws IllegalArgumentException error if point list is empty
+	 *          or number of points is less than 4
 	 * @see org.mitre.giscore.geometry.Geometry#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
-    @SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")
 	@Override
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
