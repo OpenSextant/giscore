@@ -201,8 +201,8 @@ public class SimpleObjectOutputStream implements Closeable {
 	}
 	
 	/**
-	 * Write primitive non-array value, i.e. a string, integer, float, etc. The
-	 * value is written with a prior marker to allow reading later
+	 * Write primitive non-array value, i.e. a string, boolean, java.awt.Color, integer,
+	 * float, etc. The value is written with a prior marker to allow reading later
 	 * @param value the value, must be a supported type
 	 * @throws IOException if an I/O error occurs
 	 */
@@ -235,6 +235,9 @@ public class SimpleObjectOutputStream implements Closeable {
 		} else if (value instanceof Date) {
 			stream.writeShort(SimpleObjectInputStream.DATE);
 			writeLong(((Date) value).getTime());
+		} else if (value instanceof java.awt.Color) {
+			stream.writeShort(SimpleObjectInputStream.COLOR);
+			stream.writeInt(((java.awt.Color)value).getRGB());
 		} else {
 			log.warn("Failed to serialize unsupported type: " + value.getClass().getName());
 			//throw new UnsupportedOperationException("Found unsupported type " + value.getClass());
@@ -246,7 +249,7 @@ public class SimpleObjectOutputStream implements Closeable {
 	/**
 	 * Helper method that aids in writing a string to the data stream
 	 * @param str the string to write.
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeString(String str) throws IOException {
 		if (str == null) {
