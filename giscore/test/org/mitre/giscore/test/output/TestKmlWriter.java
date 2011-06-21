@@ -266,7 +266,7 @@ public class TestKmlWriter extends TestGISBase {
 			System.out.println();
 			*/
 
-			assertTrue(objs.size() == 2);
+			assertEquals(2, objs.size());
 			TestKmlOutputStream.checkApproximatelyEquals(nl, objs.get(1));
 
 			List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
