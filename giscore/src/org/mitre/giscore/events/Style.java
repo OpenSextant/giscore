@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -19,9 +19,15 @@
 package org.mitre.giscore.events;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.mitre.giscore.IStreamVisitor;
+import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 import java.awt.*;
+import java.io.IOException;
 
 /**
  * Represents style information for points and lines. This information is used
@@ -445,6 +451,117 @@ public class Style extends StyleSelector {
 
 	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		return EqualsBuilder.reflectionEquals(this, obj);
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return HashCodeBuilder.reflectionHashCode(this);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	 */
+		public void readData(SimpleObjectInputStream in) throws IOException,
+			ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		super.readData(in);
+		hasIconStyle = in.readBoolean();
+		if (hasIconStyle) {
+			iconColor = (Color)in.readScalar();
+			iconUrl = in.readString();
+			iconScale = (Double)in.readScalar();
+			iconHeading = (Double)in.readScalar();
+		}
+		hasLineStyle = in.readBoolean();
+		if (hasLineStyle) {
+			lineColor = (Color)in.readScalar();
+			lineWidth = (Double)in.readScalar();
+		}
+
+		hasListStyle = in.readBoolean();
+		if (hasListStyle) {
+			listBgColor = (Color)in.readScalar();
+			listItemType = (ListItemType)in.readEnum(ListItemType.values());
+		}
+
+		hasBalloonStyle = in.readBoolean();
+		if (hasBalloonStyle) {
+			balloonBgColor = (Color) in.readScalar();
+			balloonTextColor = (Color) in.readScalar();
+			balloonText = in.readString();
+			balloonDisplayMode = in.readString();
+		}
+
+		hasLabelStyle = in.readBoolean();
+		if (hasLabelStyle) {
+			labelColor = (Color) in.readScalar();
+			labelScale = (Double) in.readScalar();
+		}
+
+		hasPolyStyle = in.readBoolean();
+		if (hasPolyStyle) {
+			polyColor = (Color) in.readScalar();
+			polyfill = in.readBoolean();
+			polyoutline = in.readBoolean();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
+	 */
+	public void writeData(SimpleObjectOutputStream out) throws IOException {
+		super.writeData(out);
+		out.writeBoolean(hasIconStyle);
+		if (hasIconStyle) {
+			out.writeScalar(iconColor);
+			out.writeString(iconUrl);
+			out.writeScalar(iconScale);
+			out.writeScalar(iconHeading);
+		}
+
+		out.writeBoolean(hasLineStyle);
+		if (hasLineStyle) {
+			out.writeScalar(lineColor);
+			out.writeScalar(lineWidth);
+		}
+
+		out.writeBoolean(hasListStyle);
+		if (hasListStyle) {
+			out.writeScalar(listBgColor);
+			out.writeEnum(listItemType);
+		}
+
+		out.writeBoolean(hasBalloonStyle);
+		if (hasBalloonStyle) {
+			out.writeScalar(balloonBgColor);
+			out.writeScalar(balloonTextColor);
+			out.writeString(balloonText);
+			out.writeString(balloonDisplayMode);
+		}
+
+		out.writeBoolean(hasLabelStyle);
+		if (hasLabelStyle()) {
+			out.writeScalar(labelColor);
+			out.writeScalar(labelScale);
+		}
+
+		out.writeBoolean(hasPolyStyle);
+		if (hasPolyStyle()) {
+			out.writeScalar(polyColor);
+			out.writeBoolean(polyfill);
+			out.writeBoolean(polyoutline);
+		}
 	}
 
 }
