@@ -153,7 +153,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
         // ignore empty or null comments
         if (StringUtils.isNotEmpty(text))
             try {
-                // string "--" (double-hyphen) MUST NOT occur within comments. Any other character may appear inside
+                // XML 1.0 spec: string "--" (double-hyphen) MUST NOT occur within comments. Any other character may appear inside.
                 // e.g. <!-- declarations for <head> & <body> -->
                 text = text.replace("--", "&#x2D;&#x2D;");
                 StringBuilder buf = new StringBuilder();
@@ -307,6 +307,8 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     protected void writeAsComment(Element el) throws XMLStreamException {
         StringBuilder sb = new StringBuilder();
         writeAsComment(el, sb, 0);
+		// XML Spec 1.0: For compatibility, the string " -- " (double-hyphen) MUST NOT occur within comments.
+		// XMLStreamWriter.writeComment() does *NOT* encode/escape the comment text
         String text = sb.toString().replace("--", "&#x2D;&#x2D;");
         writer.writeComment(text);
     }
@@ -368,7 +370,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
             key = key.replace("\"", "\\\""); // escape quotes in string
         }
         sb.append(' ').append(key).append('=');
-        sb.append(delim).append(key).append(delim);
+        sb.append(delim).append(val).append(delim);
     }
 
     /**
