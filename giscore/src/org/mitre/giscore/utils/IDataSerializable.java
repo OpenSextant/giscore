@@ -28,6 +28,9 @@ public interface IDataSerializable {
 
 	/**
 	 * Read object from the data stream.
+	 * <p>Note other exceptions such as <tt>ClassCastException</tt> or <tt><NullPointerException/tt>
+	 * and others could be thrown if the order of writeData() calls does not match the
+	 * corresponding readData() calls for the same classes.
 	 * 
 	 * @param in
 	 *            the input stream, never <code>null</code>
