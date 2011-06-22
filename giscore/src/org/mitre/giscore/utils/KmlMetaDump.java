@@ -42,17 +42,18 @@ import java.net.URL;
 import java.util.*;
 
 /**
- * Simple KML Debugging Tool to read KML/KMZ documents by File or URL and dump statistics
- * on number of feature elements (Placemarks, Points, Polygons, LineStrings, NetworkLinks, etc.)
- * and properties (ExtendedData, Schema, etc.) and optionally export the same KML to a
- * file (or stdout) to verify all content has been correctly interpreted. <p/>
- *
- * Parsing also includes support for most gx KML extensions (e.g. MultiTrack, Track, etc.)
+ * Simple KML Debugging Tool to read KML/KMZ documents by File, URL or recursively
+ * by directory and dump statistics on number of feature elements (Placemarks,
+ * Points, Polygons, LineStrings, NetworkLinks, etc.) and properties (ExtendedData,
+ * Schema, etc.) and optionally export the same KML to a file (or stdout) to
+ * verify all content has been correctly interpreted.
+ * <p/>
+ * Parsing also includes support and validation for gx KML extensions (e.g. MultiTrack, Track, etc.)
  * <p/>
  *
  * Attempts to validate some of the OGC KML 2.2 specification rules and OGC KML Best Practices
- * (defined in OGC KML 2.2 Abstract Test Suite), which are not available using standard
- * XML Schema validation practices using kml22.xsd.
+ * (defined in OGC KML 2.2 Abstract Test Suite), which are not possible using standard
+ * XML Schema validation practices using kml22.xsd and DOM validation.
  *
  * Lists following conditions if found:
  * <ul>
@@ -92,6 +93,9 @@ import java.util.*;
  *  <li> Shared styles must have 'id' attribute [ATC 7] (warning)
  *  <li> Starting container tag with no matching end container (error)
  *  <li> StyleUrl must contain '#' with identifier reference (error)
+ *  <li> StyleMap Pair must contain StyleUrl or Style
+ *  <li> StyleMap has inline Style (info)
+ *  <li> Suspicious Pair id characters (warning)
  *  <li> Suspicious Schema id characters (warning)
  *  <li> Suspicious Schema name characters (warning)
  *  <li> Suspicious Style id characters (warning)
@@ -483,7 +487,7 @@ public class KmlMetaDump implements IKml {
             addTag(((ContainerStart) gisObj).getType()); // Document | Folder
             containers.push(cs);
 			for (StyleSelector s : cs.getStyles()) {
-				checkStyle(s);
+				checkStyle(s, true);
 			}
             Date startTime = cs.getStartTime();
             Date endTime = cs.getEndTime();
@@ -573,7 +577,7 @@ public class KmlMetaDump implements IKml {
         } else if (gisObj instanceof StyleSelector) {
 			// these are out of order styles
 			// all in-sequence styles + styles should be part of the container they're contained in
-			checkStyle((StyleSelector)gisObj);
+			checkStyle((StyleSelector)gisObj, true);
         } else if (gisObj instanceof Overlay) {
             Overlay ov = (Overlay) gisObj;
             addTag(ov.getClass());
@@ -636,61 +640,48 @@ public class KmlMetaDump implements IKml {
         }
 	}
 
-	private void checkStyle(StyleSelector style) {
+	private void checkStyle(StyleSelector style, boolean checkSharedStyle) {
 		final Class<? extends StyleSelector> aClass = style.getClass();
 		addTag(aClass);
 
-		if (!containers.isEmpty()
-				&& IKml.FOLDER.equals(containers.peek().getType())) {
-			/*
-			ATC 7: Shared style definition
-			'shared' style definition (any element that may substitute for kml:AbstractStyleSelectorGroup)
-			 satisfies all of the following constraints:
-				-its parent element is kml:Document;
-				-it has an 'id' attribute value.
+		if (checkSharedStyle) {
+			if (!containers.isEmpty()
+					&& IKml.FOLDER.equals(containers.peek().getType())) {
+				/*
+				ATC 7: Shared style definition
+				'shared' style definition (any element that may substitute for kml:AbstractStyleSelectorGroup)
+				 satisfies all of the following constraints:
+					-its parent element is kml:Document;
+					-it has an 'id' attribute value.
 
-			Reference: OGC Constraint OGC-07-147r2: cl. 6.4
-			Shared styles shall only be encoded within a Document -> Not allowed in Folders
+				Reference: OGC Constraint OGC-07-147r2: cl. 6.4
+				Shared styles shall only be encoded within a Document -> Not allowed in Folders
 
-			http://code.google.com/apis/kml/documentation/kmlreference.html#document
-			Do not put shared styles within a Folder.
-			*/
-			addTag(":Shared styles in Folder not allowed [ATC 7]");
-			if (verbose) System.out.println(" Warning: Shared styles in Folder not allowed [ATC 7]");
+				http://code.google.com/apis/kml/documentation/kmlreference.html#document
+				Do not put shared styles within a Folder.
+				*/
+				addTag(":Shared styles in Folder not allowed [ATC 7]");
+				if (verbose) System.out.println(" Warning: Shared styles in Folder not allowed [ATC 7]");
 
-			// if only one style in Folder and style id = null then by the strict rules
-			// its an inline style (e.g. ListStyle) not a "shared" style and may be allowed.
-			// Best practice is to use shared style defined in Document + referenced via styleUrl
-		} else if (style.getId() == null) {
-			// Google KML Reference:
-			//  A style defined as the child of a <Document> is called a "shared style."
-			//  A shared style must have an id defined for it.
-			// KML spec:
-			//  For a kml:Style or kml:StyleMap that applies to a kml:Document, the kml:Document itself
-			//  must explicitly reference a shared style.
-			addTag(":Document must explicitly reference a shared style");
-			if (verbose) System.out.println(" Error: Document must explicitly reference a shared style. Inline styles only allowed in Placemarks");
+				// if only one style in Folder and style id = null then by the strict rules
+				// its an inline style (e.g. ListStyle) not a "shared" style and may be allowed.
+				// Best practice is to use shared style defined in Document + referenced via styleUrl
+			} else if (style.getId() == null) {
+				// Google KML Reference:
+				//  A style defined as the child of a <Document> is called a "shared style."
+				//  A shared style must have an id defined for it.
+				// KML spec:
+				//  For a kml:Style or kml:StyleMap that applies to a kml:Document, the kml:Document itself
+				//  must explicitly reference a shared style.
+				addTag(":Document must explicitly reference a shared style");
+				if (verbose) System.out.println(" Error: Document must explicitly reference a shared style. Inline styles only allowed in Placemarks");
+			}
 		}
 
 		if (aClass == Style.class) {
 			checkStyle((Style) style);
 		} else if (aClass == StyleMap.class) {
-			StyleMap sm = (StyleMap) style;
-			String id = sm.getId();
-			if (id != null && !UrlRef.isIdentifier(id)) {
-				addTag(":Suspicious StyleMap id characters");
-				if (verbose) System.out.println(" Warning: StyleMap id appears to contain invalid characters: " + id);
-			}
-			String styleUrl = sm.get(StyleMap.NORMAL);
-			if (styleUrl != null && styleUrl.startsWith("#") && !UrlRef.isIdentifier(styleUrl.substring(1))) {
-				addTag(":Suspicious StyleMap normal URL characters");
-				if (verbose) System.out.println(" Warning: StyleMap normal URL appears to contain invalid characters: %sm%n" + styleUrl);
-			}
-			styleUrl = sm.get(StyleMap.HIGHLIGHT);
-			if (styleUrl != null && styleUrl.startsWith("#") && !UrlRef.isIdentifier(styleUrl.substring(1))) {
-				addTag(":Suspicious StyleMap highlight URL characters");
-				if (verbose) System.out.println(" Warning: StyleMap highlight URL appears to contain invalid characters: " + styleUrl);
-			}
+			checkStyleMap((StyleMap) style);
 		}
 	}
 
@@ -714,6 +705,42 @@ public class KmlMetaDump implements IKml {
 			addTag(IKml.POLY_STYLE);
 		if (s.hasListStyle())
 			addTag(IKml.LIST_STYLE);
+	}
+
+	private void checkStyleMap(StyleMap sm) {
+		String id = sm.getId();
+		if (id != null && !UrlRef.isIdentifier(id)) {
+			addTag(":Suspicious StyleMap id characters");
+			if (verbose) System.out.println(" Warning: StyleMap id appears to contain invalid characters: " + id);
+		}
+
+		// enumerate all StyleMap Pairs
+		for (Iterator<Pair> it = sm.getPairs(); it.hasNext(); ) {
+			Pair pair = it.next();
+			if (pair != null) {
+				final String key = pair.getKey(); // never null
+				id = pair.getId();
+				if (id != null && !UrlRef.isIdentifier(id)) {
+					addTag(":Suspicious Pair id characters");
+					if (verbose) System.out.println(" Warning: Pair id appears to contain invalid characters: " + id);
+				}
+				String styleUrl = pair.getStyleUrl();
+				StyleSelector pairStyle = pair.getStyleSelector();
+				if (styleUrl == null && pairStyle == null) {
+					addTag(":StyleMap Pair must contain StyleUrl or Style");
+					if (verbose) System.out.printf(" Warning: StyleMap Pair %s must contain StyleUrl or Style%n", key);
+				} else {
+					if (styleUrl != null && styleUrl.startsWith("#") && !UrlRef.isIdentifier(styleUrl.substring(1))) {
+						addTag(":Suspicious StyleMap " + key + " URL characters");
+						if (verbose) System.out.printf(" Warning: StyleMap %s URL appears to contain invalid characters: %s%n", key, styleUrl);
+					}
+					if (pairStyle != null) {
+						addTag(":StyleMap has inline Style");
+						checkStyle(pairStyle, false);
+					}
+				}
+			}
+		}
 	}
 
 	private void checkElements(Feature f) {
@@ -1121,9 +1148,7 @@ public class KmlMetaDump implements IKml {
 			if (style != null) {
 				styleClass = getClassName(style.getClass());
 				addTag(styleClass);
-				if (style instanceof Style) {
-					checkStyle((Style)style);
-				}
+				checkStyle(style, false);
 			}
 			if (StringUtils.isNotBlank(f.getStyleUrl())) {
 				if (style == null)

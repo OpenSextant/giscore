@@ -53,7 +53,7 @@ import java.util.Queue;
  * stream. It uses STaX methods for writing the XML elements to avoid building
  * an in-memory DOM, which reduces the memory overhead of creating the document.
  * <p/>
- * KmlOutputStream produces a valid KML Document wrt the KML 2.2 specification.
+ * KmlOutputStream produces a valid KML Document with respect to the KML 2.2 specification.
  * <p/>
  * For KML, each incoming element generally adds another full element to the
  * output document. There are a couple of distinct exceptions. These are the
@@ -72,11 +72,13 @@ import java.util.Queue;
  * must be added to the Feature object as {@link Element} objects.
  *
  * <h4>Notes/Limitations:</h4>
- *  -A few tags are not yet supported on features so are omitted from output:
- *  {@code address, Metadata, and phoneNumber}.<br/>
- * -Limited support for NetworkLinkControl.<br/>
- * -Warns if shared styles appear in Folders. According to OGC KML specification
+ * <ul>
+ * <li> A few tags are not yet supported on features so are omitted from output:
+ *  {@code address, Metadata, and phoneNumber}.
+ * <li> Limited support for NetworkLinkControl.
+ * <li> Warns if shared styles appear in Folders. According to OGC KML specification
  *  shared styles shall only appear within a Document [OGC 07-147r2 section 6.4].
+ *  </ul>
  *
  * @author J.Mathews
  * @author DRAND
@@ -484,7 +486,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			if (style instanceof Style) {
 				handle((Style) style);
 			} else if (style instanceof StyleMap) {
-				handle((StyleMap) style);
+				handleStyleMap((StyleMap) style);
 			}
 		}
 	}
@@ -1426,7 +1428,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @param style line Style element to be written
      * @throws XMLStreamException if there is an error with the underlying XML
      */
-    protected void handleLineStyleElement(Style style)
+    private void handleLineStyleElement(Style style)
             throws XMLStreamException {
         writer.writeStartElement(LINE_STYLE);
         handleColor(COLOR, style.getLineColor());
@@ -1445,7 +1447,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @throws XMLStreamException if there is an error with the underlying XML
 	 * @see Style#setIconStyle(java.awt.Color, Double, Double, String)
      */
-    protected void handleIconStyleElement(Style style)
+    private void handleIconStyleElement(Style style)
             throws XMLStreamException {
         writer.writeStartElement(ICON_STYLE);
         handleColor(COLOR, style.getIconColor());
@@ -1507,7 +1509,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     public void visit(StyleMap styleMap) {
 		if (styleMap != null)
 			try {
-				handle(styleMap);
+				handleStyleMap(styleMap);
 			} catch (XMLStreamException e) {
 				throw new RuntimeException(e);
 			}
@@ -1519,29 +1521,37 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @param styleMap StyleMap to be written, never null
      * @throws XMLStreamException if there is an error with the underlying XML
      */
-    private void handle(StyleMap styleMap) throws XMLStreamException {
+    private void handleStyleMap(StyleMap styleMap) throws XMLStreamException {
 		writer.writeStartElement(STYLE_MAP);
 		if (styleMap.getId() != null) {
 			writer.writeAttribute(ID, styleMap.getId());
 		}
-		String normalValue = styleMap.get(StyleMap.NORMAL);
-		if (normalValue != null) {
-			writer.writeStartElement(PAIR);
-			handleSimpleElement(KEY, StyleMap.NORMAL);
-			handleSimpleElement(STYLE_URL, normalValue);
-			writer.writeEndElement();
-		}
-		String highlightValue = styleMap.get(StyleMap.HIGHLIGHT);
-		if (highlightValue != null) {
-			writer.writeStartElement(PAIR);
-			handleSimpleElement(KEY, StyleMap.HIGHLIGHT);
-			handleSimpleElement(STYLE_URL, highlightValue);
-			writer.writeEndElement();
-		}
+		handlePair(styleMap, StyleMap.NORMAL);
+		handlePair(styleMap, StyleMap.HIGHLIGHT);
 		writer.writeEndElement();
     }
 
-  /**
+	private void handlePair(StyleMap styleMap, String key) throws XMLStreamException {
+		Pair pair = styleMap.getPair(key);
+		if (pair != null) {
+			writer.writeStartElement(PAIR);
+			String id = pair.getId();
+            if (id != null) writer.writeAttribute(ID, id);
+			// <element ref="kml:key" minOccurs="0"/>
+			// key must be kml:styleStateEnumType { normal or highlight }
+			handleSimpleElement(KEY, key);
+			// <element ref="kml:styleUrl" minOccurs="0"/>
+			handleNonNullSimpleElement(STYLE_URL, pair.getStyleUrl());
+			// <element ref="kml:AbstractStyleSelectorGroup" minOccurs="0"/>
+			StyleSelector style = pair.getStyleSelector();
+			if (style instanceof Style)
+				handle((Style)style);
+			// nested StyleMaps not supported
+			writer.writeEndElement();
+		}
+	}
+
+	/**
      * Visit a Model object
      *
      * @param model Model to visit, ignored if null

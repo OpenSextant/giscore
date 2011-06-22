@@ -38,7 +38,7 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.*;
-import java.awt.*;
+import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -47,17 +47,49 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.List;
 
 /**
- * Read a KML/KMZ file in as an input stream. Each time the read method is called,
+ * Read a Google Earth Keyhole Markup Language (KML) file in as an input stream
+ * one event at a time.
+ *
+ * <P>Supports KML 2.0 through KML 2.2 data formats with allowance
+ * for sloppy or lax KML files as would be allowed in Google Earth. Limited
+ * support is provided for Google's KML Extensions with gx prefix and
+ * <tt>http://www.google.com/kml/ext/2.2</tt> namespace .
+ * Strict conformance to the KML 2.2 specification
+ * is maintained in output in the associated {@link org.mitre.giscore.output.kml.KmlOutputStream}
+ * class. In doing so some "legacy" KML 2.0 or KML 2.1 conventions may be
+ * normalized into the equivalent 2.2 form or dropped if not supported.
+ *
+ * <P>Each time the read method is called,
  * the code tries to read a single event's worth of data. Generally that is one
  * of the following events:
  * <ul>
- * <li>A new container
- * <li>Exiting a container
- * <li>A new feature
+ * <li>A new container returning a <tt>ContainerStart</tt> object
+ * <li>Exiting a container returning a <tt>ContainerEnd</tt> object
+ * <li>A new feature returning a <tt>Feature</tt> object
  * </ul>
+ * <p>
+ * Supports KML Placemark, GroundOverlay, NetworkLink, Document, and Folder elements with
+ * limited support for the lesser used NetworkLinkControl, ScreenOverlay, PhotoOverlay elements.
+ * <p>
+ * Geometry support includes: Point, LineString, LinearRing, Polygon, MultiGeometry, and Model(<A href="#Model">*</A>).
+ * <p>
+ * Supported KML properties include: name, description, open, visibility,
+ * Camera/LookAt, atom:author, atom:link, xal:AddressDetails, styleUrl,
+ * inline/shared Styles, Region, Snippet, snippet, ExtendedData(<A href="#ExtendedData">*</A>),
+ * Schema, TimeStamp/TimeSpan elements in addition to the geometry are parsed
+ * and set on the Feature object.
+ * <P>
+ * Style and StyleMap supported on Features (Placemarks, Documents, Folders, etc.)
+ * with IconStyle, PolyStyle, ListStyle, etc.
+ * {@code StyleMaps} with inline Styles are supported.
+ * StyleMaps must specify {@code styleUrl} and/or inline Style. Nested StyleMaps are not supported.
+ * <p>
+ * If elements (e.g. {@code Style} or {@code StyleMap}) are out of order on input
+ * that same order is preserved while enumerating elements in reading.
+ * <p>
+ * <h4>Notes/Limitations:</h4>
  * <p>
  * The actual handling of containers and other features has some uniform
  * methods. Every feature in KML can have a set of common attributes and
@@ -65,7 +97,6 @@ import java.util.List;
  * {@link #handleProperties(Common,XMLEvent,QName)} method takes care of
  * these. This returns {@code false} if the current element isn't a
  * common element, which allows the caller to handle the code.
-
  * <p>
  * Geometry is handled by common code as well. All coordinates in KML are
  * transmitted as tuples of two or three elements. The formatting of these is
@@ -73,25 +104,14 @@ import java.util.List;
  * {@code extrude}, and {@code altitudeMode} properties are maintained on the associated
  * Geometry.
  * <p>
- * Feature properties (i.e., {@code name, description, open, visibility,
- * Camera/LookAt, atom:author, atom:link, xal:AddressDetails, styleUrl,
- * inline/shared Styles, Region, Snippet, snippet,
- * TimeStamp/TimeSpan} elements) in addition to the geometry are parsed and
- * set on the Feature object.
- * Style and StyleMap supported on Features (Placemarks, Documents, Folders, etc.)
- * with IconStyle, ListStyle, etc.
- * <p>
- * If elements (e.g. {@code Style} or {@code StyleMap}) are out of order on input
- * that same order is preserved while enumerating elements in reading.
- * <p>
- * <h4>Notes/Limitations:</h4>
- * <p>
+ * <a name="ExtendedData">
  * Handles ExtendedData with Data/Value or SchemaData/SimpleData elements but does not handle the non-KML namespace
  * form of extended data (see http://code.google.com/apis/kml/documentation/extendeddata.html#opaquedata).
  * Only a single {@code Data/SchemaData/Schema ExtendedData} mapping is assumed
  * per Feature but note that although uncommon, KML allows features to define multiple
  * Schemas. Features with mixed {@code Data} and/or multiple {@code SchemaData} elements
  * will be associated only with the last {@code Schema} referenced.
+ * </a>
  * <p>
  * Unsupported tags include the following:
  *  {@code address, Metadata, phoneNumber}.
@@ -101,15 +121,13 @@ import java.util.List;
  * is handle specially and stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry,
  * and GroundOverlay.
  * <p>
- * {@code StyleMaps} with inline Styles or nested StyleMaps are not supported.
- * StyleMaps must specify {@code styleUrl}.
- * <p>
  * Limited support for {@code PhotoOverlay} which creates an basic overlay object
  * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
  * ImagePyramid, Point, shape, etc).
  * <p>
+ * <a name="Model">
  * Limited support for {@code Model} geometry type. Keeps only location and altitude
- * properties.
+ * properties.</a>
  * <p>
  * Limited support for {@code NetworkLinkControl} which creates an object wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
@@ -139,17 +157,15 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private static final Set<String> ms_containers = new HashSet<String>();
 	private static final Set<String> ms_attributes = new HashSet<String>();
 	private static final Set<String> ms_geometries = new HashSet<String>();
-	private Map<String, String> schemaAliases;
-	private final Map<String, Schema> schemata = new HashMap<String, Schema>();
-
-	// stores current altitudeMode value for last geometry parsed
-	//private transient String altitudeMode;
 
 	private static final List<SimpleDateFormat> ms_dateFormats = new ArrayList<SimpleDateFormat>(6);
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
 	private static DatatypeFactory fact;
 	private static final Longitude COORD_ERROR = new Longitude();
 	private static final QName ID_ATTR = new QName(ID);
+
+	private Map<String, String> schemaAliases;
+	private final Map<String, Schema> schemata = new HashMap<String, Schema>();
 
     static {
 		// all non-container elements that extend kml:AbstractFeatureType base type in KML Schema
@@ -262,7 +278,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 *
 	 * @return next <code>IGISObject</code>,
      *           or <code>null</code> if the end of the stream is reached.
-	 * @throws IOException if an I/O error occurs
+	 * @throws IOException if an I/O error occurs or if there
+	 * 			is a fatal error with the underlying XML
 	 */
     @CheckForNull
 	public IGISObject read() throws IOException {
@@ -696,6 +713,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	private void handleStyleMapPair(StyleMap sm, QName name) throws XMLStreamException {
 		String key = null, value = null;
+		Style style = null;
 		while (true) {
 			XMLEvent ce = stream.nextEvent();
 			if (ce == null) {
@@ -709,12 +727,18 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					key = getNonEmptyElementText();
 				} else if (foundStartTag(se, STYLE_URL)) {
                     value = getNonEmptyElementText(); // type=anyURI
+				} else if (foundStartTag(se, STYLE)) {
+                    style = handleStyle(null, se, se.getName());
+					// inline Styles within StyleMap
+				} else if (foundStartTag(se, STYLE_MAP)) {
+					 // nested StyleMaps are not supported nor does it even make sense
+					log.debug("skip nested StyleMap");
+					skipNextElement(stream, se.getName());
 				}
-				// TODO: does not support inline Styles within StyleMap. Only styleUrls.
 			}
 			XMLEvent ne = stream.peek();
 			if (foundEndTag(ne, name)) {
-				if (value != null) {
+				if (key != null || value != null || style != null) {
                     if (key == null) {
                         key = StyleMap.NORMAL; // default
                     } else if (key.equalsIgnoreCase(StyleMap.NORMAL))
@@ -725,12 +749,16 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                         log.warn("Unknown StyleMap key: " + key);
 
 					if (sm.containsKey(key)) {
-						log.warn("StyleMap already has " + key + " definition. Ignore value=" + value);
+						if (value != null) {
+							log.warn("StyleMap already has " + key + " definition. Ignore styleUrl=" + value);
+						} else {
+							log.warn("StyleMap already has " + key + " definition. Ignore inline Style");
+						}
 						// Google Earth keeps the first pair for a given key
 					} else {
 						// note if styleUrl is "local reference" and does not have '#' prefix
 						// then it will be pre-pended to the URL.
-						sm.put(key, value);
+						sm.add(new Pair(key, value, style));
 					}
 				}
 				return;
@@ -922,7 +950,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				((ContainerStart)cs).addStyle(style);
 			} else addLast(style);
 		}
-		// otherwise out of order style
+		// otherwise out of order style or inline style in StyleMap
 
 		while (true) {
 			next = stream.nextEvent();
@@ -1606,7 +1634,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				else if (!handleProperties(fs, ee, qName)) {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
-						// geometry:: Point, LineString, LinearRing, Polygon, MultiGeometry, Model
+						// geometry: Point, LineString, LinearRing, Polygon, MultiGeometry, Model
                         try {
                             Geometry geo = handleGeometry(sl);
                             if (geo != null) {
