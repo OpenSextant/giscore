@@ -11,10 +11,9 @@ import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.shapefile.ShapefileInputStream;
 import org.mitre.giscore.output.kml.KmzOutputStream;
-import org.mitre.itf.geodesy.Geodetic2DBounds;
 
 import javax.xml.stream.XMLStreamException;
-import java.awt.*;
+import java.awt.Color;
 import java.io.*;
 
 /**

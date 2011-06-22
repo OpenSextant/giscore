@@ -22,11 +22,10 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.mitre.giscore.IStreamVisitor;
-import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.IOException;
 
 /**
