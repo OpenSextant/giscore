@@ -187,7 +187,7 @@ public class SimpleObjectInputStream implements Closeable {
 	 * @throws IllegalAccessException
 	 */
 	@SuppressWarnings("unchecked")
-    @Nullable
+	@Nullable
 	public List<? extends IDataSerializable> readObjectCollection()
 			throws IOException, ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
@@ -200,6 +200,38 @@ public class SimpleObjectInputStream implements Closeable {
 			rval.add(readObject());
 		}
 		return rval;
+	}
+
+	/**
+	 * Read an enumeration value from the data stream.
+	 * <p>The following example illustrates writing and reading an enumeration value:
+	 * <pre><code>
+	 *	import org.mitre.giscore.events.Style.ListItemType;
+	 *	// ...
+	 *	ListItemType listItemType = ListItemType.checkHideChildren;
+	 *	SimpleObjectOutputStream out = ...
+	 *	// write enumeration value:
+	 *	out.writeEnum(listItemType);
+	 *	// ...
+	 *	SimpleObjectInputStream in = ...
+	 *	// read back the enumeration value from SimpleObjectInputStream
+	 *	listItemType = (ListItemType)in.readEnum(ListItemType.values());
+	 * </code></pre>
+	 * @param enumValues is the result of the values() method invoked on the target enum class
+	 * @return the next Enum value, {@code null} if the enumeration value was originally null
+	 * 	or if the saved ordinal index isn't in range of the <tt>enumValues</tt> array.
+	 * @throws IOException if an I/O error occurs
+	 */
+	@Nullable
+	public Enum readEnum(Enum[] enumValues)  throws IOException {
+		boolean isnull = stream.readBoolean();
+		if (isnull) {
+			return null;
+		} else {
+			int ord = stream.readInt();
+			return enumValues != null && ord >= 0 && ord < enumValues.length
+					? enumValues[ord] : null;
+		}
 	}
 
 	/**
@@ -304,4 +336,5 @@ public class SimpleObjectInputStream implements Closeable {
 	public short readShort() throws IOException {
 		return stream.readShort();
 	}
+
 }

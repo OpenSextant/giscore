@@ -199,6 +199,20 @@ public class SimpleObjectOutputStream implements Closeable {
 			}
 		}
 	}
+
+	/**
+	 * Write an enumeration value
+	 * @param v
+	 * @throws IOException if an I/O error occurs
+	 */
+	public void writeEnum(Enum v)  throws IOException {
+		if (v == null) {
+			stream.writeBoolean(true);
+		} else {
+			stream.writeBoolean(false);
+			stream.writeInt(v.ordinal());
+		}
+	}
 	
 	/**
 	 * Write primitive non-array value, i.e. a string, boolean, java.awt.Color, integer,
