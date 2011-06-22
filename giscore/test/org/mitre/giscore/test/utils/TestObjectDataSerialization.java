@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -18,6 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.utils;
 
+import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
@@ -91,6 +92,35 @@ public class TestObjectDataSerialization {
 		ContainerStart c2 = (ContainerStart) sois.readObject();
 		assertEquals(c, c2);
 	}
+
+	@Test public void testStyleMap() throws Exception {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(100);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+		StyleMap sm = new StyleMap();
+		Style normal = new Style("sn");
+		normal.setIconStyle(new Color(0,0,255,127), 1.0, "normal.png");
+		normal.setListStyle(null, Style.ListItemType.checkHideChildren);
+		normal.setLabelStyle(null, 3.0);
+		normal.setPolyStyle(null, true, false);
+		Style hightlight = new Style();
+		hightlight.setIconStyle(Color.RED, 1.2, "hightlight.png");
+		hightlight.setListStyle(Color.GREEN, null);
+		hightlight.setLabelStyle(Color.WHITE, null);
+		hightlight.setPolyStyle(null, true, false);
+		sm.add(new Pair(StyleMap.NORMAL, null, normal));
+		sm.add(new Pair(StyleMap.HIGHLIGHT, null, hightlight));
+		sm.add(new Pair("foo", "#sn")); // add Pair with bogus key name and a StyleUrl string
+		System.out.println(sm);
+		soos.writeObject(sm);
+		soos.close();
+		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+		StyleMap s2 = (StyleMap) sois.readObject();
+		System.out.println(s2);
+		assertEquals(sm.hashCode(), s2.hashCode());
+		assertEquals(sm, s2);
+	}
+
 
 	@Test public void testElement() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(256);
