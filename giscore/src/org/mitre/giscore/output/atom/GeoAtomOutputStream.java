@@ -348,11 +348,12 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 				writer.writeAttribute("href", link);
 				writer.writeEndElement();
 			}
-			for(SimpleField key : data.keySet()) {
+			for(Map.Entry<SimpleField, String> entry : data.entrySet()) {
+				SimpleField key = entry.getKey();
 				writer.writeStartElement("ext", "data", EXT_DATA_NS);
 				writer.writeAttribute("name", key.getName());
 				writer.writeAttribute("type", key.getType().name());
-				writer.writeCharacters(data.get(key));
+				writer.writeCharacters(entry.getValue());
 				writer.writeEndElement();
 			}
 			if (geo != null) {
