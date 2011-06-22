@@ -19,11 +19,10 @@
 package org.mitre.giscore.test;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import static junit.framework.Assert.fail;
 import static org.junit.Assert.assertNotNull;
 
-import java.awt.*;
+import java.awt.Color;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +32,6 @@ import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
 import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.kml.IKml;
