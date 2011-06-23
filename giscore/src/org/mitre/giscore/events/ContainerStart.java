@@ -158,12 +158,15 @@ public class ContainerStart extends Common implements IContainerType {
 			return false;
 		if (!type.equals(other.type))
 			return false;
+		// NOTE: styles list empty or null is treated the same in both equals and hashCode
+		// especially since readData() converts empty lists into null lists
 		if (styles == null) {
-			if (other.styles != null)
-				return false;
-		} else if (!styles.equals(other.styles))
-			return false;
-		return true;
+			return other.styles == null || other.styles.isEmpty();
+		} else {
+			if (styles.isEmpty() && (other.styles == null || other.styles.isEmpty()))
+				return true;
+			return styles.equals(other.styles);
+		}
 	}
 
 	@Override
@@ -172,6 +175,8 @@ public class ContainerStart extends Common implements IContainerType {
 		int result = super.hashCode();
 		result = prime * result + type.hashCode(); // never null
 		result = prime * result + (open ? 1231 : 1237);
+		// NOTE: styles list empty or null is treated the same in both equals and hashCode
+		// especially since readData() converts empty lists into null lists
 		result = prime * result + ((styles == null || styles.isEmpty())
 				? 0 : styles.hashCode());
 		return result;
