@@ -21,7 +21,7 @@
 	<dependencies defaultconf="compile->default">
 		<dependency org="org.mitre.javautil" name="javautil-tiger"
 			rev="0.9.6" />
-		<dependency org="org.mitre.itf" name="geodesy" rev="1.9.22" />
+		<dependency org="org.mitre.itf" name="geodesy" rev="1.9.23" />
 		<dependency org="commons-lang" name="commons-lang" rev="2.4" />
 		<dependency org="commons-io" name="commons-io" rev="1.4" />
 		<dependency org="org.slf4j" name="slf4j-api" rev="1.5.6" />
