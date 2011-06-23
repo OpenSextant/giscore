@@ -60,10 +60,10 @@ public class SimpleField implements IDataSerializable, Serializable {
 			this.gdbEmptyValue = gdbEmptyValue;
 		}
 		
-		String gdbXmlType, xmlSchemaType;
-		int default_length;
-		int default_precision;
-		Object gdbEmptyValue;
+		private String gdbXmlType, xmlSchemaType;
+		private int default_length;
+		private int default_precision;
+		private Object gdbEmptyValue;
 
 		/**
 		 * @return the default_length
@@ -119,27 +119,29 @@ public class SimpleField implements IDataSerializable, Serializable {
 		}
 	
 	}
-	
-	Type type;
-	String name;
-	int nameHash;
-	String displayName;
-	String aliasName;
-	String modelName;
-	boolean required = false;
-	Integer length;
-	Integer precision;
-	Integer scale;
-	boolean editable = true;
+
+	@NonNull private String name;
+	@NonNull private Type type;
+	private int nameHash;
+
+	private String displayName;
+	private String aliasName;
+	private String modelName;
+	private boolean required = false;
+	private Integer length;
+	private Integer precision;
+	private Integer scale;
+	private boolean editable = true;
 	/**
 	 * The index into the feature class, just used for ESRI
 	 */
-	transient Integer index;
+	private transient Integer index;
 	
 	/**
 	 * Constructor for a simple default field type (String).
 	 * @param name Proper name of this field. Must be a non-null/non-empty string
 	 * and unique if used in a Schema.
+	 * @throws IllegalArgumentException if <code>name</code> is null, empty or a blank string
 	 */
 	public SimpleField(String name) {
 		setName(name);
@@ -151,6 +153,8 @@ public class SimpleField implements IDataSerializable, Serializable {
 	 * Ctor
 	 * @param name 
 	 * @param type
+	 * @throws IllegalArgumentException if <code>type</code> is null, or
+	 * 			<code>name</code> is null, empty or a blank string
 	 */
 	public SimpleField(String name, Type type) {
 		this(name);
@@ -159,10 +163,12 @@ public class SimpleField implements IDataSerializable, Serializable {
 
 	/**
 	 * No args ctor use for serialization. Caller must set name and type fields,
-	 * which are required non-null fields.
+	 * which are required non-null fields. Must call set methods or <tt>readData()</tt>.
 	 */
 	public SimpleField() {
         // empty constructor
+		name = "?"; // cannot be null
+		type = Type.STRING; // cannot be null
 	}
 
 	/**
@@ -196,9 +202,10 @@ public class SimpleField implements IDataSerializable, Serializable {
 	}
 
 	/**
-	 * @param name
-	 *            the name to set
-	 * @throws IllegalArgumentException if <code>name</code> is null or empty string
+	 * Set name of SimpleField. Normalizes name trimming any leading and
+	 * trailing whitespace.
+	 * @param name the name to set, non-blank string (never null)
+	 * @throws IllegalArgumentException if <code>name</code> is null, empty or a blank string
 	 */
 	public void setName(String name) {
 		if (name != null) {
@@ -366,7 +373,6 @@ public class SimpleField implements IDataSerializable, Serializable {
 		// when comparing fields from two different Features so just test the name field.
 		if (obj instanceof SimpleField) {
 			SimpleField other = (SimpleField)obj;
-			if (name == null) return other.name == null;
 			return name.equals(other.name);
 		}
 		return false;
@@ -410,7 +416,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 		setModelName(in.readString());
 		setName(in.readString());
 		String type = in.readString();
-		setType(Type.valueOf(type));
+		setType(type == null ? Type.STRING : Type.valueOf(type));
 		setLength((Integer) in.readScalar());
 		setPrecision((Integer) in.readScalar());
 		setScale((Integer) in.readScalar());
@@ -420,13 +426,13 @@ public class SimpleField implements IDataSerializable, Serializable {
 	 * @see org.mitre.giscore.utils.IDataSerializable#writeData(org.mitre.giscore.utils.SimpleObjectOutputStream)
 	 */
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
-		out.writeString(getAliasName());
-		out.writeString(getDisplayName());
-		out.writeString(getModelName());
-		out.writeString(getName());
+		out.writeString(aliasName);
+		out.writeString(displayName);
+		out.writeString(modelName);
+		out.writeString(name);
 		out.writeString(getType().name());
 		out.writeScalar(length);
-		out.writeScalar(getPrecision());
-		out.writeScalar(getScale());
+		out.writeScalar(precision);
+		out.writeScalar(scale);
 	}
 }
