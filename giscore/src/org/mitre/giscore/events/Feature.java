@@ -55,7 +55,7 @@ public class Feature extends Common {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @seeorg.mitre.giscore.events.BaseStart#readData(org.mitre.giscore.utils.
+	 * @see org.mitre.giscore.events.BaseStart#readData(org.mitre.giscore.utils.
 	 * SimpleObjectInputStream)
 	 */
 	@Override
@@ -212,9 +212,7 @@ public class Feature extends Common {
 					return false;
 			} else if (!bb1.equals(bb2, 1e-5))
 				return false;
-			if (geometry.getNumPoints() != other.geometry.getNumPoints())
-				return false;
-			return true;
+			return geometry.getNumPoints() == other.geometry.getNumPoints();
 		} else {
 			return false;
 		}
