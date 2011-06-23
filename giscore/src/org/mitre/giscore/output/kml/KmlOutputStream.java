@@ -1220,8 +1220,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 else
                     writer.writeAttribute(TYPE, "string");
                 writer.writeAttribute(NAME, field.getName());
-                if (StringUtils.isNotEmpty(field.getDisplayName())) {
-                    handleSimpleElement(DISPLAY_NAME, field.getDisplayName());
+				final String displayName = field.getDisplayName();
+				if (StringUtils.isNotBlank(displayName)) {
+                    handleSimpleElement(DISPLAY_NAME, displayName);
                 }
                 writer.writeEndElement();
             }
