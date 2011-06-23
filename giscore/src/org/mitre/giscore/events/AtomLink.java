@@ -143,7 +143,7 @@ public class AtomLink implements IDataSerializable, Serializable {
 		out.writeString(href != null ? href.toExternalForm() : null);
 		out.writeString(hreflang);
 		out.writeString(rel);
-		out.writeString(type.toString());
+		out.writeString(type == null ? null : type.toString());
 	}
 
 	/* (non-Javadoc)
@@ -153,6 +153,7 @@ public class AtomLink implements IDataSerializable, Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
+		// Note URL.hashCode() performs domain name resolution. See note in equals()
 		result = prime * result + ((href == null) ? 0 : href.toExternalForm().hashCode());
 		result = prime * result
 				+ ((hreflang == null) ? 0 : hreflang.hashCode());
@@ -173,7 +174,7 @@ public class AtomLink implements IDataSerializable, Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		AtomLink other = (AtomLink) obj;
-		// Note URL.equals() performs domain name resolution which can result in a big performance hit.
+		// Note URL.equals() and URL.hashCode() perform domain name resolution which can result in a big performance hit.
 		// See http://michaelscharf.blogspot.com/2006/11/javaneturlequals-and-hashcode-make.html for more information
 		// use toExternalForm() for comparison instead
 		if (href == null) {
