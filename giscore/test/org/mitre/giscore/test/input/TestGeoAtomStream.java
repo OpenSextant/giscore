@@ -99,7 +99,7 @@ public class TestGeoAtomStream {
 		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 		while(ob != null) {
 			read.add(ob);
-			if (ob instanceof IDataSerializable /*&& ob.getClass() != AtomHeader.class*/) {
+			if (ob instanceof IDataSerializable) {
 				final IDataSerializable serializable = (IDataSerializable) ob;
 				serializableList.add(serializable);
 				soos.writeObject(serializable);
@@ -114,8 +114,6 @@ public class TestGeoAtomStream {
 			ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 			SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 			for (IDataSerializable s1 : serializableList) {
-				System.out.println("\n------------------------------------------------------------------");
-				System.out.println(s1);
 				IDataSerializable s2 = (IDataSerializable) sois.readObject();
 				assertEquals(s1, s2);
 			}
