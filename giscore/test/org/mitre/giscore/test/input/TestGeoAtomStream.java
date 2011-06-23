@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2010
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -19,7 +19,10 @@
 package org.mitre.giscore.test.input;
 
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -34,6 +37,9 @@ import org.mitre.giscore.events.AtomHeader;
 import org.mitre.giscore.events.AtomLink;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.input.IGISInputStream;
+import org.mitre.giscore.utils.IDataSerializable;
+import org.mitre.giscore.utils.SimpleObjectInputStream;
+import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 /**
  * Test against some known atom streams
@@ -41,6 +47,7 @@ import org.mitre.giscore.input.IGISInputStream;
  * @author DRAND
  */
 public class TestGeoAtomStream {
+
 	@Test
 	public void testInput() throws Exception {
 		System.setProperty("http.proxyHost", "gatekeeper.mitre.org");
@@ -78,7 +85,7 @@ public class TestGeoAtomStream {
 	}
 	
 	@Test
-	public void testInput3() throws Exception {
+	public void testObjectDataSerialization() throws Exception {
 		System.setProperty("http.proxyHost", "gatekeeper.mitre.org");
 		System.setProperty("http.proxyPort", "80");
 		String feedurl = "http://www.us-cert.gov/channels/techalerts.atom";
@@ -87,12 +94,33 @@ public class TestGeoAtomStream {
 		IGISInputStream gis = GISFactory.getInputStream(DocumentType.GeoAtom, connection.getInputStream());
 		IGISObject ob = gis.read();
 		List<IGISObject> read = new ArrayList<IGISObject>();
+		List<IDataSerializable> serializableList = new ArrayList<IDataSerializable>();
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(100);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 		while(ob != null) {
 			read.add(ob);
+			if (ob instanceof IDataSerializable /*&& ob.getClass() != AtomHeader.class*/) {
+				final IDataSerializable serializable = (IDataSerializable) ob;
+				serializableList.add(serializable);
+				soos.writeObject(serializable);
+			}
 			ob = gis.read();
 		}
-		
-		assertTrue(read.size() > 1);
+		soos.close();
+
+		assertFalse(read.isEmpty());
+
+		if (!serializableList.isEmpty()) {
+			ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+			SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+			for (IDataSerializable s1 : serializableList) {
+				System.out.println("\n------------------------------------------------------------------");
+				System.out.println(s1);
+				IDataSerializable s2 = (IDataSerializable) sois.readObject();
+				assertEquals(s1, s2);
+			}
+			sois.close();
+		}
 	}
 
 	@Test
