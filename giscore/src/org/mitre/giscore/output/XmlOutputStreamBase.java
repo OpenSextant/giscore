@@ -151,7 +151,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     public void visit(Comment comment) {
         String text = comment.getText();
         // ignore empty or null comments
-        if (StringUtils.isNotEmpty(text))
+        if (StringUtils.isNotBlank(text))
             try {
                 // XML 1.0 spec: string "--" (double-hyphen) MUST NOT occur within comments. Any other character may appear inside.
                 // e.g. <!-- declarations for <head> & <body> -->
