@@ -20,14 +20,18 @@ package org.mitre.giscore.test.input;
 
 import static org.junit.Assert.*;
 
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.events.AtomHeader;
+import org.mitre.giscore.events.AtomLink;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.input.IGISInputStream;
 
@@ -89,5 +93,26 @@ public class TestGeoAtomStream {
 		}
 		
 		assertTrue(read.size() > 1);
+	}
+
+	@Test
+	public void testEquals() throws MalformedURLException {
+		final URL url = new URL("http://www.fake.mitre.org/atomfakefeed/id=xyzzy/123");
+		AtomLink link1 = new AtomLink(url, "self");
+		AtomLink link2 = new AtomLink(url, "self");
+		assertEquals(link1, link2);
+		assertEquals(link1.hashCode(), link2.hashCode());
+
+		final Date date = new Date();
+		AtomHeader header1 = new AtomHeader("http://www.fake.mitre.org/12412412412512123123", link1, "title", date);
+		AtomHeader header2 = new AtomHeader("http://www.fake.mitre.org/12412412412512123123", link2, "title", date);
+		assertEquals(header1, header2);
+		assertEquals(header1.hashCode(), header2.hashCode());
+
+		link2.setHref(null);
+		assertFalse(link1.equals(link2));
+		assertFalse(header1.equals(header2));
+		AtomLink link3 = new AtomLink(url, "other");
+		assertFalse(link1.equals(link3));
 	}
 }
