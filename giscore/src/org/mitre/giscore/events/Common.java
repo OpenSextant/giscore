@@ -1,5 +1,5 @@
 /****************************************************************************************
- *  BaseStart.java
+ *  Common.java
  *
  *  Created: Jan 27, 2009
  *
@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -237,10 +237,7 @@ public abstract class Common extends Row {
 		viewGroup = (TaggedMap) in.readObject();
 		region = (TaggedMap) in.readObject();
 		visibility = (Boolean) in.readScalar();
-		elements = (List<Element>) in.readObjectCollection();
-		if (elements == null) {
-			elements = new ArrayList<Element>();
-		}
+		elements = in.readNonNullObjectCollection();
 	}
 
 	/**
