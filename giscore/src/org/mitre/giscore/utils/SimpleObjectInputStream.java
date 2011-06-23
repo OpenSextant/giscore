@@ -179,7 +179,9 @@ public class SimpleObjectInputStream implements Closeable {
 	}
 
 	/**
-	 * Read a collection of objects from the stream
+	 * Read a collection of objects from the stream. Note that {@link SimpleObjectOutputStream#writeObjectCollection}
+	 * makes no difference if the original list was null or empty so must use
+	 * {@link #readNonNullObjectCollection} instead if expecting a non-null list.
 	 * @return the collection of object, may be <code>null</code>
 	 * @throws IOException if an I/O error occurs
 	 * @throws ClassNotFoundException
@@ -200,6 +202,22 @@ public class SimpleObjectInputStream implements Closeable {
 			rval.add(readObject());
 		}
 		return rval;
+	}
+
+	/**
+	 * Read a non-null collection of objects from the stream
+	 * @return the collection of object or an empty list of target type is serialized list was null
+	 * @throws IOException if an I/O error occurs
+	 * @throws ClassNotFoundException
+	 * @throws InstantiationException
+	 * @throws IllegalAccessException
+	 */
+	@SuppressWarnings("unchecked")
+	public <T> List<T> readNonNullObjectCollection()
+		throws IOException, ClassNotFoundException, InstantiationException,
+			IllegalAccessException {
+		List<T> list = (List<T>)readObjectCollection();
+		return (list == null) ? new ArrayList<T>() : list;
 	}
 
 	/**
