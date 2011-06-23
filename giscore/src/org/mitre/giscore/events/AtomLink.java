@@ -153,7 +153,7 @@ public class AtomLink implements IDataSerializable, Serializable {
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((href == null) ? 0 : href.hashCode());
+		result = prime * result + ((href == null) ? 0 : href.toExternalForm().hashCode());
 		result = prime * result
 				+ ((hreflang == null) ? 0 : hreflang.hashCode());
 		result = prime * result + ((rel == null) ? 0 : rel.hashCode());
@@ -176,7 +176,8 @@ public class AtomLink implements IDataSerializable, Serializable {
 		if (href == null) {
 			if (other.href != null)
 				return false;
-		} else if (!href.equals(other.href))
+		} else if (!href.toExternalForm().equals(
+				other != null ? other.href.toExternalForm() : ""))
 			return false;
 		if (hreflang == null) {
 			if (other.hreflang != null)
