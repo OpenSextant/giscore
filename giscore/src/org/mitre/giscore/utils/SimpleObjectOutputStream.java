@@ -185,7 +185,7 @@ public class SimpleObjectOutputStream implements Closeable {
 	}
 	
 	/**
-	 * Write a collection of objects
+	 * Write a collection of objects.
 	 * @param objects the object collection, <tt>null</tt> and empty list are handled the same
 	 * @throws IOException if an I/O error occurs
 	 */
