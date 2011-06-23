@@ -173,11 +173,14 @@ public class AtomLink implements IDataSerializable, Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		AtomLink other = (AtomLink) obj;
+		// Note URL.equals() performs domain name resolution which can result in a big performance hit.
+		// See http://michaelscharf.blogspot.com/2006/11/javaneturlequals-and-hashcode-make.html for more information
+		// use toExternalForm() for comparison instead
 		if (href == null) {
 			if (other.href != null)
 				return false;
-		} else if (!href.toExternalForm().equals(
-				other != null ? other.href.toExternalForm() : ""))
+		} else if (other.href == null || !href.toExternalForm().equals(
+				other.href.toExternalForm()))
 			return false;
 		if (hreflang == null) {
 			if (other.hreflang != null)
