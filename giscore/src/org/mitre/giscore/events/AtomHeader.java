@@ -25,6 +25,9 @@ import java.util.Date;
 import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.lang.builder.ToStringStyle;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.Namespace;
 import org.mitre.giscore.utils.IDataSerializable;
@@ -47,19 +50,19 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 
 	@NonNull private String id;
 	@NonNull private AtomLink selflink;
-	private List<AtomLink> relatedlinks = new ArrayList<AtomLink>();
-	private List<AtomAuthor> authors = new ArrayList<AtomAuthor>();
-	private List<Namespace> namespaces = new ArrayList<Namespace>();
-	private List<Element> elements = new ArrayList<Element>();
+	@NonNull private List<AtomLink> relatedlinks = new ArrayList<AtomLink>();
+	@NonNull private List<AtomAuthor> authors = new ArrayList<AtomAuthor>();
+	@NonNull private List<Namespace> namespaces = new ArrayList<Namespace>();
+	@NonNull private List<Element> elements = new ArrayList<Element>();
 	private String title;
-	@NonNull private Date updated;
+	private Date updated;
 	private String generator;
 
 	/**
-	 * Empty ctor
+	 * Empty ctor. Caller must set id, selflink, updated otherwise object is invalid.
 	 */
 	public AtomHeader() {
-        // caller must set id, selflink, updated otherwise object is invalid
+        // caller set required fields
 	}
 
 	/**
@@ -102,16 +105,12 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		return id;
 	}
 
-
-
 	/**
 	 * @param id the id to set
 	 */
 	public void setId(String id) {
 		this.id = id;
 	}
-
-
 
 	/**
 	 * @return the selflink
@@ -120,8 +119,6 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		return selflink;
 	}
 
-
-
 	/**
 	 * @param selflink the selflink to set
 	 */
@@ -129,43 +126,35 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		this.selflink = selflink;
 	}
 
-
-
 	/**
 	 * @return the relatedlinks
 	 */
+	@NonNull
 	public List<AtomLink> getRelatedlinks() {
 		return relatedlinks;
 	}
-
-
 
 	/**
 	 * @param relatedlinks the relatedlinks to set
 	 */
 	public void setRelatedlinks(List<AtomLink> relatedlinks) {
-		this.relatedlinks = relatedlinks;
+		this.relatedlinks = relatedlinks == null ? new ArrayList<AtomLink>() : relatedlinks;
 	}
-
-
 
 	/**
 	 * @return the authors
 	 */
+	@NonNull
 	public List<AtomAuthor> getAuthors() {
 		return authors;
 	}
-
-
 
 	/**
 	 * @param authors the authors to set
 	 */
 	public void setAuthors(List<AtomAuthor> authors) {
-		this.authors = authors;
+		this.authors = authors == null ? new ArrayList<AtomAuthor>() : authors;
 	}
-
-
 
 	/**
 	 * @return the title
@@ -174,8 +163,6 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		return title;
 	}
 
-
-
 	/**
 	 * @param title the title to set
 	 */
@@ -183,16 +170,13 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		this.title = title;
 	}
 
-
-
 	/**
 	 * @return the updated
 	 */
+	@Nullable
 	public Date getUpdated() {
 		return updated;
 	}
-
-
 
 	/**
 	 * @param updated the updated to set
@@ -204,8 +188,8 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	/**
 	 * @return the elements
 	 */
+	@NonNull
 	public List<Element> getElements() {
-        assert elements != null;
 		return elements;
 	}
 
@@ -213,14 +197,14 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	 * @param elements the elements to set
 	 */
 	public void setElements(List<Element> elements) {
-		this.elements = elements == null ? new ArrayList<Element>() : elements;;
+		this.elements = elements == null ? new ArrayList<Element>() : elements;
 	}
 
 	/**
 	 * @return the namespaces
 	 */
+	@NonNull
 	public List<Namespace> getNamespaces() {
-        assert namespaces != null;
 		return namespaces;
 	}
 
@@ -251,19 +235,14 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	@Override
 	public int hashCode() {
 		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((authors == null) ? 0 : authors.hashCode());
-		result = prime * result
-				+ ((elements == null) ? 0 : elements.hashCode());
+		int result = ((id == null) ? 0 : id.hashCode());
+		result = prime * result + authors.hashCode();
+		result = prime * result + elements.hashCode();
 		result = prime * result
 				+ ((generator == null) ? 0 : generator.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
-		result = prime * result
-				+ ((namespaces == null) ? 0 : namespaces.hashCode());
-		result = prime * result
-				+ ((relatedlinks == null) ? 0 : relatedlinks.hashCode());
-		result = prime * result
-				+ ((selflink == null) ? 0 : selflink.hashCode());
+		result = prime * result + namespaces.hashCode();
+		result = prime * result + relatedlinks.hashCode();
+		result = prime * result + selflink.hashCode();
 		result = prime * result + ((title == null) ? 0 : title.hashCode());
 		result = prime * result + ((updated == null) ? 0 : updated.hashCode());
 		return result;
@@ -281,15 +260,9 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		AtomHeader other = (AtomHeader) obj;
-		if (authors == null) {
-			if (other.authors != null)
-				return false;
-		} else if (!authors.equals(other.authors))
+		if (!authors.equals(other.authors))
 			return false;
-		if (elements == null) {
-			if (other.elements != null)
-				return false;
-		} else if (!elements.equals(other.elements))
+		if (!elements.equals(other.elements))
 			return false;
 		if (generator == null) {
 			if (other.generator != null)
@@ -301,20 +274,11 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
-		if (namespaces == null) {
-			if (other.namespaces != null)
-				return false;
-		} else if (!namespaces.equals(other.namespaces))
+		if (!namespaces.equals(other.namespaces))
 			return false;
-		if (relatedlinks == null) {
-			if (other.relatedlinks != null)
-				return false;
-		} else if (!relatedlinks.equals(other.relatedlinks))
+		if (!relatedlinks.equals(other.relatedlinks))
 			return false;
-		if (selflink == null) {
-			if (other.selflink != null)
-				return false;
-		} else if (!selflink.equals(other.selflink))
+		if (!selflink.equals(other.selflink))
 			return false;
 		if (title == null) {
 			if (other.title != null)
@@ -335,13 +299,14 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 			IllegalAccessException {
 		id = in.readString();
 		selflink = (AtomLink) in.readObject();
-		relatedlinks = (List<AtomLink>) in.readObjectCollection();
-		authors = (List<AtomAuthor>) in.readObjectCollection();
-		elements = (List<Element>) in.readObjectCollection();
+		relatedlinks = in.readNonNullObjectCollection();
+		authors = in.readNonNullObjectCollection();
+		elements = in.readNonNullObjectCollection();
 		title = in.readString();
 		generator = in.readString();
 		updated = (Date) in.readScalar();
 		int nscount = in.readInt();
+		namespaces.clear();
 		for(int i = 0; i < nscount; i++) {
 			String pre = in.readString();
 			String uri = in.readString();
@@ -360,10 +325,15 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		out.writeScalar(updated);
 		int nscount = namespaces.size();
 		out.writeInt(nscount);
-		for(int i = 0; i < nscount; i++) {
-			out.writeString(namespaces.get(i).getPrefix());
-			out.writeString(namespaces.get(i).getURI());
+		for (Namespace ns : namespaces) {
+			out.writeString(ns.getPrefix());
+			out.writeString(ns.getURI());
 		}
+	}
+
+	@Override
+	public String toString() {
+		return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
 	}
 
 }
