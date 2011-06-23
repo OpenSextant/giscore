@@ -160,7 +160,7 @@ public class Schema implements IGISObject {
 	 * @param field the field, never <code>null</code>
 	 */
 	public void put(String name, SimpleField field) {
-		if (StringUtils.isEmpty(name)) {
+		if (StringUtils.isBlank(name)) {
 			throw new IllegalArgumentException(
 					"name should never be null or empty");
 		}
@@ -179,7 +179,7 @@ public class Schema implements IGISObject {
 	 */
     @CheckForNull
 	public SimpleField remove(String name) {
-		if (StringUtils.isEmpty(name)) {
+		if (StringUtils.isBlank(name)) {
 			throw new IllegalArgumentException(
 					"name should never be null or empty");
 		}

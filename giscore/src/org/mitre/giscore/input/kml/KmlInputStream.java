@@ -185,7 +185,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		ms_attributes.add(PHONE_NUMBER);
 		ms_attributes.add(METADATA);
 
-		// all posible elements that extend kml:AbstractGeometryType base type in KML Schema
+		// all possible elements that extend kml:AbstractGeometryType base type in KML Schema
 		ms_geometries.add(POINT);
 		ms_geometries.add(LINE_STRING);
 		ms_geometries.add(LINEAR_RING);

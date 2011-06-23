@@ -110,6 +110,10 @@ public class ContainerStart extends Common implements IContainerType {
 		return styles == null ? Collections.<StyleSelector>emptyList() : styles;
 	}
 
+	/**
+	 * Set the list of styles for this container.
+	 * @param styles List of styles
+	 */
 	public void setStyles(List<StyleSelector> styles) {
 		this.styles = styles;
 	}
