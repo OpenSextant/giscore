@@ -197,6 +197,7 @@ public class ContainerStart extends Common implements IContainerType {
 		type = in.readString();
 		// readString should never return null but enforce our nonNull contract and check anyway
 		if (type == null) type = IKml.DOCUMENT; // default
+		open = in.readBoolean();
 		styles = (List<StyleSelector>)in.readObjectCollection();
 	}
 
@@ -207,6 +208,7 @@ public class ContainerStart extends Common implements IContainerType {
 	public void writeData(SimpleObjectOutputStream out) throws IOException {	
 		super.writeData(out);
 		out.writeString(type);
+		out.writeBoolean(open);
 		out.writeObjectCollection(styles);
 	}
 
