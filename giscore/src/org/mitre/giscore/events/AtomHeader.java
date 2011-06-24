@@ -48,8 +48,8 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-	@NonNull private String id;
-	@NonNull private AtomLink selflink;
+	private String id;
+	private AtomLink selflink;
 	@NonNull private List<AtomLink> relatedlinks = new ArrayList<AtomLink>();
 	@NonNull private List<AtomAuthor> authors = new ArrayList<AtomAuthor>();
 	@NonNull private List<Namespace> namespaces = new ArrayList<Namespace>();
@@ -242,7 +242,8 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 				+ ((generator == null) ? 0 : generator.hashCode());
 		result = prime * result + namespaces.hashCode();
 		result = prime * result + relatedlinks.hashCode();
-		result = prime * result + selflink.hashCode();
+		result = prime * result
+				+ ((selflink == null) ? 0 : selflink.hashCode());
 		result = prime * result + ((title == null) ? 0 : title.hashCode());
 		result = prime * result + ((updated == null) ? 0 : updated.hashCode());
 		return result;
@@ -278,7 +279,10 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 			return false;
 		if (!relatedlinks.equals(other.relatedlinks))
 			return false;
-		if (!selflink.equals(other.selflink))
+		if (selflink == null) {
+			if (other.selflink != null)
+				return false;
+		} else if (!selflink.equals(other.selflink))
 			return false;
 		if (title == null) {
 			if (other.title != null)
@@ -293,7 +297,6 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 		return true;
 	}
 
-	@SuppressWarnings("unchecked")
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
