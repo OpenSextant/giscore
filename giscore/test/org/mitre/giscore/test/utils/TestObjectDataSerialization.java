@@ -23,6 +23,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.math.RandomUtils;
@@ -30,6 +31,7 @@ import org.junit.Test;
 import org.mitre.giscore.Namespace;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.events.SimpleField.Type;
+import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.atom.IAtomConstants;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
@@ -43,6 +45,7 @@ import static org.junit.Assert.assertEquals;
  *
  */
 public class TestObjectDataSerialization {
+
 	@Test public void testRowAndTypes() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(100);
 		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
@@ -77,25 +80,18 @@ public class TestObjectDataSerialization {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(100);
 		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 		ContainerStart c = new ContainerStart();
+		c.setId("cs1");
 		c.setName("cs1");
+		c.setType(IKml.DOCUMENT);
 		c.setDescription("desc1");
 		c.setStartTime(new Date(1));
 		c.setEndTime(new Date(2));
+		c.setSnippet("snippet description");
 		c.setSchema(new URI("urn:xyz"));
 		c.setStyleUrl("#style1");
 		c.setVisibility(true);
-		c.setType("foo");
-		soos.writeObject(c);
-		soos.close();
-		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
-		ContainerStart c2 = (ContainerStart) sois.readObject();
-		assertEquals(c, c2);
-	}
+		c.setOpen(true);
 
-	@Test public void testStyleMap() throws Exception {
-		ByteArrayOutputStream bos = new ByteArrayOutputStream(100);
-		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 		StyleMap sm = new StyleMap();
 		Style normal = new Style("sn");
 		normal.setIconStyle(new Color(0,0,255,127), 1.0, "normal.png");
@@ -109,18 +105,33 @@ public class TestObjectDataSerialization {
 		hightlight.setPolyStyle(null, true, false);
 		sm.add(new Pair(StyleMap.NORMAL, null, normal));
 		sm.add(new Pair(StyleMap.HIGHLIGHT, null, hightlight));
-		sm.add(new Pair("foo", "#sn")); // add Pair with bogus key name and a StyleUrl string
-		System.out.println(sm);
-		soos.writeObject(sm);
+		final Pair pair = new Pair("foo", "#style1");
+		pair.setId("s1");
+		sm.add(pair); // add Pair with bogus key name and a StyleUrl string
+		c.addStyle(sm);
+
+		Style style = new Style("style1");
+		style.setIconStyle(new Color(0,0,255,127), 1.0, "http://maps.google.com/mapfiles/kml/shapes/airports.png");
+		style.setListStyle(Color.GREEN, null);
+		c.addStyle(style);
+
+		soos.writeObject(c);
 		soos.close();
+
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
-		StyleMap s2 = (StyleMap) sois.readObject();
-		System.out.println(s2);
-		assertEquals(sm.hashCode(), s2.hashCode());
-		assertEquals(sm, s2);
-	}
+		ContainerStart c2 = (ContainerStart) sois.readObject();
+		sois.close();
 
+		assertNotNull(c2);
+		assertTrue(c2.isOpen());
+
+		List<StyleSelector> styles = c2.getStyles();
+		assertEquals(2, styles.size());
+
+		assertEquals(c, c2);
+		assertEquals(c.hashCode(), c2.hashCode());
+	}
 
 	@Test public void testElement() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(256);
