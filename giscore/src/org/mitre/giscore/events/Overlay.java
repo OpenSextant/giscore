@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -96,6 +96,51 @@ public abstract class Overlay extends Feature {
 	 */
 	public void setDrawOrder(int drawOrder) {
 		this.drawOrder = drawOrder;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((icon == null) ? 0 : icon.hashCode());
+		result = prime * result
+				+ ((color == null) ? 0 : color.hashCode());
+		result = prime * result + drawOrder;
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Overlay other = (Overlay) obj;
+		if (drawOrder != other.drawOrder)
+			return false;
+		if (icon == null) {
+			if (other.icon != null)
+				return false;
+		} else if (other.icon == null ||
+				!icon.equals(other.icon))
+			return false;
+		if (color == null) {
+			if (other.color != null)
+				return false;
+		} else if (other.color == null ||
+				!color.equals(other.color))
+			return false;
+		return true;
 	}
 
 	/**
