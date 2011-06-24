@@ -50,45 +50,22 @@ public class TestGeoAtomStream {
 
 	@Test
 	public void testInput() throws Exception {
-		System.setProperty("http.proxyHost", "gatekeeper.mitre.org");
-		System.setProperty("http.proxyPort", "80");
-		String feedurl = "http://www.theregister.co.uk/software/headlines.atom";
-		URL url = new URL(feedurl);
-		URLConnection connection = url.openConnection();
-		IGISInputStream gis = GISFactory.getInputStream(DocumentType.GeoAtom, connection.getInputStream());
-		IGISObject ob = gis.read();
-		List<IGISObject> read = new ArrayList<IGISObject>();
-		while(ob != null) {
-			read.add(ob);
-			ob = gis.read();
-		}
-		
-		assertTrue(read.size() > 1);
+		testObjectDataSerialization("http://www.theregister.co.uk/software/headlines.atom");
 	}
 	
 	@Test
 	public void testInput2() throws Exception {
-		System.setProperty("http.proxyHost", "gatekeeper.mitre.org");
-		System.setProperty("http.proxyPort", "80");
-		String feedurl = "http://www.microsoft.com/australia/presspass/theme/feed/Windows-7?format=Atom";
-		URL url = new URL(feedurl);
-		URLConnection connection = url.openConnection();
-		IGISInputStream gis = GISFactory.getInputStream(DocumentType.GeoAtom, connection.getInputStream());
-		IGISObject ob = gis.read();
-		List<IGISObject> read = new ArrayList<IGISObject>();
-		while(ob != null) {
-			read.add(ob);
-			ob = gis.read();
-		}
-		
-		assertTrue(read.size() > 1);
+		testObjectDataSerialization("http://www.microsoft.com/australia/presspass/theme/feed/Windows-7?format=Atom");
+	}
+
+	@Test
+	public void testInput3() throws Exception {
+		testObjectDataSerialization("http://www.us-cert.gov/channels/techalerts.atom");
 	}
 	
-	@Test
-	public void testObjectDataSerialization() throws Exception {
+	private void testObjectDataSerialization(String feedurl) throws Exception {
 		System.setProperty("http.proxyHost", "gatekeeper.mitre.org");
 		System.setProperty("http.proxyPort", "80");
-		String feedurl = "http://www.us-cert.gov/channels/techalerts.atom";
 		URL url = new URL(feedurl);
 		URLConnection connection = url.openConnection();
 		IGISInputStream gis = GISFactory.getInputStream(DocumentType.GeoAtom, connection.getInputStream());
