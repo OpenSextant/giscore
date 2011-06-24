@@ -39,7 +39,7 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @NonNull private String name;
+    private String name;
 	private URI uri;
 	private String email;
 
@@ -157,8 +157,10 @@ public class AtomAuthor implements IDataSerializable, Serializable {
 			try {
 				uri = new URI(uristr);
 			} catch (URISyntaxException e) {
-				throw new IOException("Bad uri", e);
+				throw new IOException("Bad URI", e);
 			}
+		} else {
+			uri = null;
 		}
 	}
 
