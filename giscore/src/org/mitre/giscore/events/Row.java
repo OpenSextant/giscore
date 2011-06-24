@@ -69,6 +69,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 			throw e2;
 		}
 		int cnt = in.readInt();
+		extendedData.clear();
 		for(int i = 0; i < cnt; i++) {
 			SimpleField field = (SimpleField) in.readObject();
 			Object val = in.readScalar();
