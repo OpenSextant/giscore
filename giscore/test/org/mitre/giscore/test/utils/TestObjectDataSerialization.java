@@ -21,11 +21,13 @@ package org.mitre.giscore.test.utils;
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.mitre.giscore.Namespace;
@@ -140,6 +142,24 @@ public class TestObjectDataSerialization {
 
 		assertEquals(c, c2);
 		assertEquals(c.hashCode(), c2.hashCode());
+	}
+
+	@Test public void testNullScalar() throws IOException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream(100);
+		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+		soos.writeScalar(ObjectUtils.NULL);
+		// next write a non-scalar object to the stream which will be serialized as null
+		soos.writeScalar(this);
+		soos.flush();
+		soos.close();
+
+		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+		Object obj = sois.readScalar();
+		Object obj2 = sois.readScalar();
+		sois.close();
+		assertEquals(ObjectUtils.NULL, obj);
+		assertNull(obj2);
 	}
 
 	@Test public void testElement() throws Exception {
