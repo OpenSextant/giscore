@@ -91,18 +91,24 @@ public class TestObjectDataSerialization {
 		c.setStyleUrl("#style1");
 		c.setVisibility(true);
 		c.setOpen(true);
+		// set some extended data properties
+		c.putData(new SimpleField("date", Type.DATE), c.getStartTime());
+		c.putData(new SimpleField("flag", Type.BOOL), Boolean.TRUE);
+		c.putData(new SimpleField("double", Type.DOUBLE), Math.PI);
 
 		StyleMap sm = new StyleMap();
 		Style normal = new Style("sn");
 		normal.setIconStyle(new Color(0,0,255,127), 1.0, "normal.png");
 		normal.setListStyle(null, Style.ListItemType.checkHideChildren);
 		normal.setLabelStyle(null, 3.0);
+		normal.setLineStyle(null, 1.1);
 		normal.setPolyStyle(null, true, false);
 		Style hightlight = new Style();
 		hightlight.setIconStyle(Color.RED, 1.2, "hightlight.png");
 		hightlight.setListStyle(Color.GREEN, null);
 		hightlight.setLabelStyle(Color.WHITE, null);
-		hightlight.setPolyStyle(null, true, false);
+		hightlight.setLineStyle(Color.RED, 1.1);
+		hightlight.setPolyStyle(Color.RED, true, true);
 		sm.add(new Pair(StyleMap.NORMAL, null, normal));
 		sm.add(new Pair(StyleMap.HIGHLIGHT, null, hightlight));
 		final Pair pair = new Pair("foo", "#style1");
@@ -112,8 +118,11 @@ public class TestObjectDataSerialization {
 
 		Style style = new Style("style1");
 		style.setIconStyle(new Color(0,0,255,127), 1.0, "http://maps.google.com/mapfiles/kml/shapes/airports.png");
-		style.setListStyle(Color.GREEN, null);
+		style.setListStyle(Color.GREEN, Style.ListItemType.check);
+		style.setBalloonStyle(Color.BLUE, "text", Color.BLACK, "default");
 		c.addStyle(style);
+
+		// System.out.println(c);
 
 		soos.writeObject(c);
 		soos.close();
