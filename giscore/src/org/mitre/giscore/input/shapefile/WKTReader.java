@@ -41,6 +41,7 @@ import java.util.regex.Pattern;
  * 
  */
 public class WKTReader {
+
 	private static final Pattern TAG = Pattern
 			.compile("\\s*(\\p{Alpha}[\\p{Alnum}_]*)");
 	private static final Pattern START = Pattern.compile("\\s*\\[");
@@ -57,12 +58,12 @@ public class WKTReader {
 	/**
 	 * Root entry, setup in ctor when parse is called.
 	 */
-	private Entry root = null;
+	private Entry root;
 
 	@SuppressWarnings("unchecked")
 	public static class Entry {
 		private String tag;
-		private List values = new ArrayList();
+		private final List values = new ArrayList();
 
 		/**
 		 * Ctor

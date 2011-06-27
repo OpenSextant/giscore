@@ -35,8 +35,9 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
  *
  */
 public class PointOffsetVisitor extends StreamVisitorBase {
-	private PolygonCountingVisitor pv = new PolygonCountingVisitor();
-	private List<Integer> offsets = new ArrayList<Integer>();
+
+	private final PolygonCountingVisitor pv = new PolygonCountingVisitor();
+	private final List<Integer> offsets = new ArrayList<Integer>();
 	private int partCount = 0;
 	private int total = 0;
 	private double zmin, zmax;
