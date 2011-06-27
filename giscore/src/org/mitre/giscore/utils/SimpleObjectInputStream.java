@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.ObjectUtils;
@@ -205,8 +206,13 @@ public class SimpleObjectInputStream implements Closeable {
 	}
 
 	/**
-	 * Read a non-null collection of objects from the stream
-	 * @return the collection of object or an empty list of target type is serialized list was null
+	 * Read a collection of objects from the stream and return a non-null
+	 * List. This method reverses the effects of {@link SimpleObjectOutputStream#writeObjectCollection}
+	 * where empty Lists are indistinguishable from null objects. Use this method rather than
+	 * <tt>readObjectCollection()</tt> when implementing {@link IDataSerializable#readData}
+	 * for non-nullable List objects.
+	 * @return the collection of objects or
+	 * 		an empty list of target type if serialized list was <tt>null</tt>, never null
 	 * @throws IOException if an I/O error occurs
 	 * @throws ClassNotFoundException
 	 * @throws InstantiationException
@@ -233,20 +239,22 @@ public class SimpleObjectInputStream implements Closeable {
 	 *	// ...
 	 *	SimpleObjectInputStream in = ...
 	 *	// read back the enumeration value from SimpleObjectInputStream
-	 *	listItemType = (ListItemType)in.readEnum(ListItemType.values());
+	 *	listItemType = (ListItemType)in.readEnum(ListItemType.class);
 	 * </code></pre>
-	 * @param enumValues is the result of the values() method invoked on the target enum class
+	 * @param enumClass Target enumeration class, never null
 	 * @return the next Enum value, {@code null} if the enumeration value was originally null
-	 * 	or if the saved ordinal index isn't in range of the <tt>enumValues</tt> array.
+	 * 	or if the saved ordinal index isn't in range of the Enumeration.
 	 * @throws IOException if an I/O error occurs
+	 * @throws NullPointerException if enumClass is <tt>null</tt>
 	 */
 	@Nullable
-	public Enum readEnum(Enum[] enumValues)  throws IOException {
+	public Enum readEnum(@NonNull Class<? extends Enum> enumClass) throws IOException {
 		boolean isnull = stream.readBoolean();
 		if (isnull) {
 			return null;
 		} else {
 			int ord = stream.readInt();
+			Enum[] enumValues = enumClass.getEnumConstants();
 			return enumValues != null && ord >= 0 && ord < enumValues.length
 					? enumValues[ord] : null;
 		}
@@ -256,7 +264,7 @@ public class SimpleObjectInputStream implements Closeable {
 	 * @return the next scalar object from the stream
 	 * @throws IOException if an I/O error occurs
 	 */
-    @Nullable
+	@Nullable
 	public Object readScalar() throws IOException {
 		int type = stream.readShort();
 		switch (type) {

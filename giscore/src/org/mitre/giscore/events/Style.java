@@ -491,7 +491,7 @@ public class Style extends StyleSelector {
 		hasListStyle = in.readBoolean();
 		if (hasListStyle) {
 			listBgColor = (Color)in.readScalar();
-			listItemType = (ListItemType)in.readEnum(ListItemType.values());
+			listItemType = (ListItemType)in.readEnum(ListItemType.class);
 		}
 
 		hasBalloonStyle = in.readBoolean();
