@@ -144,7 +144,7 @@ public class TestObjectDataSerialization {
 		assertEquals(c.hashCode(), c2.hashCode());
 	}
 
-	@Test public void testNullScalar() throws IOException {
+	@Test public void testNullScalar() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(100);
 		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 		soos.writeScalar(ObjectUtils.NULL);
@@ -157,9 +157,12 @@ public class TestObjectDataSerialization {
 		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 		Object obj = sois.readScalar();
 		Object obj2 = sois.readScalar();
+		// reading past EOF should return null
+		Object obj3 = sois.readObject();
 		sois.close();
 		assertEquals(ObjectUtils.NULL, obj);
 		assertNull(obj2);
+		assertNull(obj3);
 	}
 
 	@Test public void testElement() throws Exception {
