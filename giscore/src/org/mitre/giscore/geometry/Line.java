@@ -189,8 +189,11 @@ public class Line extends GeometryBase implements Iterable<Point> {
 		super.readData(in);
 		idlWrap = in.readBoolean();
 		List<Point> plist = (List<Point>) in.readObjectCollection();
-		if (plist == null) plist = Collections.emptyList(); // normally should never be null
-		init(plist);
+		if (plist == null) {
+			pointList = Collections.emptyList(); // normally should never be null
+			is3D = false;
+		} else
+			init(plist);
 	}
 
 	/* (non-Javadoc)
