@@ -471,7 +471,7 @@ public class Style extends StyleSelector {
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
-		public void readData(SimpleObjectInputStream in) throws IOException,
+	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
 		super.readData(in);
@@ -511,8 +511,8 @@ public class Style extends StyleSelector {
 		hasPolyStyle = in.readBoolean();
 		if (hasPolyStyle) {
 			polyColor = (Color) in.readScalar();
-			polyfill = in.readBoolean();
-			polyoutline = in.readBoolean();
+			polyfill = (Boolean)in.readScalar();
+			polyoutline = (Boolean)in.readScalar();
 		}
 	}
 
@@ -558,8 +558,8 @@ public class Style extends StyleSelector {
 		out.writeBoolean(hasPolyStyle);
 		if (hasPolyStyle()) {
 			out.writeScalar(polyColor);
-			out.writeBoolean(polyfill);
-			out.writeBoolean(polyoutline);
+			out.writeScalar(polyfill);
+			out.writeScalar(polyoutline);
 		}
 	}
 
