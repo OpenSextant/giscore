@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2010
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -377,6 +377,7 @@ public class GeoAtomInputStream extends XmlInputStream {
 				ev = stream.nextEvent();
 			}
 			if (geo == null) {
+				// TODO: if !elements.isEmpty()) we discard the elements. should we rather create a Feature with a null geometry
 				Row rval = new Row();
 				rval.setId(id);
 				rval.putData(IAtomConstants.TITLE_ATTR, title);
@@ -415,6 +416,8 @@ public class GeoAtomInputStream extends XmlInputStream {
 				for(AtomAuthor author : authors) {
 					rval.putData(IAtomConstants.AUTHOR_ATTR, author.getName());
 				}
+				if (!elements.isEmpty())
+					rval.setElements(elements);
 				rval.setGeometry(geo);
 				return rval;
 			}
