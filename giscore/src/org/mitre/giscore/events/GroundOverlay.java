@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -352,7 +352,7 @@ public class GroundOverlay extends Overlay {
 		out.writeDouble(rotation != null ? rotation : 0.0);
 		out.writeDouble(south != null ? south : 0.0);
 		out.writeDouble(west != null ? west : 0.0);
-		out.writeString(altitudeMode == null ? "" : altitudeMode.toString());
+		out.writeString(altitudeMode == null ? null : altitudeMode.toString());
 	}
 
 }

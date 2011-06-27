@@ -64,6 +64,15 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
     private boolean idlWrap;  // International Date Line Wrap
 
 	/**
+	 * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
+	 * to initialize the object instance otherwise object is invalid.
+	 */
+	public LinearRing() {
+		// list must be non-null but is still invalid (requires at least 4 pts)
+		pointList = Collections.emptyList();
+	}
+
+	/**
      * This Constructor takes a list of points and initializes a Geometry Object for this Ring. By
      * default, it does not do topology validation.  To do validation, use alternate constructor.
      * <P>
@@ -131,14 +140,6 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         points.add(firstPt);
         init(points, false);
     }
-
-	/**
-	 * Empty ctor for object io.  Constructor must be followed by call to {@code readData()}
-	 * to initialize the object instance otherwise object is invalid.
-	 */
-	public LinearRing() {
-		pointList = Collections.emptyList();
-	}
 
     /**
      * This method returns an iterator for cycling through the Points in this Ring.
