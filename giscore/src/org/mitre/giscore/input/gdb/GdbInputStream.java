@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.IAcceptSchema;
@@ -370,7 +371,8 @@ public class GdbInputStream extends GISInputStreamBase {
 			return read();
 		}
 	}
-	
+
+	@NonNull
 	@Override
 	public Iterator<Schema> enumerateSchemata() throws IOException {
 		final IEnumDataset dsenum = workspace.getDatasets(esriDatasetType.esriDTFeatureClass);

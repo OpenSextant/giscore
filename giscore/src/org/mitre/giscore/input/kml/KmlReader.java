@@ -467,6 +467,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		boolean handleEvent(UrlRef ref, IGISObject gisObj);
     }
 
+	@NonNull
 	public Iterator<Schema> enumerateSchemata() throws IOException {
 		throw new UnsupportedOperationException();
 	}
