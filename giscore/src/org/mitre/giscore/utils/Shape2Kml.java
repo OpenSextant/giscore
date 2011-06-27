@@ -27,6 +27,24 @@ public class Shape2Kml {
 	private boolean verbose;
 	private String labelName; // "ROUTE" [in101503.shp], "FULLNAME", LNAME [interstates.shp]
 
+	private File baseDir;
+
+	public File getBaseDir() {
+		return baseDir;
+	}
+
+	public void setBaseDir(File baseDir) {
+		this.baseDir = baseDir;
+	}
+
+	public String getLabelName() {
+		return labelName;
+	}
+
+	public void setLabelName(String labelName) {
+		this.labelName = labelName;
+	}
+
 	public void outputKml(File shapefile) throws IOException, XMLStreamException {
 		// InputStream is = new FileInputStream(shapefile);
 		// if (shapefile.getName().endsWith(".zip") ) is = new ZipInputStream(is);
@@ -37,7 +55,7 @@ public class Shape2Kml {
 		else baseName = "out";
 		File temp;
 		while (true) {
-			temp = new File(baseName + ".kmz");
+			temp = new File(baseDir, baseName + ".kmz");
 			if (!temp.exists()) break;
 			baseName += '~';
 		}
