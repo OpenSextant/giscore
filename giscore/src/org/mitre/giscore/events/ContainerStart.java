@@ -37,6 +37,7 @@ import org.apache.commons.lang.StringUtils;
  * @author DRAND
  */
 public class ContainerStart extends Common implements IContainerType {
+
 	private static final long serialVersionUID = 1L;
 
 	@NonNull
@@ -190,6 +191,7 @@ public class ContainerStart extends Common implements IContainerType {
 	 * @see org.mitre.giscore.events.BaseStart#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
 	 */
 	@Override
+	@SuppressWarnings("unchecked")
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
