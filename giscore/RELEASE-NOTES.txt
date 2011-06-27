@@ -5,6 +5,8 @@ These are the release notes for the GIScore library. At a minimum, this file
 attempts to document changes to the public APIs. This file also provides a
 high-level overview of the features added in each release.
 
+This product includes software developed by the JDOM Project (http://www.jdom.org/).
+
 ------------------------------------------------------------------------------
 
 Release 0.5.23
@@ -188,6 +190,79 @@ Circle
 Point
 -Simplified null check logic forcing "pt" field to always be non-null
 -Fixed NullPointerException in equals(Point) if argument was null
+
+------------------------------------------------------------------------------
+
+Release 0.6.0
+
+Overhauled how Styles and StyleMaps are handled in KML I/O.
+Note giscore 0.6.0 is not fully backward compatible with 0.5.28 with respect to
+KML handling due to these changes.
+
+ Previously styles were written before the target feature they are to be children
+ of (Feature or ContainerStart) and were queued internally. Externally the order
+ of Styles read were reversed from the order in the KML source.
+
+ Now the order of all elements including Styles and StyleMaps is preserved in
+ reading in KmlInputStream. Likewise, adding a Style is now done by calling
+ setStyle() on a Feature or addStyle() on a ContainerStart element as opposed
+ to writing the Style object to the stream immediately before writing the feature
+ to the stream.
+
+KmlReader, KmlWriterm KmlInputStream, KmlOutputStream, and KmlMetaDump changed to support
+changes in Style handling.
+
+Updated dependency itf-geodesy library to 1.9.23 incorporating numerous bug fixes
+
+Feature
+-Added style field + getStyle/getStyle methods
+-implement equals(Object obj) + hashCode()
+
+MultiPoint/LinearRing/Polygon
+-force private fields to be non-null in default constructor
+
+Model
+-added null values checks
+
+AbstractObject
+-implement equals(Object obj) + hashCode()
+
+Row
+-implement explicit hashCode() rather than using inefficient HashCodeBuilder.reflectionHashCode()
+
+ContainerStart
+-add styles field + getStyles/setStyles/addStyle methods
+-implement equals(Object obj) + hashCode()
+
+Overlay
+-implement equals(Object obj) + hashCode()
+
+SimpleObjectOutputStream/SimpleObjectInputStream
+-Add support for Color as scalar
+-Added support for serializing enumeration values
+
+SimpleObjectInputStream
+-added readNonNullObjectCollection()
+
+Style
+-Added readData() + writeData() for serialization
+
+StyleMap
+-Added support for inline Styles
+-Added readData() + writeData() for serialization
+-Added new Pair class used by StyleMap.
+
+AtomHeader
+-Fixed serialization with changes to readData()
+
+SimpleField
+-change field access from package protected to private
+
+XmlOutputStreamBase
+-Fixed bug in escapeAttribute() that output attribute name for the value replacing the actual value
+
+AtomLink
+-Fix potential NullpointerException in writeData() if type is null
 
 ------------------------------------------------------------------------------
 
