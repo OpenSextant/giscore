@@ -215,12 +215,22 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		IGISObject gisObj = inputStream.read();
 		if (gisObj == null) return null;
 
-		if (gisObj.getClass() == Feature.class) {
+		final Class<? extends IGISObject> aClass = gisObj.getClass();
+		if (aClass == Feature.class) {
 			Feature f = (Feature)gisObj;
 			StyleSelector style = f.getStyle();
 			// handle IconStyle href if defined
 			if (style instanceof Style)
 				checkStyle(parent, (Style)style);
+			// TODO: StyleMaps with inline Styles...
+		} else if (aClass == ContainerStart.class) {
+			for (StyleSelector s : ((ContainerStart)gisObj).getStyles()) {
+				if (s instanceof Style) {
+					// normalize iconStyle hrefs
+					checkStyle(parent, (Style)s);
+				}
+				// TODO: StyleMaps with inline Styles...
+			}
 		} else if (gisObj instanceof NetworkLink) {
 			// handle NetworkLink href
 			NetworkLink link = (NetworkLink) gisObj;
@@ -255,12 +265,13 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 					// can we have a GroundOverlay W/O LINK ??
 				}
 			}
-			// Note: Overlays can have inline Styles & StyleMaps
+			// Note: Overlays can have inline Styles & StyleMaps but should not be relevant to icon style hrefs
 		} else if (gisObj instanceof Style) {
 			// handle IconStyle href if defined
 			checkStyle(parent, (Style)gisObj);
 		}
 		// no normalization for StyleMaps needed for now
+		// TODO: StyleMaps with inline Styles...
 
 		return gisObj;
 	}

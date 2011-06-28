@@ -302,14 +302,22 @@ public class KmlWriter implements IGISOutputStream {
 	 * @param o IGISObject to normalize, never null
 	 */
 	public static void normalizeUrls(IGISObject o) {
-		// folowing must be in sync with "normalization" and rewriting
+		// following must be in sync with "normalization" and rewriting
 		// as defined in KmlReader.read().
-		if (o.getClass() == Feature.class) {
+		final Class<? extends IGISObject> aClass = o.getClass();
+		if (aClass == Feature.class) {
 			Feature f = (Feature)o;
 			StyleSelector style = f.getStyle();
 			// handle IconStyle href if defined
 			if (style instanceof Style)
 				checkStyle((Style)style);
+		} else if (aClass == ContainerStart.class) {
+			for (StyleSelector s : ((ContainerStart)o).getStyles()) {
+				if (s instanceof Style) {
+					// normalize iconStyle hrefs
+					checkStyle((Style) s);
+				}
+			}
 		} else if (o instanceof NetworkLink) {
 			NetworkLink nl = (NetworkLink) o;
 			TaggedMap link = nl.getLink();
@@ -329,6 +337,7 @@ public class KmlWriter implements IGISOutputStream {
 				if (href != null) icon.put(IKml.HREF, href);
 			}
 			// Note: Overlays can have inline Styles & StyleMaps but no normalization needed at this time
+			// since only icon styles need normalization
 		} else if (o instanceof Style) {
 			// normalize iconStyle hrefs
 			checkStyle((Style) o);
@@ -339,7 +348,9 @@ public class KmlWriter implements IGISOutputStream {
 		if (style.hasIconStyle()) {
 			String href = fixHref(style.getIconUrl());
 			if (href != null)
-				style.setIconStyle(style.getIconColor(), style.getIconScale(), href);
+				style.setIconStyle(style.getIconColor(), style.getIconScale(),
+						style.getIconHeading(), href);
+			// otherwise URL was not normalized and left unchanged
 		}
 	}
 }
