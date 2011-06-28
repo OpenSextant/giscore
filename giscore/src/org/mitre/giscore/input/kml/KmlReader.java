@@ -76,12 +76,13 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 * Creates a <code>KmlStreamReader</code> and attempts to read
 	 * all GISObjects from a stream created from the <code>URL</code>.
      *
-	 * @param url   the KML or KMZ URL to be opened for reading.
+	 * @param url   the KML or KMZ URL to be opened for reading, never <tt>null</tt>.
      * @param proxy the Proxy through which this connection
      *             will be made. If direct connection is desired,
      *             <code>null</code> should be specified.
      *
 	 * @throws java.io.IOException if an I/O error occurs
+	 * @throws NullPointerException if url is <tt>null</tt>
 	 */
 	public KmlReader(URL url, Proxy proxy) throws IOException {
         this.proxy = proxy;
@@ -100,8 +101,9 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 * Creates a <code>KmlReader</code> and attempts
 	 * to read all GISObjects from the <code>File</code>.
 	 *
-	 * @param      file   the KML or KMZ file to be opened for reading.
+	 * @param      file   the KML or KMZ file to be opened for reading, never <tt>null</tt>.
 	 * @throws IOException if an I/O error occurs
+	 * @throws NullPointerException if file is <tt>null</tt>
 	 */
 	@SuppressWarnings("unchecked")
 	public KmlReader(File file) throws IOException {

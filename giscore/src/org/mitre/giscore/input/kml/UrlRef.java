@@ -191,11 +191,14 @@ public final class UrlRef implements java.io.Serializable {
      * @throws  MalformedURLException
      *          If a protocol handler for the URL could not be found,
      *          or if some other error occurred while constructing the URL
+     * @throws  IllegalArgumentException if uri is not absolute
+     * @throws  NullPointerException if uri is <tt>null</tt>
      */
     public UrlRef(URI uri) throws MalformedURLException {
         this.uri = uri;
         String urlStr = uri.toString();
         if (!urlStr.startsWith("kmz")) {
+            // if uri is not absolute then URI.toURL() throws IllegalArgumentException
             url = uri.toURL();
             kmzRelPath = null;
             return;
@@ -321,7 +324,7 @@ public final class UrlRef implements java.io.Serializable {
 	 * If stream is for a KMZ file then the stream is advanced until the first
 	 * KML file is found in the stream.
      *
-     * @param url The url to the KML or KMZ file
+     * @param url The url to the KML or KMZ file, never <tt>null</tt>
      * @param      proxy the Proxy through which this connection
      *             will be made. If direct connection is desired,
      *             <code>null</code> should be specified.
@@ -329,6 +332,7 @@ public final class UrlRef implements java.io.Serializable {
 	 * @return The InputStream used to read the KML source.
      * @throws java.io.IOException when an I/O error prevents a document
      *         from being fully parsed.
+	 * @throws NullPointerException if url is <tt>null</tt>
      */
 	public static InputStream getInputStream(URL url, Proxy proxy) throws IOException {
         // Open the connection
