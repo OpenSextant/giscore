@@ -274,7 +274,10 @@ public class KmlWriter implements IGISOutputStream {
 	private static String fixHref(String href) {
 		if (href != null && href.startsWith("kmz")) {
 			try {
-				return new UrlRef(new URI(href)).getKmzRelPath();
+				final URI uri = new URI(href);
+				if (uri.isAbsolute()) {
+					return new UrlRef(uri).getKmzRelPath();
+				}
 			} catch (MalformedURLException e) {
 				// ignore
 			} catch (URISyntaxException e) {
