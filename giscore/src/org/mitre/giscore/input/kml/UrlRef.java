@@ -141,10 +141,11 @@ public final class UrlRef implements java.io.Serializable {
     public static final String USER_AGENT = "GoogleEarth/5.2.1.1588(Windows;Microsoft Windows (5.1.2600.3);en-US;kml:2.2;client:Free;type:default)";
 
     /**
-     * Convert URL to "kmz" URI with URL of parent KMZ and the kmz file path
-     * which is the relative path to target file inside the KMZ.
+     * Convert URL to internalized "kmz" URI with absolute URL of parent KMZ and the kmz
+     * file path, which is the relative path to target file inside the KMZ. This allows
+	 * access to the resources within the KMZ file.
      *
-     * @param url  URL for KML/KMZ resource
+     * @param url  URL for KML/KMZ resource, never <tt>null</tt>
      * @param kmz_file_path relative path within the parent KMZ archive to where the KML, overlay image,
 	 * 			model, etc. is located
      * @throws URISyntaxException if URL has a missing relative file path or fails to construct properly
@@ -183,11 +184,11 @@ public final class UrlRef implements java.io.Serializable {
 
     /**
      * Wrap URI with URLRef and decode URI if its an
-     * internal kmz reference denoted with a "kmz" prefix to the URI
+     * internal kmz reference denoted with a "kmz" prefix to the absolute URI
 	 * (e.g. kmzfile:/C:/projects/giscore/data/kml/kmz/dir/content.kmz?file=kml/hi.kml). 
 	 * Non-internal kmz URIs will be treated as normal URLs.
      *
-     * @param uri
+     * @param uri  URI for KML/KMZ resource, never <tt>null</tt>
      * @throws  MalformedURLException
      *          If a protocol handler for the URL could not be found,
      *          or if some other error occurred while constructing the URL
