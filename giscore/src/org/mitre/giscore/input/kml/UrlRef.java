@@ -183,16 +183,15 @@ public final class UrlRef implements java.io.Serializable {
     }
 
     /**
-     * Wrap URI with URLRef and decode URI if its an
-     * internal kmz reference denoted with a "kmz" prefix to the absolute URI
+     * Wrap URI with URLRef and decode URI if its an internal
+	 * kmz reference denoted with a "kmz" prefix to the absolute URI
 	 * (e.g. kmzfile:/C:/projects/giscore/data/kml/kmz/dir/content.kmz?file=kml/hi.kml). 
 	 * Non-internal kmz URIs will be treated as normal URLs.
      *
      * @param uri  URI for KML/KMZ resource, never <tt>null</tt>
      * @throws  MalformedURLException
      *          If a protocol handler for the URL could not be found,
-     *          or if some other error occurred while constructing the URL
-     * @throws  IllegalArgumentException if uri is not absolute
+	 *          if uri is not absolute, or if some other error occurred while constructing the URL
      * @throws  NullPointerException if uri is <tt>null</tt>
      */
     public UrlRef(URI uri) throws MalformedURLException {
@@ -200,6 +199,7 @@ public final class UrlRef implements java.io.Serializable {
         String urlStr = uri.toString();
         if (!urlStr.startsWith("kmz")) {
             // if uri is not absolute then URI.toURL() throws IllegalArgumentException
+			if (!uri.isAbsolute()) throw new MalformedURLException("URI is not absolute");
             url = uri.toURL();
             kmzRelPath = null;
             return;
