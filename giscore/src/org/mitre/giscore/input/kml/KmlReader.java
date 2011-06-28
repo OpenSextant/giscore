@@ -287,7 +287,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 				if (uri != null) {
 					href = uri.toString();
 					// store rewritten overlay URL back to property store
-					style.setIconStyle(style.getIconColor(), style.getIconScale(), href);
+					style.setIconUrl(href);
 				}
 			}
 		}

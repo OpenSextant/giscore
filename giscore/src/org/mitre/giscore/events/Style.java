@@ -57,7 +57,7 @@ import java.io.IOException;
  */
 public class Style extends StyleSelector {
 
-    private static final long serialVersionUID = 1L;    
+    private static final long serialVersionUID = 1L;
 
     public enum ColorMode { NORMAL, RANDOM }
 
@@ -162,7 +162,7 @@ public class Style extends StyleSelector {
 	 * @param color
 	 *            the color for the icon, can be null if want to use default color.
 	 * @param scale
-	 *            the scale of the icon, nullable.
+	 *            the scale of the icon, nullable (1.0=normal size of icon, 2.0=twice normal size, etc.)
 	 * @param url
 	 *            the url of the icon, nullable. If url is empty string or blank
 	 *            then an empty <Icon/> element would appear in KML output.
@@ -178,7 +178,7 @@ public class Style extends StyleSelector {
 	 * @param color
 	 *            the color for the icon, can be null if want to use default color.
 	 * @param scale
-	 *            the scale of the icon, nullable.
+	 *            the scale of the icon, nullable (1.0=normal size of icon, 2.0=twice normal size, etc.)
 	 * @param heading
 	 *            heading (i.e. icon rotation) in degrees. Default=0 (North).
 	 *            Values range from 0 to 360 degrees, nullable. 
@@ -193,8 +193,20 @@ public class Style extends StyleSelector {
 		iconColor = color;
 		iconScale = scale == null || scale < 0.0 ? null : scale;
 		iconHeading = heading == null || Math.abs(heading - 360) < 0.1 ? null : heading; // default heading = 0.0
+		setIconUrl(url);
+	}
+
+	/**
+	 * Set Icon Style url
+	 *
+	 * @param url
+	 *            the url of the icon, nullable. If url is blank or empty string
+	 *            then an empty <Icon/> element would appear in corresponding KML output.
+	 *            If {@code null} then no <Icon> will appear in IconStyle (using default icon).
+	 */
+	public void setIconUrl(String url) {
 		iconUrl = url == null ? null : url.trim();
-        hasIconStyle = iconColor != null | iconScale != null || iconHeading != null || iconUrl != null;
+		hasIconStyle = iconColor != null | iconScale != null || iconHeading != null || iconUrl != null;
 	}
 
 	/**
@@ -262,8 +274,9 @@ public class Style extends StyleSelector {
 	}
 
 	/**
-	 * @return the lineWidth, the width of the line when rendered. Valid if
-	 *         {@link #hasLineStyle} is <code>true</code>.
+	 * @return the lineWidth, the width of the line when rendered or <tt>null</tt> if not defined.
+	 * Valid if {@link #hasLineStyle} is <code>true</code>.
+	 * 
 	 */
     @CheckForNull
 	public Double getLineWidth() {
@@ -276,6 +289,11 @@ public class Style extends StyleSelector {
         hasListStyle = listBgColor != null || listItemType != null;
 	}
 
+	/**
+	 * Valid if {@link #hasListStyle} returns <code>true</code>.
+	 * 
+	 * @return the list background color, <tt>null</tt> if not defined.
+	 */
     @CheckForNull
     public Color getListBgColor() {
         return listBgColor;
@@ -376,6 +394,7 @@ public class Style extends StyleSelector {
 	 * 
 	 * @param color
 	 * @param scale
+	 *            the scale of the labels, nullable (1.0=normal size, 2.0=twice normal size, etc.)
 	 */
 	public void setLabelStyle(Color color, Double scale) {
 		labelColor = color;
@@ -386,7 +405,7 @@ public class Style extends StyleSelector {
 	/**
 	 * Valid if {@link #hasLabelStyle} returns <code>true</code>.
 	 * 
-	 * @return the labelColor
+	 * @return the labelColor, <tt>null</tt> if not defined.
 	 */
     @CheckForNull
 	public Color getLabelColor() {
@@ -396,7 +415,7 @@ public class Style extends StyleSelector {
 	/**
 	 * Valid if {@link #hasLabelStyle} returns <code>true</code>.
 	 * 
-	 * @return the labelScale
+	 * @return the labelScale, <tt>null</tt> if not defined.
 	 */
     @CheckForNull
 	public Double getLabelScale() {

@@ -348,8 +348,7 @@ public class KmlWriter implements IGISOutputStream {
 		if (style.hasIconStyle()) {
 			String href = fixHref(style.getIconUrl());
 			if (href != null)
-				style.setIconStyle(style.getIconColor(), style.getIconScale(),
-						style.getIconHeading(), href);
+				style.setIconUrl(href);
 			// otherwise URL was not normalized and left unchanged
 		}
 	}
