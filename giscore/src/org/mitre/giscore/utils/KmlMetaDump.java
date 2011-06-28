@@ -976,15 +976,23 @@ public class KmlMetaDump implements IKml {
 
 	private void checkNetworkLink(NetworkLink networkLink) {
 		TaggedMap link = networkLink.getLink();
-		if (link != null) {
+		if (link == null) {
+			addTag(":NetworkLink missing Link", true);
+		} else {
 			String href = link.get(HREF);
 			if (href == null)
 				addTag(":NetworkLink missing or empty HREF", true);
 			else {
                 String url;
                 try {
-                    UrlRef urlRef = new UrlRef(new URI(href));
-                    url = urlRef.isKmz() ? urlRef.getKmzRelPath() : urlRef.toString();
+					final URI uri = new URI(href);
+					if (uri.isAbsolute()) {
+						UrlRef urlRef = new UrlRef(uri);
+						url = urlRef.isKmz() ? urlRef.getKmzRelPath() : urlRef.toString();
+					} else {
+						// relative link
+						url = href;
+					}
                 } catch (MalformedURLException e) {
                     url = href;
                 } catch (URISyntaxException e) {
@@ -993,8 +1001,6 @@ public class KmlMetaDump implements IKml {
                 addTag(":url=" + url);
             }
 		}
-		else
-			addTag(":NetworkLink missing Link", true);
 	}
 
     /**
