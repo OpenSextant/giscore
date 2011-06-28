@@ -97,7 +97,7 @@ public abstract class KmlBaseReader implements IKml {
 	 * Rewrites URL href if needed and returns URL as URI. Stores back href value in links
 	 * TaggedMap if modifications were made to href otherwise left unchanged. 
 	 *
-	 * @param parent
+	 * @param parent Parent UrlRef from which to resolve relative URLs in links
 	 * @param links TaggedMap object containing href link
      * @return adjusted href URL as URI, null if href is missing or empty string
 	 */
@@ -349,7 +349,7 @@ public abstract class KmlBaseReader implements IKml {
      * Gets non-empty for named value in TaggedMap or null if not found (or empty/blank string).
      * @param map TaggedMap (never null)
      * @param name
-     * @return non-empty value if found otherwise <tt>null</tt>
+     * @return non-empty value if found and non-blank string otherwise <tt>null</tt>
      */
     protected static String getTrimmedValue(TaggedMap map, String name) {
         String val = map.get(name);
