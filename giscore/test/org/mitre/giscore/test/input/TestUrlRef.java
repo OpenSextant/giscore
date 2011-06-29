@@ -111,6 +111,19 @@ public class TestUrlRef extends TestCase {
     }
 
 	/**
+	 * Test UrlRef with relative URI
+	 */
+	public void testRelativeURI() throws URISyntaxException {
+		URI uri = new URI("images/overlay.png");
+		try {
+			new UrlRef(uri);
+			fail("Method should fail with MalformedURLException");
+		} catch (MalformedURLException e) {
+			// expected. URI must be absolute
+		}
+	}
+
+	/**
 	 * Test UrlRef with KMZ resources for links that don't exist
 	 */
 	public void testKmzBadHref() throws URISyntaxException, MalformedURLException {
@@ -147,8 +160,10 @@ public class TestUrlRef extends TestCase {
             assertTrue(ref.isKmz());
             assertEquals("kml/other.kml", ref.getKmzRelPath());
             assertEquals("kmzhttp://localhost:8081/genxml.php?year=2008&file=kml/other.kml", ref.getURI().toString());
-			System.out.println("ref=" + ref.toString());
-			assertTrue(ref.toString().endsWith("kml/other.kml"));
+			// System.out.println("ref=" + ref.toString());
+			final String refString = ref.toString();
+			// refString should be http://localhost:8081/genxml.php?year=2008&file=kml/other.kml
+			assertTrue("Fails endsWith test using target=" + refString, refString.endsWith("kml/other.kml"));
             assertEquals(url, ref.getURL());
         } catch (MalformedURLException e) {
             fail("Failed to construct URL");
