@@ -342,6 +342,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				// Declare gx:TimeStamp and gx:TimeSpan elements are extensions to AbstractViewObjectExtensionGroup
 				String value = viewGroup.get("gx:TimeStamp");
 				if (value != null) {
+					writer.writeCharacters("\n");
 					handleGxElement("TimeStamp", value);
 				} else {
 					/*
@@ -357,6 +358,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 					String beginValue = StringUtils.trimToNull(viewGroup.get("gx:TimeSpan/begin"));
 					String endValue = StringUtils.trimToNull(viewGroup.get("gx:TimeSpan/end"));
 					if (beginValue != null || endValue != null) {
+						writer.writeCharacters("\n");
 						if (gxNamespace != null)
 							writer.writeStartElement(gxNamespace.getPrefix(),
 									"TimeSpan", gxNamespace.getURI());
@@ -367,6 +369,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 						handleNonEmptySimpleElement("begin", beginValue);
 						handleNonEmptySimpleElement("end", endValue);
 						writer.writeEndElement();
+						writer.writeCharacters("\n");
 					}
 				}
 
@@ -399,6 +402,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 		handleCharacters(value);
 		writer.writeEndElement();
+		writer.writeCharacters("\n");
 	}
 
 	// Thread-safe date formatter helper method
@@ -1163,7 +1167,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				handleGxElement(ALTITUDE_MODE, altitudeMode.toString());
 				//log.warn("gx:altitudeMode values not supported in KML output: " + altitudeMode);
 				//writer.writeComment("gx:altitudeMode>" + altitudeMode + "</gx:altitudeMode");
-        		writer.writeCharacters("\n");
 			}
 		}
 	}
