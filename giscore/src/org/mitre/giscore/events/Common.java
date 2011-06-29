@@ -202,6 +202,16 @@ public abstract class Common extends Row {
 	}
 
 	/**
+	 * Add single element to list
+	 * @param element
+	 */
+	public void addElement(Element element) {
+		if (element != null)
+		    elements.add(element);
+	}
+
+	/**
+	 * Replaces current list with new list of elements
 	 * @param elements the elements to set
 	 */
 	public void setElements(List<Element> elements) {
