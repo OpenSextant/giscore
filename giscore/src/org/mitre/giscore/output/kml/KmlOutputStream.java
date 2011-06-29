@@ -338,21 +338,68 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			}
 			try {
 				writer.writeStartElement(tag); // LookAt or Camera
+
+				// Declare gx:TimeStamp and gx:TimeSpan elements are extensions to AbstractViewObjectExtensionGroup
+				String value = viewGroup.get("gx:TimeStamp");
+				if (value != null) {
+					handleGxElement("TimeStamp", value);
+				} else {
+					/*
+					TimeSpan is a complex element not a simple element
+					 <gx:TimeSpan>
+						<begin>2010-05-28T02:02:09Z</begin>
+						<end>2010-05-28T02:02:56Z</end>
+					 </gx:TimeSpan>
+
+					can represent such complex elements as tags as such:
+					gx:TimeSpan/begin=2010-05-28T02:02:09Z, gx:TimeSpan/end=2010-05-28T02:02:56Z}
+					*/
+					String beginValue = StringUtils.trimToNull(viewGroup.get("gx:TimeSpan/begin"));
+					String endValue = StringUtils.trimToNull(viewGroup.get("gx:TimeSpan/end"));
+					if (beginValue != null || endValue != null) {
+						if (gxNamespace != null)
+							writer.writeStartElement(gxNamespace.getPrefix(),
+									"TimeSpan", gxNamespace.getURI());
+						else {
+							writer.writeStartElement("TimeSpan");
+							writer.writeDefaultNamespace(NS_GOOGLE_KML_EXT);
+						}
+						handleNonEmptySimpleElement("begin", beginValue);
+						handleNonEmptySimpleElement("end", endValue);
+						writer.writeEndElement();
+					}
+				}
+
 				handleTaggedElement(LONGITUDE, viewGroup);
 				handleTaggedElement(LATITUDE, viewGroup);
 				handleTaggedElement(ALTITUDE, viewGroup);
 				handleTaggedElement(HEADING, viewGroup);
 				handleTaggedElement(TILT, viewGroup);
 				handleTaggedElement(RANGE, viewGroup);
+
 				// if altitudeMode is invalid then it will be omitted
 				AltitudeModeEnumType altMode = AltitudeModeEnumType.getNormalizedMode(viewGroup.get(ALTITUDE_MODE));
 				handleAltitudeMode(altMode);
+
 				writer.writeEndElement();
 			} catch (XMLStreamException e) {
 				throw new RuntimeException(e);
 			}
         }
     }
+
+	private void handleGxElement(String name, String value) throws XMLStreamException {
+		if (gxNamespace != null)
+			writer.writeStartElement(gxNamespace.getPrefix(), name, gxNamespace.getURI());
+		else {
+			writer.writeStartElement(name);
+			writer.writeDefaultNamespace(NS_GOOGLE_KML_EXT); // write explicit namespace
+			//writer.writeStartElement("gx", name, NS_GOOGLE_KML_EXT);
+			//writer.writeNamespace("gx", NS_GOOGLE_KML_EXT);
+		}
+		handleCharacters(value);
+		writer.writeEndElement();
+	}
 
 	// Thread-safe date formatter helper method
     private SafeDateFormat getDateFormatter() {
@@ -1113,16 +1160,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			if (altitudeMode == AltitudeModeEnumType.relativeToGround || altitudeMode == AltitudeModeEnumType.absolute) {
 				handleSimpleElement(ALTITUDE_MODE, altitudeMode);
 			} else if (altitudeMode == AltitudeModeEnumType.clampToSeaFloor || altitudeMode == AltitudeModeEnumType.relativeToSeaFloor) {
-				if (gxNamespace != null)
-					writer.writeStartElement(gxNamespace.getPrefix(), ALTITUDE_MODE, gxNamespace.getURI());
-				else {
-					writer.writeStartElement(ALTITUDE_MODE);
-					writer.writeDefaultNamespace(NS_GOOGLE_KML_EXT);
-                    // writer.writeStartElement("gx", ALTITUDE_MODE, NS_GOOGLE_KML_EXT);
-					// writer.writeNamespace("gx", NS_GOOGLE_KML_EXT);
-				}
-                handleCharacters(altitudeMode.toString());
-                writer.writeEndElement();
+				handleGxElement(ALTITUDE_MODE, altitudeMode.toString());
 				//log.warn("gx:altitudeMode values not supported in KML output: " + altitudeMode);
 				//writer.writeComment("gx:altitudeMode>" + altitudeMode + "</gx:altitudeMode");
         		writer.writeCharacters("\n");
