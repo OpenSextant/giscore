@@ -3,8 +3,6 @@
  *
  *  Created: Jan 28, 2009
  *
- *  @author DRAND
- *
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
@@ -41,6 +39,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
  * KML as well as inline Styles.
  *
  * @author DRAND
+ * @author J.Mathews
  */
 public class StyleMap extends StyleSelector {
 

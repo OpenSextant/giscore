@@ -54,6 +54,7 @@ import java.io.IOException;
  *  Some less common tags (e.g. hotSpot in IconStyle) are not preserved.
  * 
  * @author DRAND
+ * @author J.Mathews
  */
 public class Style extends StyleSelector {
 
