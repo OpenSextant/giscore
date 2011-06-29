@@ -159,6 +159,17 @@ public class TestKmlOutputStream extends TestGISBase {
             kos.write(ds);
 		}
 		Feature f = new Feature();
+		TaggedMap lookAt = new TaggedMap("LookAt");
+		if (declareNamespace) {
+			// gx:TimeSpan is a complex element not a simple element
+			lookAt.put("gx:TimeSpan/begin","2011-03-11T01:00:24.012Z");
+			lookAt.put("gx:TimeSpan/end","2011-03-11T05:46:24.012Z");
+		} else {
+			lookAt.put("gx:TimeStamp","2011-03-11T05:46:24.012Z");
+		}
+		lookAt.put("longitude","143.1066665234362");
+		lookAt.put("latitude","37.1565775502346");
+		f.setViewGroup(lookAt);
 		Point cp = new Point(random3dGeoPoint());
 		cp.setAltitudeMode(AltitudeModeEnumType.clampToSeaFloor);
 		f.setGeometry(cp);
@@ -171,7 +182,7 @@ public class TestKmlOutputStream extends TestGISBase {
 			kis.close();
 			assert(obj instanceof Feature);
 			checkApproximatelyEquals(f, obj);
-			// System.out.println(bos.toString("UTF-8")); // debug
+			System.out.println(bos.toString("UTF-8")); // debug
 		} catch (AssertionError ae) {
 			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
 			throw ae;
