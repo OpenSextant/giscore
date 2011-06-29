@@ -55,7 +55,7 @@ public class TestShapefileInput {
 		FileInputStream is = new FileInputStream(new File(shpdir, "afghanistan.shp"));
 		ShapefileInputStream sis = new ShapefileInputStream(is, null);
 		assertNotNull(sis);
-		IGISObject ob = null;
+		IGISObject ob;
 		while((ob = sis.read()) != null) {
 			if (ob instanceof Feature) {
 				Feature f = (Feature) ob;
@@ -69,7 +69,7 @@ public class TestShapefileInput {
 		FileInputStream is = new FileInputStream(new File(shpdir, "linez.shp"));
 		ShapefileInputStream sis = new ShapefileInputStream(is, null);
 		assertNotNull(sis);
-		IGISObject ob = null;
+		IGISObject ob;
 		while((ob = sis.read()) != null) {
 			if (ob instanceof Feature) {
 				Feature f = (Feature) ob;
@@ -172,18 +172,14 @@ public class TestShapefileInput {
 		};
 		
 		IGISInputStream stream = GISFactory.getInputStream(DocumentType.Shapefile, shpdir, test);
-		
-		IGISObject ob;
-		while((ob = stream.read()) != null) {
+		while(stream.read() != null) {
 			// No body
 		}
 	}
 	
 	@Test public void testShapefileInputStream2() throws Exception {
 		IGISInputStream stream = GISFactory.getInputStream(DocumentType.Shapefile, shpdir);
-		
-		IGISObject ob;
-		while((ob = stream.read()) != null) {
+		while(stream.read() != null) {
 			// No body
 		}
 	}
