@@ -34,7 +34,32 @@ import org.apache.commons.lang.StringUtils;
 /**
  * There are a number of elements in KML that simply need their data 
  * carried through the pipe. This class holds a named set of AV pairs.
- * 
+ * <p>
+ * For simple elements just need to add the name values pairs into the TaggedMap.
+ * However, for complex element you ust flatten nested names delimited by /'s such that
+ * the following KML structure:
+ *
+ * <pre>
+ *     &lt;LookAt&gt;
+ *  	&lt;gx:TimeSpan&gt;
+ *  	    &lt;begin&gt;2010-05-28T02:02:09Z&lt;/begin&gt;
+ *  	    &lt;end&gt;2010-05-28T02:02:56Z&lt;/end&gt;
+ *  	&lt;/gx:TimeSpan&gt;
+ *  	&lt;longitude&gt;143.1066665234362&lt;/longitude&gt;
+ *  	&lt;latitude&gt;37.1565775502346&lt;/latitude&gt;
+ *     &lt;/LookAt&gt;
+ * </pre>
+ *
+ * could be represented with following:
+ *
+ * <pre><code>
+ * 	TaggedMap lookAt = new TaggedMap("LookAt");
+ * 	lookAt.put("longitude", "143.1066665234362");
+ * 	lookAt.put("latitude", "37.1565775502346");
+ * 	lookAt.put("gx:TimeSpan/begin", "2011-03-11T01:00:24.012Z");
+ * 	lookAt.put("gx:TimeSpan/end", "2011-03-11T05:46:24.012Z");
+ * </code></pre>
+ *
  * @author DRAND
  *
  */
