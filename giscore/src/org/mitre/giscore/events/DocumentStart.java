@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -21,6 +21,8 @@ package org.mitre.giscore.events;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -42,7 +44,7 @@ public class DocumentStart implements IGISObject {
     private static final long serialVersionUID = 1L;
 
 	private DocumentType type;
-	private final List<Namespace> namespaces = new ArrayList<Namespace>(); 
+	private final List<Namespace> namespaces = new ArrayList<Namespace>();
 
 	/**
 	 * Ctor
@@ -55,6 +57,7 @@ public class DocumentStart implements IGISObject {
 	/**
 	 * @return the type
 	 */
+	@Nullable
 	public DocumentType getType() {
 		return type;
 	}
@@ -69,8 +72,29 @@ public class DocumentStart implements IGISObject {
     /**
 	 * @return the namespaces
 	 */
+	@NonNull
 	public List<Namespace> getNamespaces() {
 		return namespaces;
+	}
+
+	/**
+	 * Add namespace. Verifies namespace prefix is unique in the list
+	 * as required in a XML context with the XML unique attribute constraint.
+	 * Duplicate prefixes are discarded and not added to the list.
+	 * URIs may be duplicates in the list but its prefix must be different.
+	 * @param aNamespace Namespace to add, never <tt>null</tt>
+	 * @return true if namespace was added, false if aNamespace prefix
+	 * 			already exists in the list and not added
+	 */
+	public boolean addNamespace(Namespace aNamespace) {
+		if (aNamespace == null) return false;
+		final String targetPrefix = aNamespace.getPrefix();
+		for (Namespace ns : namespaces) {
+			if (targetPrefix.equals(ns.getPrefix()))
+				return false;
+		}
+		namespaces.add(aNamespace);
+		return true;
 	}
 
 	public void accept(IStreamVisitor visitor) {
