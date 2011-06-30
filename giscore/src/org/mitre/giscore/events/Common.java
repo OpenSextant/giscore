@@ -153,6 +153,34 @@ public abstract class Common extends Row {
         this.endTime = endTime == null ? null : (Date)endTime.clone();
 	}
 
+	/**
+	 * Get ViewGroup TaggedMap and <tt>null</tt> if not defined.
+	 * <P>
+	 * This will represent name-value pairs that define the view and orientation
+	 * of this object. Compound elements will have its names flattened or
+	 * normalized with any namespace prepended to the name and each name appended
+	 * with a slash (/) delimiter as in a XPATH like syntax.
+	 * <P>
+	 * For KML context a ViewGroup will represent a Camera or LookAt with
+	 * name-values pairs for properties such as latitude, longitude, tilt, etc.
+	 * Also supported are non-simple name-value pairs such as Google Extensions
+	 * (E.g., gx:AltitudeMode, and gx:TimeSpan). Only difference with
+	 * <tt>gx:TimeStamp</tt> is the prefix is prepended to the name.
+	 * <tt>gx:TimeSpan</tt> as in following KML example is a compound value
+	 * with the <tt>begin</tt> child element encoded as <tt>gx:TimeSpan/begin</tt>
+	 * and likewise for the <tt>end</tt> element.
+	 * <pre>
+	 *     &lt;LookAt&gt;
+	 *  	&lt;gx:TimeSpan&gt;
+	 *  	    &lt;begin&gt;2010-05-28T02:02:09Z&lt;/begin&gt;
+	 *  	    &lt;end&gt;2010-05-28T02:02:56Z&lt;/end&gt;
+	 *  	&lt;/gx:TimeSpan&gt;
+	 *  	&lt;longitude&gt;143.1066665234362&lt;/longitude&gt;
+	 *  	&lt;latitude&gt;37.1565775502346&lt;/latitude&gt;
+	 *     &lt;/LookAt&gt;
+	 * </pre>
+	 * @return TaggedMap or <tt>null</tt> if none is defined
+	 */
     @CheckForNull
 	public TaggedMap getViewGroup() {
 		return viewGroup;
@@ -161,6 +189,7 @@ public abstract class Common extends Row {
     /**
      * Set ViewGroup on feature (e.g. Camera or LookAt element)
      * @param viewGroup
+	 * @see #getViewGroup()
      */
 	public void setViewGroup(TaggedMap viewGroup) {
 		this.viewGroup = viewGroup;

@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -33,11 +33,11 @@ import org.apache.commons.lang.StringUtils;
 
 /**
  * There are a number of elements in KML that simply need their data 
- * carried through the pipe. This class holds a named set of AV pairs.
+ * carried through the pipe. This class holds a named set of name-value pairs.
  * <p>
  * For simple elements just need to add the name values pairs into the TaggedMap.
- * However, for complex element you ust flatten nested names delimited by /'s such that
- * the following KML structure:
+ * However, for complex elements names are flattened or normalized delimited by /'s
+ * in an XPATH like syntax such that the following KML structure:
  *
  * <pre>
  *     &lt;LookAt&gt;
