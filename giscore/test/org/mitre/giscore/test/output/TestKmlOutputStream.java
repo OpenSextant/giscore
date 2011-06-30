@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -74,8 +74,8 @@ public class TestKmlOutputStream extends TestGISBase {
             DocumentStart ds = new DocumentStart(DocumentType.KML);
 			Namespace gxNs = Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT);
 			Namespace atomNs = Namespace.getNamespace("atom", IAtomConstants.ATOM_URI_NS);
-			ds.getNamespaces().add(gxNs);
-            ds.getNamespaces().add(atomNs);
+			ds.addNamespace(gxNs);
+            ds.addNamespace(atomNs);
             kos.write(ds);
             Feature f = new Feature();
             f.setName("gx:atom:test");
