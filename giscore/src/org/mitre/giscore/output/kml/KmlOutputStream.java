@@ -395,10 +395,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		if (gxNamespace != null)
 			writer.writeStartElement(gxNamespace.getPrefix(), name, gxNamespace.getURI());
 		else {
-			writer.writeStartElement(name);
-			writer.writeDefaultNamespace(NS_GOOGLE_KML_EXT); // write explicit namespace
-			//writer.writeStartElement("gx", name, NS_GOOGLE_KML_EXT);
-			//writer.writeNamespace("gx", NS_GOOGLE_KML_EXT);
+			//writer.writeStartElement(name);
+			//writer.writeDefaultNamespace(NS_GOOGLE_KML_EXT); // write explicit namespace
+			writer.writeStartElement("gx", name, NS_GOOGLE_KML_EXT);
+			writer.writeNamespace("gx", NS_GOOGLE_KML_EXT);
 		}
 		handleCharacters(value);
 		writer.writeEndElement();
