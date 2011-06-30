@@ -219,17 +219,13 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		if (aClass == Feature.class) {
 			Feature f = (Feature)gisObj;
 			StyleSelector style = f.getStyle();
-			// handle IconStyle href if defined
-			if (style instanceof Style)
-				checkStyle(parent, (Style)style);
-			// TODO: StyleMaps with inline Styles...
+			if (style != null) {
+				// handle IconStyle href if defined
+				checkStyleType(parent, style);
+			}
 		} else if (aClass == ContainerStart.class) {
 			for (StyleSelector s : ((ContainerStart)gisObj).getStyles()) {
-				if (s instanceof Style) {
-					// normalize iconStyle hrefs
-					checkStyle(parent, (Style)s);
-				}
-				// TODO: StyleMaps with inline Styles...
+				checkStyleType(parent, s);
 			}
 		} else if (gisObj instanceof NetworkLink) {
 			// handle NetworkLink href
@@ -266,14 +262,36 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 				}
 			}
 			// Note: Overlays can have inline Styles & StyleMaps but should not be relevant to icon style hrefs
-		} else if (gisObj instanceof Style) {
+		} else if (aClass == Style.class) {
 			// handle IconStyle href if defined
 			checkStyle(parent, (Style)gisObj);
+		} else if (aClass == StyleMap.class) {
+			// check StyleMaps with inline Styles...
+			checkStyleMap(parent, (StyleMap)gisObj);
 		}
-		// no normalization for StyleMaps needed for now
-		// TODO: StyleMaps with inline Styles...
 
 		return gisObj;
+	}
+
+	private void checkStyleType(UrlRef parent, StyleSelector s) {
+		if (s instanceof Style) {
+			// normalize iconStyle hrefs
+			checkStyle(parent, (Style)s);
+		} else if (s instanceof StyleMap) {
+			checkStyleMap(parent, (StyleMap)s);
+		}
+	}
+
+	private void checkStyleMap(UrlRef parent, StyleMap sm) {
+		for(Iterator<Pair> it = sm.getPairs(); it.hasNext(); ) {
+			Pair pair = it.next();
+			StyleSelector style = pair.getStyleSelector();
+			if (style instanceof Style) {
+				// normalize iconStyle hrefs
+				checkStyle(parent, (Style)style);
+			}
+			// ignore nested StyleMaps
+		}
 	}
 
 	private void checkStyle(UrlRef parent, Style style) {

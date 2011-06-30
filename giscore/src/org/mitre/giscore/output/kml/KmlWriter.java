@@ -308,15 +308,14 @@ public class KmlWriter implements IGISOutputStream {
 		if (aClass == Feature.class) {
 			Feature f = (Feature)o;
 			StyleSelector style = f.getStyle();
-			// handle IconStyle href if defined
-			if (style instanceof Style)
-				checkStyle((Style)style);
+			if (style != null) {
+				// handle IconStyle href if defined
+				checkStyleType(style);
+			}
 		} else if (aClass == ContainerStart.class) {
-			for (StyleSelector s : ((ContainerStart)o).getStyles()) {
-				if (s instanceof Style) {
-					// normalize iconStyle hrefs
-					checkStyle((Style) s);
-				}
+			for (StyleSelector style : ((ContainerStart)o).getStyles()) {
+				// normalize iconStyle hrefs
+				checkStyleType(style);
 			}
 		} else if (o instanceof NetworkLink) {
 			NetworkLink nl = (NetworkLink) o;
@@ -338,9 +337,32 @@ public class KmlWriter implements IGISOutputStream {
 			}
 			// Note: Overlays can have inline Styles & StyleMaps but no normalization needed at this time
 			// since only icon styles need normalization
-		} else if (o instanceof Style) {
+		} else if (aClass == Style.class) {
 			// normalize iconStyle hrefs
 			checkStyle((Style) o);
+		} else if (aClass == StyleMap.class) {
+			checkStyleMap((StyleMap) o);
+		}
+	}
+
+	private static void checkStyleType(StyleSelector style) {
+		if (style instanceof Style) {
+			// normalize iconStyle hrefs
+			checkStyle((Style)style);
+		} else if (style instanceof StyleMap) {
+			checkStyleMap((StyleMap)style);
+		}
+	}
+
+	private static void checkStyleMap(StyleMap sm) {
+		for(java.util.Iterator<Pair> it = sm.getPairs(); it.hasNext(); ) {
+			Pair pair = it.next();
+			StyleSelector style = pair.getStyleSelector();
+			if (style instanceof Style) {
+				// normalize iconStyle hrefs
+				checkStyle((Style)style);
+			}
+			// ignore nested StyleMaps
 		}
 	}
 
