@@ -214,35 +214,59 @@ changes in Style handling.
 
 Updated dependency itf-geodesy library to 1.9.23 incorporating numerous bug fixes
 
-Feature
--Added style field + getStyle/getStyle methods
--implement equals(Object obj) + hashCode()
-
-MultiPoint/LinearRing/Polygon
--force private fields to be non-null in default constructor
-
-Model
--added null values checks
-
 AbstractObject
 -implement equals(Object obj) + hashCode()
 
-Row
--implement explicit hashCode() rather than using inefficient HashCodeBuilder.reflectionHashCode()
+AtomAuthor
+-fix in readData() for null values
+
+AtomHeader
+-Fixed serialization with changes to readData()
+
+AtomLink
+-Fix potential NullpointerException in writeData() if type is null
+
+Circle
+-fix error in equals() and hashCode() for null value condition
 
 ContainerStart
 -add styles field + getStyles/setStyles/addStyle methods
 -implement equals(Object obj) + hashCode()
 
+Feature
+-Added style field + getStyle/getStyle methods
+-implement equals(Object obj) + hashCode()
+
+GeoAtomInputStream
+-fixed bug in readEntry() not setting foreign namespace elements
+
+KmlOutputStream
+-Corrected output order for ListStyle and gx:balloonVisibility
+
+Model
+-added null values checks
+
+MultiPoint/LinearRing/Polygon
+-force private fields to be non-null in default constructor
+
 Overlay
 -implement equals(Object obj) + hashCode()
+
+Row
+-implement explicit hashCode() rather than using inefficient HashCodeBuilder.reflectionHashCode()
+
+Shape2Kml
+-Added this new standalone utilility application
+
+SimpleObjectInputStream
+-added readNonNullObjectCollection()
 
 SimpleObjectOutputStream/SimpleObjectInputStream
 -Add support for Color as scalar
 -Added support for serializing enumeration values
 
-SimpleObjectInputStream
--added readNonNullObjectCollection()
+SimpleField
+-change field access from package protected to private
 
 Style
 -Added readData() + writeData() for serialization
@@ -252,17 +276,8 @@ StyleMap
 -Added readData() + writeData() for serialization
 -Added new Pair class used by StyleMap.
 
-AtomHeader
--Fixed serialization with changes to readData()
-
-SimpleField
--change field access from package protected to private
-
 XmlOutputStreamBase
 -Fixed bug in escapeAttribute() that output attribute name for the value replacing the actual value
-
-AtomLink
--Fix potential NullpointerException in writeData() if type is null
 
 ------------------------------------------------------------------------------
 
