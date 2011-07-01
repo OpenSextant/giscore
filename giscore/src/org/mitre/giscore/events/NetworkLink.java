@@ -110,6 +110,43 @@ public class NetworkLink extends Feature implements IContainerType {
 	public void setLink(TaggedMap link) {
 		this.link = link;
 	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	public int hashCode() {
+		final int prime = 31;
+		int result = super.hashCode();
+		result = prime * result
+				+ ((link == null || link.isEmpty()) ? 0 : link.hashCode());
+		return result;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (!super.equals(obj))
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		NetworkLink other = (NetworkLink) obj;
+
+		// NOTE: link empty or null is treated the same in both equals and hashCode
+		// especially since readData() converts empty lists into null object
+		if (link == null) {
+			return other.link == null || other.link.isEmpty();
+		} else {
+			if (link.isEmpty() && (other.link == null || other.link.isEmpty()))
+				return true;
+			return link.equals(other.link);
+		}
+	}
 	
     public void accept(IStreamVisitor visitor) {
     	visitor.visit(this);
