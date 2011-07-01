@@ -74,8 +74,10 @@ public class TestKmlOutputStream extends TestGISBase {
             DocumentStart ds = new DocumentStart(DocumentType.KML);
 			Namespace gxNs = Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT);
 			Namespace atomNs = Namespace.getNamespace("atom", IAtomConstants.ATOM_URI_NS);
-			ds.addNamespace(gxNs);
+			assertTrue(ds.addNamespace(gxNs));
+			assertTrue(ds.addNamespace(gxNs)); // already in list
             ds.addNamespace(atomNs);
+			assertEquals(2, ds.getNamespaces().size());
             kos.write(ds);
             Feature f = new Feature();
             f.setName("gx:atom:test");
@@ -348,6 +350,8 @@ public class TestKmlOutputStream extends TestGISBase {
 		c.setTessellate(true);
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		KmlOutputStream kos = new KmlOutputStream(bos);
+		kos.setNumberCirclePoints(32);
+		final int pointCount = kos.getNumberCirclePoints() + 1;
 		kos.write(new ContainerStart(IKml.DOCUMENT));
 		try {
 			Feature f = new Feature();
@@ -359,6 +363,15 @@ public class TestKmlOutputStream extends TestGISBase {
 			f.setName("P2");
 			c.setHint(Circle.HintType.LINE);
 			kos.write(f);
+
+			kos.setNumberCirclePoints(2);
+			f.setName("P3");
+			kos.write(f);
+
+			kos.setNumberCirclePoints(1);
+			f.setName("P4");
+			kos.write(f);
+
 			kos.write(new ContainerEnd());
 		} finally {
 		    kos.close();
@@ -368,8 +381,10 @@ public class TestKmlOutputStream extends TestGISBase {
 			KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
 			assertNotNull(kis.read()); // skip DocumentStart
 			assertNotNull(kis.read()); // skip Document
-			IGISObject obj1 = kis.read(); // Placemark w/Circle as Polygon
-			IGISObject obj2 = kis.read(); // Placemark w/Circle as LineString
+			IGISObject obj1 = kis.read(); // Placemark w/Circle as Polygon (n=32)
+			IGISObject obj2 = kis.read(); // Placemark w/Circle as LineString (n=32)
+			IGISObject obj3 = kis.read(); // Placemark w/Circle as LineString (n=2)
+			IGISObject obj4 = kis.read(); // Placemark w/Circle as Point (n=1)
 			kis.close();
 			assert(obj1 instanceof Feature);
 			Feature f = (Feature)obj1;
@@ -378,7 +393,7 @@ public class TestKmlOutputStream extends TestGISBase {
 			assertTrue(geom instanceof Polygon);
 			Polygon poly = (Polygon)geom;
 			assertTrue(poly.getTessellate());
-			assertEquals(kos.getNumCirclePoints(), poly.getNumPoints());
+			assertEquals(pointCount, poly.getNumPoints());
 
 			assert(obj2 instanceof Feature);
 			f = (Feature)obj2;
@@ -386,7 +401,20 @@ public class TestKmlOutputStream extends TestGISBase {
 			assertTrue(geom instanceof Line);
 			Line line = (Line)geom;
 			assertTrue(line.getTessellate());
-			assertEquals(kos.getNumCirclePoints(), line.getNumPoints());
+			assertEquals(pointCount, line.getNumPoints());
+
+			assert(obj3 instanceof Feature);
+			f = (Feature)obj3;
+			geom = f.getGeometry();
+			assertTrue(geom instanceof Line);
+			assertEquals(2, geom.getNumPoints());
+
+			assert(obj4 instanceof Feature);
+			f = (Feature)obj4;
+			geom = f.getGeometry();
+			assertTrue(geom instanceof Point);
+			assertEquals(1, geom.getNumPoints());
+
 		} catch (AssertionError ae) {
 			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
 			throw ae;
