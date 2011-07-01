@@ -83,15 +83,16 @@ public class DocumentStart implements IGISObject {
 	 * Duplicate prefixes are discarded and not added to the list.
 	 * URIs may be duplicates in the list but its prefix must be different.
 	 * @param aNamespace Namespace to add, never <tt>null</tt>
-	 * @return true if namespace was added, false if aNamespace prefix
-	 * 			already exists in the list and not added
+	 * @return true if namespace was added or if already existed in the list,
+	 * otherwise <tt>false</tt> if not added because either argument was
+	 * <tt>null</tt> or its prefix conflicted with one having another URI.
 	 */
 	public boolean addNamespace(Namespace aNamespace) {
 		if (aNamespace == null) return false;
 		final String targetPrefix = aNamespace.getPrefix();
 		for (Namespace ns : namespaces) {
 			if (targetPrefix.equals(ns.getPrefix()))
-				return false;
+				return aNamespace.equals(ns);
 		}
 		namespaces.add(aNamespace);
 		return true;
