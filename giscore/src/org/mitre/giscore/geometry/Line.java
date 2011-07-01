@@ -93,15 +93,6 @@ public class Line extends GeometryBase implements Iterable<Point> {
     public Line(Geodetic2DBounds box) {
         if (box == null)
             throw new IllegalArgumentException("box must be non-null");
-		double elev = 0;
-		boolean is3d = false;
-		if (box instanceof Geodetic3DBounds) {
-			Geodetic3DBounds bbox = (Geodetic3DBounds)box;
-			// use max elevation as elevation of points
-			elev = bbox.maxElev; // (bbox.minElev + bbox.maxElev) / 2.0;
-			// using 1e-3 meters for elevation test for precision up to 1 millimeter (below this is treated as 2D with 0 elevation)
-			is3d = Math.abs(elev) > 1e-3;
-		}
 		boolean pointCheck = box.getEastLon().equals(box.getWestLon());
 		final List<Point> points;
 		if (box.getNorthLat().equals(box.getSouthLat())) {
@@ -110,20 +101,20 @@ public class Line extends GeometryBase implements Iterable<Point> {
 			}
 			log.debug("Bounding box is a line - north and south latitude are the same."); // east-west line
 			points = new ArrayList<Point>(2);
-			points.add(Point.createPoint(box.getWestLon(), box.getSouthLat(), is3d, elev));
-			points.add(Point.createPoint(box.getEastLon(), box.getSouthLat(), is3d, elev));
+			points.add(new Point(box.getSouthLat(), box.getWestLon()));
+			points.add(new Point(box.getSouthLat(), box.getEastLon()));
 		} else if (pointCheck) {
 			log.debug("Bounding box is a line - east and west longitude are the same."); // north-south line
 			points = new ArrayList<Point>(2);
-			points.add(Point.createPoint(box.getWestLon(), box.getNorthLat(), is3d, elev));
-			points.add(Point.createPoint(box.getWestLon(), box.getSouthLat(), is3d, elev));
+			points.add(new Point(box.getNorthLat(), box.getWestLon()));
+			points.add(new Point(box.getSouthLat(), box.getWestLon()));
 		} else {
 			points = new ArrayList<Point>(5);
-			final Point firstPt = Point.createPoint(box.getWestLon(), box.getSouthLat(), is3d, elev);
+			final Point firstPt = new Point(box.getSouthLat(), box.getWestLon());
 			points.add(firstPt);
-			points.add(Point.createPoint(box.getWestLon(), box.getNorthLat(), is3d, elev));
-			points.add(Point.createPoint(box.getEastLon(), box.getNorthLat(), is3d, elev));
-			points.add(Point.createPoint(box.getEastLon(), box.getSouthLat(), is3d, elev));
+			points.add(new Point(box.getNorthLat(), box.getWestLon()));
+			points.add(new Point(box.getNorthLat(), box.getEastLon()));
+			points.add(new Point(box.getSouthLat(), box.getEastLon()));
 			points.add(firstPt);
 		}
         init(points);
