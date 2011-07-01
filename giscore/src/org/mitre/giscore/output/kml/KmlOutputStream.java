@@ -96,18 +96,20 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	static {
 		int numPoints = 32;
 		// store preference for # points in generated circles [default = 32]
-		// note: generated number points is one more than this count since first and last points must be the same
+		// note: generated number points is n+1 if n > 2 since first and last points must be the same
 		String value = System.getProperty("giscore.circle.numPoints");
 		if (StringUtils.isNotBlank(value)) {
 			try {
 				numPoints = Integer.parseInt(value);
-				if (numPoints < 3) numPoints = 3; // cannot allow less than 3 points
+				if (numPoints < 1) numPoints = 1; // cannot allow less than 1 points. More than 2 is preferred.
 			} catch(NumberFormatException nfe) {
 				log.warn("Invalid value for giscore.circle.numPoints " + value);
 			}
 		}
 		NUM_CIRCLE_POINTS = numPoints;
 	}
+
+	private int numberCirclePoints = NUM_CIRCLE_POINTS;
 
     /**
      * prefix associated with gx extension namespace if such namespace is provided
@@ -1000,6 +1002,17 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     public void visit(Circle circle) {
 		if (circle != null) {
 			try {
+				if (numberCirclePoints == 1) {
+					writer.writeStartElement(POINT);
+					handleGeometryAttributes(circle);
+					//<extrude>0</extrude> <!-- boolean -->
+					//<altitudeMode>clampToGround</altitudeMode>
+					StringBuilder b = new StringBuilder();
+            		handleSingleCoordinate(b, circle);
+					handleSimpleElement(COORDINATES, b.toString());
+					writer.writeEndElement();
+					return;
+				}
 				// use circle hints to output as LinearRing, Polygon, etc.
 				Circle.HintType hint = circle.getHint();
 				Geodetic2DCircle c = new Geodetic2DCircle(circle.getCenter(), circle.getRadius());
@@ -1007,13 +1020,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 				// note: number points is one more than count since first and last points must be the same
 				StringBuilder b = new StringBuilder();
 				Geodetic2DPoint firstPt = null;
-				for (Geodetic2DPoint point : c.boundary(NUM_CIRCLE_POINTS)) {
+				for (Geodetic2DPoint point : c.boundary(numberCirclePoints)) {
 					if (firstPt == null) firstPt = point;
 					handleSingleCoordinate(b, point);
 				}
-				if (firstPt != null) handleSingleCoordinate(b, firstPt);
+				if (firstPt != null && numberCirclePoints > 2) handleSingleCoordinate(b, firstPt);
 				String coordinates = b.toString();
-				if (hint == Circle.HintType.LINE) {
+				if (hint == Circle.HintType.LINE || numberCirclePoints == 2) {
 					writer.writeStartElement(LINE_STRING);
 					handleGeometryAttributes(circle);
 					handleSimpleElement(COORDINATES, coordinates);
@@ -1628,12 +1641,28 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	/**
 	 * Returns number of points used to represent a {@link Circle} geometry,
 	 * which can be output either as a LineString, LinearRing, or Polygon
-	 * depending on the hint. Number includes first point twice since circle
-	 * must start and end at same point.
+	 * depending on the hint. If number is greater than 2 then the actual
+	 * number coordinates produced in output will be n+1 since list will
+	 * include first point twice since circle (other than as a point or
+	 * line) must start and end at same point. The default value (32) is
+	 * overridden by a <tt>giscore.circle.numPoints</tt> System property
+	 * if that is defined.
 	 * @return number of points used to represent a Circle geometry.
 	 */
-	public int getNumCirclePoints() {
-		return NUM_CIRCLE_POINTS + 1;
+	public int getNumberCirclePoints() {
+		return numberCirclePoints;
+	}
+
+	/**
+	 * Set number of points used to generate a circle. Defines how output
+	 * will iterate over boundary points of Circle geometries at
+	 * <tt>circlePoints</tt> resolution.
+     *
+     * @param circlePoints int number of points on boundary to use (1st is due South),
+	 * 					should be greater than 0
+	 */
+	public void setNumberCirclePoints(int circlePoints) {
+		numberCirclePoints = circlePoints >= 1 ? circlePoints : 1;
 	}
 
 }
