@@ -65,6 +65,20 @@ public class Point extends GeometryBase {
 	}
 
 	/**
+	 * Create a point given a lat and lon value in a WGS84 spatial
+	 * reference system.
+	 *
+	 * @param lat
+	 *            the latitude, never null
+	 * @param lon
+	 *            the longitude, never null
+	 * @throws NullPointerException if latitude or longitude are null
+	 */
+	public Point(Latitude lat, Longitude lon) {
+		this(new Geodetic2DPoint(lon, lat));
+	}
+
+	/**
 	 * Ctor, create a point given a lat and lon value in a WGS84 spatial
 	 * reference system.
 	 * 
@@ -267,13 +281,6 @@ public class Point extends GeometryBase {
     @NonNull
 	public List<Point> getPoints() {
 		return Collections.singletonList(new Point(pt));
-	}
-
-	/**
-	 * Static helper method to create a Geodetic2DPoint or Geodetic3DPoint whether the <tt>is3d</tt> flag is set
-	 */
-	static Point createPoint(Longitude lon, Latitude lat, boolean is3d, double elev) {
-		 return new Point(is3d ? new Geodetic3DPoint(lon, lat, elev) : new Geodetic2DPoint(lon, lat));
 	}
 
 }
