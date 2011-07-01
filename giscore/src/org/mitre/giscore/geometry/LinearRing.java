@@ -107,8 +107,9 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
     }
 
     /**
-     * This Constructor takes a bounding box and initializes a Geometry Object
-     * for it. This ring will be clockwise.
+     * This Constructor takes a bounding box and initializes a LinearRing Object
+     * for it. This ring points will be clockwise direction starting at the
+	 * south-west corner.
      *
      * @param box the bounding box to represent as a ring, never null.
      * @throws IllegalArgumentException if the bounding box is null, a point or a line
@@ -116,10 +117,14 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
     public LinearRing(Geodetic2DBounds box) {
         if (box == null)
             throw new IllegalArgumentException("box must be non-null");
-        if (box.getEastLon().inRadians() == box.getWestLon().inRadians())
-            log.warn("Bounding box not a polygon - east and west points are the same.");
-        if (box.getNorthLat().inRadians() == box.getSouthLat().inRadians())
-            log.warn("Bounding box not a polygon - north and south points are the same.");
+        if (box.getEastLon().equals(box.getWestLon())) {
+            log.error("Bounding box not a polygon - east and west longitude are the same.");
+			throw new IllegalArgumentException("LinearRing must contain at least 4 Points");
+		}
+		if (box.getNorthLat().equals(box.getSouthLat())) {
+            log.error("Bounding box not a polygon - north and south latitude are the same.");
+			throw new IllegalArgumentException("LinearRing must contain at least 4 Points");
+		}
 
         double elev = 0;
         boolean is3d = false;
@@ -132,11 +137,11 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         }
 
         final List<Point> points = new ArrayList<Point>(5);
-        final Point firstPt = createPoint(box.getWestLon(), box.getSouthLat(), is3d, elev);
+        final Point firstPt = Point.createPoint(box.getWestLon(), box.getSouthLat(), is3d, elev);
         points.add(firstPt);
-        points.add(createPoint(box.getWestLon(), box.getNorthLat(), is3d, elev));
-        points.add(createPoint(box.getEastLon(), box.getNorthLat(), is3d, elev));
-        points.add(createPoint(box.getEastLon(), box.getSouthLat(), is3d, elev));
+        points.add(Point.createPoint(box.getWestLon(), box.getNorthLat(), is3d, elev));
+        points.add(Point.createPoint(box.getEastLon(), box.getNorthLat(), is3d, elev));
+        points.add(Point.createPoint(box.getEastLon(), box.getSouthLat(), is3d, elev));
         points.add(firstPt);
         init(points, false);
     }
@@ -399,11 +404,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
                 that.contains(this.pointList.get(0).asGeodetic2DPoint()));
     }
 
-    private static Point createPoint(Longitude lon, Latitude lat, boolean is3d, double elev) {
-		 return new Point(is3d ? new Geodetic3DPoint(lon, lat, elev) : new Geodetic2DPoint(lon, lat));
-    }
-
-    /**
+	/**
      * The toString method returns a String representation of this Object suitable for debugging
      *
      * @return String containing Geometry Object type, bounding coordintates, and number of parts

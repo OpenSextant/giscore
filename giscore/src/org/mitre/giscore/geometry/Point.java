@@ -268,4 +268,12 @@ public class Point extends GeometryBase {
 	public List<Point> getPoints() {
 		return Collections.singletonList(new Point(pt));
 	}
+
+	/**
+	 * Static helper method to create a Geodetic2DPoint or Geodetic3DPoint whether the <tt>is3d</tt> flag is set
+	 */
+	static Point createPoint(Longitude lon, Latitude lat, boolean is3d, double elev) {
+		 return new Point(is3d ? new Geodetic3DPoint(lon, lat, elev) : new Geodetic2DPoint(lon, lat));
+	}
+
 }
