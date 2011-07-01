@@ -110,6 +110,7 @@ public class Line extends GeometryBase implements Iterable<Point> {
 			points.add(new Point(box.getSouthLat(), box.getWestLon()));
 		} else {
 			points = new ArrayList<Point>(5);
+			// add points in clock-wise direction starting at the south-west corner
 			final Point firstPt = new Point(box.getSouthLat(), box.getWestLon());
 			points.add(firstPt);
 			points.add(new Point(box.getNorthLat(), box.getWestLon()));
