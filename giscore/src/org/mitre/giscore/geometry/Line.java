@@ -16,6 +16,7 @@
 package org.mitre.giscore.geometry;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -77,6 +78,55 @@ public class Line extends GeometryBase implements Iterable<Point> {
         if (pts == null || pts.size() < 2)
             throw new IllegalArgumentException("Line must contain at least 2 Points");
         init(pts);
+    }
+
+	/**
+     * This Constructor takes a bounding box and initializes a Line Object
+     * for it. This points will be in a clockwise direction starting at the
+	 * south-west corner. If bounding box forms a line (N-S or E-W) then
+	 * line with have 2 points, otherwise it will have 5 points with the first
+	 * and last point the same.
+     *
+     * @param box the bounding box to represent as a line, never null.
+     * @throws IllegalArgumentException if the bounding box is null or a single point
+     */
+    public Line(Geodetic2DBounds box) {
+        if (box == null)
+            throw new IllegalArgumentException("box must be non-null");
+		double elev = 0;
+		boolean is3d = false;
+		if (box instanceof Geodetic3DBounds) {
+			Geodetic3DBounds bbox = (Geodetic3DBounds)box;
+			// use max elevation as elevation of points
+			elev = bbox.maxElev; // (bbox.minElev + bbox.maxElev) / 2.0;
+			// using 1e-3 meters for elevation test for precision up to 1 millimeter (below this is treated as 2D with 0 elevation)
+			is3d = Math.abs(elev) > 1e-3;
+		}
+		boolean pointCheck = box.getEastLon().equals(box.getWestLon());
+		final List<Point> points;
+		if (box.getNorthLat().equals(box.getSouthLat())) {
+			if (pointCheck) {
+				throw new IllegalArgumentException("Line must contain at least 2 Points");
+			}
+			log.debug("Bounding box is a line - north and south latitude are the same."); // east-west line
+			points = new ArrayList<Point>(2);
+			points.add(Point.createPoint(box.getWestLon(), box.getSouthLat(), is3d, elev));
+			points.add(Point.createPoint(box.getEastLon(), box.getSouthLat(), is3d, elev));
+		} else if (pointCheck) {
+			log.debug("Bounding box is a line - east and west longitude are the same."); // north-south line
+			points = new ArrayList<Point>(2);
+			points.add(Point.createPoint(box.getWestLon(), box.getNorthLat(), is3d, elev));
+			points.add(Point.createPoint(box.getWestLon(), box.getSouthLat(), is3d, elev));
+		} else {
+			points = new ArrayList<Point>(5);
+			final Point firstPt = Point.createPoint(box.getWestLon(), box.getSouthLat(), is3d, elev);
+			points.add(firstPt);
+			points.add(Point.createPoint(box.getWestLon(), box.getNorthLat(), is3d, elev));
+			points.add(Point.createPoint(box.getEastLon(), box.getNorthLat(), is3d, elev));
+			points.add(Point.createPoint(box.getEastLon(), box.getSouthLat(), is3d, elev));
+			points.add(firstPt);
+		}
+        init(points);
     }
 
     /**
