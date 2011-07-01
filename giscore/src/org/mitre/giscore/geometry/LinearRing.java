@@ -137,16 +137,23 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         }
 
         final List<Point> points = new ArrayList<Point>(5);
-        final Point firstPt = Point.createPoint(box.getWestLon(), box.getSouthLat(), is3d, elev);
+        final Point firstPt = createPoint(box.getWestLon(), box.getSouthLat(), is3d, elev);
         points.add(firstPt);
-        points.add(Point.createPoint(box.getWestLon(), box.getNorthLat(), is3d, elev));
-        points.add(Point.createPoint(box.getEastLon(), box.getNorthLat(), is3d, elev));
-        points.add(Point.createPoint(box.getEastLon(), box.getSouthLat(), is3d, elev));
+        points.add(createPoint(box.getWestLon(), box.getNorthLat(), is3d, elev));
+        points.add(createPoint(box.getEastLon(), box.getNorthLat(), is3d, elev));
+        points.add(createPoint(box.getEastLon(), box.getSouthLat(), is3d, elev));
         points.add(firstPt);
         init(points, false);
     }
 
-    /**
+	/**
+	 * Static helper method to create a Geodetic2DPoint or Geodetic3DPoint whether the <tt>is3d</tt> flag is set
+	 */
+	static Point createPoint(Longitude lon, Latitude lat, boolean is3d, double elev) {
+		 return new Point(is3d ? new Geodetic3DPoint(lon, lat, elev) : new Geodetic2DPoint(lon, lat));
+	}
+
+	/**
      * This method returns an iterator for cycling through the Points in this Ring.
      * This class supports use of Java 'for each' syntax to cycle through the Points.
      *
