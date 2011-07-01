@@ -1,5 +1,6 @@
 package org.mitre.giscore.test.geometry;
 
+import org.apache.commons.lang.math.RandomUtils;
 import org.junit.*;
 import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.geometry.*;
@@ -96,20 +97,53 @@ public class TestBaseGeometry extends TestGISBase {
 
 	@Test
 	public void testLineBBox() {
-		Point cp = getRandomPoint();
+		double lat = 40.0 + (5.0 * RandomUtils.nextDouble());
+		double lon = 40.0 + (5.0 * RandomUtils.nextDouble());
+        Geodetic2DPoint pt1 = new Geodetic2DPoint(new Longitude(lon, Angle.DEGREES),
+                new Latitude(lat, Angle.DEGREES));
+		Geodetic2DBounds bbox = new Geodetic2DBounds(pt1);
 		try {
-			new Line(new Geodetic2DBounds(cp.asGeodetic2DPoint()));
+			new Line(bbox);
 			fail("Expected to throw Exception");
 		} catch (IllegalArgumentException iae) {
 			// expected
 		}
-		Point pt1 = getRingPoint(cp, 0, 2, .3, .4);
-		Point pt2 = getRingPoint(cp, 1, 2, .3, .4);
-		Line line = new Line(new Geodetic2DBounds(pt1.asGeodetic2DPoint(),
-				pt2.asGeodetic2DPoint()));
-		assertEquals(2, line.getNumPoints());
-	}
+		try {
+			new LinearRing(bbox);
+			fail("Expected to throw Exception");
+		} catch (IllegalArgumentException iae) {
+			// expected
+		}
 
+		Geodetic2DPoint pt2 = new Geodetic2DPoint(new Longitude(lon + 10, Angle.DEGREES),
+				pt1.getLatitude());
+		bbox = new Geodetic2DBounds(pt1, pt2);
+		Line line = new Line(bbox);
+		assertEquals(2, line.getNumPoints());
+		try {
+			new LinearRing(bbox);
+			fail("Expected to throw Exception");
+		} catch (IllegalArgumentException iae) {
+			// expected
+		}
+
+		Geodetic2DPoint pt3 = new Geodetic2DPoint(pt1.getLongitude(),
+                new Latitude(lat + 10, Angle.DEGREES));
+		bbox = new Geodetic2DBounds(pt1, pt3);
+		line = new Line(bbox);
+		assertEquals(2, line.getNumPoints());
+		try {
+			new LinearRing(bbox);
+			fail("Expected to throw Exception");
+		} catch (IllegalArgumentException iae) {
+			// expected
+		}
+
+		Geodetic2DPoint pt4 = new Geodetic2DPoint(pt2.getLongitude(),
+				pt3.getLatitude());
+		line = new Line(new Geodetic2DBounds(pt1, pt4));
+		assertEquals(5, line.getNumPoints());
+	}
 
 	/**
 	 * Create mixed dimension (2d + 3d pts) MultiPoint which downgrades to 2d
