@@ -3,6 +3,7 @@ package org.mitre.giscore.test.geometry;
 import org.junit.*;
 import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.geometry.*;
+import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.test.TestGISBase;
 import org.mitre.itf.geodesy.*;
 
@@ -92,6 +93,23 @@ public class TestBaseGeometry extends TestGISBase {
 
         assertEquals(mp.getCenter(), line.getCenter());
     }
+
+	@Test
+	public void testLineBBox() {
+		Point cp = getRandomPoint();
+		try {
+			new Line(new Geodetic2DBounds(cp.asGeodetic2DPoint()));
+			fail("Expected to throw Exception");
+		} catch (IllegalArgumentException iae) {
+			// expected
+		}
+		Point pt1 = getRingPoint(cp, 0, 2, .3, .4);
+		Point pt2 = getRingPoint(cp, 1, 2, .3, .4);
+		Line line = new Line(new Geodetic2DBounds(pt1.asGeodetic2DPoint(),
+				pt2.asGeodetic2DPoint()));
+		assertEquals(2, line.getNumPoints());
+	}
+
 
 	/**
 	 * Create mixed dimension (2d + 3d pts) MultiPoint which downgrades to 2d
