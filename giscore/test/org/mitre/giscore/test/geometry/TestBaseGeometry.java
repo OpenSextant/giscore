@@ -103,13 +103,14 @@ public class TestBaseGeometry extends TestGISBase {
                 new Latitude(lat, Angle.DEGREES));
 		Geodetic2DBounds bbox = new Geodetic2DBounds(pt1);
 		try {
+			// single point bbox - line requires at least 2 points
 			new Line(bbox);
 			fail("Expected to throw Exception");
 		} catch (IllegalArgumentException iae) {
 			// expected
 		}
 		try {
-			new LinearRing(bbox);
+			new LinearRing(bbox); // ring requires at least 4 points
 			fail("Expected to throw Exception");
 		} catch (IllegalArgumentException iae) {
 			// expected
@@ -121,6 +122,7 @@ public class TestBaseGeometry extends TestGISBase {
 		Line line = new Line(bbox);
 		assertEquals(2, line.getNumPoints());
 		try {
+			// 2-point line bbox - ring requires at least 4 points
 			new LinearRing(bbox);
 			fail("Expected to throw Exception");
 		} catch (IllegalArgumentException iae) {
@@ -133,6 +135,7 @@ public class TestBaseGeometry extends TestGISBase {
 		line = new Line(bbox);
 		assertEquals(2, line.getNumPoints());
 		try {
+			// 2-point line bbox - ring requires at least 4 points
 			new LinearRing(bbox);
 			fail("Expected to throw Exception");
 		} catch (IllegalArgumentException iae) {
