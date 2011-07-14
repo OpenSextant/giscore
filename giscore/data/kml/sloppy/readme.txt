@@ -1,4 +1,4 @@
-Examples of KML that are edges cases (most do not conform to the KML XML Schema) but
+Examples of KML that are edges cases (most do not conform to the KML Specification or KML XML Schema).
 GIScore KML parser has been adapted to be more lax and accept all/most of the
 features in these examples as if they were valid KML. Treats KML as does Google Earth.
 
@@ -33,4 +33,12 @@ Well-formed XML documents (passes schema validation)
     * Inner ring not contained within outer ring
     * Inner rings in Polygon must not overlap with each other
     * Polygon inner ring points self-intersect.
+
+Non-standard ZIP file
+ bad-zip-timestamp.kmz (*)
+
+ (*) Fails to load in Java using java.util.zip.ZipFile but works in unzip/gzip/winzip + Google Earth
+     Works using java.util.zip.ZipInputStream
+     for file entry doc.kml, time stamp in the central/local directory is invalid
+     original source: http://www.rensovonk.com/huis.kmz
 
