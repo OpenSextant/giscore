@@ -281,3 +281,36 @@ XmlOutputStreamBase
 
 ------------------------------------------------------------------------------
 
+Release 0.6.1
+
+This release fixes minor bugs and enhancements in KML handling.
+
+Circle
+-cleanup visit(Circle circle) allowing to draw point if numberCirclePts = 1 or line if n = 2
+-added setNumberCirclePoints(int) to set circle point count per instance basis
+-rename getNumCirclePoints() to getNumberCirclePoints()
+
+DocumentStart
+-Added addNamespace() method
+
+KmlReader/KmlWriter
+-add support for inline Styles within StyleMaps for URL normalization
+
+KmlOutputStream
+-add support for gx:TimeStamp/gx:TimeSpan in LookAt/Camera elements
+
+Line
+-Added new constructor with Geodetic2DBounds argument
+
+NetworkLink
+add hashCode() + equals()
+
+Point
+-add constructor Point(Latitude lat, Longitude lon)
+
+UrlRef
+-add explicit check for relative URIs in constructor and throw MalformedURLException
+ vs allowing URI.toURL() to throw a Runtime Exception
+
+------------------------------------------------------------------------------
+
