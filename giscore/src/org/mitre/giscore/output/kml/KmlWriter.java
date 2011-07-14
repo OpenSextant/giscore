@@ -159,6 +159,7 @@ public class KmlWriter implements IGISOutputStream {
 	/**
 	 * Write contents from InputStream into file named localName in compressed KMZ file.
 	 * This must be called after entire KML for main document doc.kml is written.
+	 * Note the InputStream is closed upon exit of this method.
 	 *
 	 * @param is InputStream to write into the KMZ 
 	 * @param entryName the entry name for file as it will appear in the KMZ.
