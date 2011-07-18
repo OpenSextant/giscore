@@ -643,23 +643,21 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private void handleRegion(Common feature, QName name)
 			throws XMLStreamException {
 		TaggedMap region = new TaggedMap(LAT_LON_ALT_BOX);
-		boolean hasData = false;
 		while (true) {
 			XMLEvent next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
-				if (hasData) feature.setRegion(region);
+				// must have either Lod or LatLonAltBox name-value pairs
+				if (!region.isEmpty()) {
+					feature.setRegion(region);
+				}
 				return;
 			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				if (foundStartTag(se, LAT_LON_ALT_BOX)) {
-					if (handleTaggedData(se.getName(), region) != null) {
-						hasData = true;
-					}
+					handleTaggedData(se.getName(), region);
 				} else if (foundStartTag(se, LOD)) {
-					if (handleTaggedData(se.getName(), region) != null) {
-						hasData = true;
-					}
+					handleTaggedData(se.getName(), region);
 				}
 			}
 		}
