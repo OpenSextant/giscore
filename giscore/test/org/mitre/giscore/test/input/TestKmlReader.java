@@ -70,6 +70,21 @@ public class TestKmlReader extends TestCase {
 		TestKmlOutputStream.checkApproximatelyEquals(ptFeat, linkedFeatures2.get(1));
 	}
 
+	@Test
+	public void testLimitNetworkLinks() throws IOException {
+		File file = new File("data/kml/kmz/networklink/hier.kmz");
+		KmlReader reader = new KmlReader(file);
+		reader.setMaxLinkCount(1);
+		reader.readAll();
+
+		// without limit size=4 / with limit size=2
+		List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
+		assertEquals(2, linkedFeatures.size());
+
+		List<URI> networkLinks = reader.getNetworkLinks();
+		assertEquals(2, networkLinks.size());
+	}
+
     @Test
 	public void testUrlNetworkLink() throws IOException {
 		// test NetworkLink that contains viewFormat + httpQuery elements which get populated in URL
