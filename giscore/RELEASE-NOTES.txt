@@ -293,8 +293,14 @@ Circle
 DocumentStart
 -Added addNamespace() method
 
+KmlMetaDump
+-Added maxLinkCount argument to set limit of recursion when importing networklinks
+
 KmlReader/KmlWriter
 -add support for inline Styles within StyleMaps for URL normalization
+
+KmlReader
+-Added maxLinkCount field to limit recursion when importing networklinks
 
 KmlOutputStream
 -add support for gx:TimeStamp/gx:TimeSpan in LookAt/Camera elements
