@@ -11,7 +11,9 @@
             <description><![CDATA[<b type="C">geotype: </b>Point]]></description>
             <MultiGeometry>
                 <Point>
-                    <coordinates>-71.0,42.07</coordinates>
+                    <extrude>1</extrude>
+                    <altitudeMode>absolute</altitudeMode>
+                    <coordinates>-71.0,42.07,200</coordinates>
                 </Point>
             </MultiGeometry>
         </Placemark>
