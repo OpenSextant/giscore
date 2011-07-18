@@ -143,6 +143,7 @@ import java.util.*;
 public class KmlMetaDump implements IKml {
 
 	private boolean followLinks;
+	private int maxLinkCount = 500;
 	private File outPath;
 	private boolean outPathCheck;
 	private int features;
@@ -240,6 +241,10 @@ public class KmlMetaDump implements IKml {
 		this.followLinks = followLinks;
 	}
 
+	public void setMaxLinkCount(int maxLinkCount) {
+		this.maxLinkCount = maxLinkCount <= 0 ? Integer.MAX_VALUE : maxLinkCount;
+	}
+
 	public void setOutPath(File outPath) {
 		System.err.println("set output dir=" + outPath);
 		this.outPath = outPath;
@@ -308,6 +313,7 @@ public class KmlMetaDump implements IKml {
      */
 	private void processKmlSource(KmlReader reader, String name) {
         tagSet.clear(); // clear tags
+		reader.setMaxLinkCount(maxLinkCount);
         features = 0;
 		KmlWriter writer = getWriter(reader, name);
 		try {
@@ -343,14 +349,15 @@ public class KmlMetaDump implements IKml {
                     private URI last;
 					public boolean handleEvent(UrlRef ref, IGISObject gisObj) {
                         URI uri = ref.getURI();
-                        if (verbose && !uri.equals(last)) {
-							// first gisObj found from a new KML source 
-                            System.out.println("Check NetworkLink: " +
-                                    (ref.isKmz() ? ref.getKmzRelPath() : uri.toString()));
-                            System.out.println();
-                            last = uri;
+						if (verbose && !uri.equals(last)) {
+							// first gisObj found from a new KML source
+							System.out.println("Check NetworkLink: " +
+									(ref.isKmz() ? ref.getKmzRelPath() : uri.toString()));
+							System.out.println();
+
 							resetSourceState();
-                        }
+							last = uri;
+						}
 						checkObject(gisObj);
 						return true;
 					}
@@ -1336,6 +1343,9 @@ public class KmlMetaDump implements IKml {
 		System.out.println("     in target location will be skipped as NOT to overwrite anything.");
 		System.out.println("  -f Follow networkLinks: recursively loads content from NetworkLinks");
 		System.out.println("     and adds features to resulting statistics");
+		System.out.println("  -m<MaxNetworkLinks>");
+		System.out.println("     Sets max number of NetworkLinks to parse when -f option");
+		System.out.println("     is enabled. Set value=0 to disable. [Default=500]");
 		System.out.println("  -stdout Write KML output to STDOUT instead of writing files");
  		System.out.println("  -v Set verbose which dumps out features");
 		System.out.println("  -x Dump full set of extended data property names");
@@ -1356,6 +1366,8 @@ public class KmlMetaDump implements IKml {
 					app.setVerbose(true);
 				else if (arg.startsWith("-x"))
 					app.useSimpleFieldSet();
+				else if (arg.startsWith("-m") && arg.length() > 2)
+					app.setMaxLinkCount(Integer.parseInt(arg.substring(2)));
 				else if (arg.startsWith("-stdout"))
 					app.setUseStdout(true);
 				else usage();

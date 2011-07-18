@@ -60,6 +60,8 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 
 	private final List<URI> gisNetworkLinks = new ArrayList<URI>();
 
+	private int maxLinkCount = 500;
+
 	private Proxy proxy;
 
 	/**
@@ -198,6 +200,19 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
     @NonNull
 	public List<URI> getNetworkLinks() {
 		return gisNetworkLinks;
+	}
+
+	/**
+	 * Set maximum number of NetworkLinks that are allowed
+	 * to be processed when importing nested KML content.
+	 * @param maxLinkCount Maximum number of NetworkLinks allowed when
+	 * 	importing network links. Set <tt>maxLinkCount</tt> = 0 to disable
+	 * 	this check and allow infinite number of nested content. If
+	 * 	target KML source is deep-nested like a super-overlay then
+	 * 	disabling this check should be done with caution.
+	 */
+	public void setMaxLinkCount(int maxLinkCount) {
+		this.maxLinkCount = maxLinkCount <= 0 ? Integer.MAX_VALUE : maxLinkCount;
 	}
 
 	/**
@@ -343,7 +358,8 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	/**
 	 * Recursively imports KML objects from all visited NetworkLinks starting
 	 * from the base KML document.  This must be called after reader is closed
-	 * otherwise an IllegalArgumentException will be thrown.
+	 * otherwise an IllegalArgumentException will be thrown. Use {@link #setMaxLinkCount(int)}
+	 * to restrict number of nested network links.
 	 *
 	 * @param handler ImportEventHandler is called when a new GISObject is parsed
      * @return list of visited networkLink URIs if no callback handler is specified,
@@ -362,6 +378,10 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
         while (!networkLinks.isEmpty()) {
             URI uri = networkLinks.removeFirst();
             if (visited.add(uri)) {
+				if (visited.size() > maxLinkCount) {
+					log.warn("Max NetworkLink count exceeded: max links=" + maxLinkCount);
+					break;
+				}
                 InputStream is = null;
 				try {
                     UrlRef ref = new UrlRef(uri);
