@@ -203,13 +203,14 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	}
 
 	/**
-	 * Set maximum number of NetworkLinks that are allowed
-	 * to be processed when importing nested KML content.
+	 * Set maximum number of NetworkLinks that are allowed to be processed when
+	 * importing nested KML content. <P> Setting <tt>maxLinkCount</tt> = 0
+	 * disables this check allowing infinite number of nested content.
+	 * <BR><B>WARNING:</B> If target KML source is deep-nested like a
+	 * super-overlay then disabling this check should be done with caution.
 	 * @param maxLinkCount Maximum number of NetworkLinks allowed when
 	 * 	importing network links. Set <tt>maxLinkCount</tt> = 0 to disable
-	 * 	this check and allow infinite number of nested content. If
-	 * 	target KML source is deep-nested like a super-overlay then
-	 * 	disabling this check should be done with caution.
+	 * 	this check and allow infinite number of nested content.
 	 */
 	public void setMaxLinkCount(int maxLinkCount) {
 		this.maxLinkCount = maxLinkCount <= 0 ? Integer.MAX_VALUE : maxLinkCount;
@@ -329,7 +330,11 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	/**
 	 * Recursively imports KML objects from all visited NetworkLinks starting
      * from the base KML document.  This must be called after reader is closed
-     * otherwise an IllegalArgumentException will be thrown.
+     * otherwise an IllegalArgumentException will be thrown. <P>
+	 * <B>WARNING:</B> Use this method with caution. Loading a KML document
+	 * that is deeply nested like a super-overlay could load a large number
+	 * of KML NetworkLinks each with a large number of features. Use
+	 * {@link #setMaxLinkCount(int)} to restrict number of nested network links.
 	 *
 	 * @return list of visited networkLink URIs, empty list if
 	 * 			no reachable networkLinks are found, never null
@@ -343,7 +348,8 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 * Recursively imports KML objects from all visited NetworkLinks starting
 	 * from the base KML document.  Callback is provided to process each feature
 	 * as the networkLinks are parsed.  This must be called after reader is closed
-	 * otherwise an IllegalArgumentException will be thrown.
+	 * otherwise an IllegalArgumentException will be thrown. <P>
+	 * Use {@link #setMaxLinkCount(int)} to restrict number of nested network links.
 	 *
 	 * @param handler ImportEventHandler is called when each new GISObject is encountered
 	 * 			during parsing. This cannot be null.
@@ -358,8 +364,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	/**
 	 * Recursively imports KML objects from all visited NetworkLinks starting
 	 * from the base KML document.  This must be called after reader is closed
-	 * otherwise an IllegalArgumentException will be thrown. Use {@link #setMaxLinkCount(int)}
-	 * to restrict number of nested network links.
+	 * otherwise an IllegalArgumentException will be thrown.
 	 *
 	 * @param handler ImportEventHandler is called when a new GISObject is parsed
      * @return list of visited networkLink URIs if no callback handler is specified,
