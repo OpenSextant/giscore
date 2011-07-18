@@ -2167,10 +2167,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
     }
 
 	/**
-	 * Find the coordinates element and extract the fractional lat/lons/alts
-	 * into an array. The element name is used to spot if we leave the "end" of
-	 * the block. The stream will be positioned after the element when this
-	 * returns.
+	 * Find the coordinates element, extract the lat/lon/alt properties,
+	 * and store in a <tt>GeometryGroup</tt> object. The element name
+	 * is used to spot if we leave the "end" of the block. The stream
+	 * will be positioned after the element when this returns.
 	 *
 	 * @param qname  the qualified name of this event
      * @param geom GeomBase, never null
@@ -2183,14 +2183,21 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				break;
 			}
 			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
-				String localPart = event.asStartElement().getName().getLocalPart();
+				final QName name = event.asStartElement().getName();
+				String localPart = name.getLocalPart();
 				if (COORDINATES.equals(localPart)) {
 					String text = getNonEmptyElementText();
 					if (text != null) geom.points = parseCoord(text);
 				}
 				else if (ALTITUDE_MODE.equals(localPart)) {
-					// note: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
-					geom.altitudeMode = getNonEmptyElementText();
+					// Note: handle kml:altitudeMode and gx:altitudeMode
+					// if have both forms then use one from KML namespace as done in handleElementExtension()
+					if (geom.altitudeMode == null || ms_kml_ns.contains(name.getNamespaceURI()))
+						geom.altitudeMode = getNonEmptyElementText();
+					else {
+						// e.g. qName = {http://www.google.com/kml/ext/2.2}altitudeMode
+						log.debug("Skip duplicate value for " + name);
+					}
 				}
 				else if (EXTRUDE.equals(localPart)) {
 					if (isTrue(stream.getElementText()))
@@ -2206,10 +2213,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
     /**
-	 * Find the coordinates element and extract the fractional lat/lons/alts
-	 * into an array. The element name is used to spot if we leave the "end" of
-	 * the block. The stream will be positioned after the element when this
-	 * returns.
+	 * Find/parse the coordinates element, extract the lat/lon/alt properties,
+	 * and return in a <tt>GeometryGroup</tt> object. The element name is used
+	 * to spot if we leave the "end" of the block. The stream will be positioned
+	 * after the element when this returns.
 	 *
 	 * @param qname  the qualified name of this event
 	 * @return the list coordinates, empty list if no valid coordinates are found
@@ -2222,10 +2229,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
 	/**
-	 * Find the coordinates element for Point and extract the fractional
-	 * lat/lons/alts. The element name is used to spot if we leave the "end" of
-	 * the block. The stream will be positioned after the element when this
-	 * returns.
+	 * Find the coordinates element for Point and extract the lat/lon/alt
+	 * properties optionally with extrude and altitudeMode. The element name
+	 * is used to spot if we leave the "end" of the block. The stream will
+	 * be positioned after the element when this returns.
 	 *
 	 * @param name  the qualified name of this event
 	 * @return the coordinate (first valid coordinate if found), null if not
@@ -2250,14 +2257,15 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					// http://kml-samples.googlecode.com/svn/trunk/kml/ListStyle/radio-folder-vis.kml
 					if (text != null) rval = parsePointCoord(text);
 				}
-				 else if (ALTITUDE_MODE.equals(localPart)) {
+				else if (ALTITUDE_MODE.equals(localPart)) {
 					// Note: handle kml:altitudeMode and gx:altitudeMode
-					// if have both forms then uses old form from KML namespace
-					// TODO: consider reversing this and overriding kml:altitudeMode with gx:altitudeMode
-					// but would need any explicit checks for altitudeMode to handle extensions....
+					// if have both forms then use one from KML namespace as done in handleElementExtension()
 					if (altitudeMode == null || ms_kml_ns.contains(qName.getNamespaceURI()))
 						altitudeMode = getNonEmptyElementText();
-					else log.debug("Skip duplicate value for " + qName);
+					else {
+						// e.g. qName = {http://www.google.com/kml/ext/2.2}altitudeMode
+						log.debug("Skip duplicate value for " + qName);
+					}
 				}
 				else if (EXTRUDE.equals(localPart)) {
 					if (isTrue(stream.getElementText()))
