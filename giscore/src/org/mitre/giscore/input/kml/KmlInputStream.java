@@ -1964,7 +1964,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 log.debug("No valid geometries in MultiGeometry");
                 return null;
             }
-            // if only one geometry valid then drop collection and use single geometry
+            // if only one valid geometry then drop collection and use single geometry
             if (geometries.size() == 1) {
                 log.debug("Convert MultiGeometry to single geometry");
 				// todo: confirm that tesselate/extrude preserved
@@ -1972,7 +1972,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
             }
 			boolean allpoints = true;
 			for(Geometry geo : geometries) {
-				if (!(geo instanceof Point)) {
+				if (geo != null && geo.getClass() != Point.class) {
 					allpoints = false;
 					break;
 				}
