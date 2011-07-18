@@ -1871,7 +1871,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
     }
 
 	/**
-	 * Handle a lat lon box with north, south, east and west elements.
+	 * Handle a LatLonBox element with north, south, east and west elements.
 	 *
 	 * @param overlay
 	 * @param name  the qualified name of this event
@@ -1898,7 +1898,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                         } else if (EAST.equals(sename)) {
                             overlay.setEast(angle);
                         } else if (WEST.equals(sename)) {
-							// normalize west - value < -180 and add 360.
+							// normalize west: value < -180 and add 360.
 							// reverse hack/fix in KmlOutputStream for bug in Google Earth crossing IDL
 							// must be consistent with handling in KmlOutputStream.handleOverlay()
 							if (angle < -180) {
