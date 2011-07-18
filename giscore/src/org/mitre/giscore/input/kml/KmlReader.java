@@ -203,6 +203,14 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	}
 
 	/**
+	 * Get maximum number of NetworkLinks that are allowed to be processed when
+	 * importing nested KML content. Default=500.
+	 */
+	public int getMaxLinkCount() {
+		return maxLinkCount;
+	}
+
+	/**
 	 * Set maximum number of NetworkLinks that are allowed to be processed when
 	 * importing nested KML content. <P> Setting <tt>maxLinkCount</tt> = 0
 	 * disables this check allowing infinite number of nested content.
