@@ -655,9 +655,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				if (foundStartTag(se, LAT_LON_ALT_BOX)) {
-					handleTaggedData(se.getName(), region);
+					handleTaggedData(se.getName(), region); // LatLonAltBox
 				} else if (foundStartTag(se, LOD)) {
-					handleTaggedData(se.getName(), region);
+					handleTaggedData(se.getName(), region); // Lod
 				}
 			}
 		}
@@ -1798,11 +1798,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
     private TaggedMap handleTaggedData(QName name) throws XMLStreamException {
+		// handle Camera, LookAt, Icon, Link, and Url elements
 		return handleTaggedData(name, new TaggedMap(name.getLocalPart()));
 	}
 
     private boolean handleExtension(TaggedMap map, StartElement se, QName qname) throws XMLStreamException {
         String ns = qname.getNamespaceURI();
+		// tagged data used to store child text-content elements for following elements:
+		// Camera, LookAt, LatLonAltBox, Lod, Icon, Link, and Url
         // TODO: allow other extensions for TaggedMaps besides gx namespace ?
         if (ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
 			return handleElementExtension(map, (Element) getForeignElement(se), null);
