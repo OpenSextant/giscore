@@ -80,6 +80,7 @@ import java.util.*;
  *  <li> LatLonAltBox fails to satisfy Altitude constraint (minAlt <= maxAlt) [ATC 8.3] (error)
  *  <li> LatLonAltBox fails to satisfy constraint (altMode != clampToGround) [ATC 8.4] (warning)
  *  <li> LatLonAltBox fails to satisfy constraints [ATC 8] (warning)
+ *  <li> Max NetworkLink count exceeded (info)
  *  <li> minLodPixels must be less than maxLodPixels in Lod [ATC 39] (error)
  *  <li> Missing altitude in LookAt [ATC 38.3] (warning)
  *  <li> NetworkLink missing Link (info)
@@ -187,6 +188,7 @@ public class KmlMetaDump implements IKml {
 		System.out.println(url);
 		String name = url.getFile();
 		// TODO: if url ends with '/' and servlet/etc. responding with KML then need appropriate name to save locally
+		// name may be an empty string
 		int ind = name.lastIndexOf('/');
 		if (ind > 0) name = name.substring(ind + 1); // strip off path
 		processKmlSource(new KmlReader(url), name);
@@ -362,6 +364,9 @@ public class KmlMetaDump implements IKml {
 						return true;
 					}
 				});
+				// following condition already intercepted via log4j handler
+				//if (reader.isMaxLinkCountExceeded())
+					//addTag(":Max NetworkLink count exceeded", true);
 			}
 			resetSourceState();
 		}
@@ -381,6 +386,19 @@ public class KmlMetaDump implements IKml {
 	}
 
 	private KmlWriter getWriter(KmlReader reader, String name) {
+		if (useStdout) {
+			try {
+				KmlOutputStream kos = new KmlOutputStream(System.out, reader.getEncoding());
+				System.out.println();
+				return new KmlWriter(kos);
+			} catch (XMLStreamException e) {
+				System.err.println("*** ERROR: Failed to create stdout outputStream");
+                if (e.getCause() != null) e.getCause().printStackTrace();
+				else e.printStackTrace();
+				return null;
+			}
+		}
+
 		if (outPath != null) {
 			if (!outPathCheck) {
 				if (!outPath.exists() && !outPath.mkdirs()) {
@@ -391,9 +409,13 @@ public class KmlMetaDump implements IKml {
 				outPathCheck = true; // don't need to check again				
 			}
 			try {
-				String lowerCaseName = name.toLowerCase();
-				if (!lowerCaseName.endsWith(".kml") && !lowerCaseName.endsWith(".kmz"))
-					name += ".kml";
+				if (StringUtils.isBlank(name)) {
+					name = "out.kml";
+				} else {
+					String lowerCaseName = name.toLowerCase();
+					if (!lowerCaseName.endsWith(".kml") && !lowerCaseName.endsWith(".kmz"))
+						name += ".kml";
+				}
                 File out = new File(outPath, name);
                 /*
                 // check to not overwrite input file
@@ -417,18 +439,6 @@ public class KmlMetaDump implements IKml {
 			} catch (IOException e) {
 				System.err.println("*** ERROR: Failed to create output: " + name);
 				if (e.getCause() != null) e.getCause().printStackTrace();
-				else e.printStackTrace();
-			}
-		}
-
-		if (useStdout) {
-			try {
-				KmlOutputStream kos = new KmlOutputStream(System.out, reader.getEncoding());
-				System.out.println();
-				return new KmlWriter(kos);
-			} catch (XMLStreamException e) {
-				System.err.println("*** ERROR: Failed to create stdout outputStream");
-                if (e.getCause() != null) e.getCause().printStackTrace();
 				else e.printStackTrace();
 			}
 		}
