@@ -61,6 +61,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	private final List<URI> gisNetworkLinks = new ArrayList<URI>();
 
 	private int maxLinkCount = 500;
+	private boolean maxLinkCountExceeded;
 
 	private Proxy proxy;
 
@@ -225,6 +226,15 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	}
 
 	/**
+	 * Flag set true only if the max link count limit has been exceeded on
+	 * import of NetworkLinks after calling {@link #importFromNetworkLinks()}.
+	 * @return true if network link count reached, otherwise false
+	 */
+	public boolean isMaxLinkCountExceeded() {
+		return maxLinkCountExceeded;
+	}
+
+	/**
 	 * Reads next gis object from the stream.
 	 * @return the next gis object present in the source, or <code>null</code>
 	 * if there are no more objects present.
@@ -343,6 +353,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 * that is deeply nested like a super-overlay could load a large number
 	 * of KML NetworkLinks each with a large number of features. Use
 	 * {@link #setMaxLinkCount(int)} to restrict number of nested network links.
+	 * If limit exceeded then maxLinkCountExceeded will be set to <tt>true</tt>.
 	 *
 	 * @return list of visited networkLink URIs, empty list if
 	 * 			no reachable networkLinks are found, never null
@@ -358,6 +369,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 * as the networkLinks are parsed.  This must be called after reader is closed
 	 * otherwise an IllegalArgumentException will be thrown. <P>
 	 * Use {@link #setMaxLinkCount(int)} to restrict number of nested network links.
+	 * If limit exceeded then maxLinkCountExceeded will be set to <tt>true</tt>.
 	 *
 	 * @param handler ImportEventHandler is called when each new GISObject is encountered
 	 * 			during parsing. This cannot be null.
@@ -373,6 +385,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 * Recursively imports KML objects from all visited NetworkLinks starting
 	 * from the base KML document.  This must be called after reader is closed
 	 * otherwise an IllegalArgumentException will be thrown.
+	 * If limit exceeded then maxLinkCountExceeded will be set to <tt>true</tt>.
 	 *
 	 * @param handler ImportEventHandler is called when a new GISObject is parsed
      * @return list of visited networkLink URIs if no callback handler is specified,
@@ -381,8 +394,8 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	 */
 	private List<IGISObject> _importFromNetworkLinks(ImportEventHandler handler) {
 		if (iStream != null) throw new IllegalArgumentException("reader must first be closed");
+		if (gisNetworkLinks.isEmpty()) return Collections.emptyList();
 		List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
-		if (gisNetworkLinks.isEmpty()) return linkedFeatures;
 
 		// keep track of URLs visited to prevent revisits
 		Set<URI> visited = new HashSet<URI>();
@@ -393,6 +406,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
             if (visited.add(uri)) {
 				if (visited.size() > maxLinkCount) {
 					log.warn("Max NetworkLink count exceeded: max links=" + maxLinkCount);
+					maxLinkCountExceeded = true;
 					break;
 				}
                 InputStream is = null;
@@ -494,7 +508,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
         return proxy;
     }
 
-    /**
+	/**
      * ImportEventHandler interface used for callers to implement handling
      * of GISObjects encountered as NetworkLinks are parsed. If the callback
      * handleEvent() method returns false then recursion is aborted no more
