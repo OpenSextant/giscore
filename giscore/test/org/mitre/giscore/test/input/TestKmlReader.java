@@ -76,9 +76,11 @@ public class TestKmlReader extends TestCase {
 		KmlReader reader = new KmlReader(file);
 		reader.setMaxLinkCount(1);
 		reader.readAll();
+		assertFalse(reader.isMaxLinkCountExceeded());
 
 		// without limit size=4 / with limit size=2
 		List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
+		assertTrue(reader.isMaxLinkCountExceeded());
 		assertEquals(2, linkedFeatures.size());
 
 		List<URI> networkLinks = reader.getNetworkLinks();
