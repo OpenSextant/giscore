@@ -147,9 +147,11 @@ public abstract class Overlay extends Feature {
 	 * The approximately equals method checks all the fields for equality with
 	 * the exception of the geometry.
 	 * 
-	 * @param tf
+	 * @param tf Target feature to compare against
+	 * @return true if this and other are approximately equal
 	 */
-	public boolean approximatelyEquals(Feature tf) {
+    @Override
+    public boolean approximatelyEquals(Feature tf) {
 		if (!(tf instanceof Overlay))
 			return false;
 		if (!super.approximatelyEquals(tf))
@@ -157,6 +159,7 @@ public abstract class Overlay extends Feature {
 
 		Overlay other = (Overlay) tf;
 		EqualsBuilder eb = new EqualsBuilder();
+
         return eb.append(color, other.color).append(drawOrder, other.drawOrder)
                 .append(icon, other.icon).isEquals();
 	}
@@ -169,8 +172,8 @@ public abstract class Overlay extends Feature {
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
 		super.readData(in);
-		boolean hascolor = in.readBoolean();
-		if (hascolor) {
+		boolean hasColor = in.readBoolean();
+		if (hasColor) {
 			int rgb = in.readInt();
 			color = new Color(rgb);
 		}
@@ -198,5 +201,22 @@ public abstract class Overlay extends Feature {
     public String toString() {
 		return ToStringBuilder.reflectionToString(this,
 				ToStringStyle.MULTI_LINE_STYLE);
+	}
+
+    /**
+     * Compare if two Double objects are approximately equal.
+     * @param   a        the first <code>Double</code> to compare
+     * @param   b        the second <code>Double</code> to compare
+     * @return true if values are close, otherwise false.
+     */
+	protected static boolean closeDouble(Double a, Double b) {
+		if (a == null && b == null)
+			return true;
+		else if (a != null && b != null) {
+			double delta = Math.abs(a - b);
+			return delta < 1e-5; // delta < epsilon
+		} else {
+			return false;
+		}
 	}
 }

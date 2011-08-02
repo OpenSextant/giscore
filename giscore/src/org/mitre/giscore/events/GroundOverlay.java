@@ -278,7 +278,8 @@ public class GroundOverlay extends Overlay {
 	 * The approximately equals method checks all the fields for equality with
 	 * the exception of the geometry.
 	 * 
-	 * @param tf
+	 * @param tf Target feature to compare against
+	 * @return true if this and other are approximately equal
 	 */
 	public boolean approximatelyEquals(Feature tf) {
 		if (!(tf instanceof GroundOverlay))
@@ -287,12 +288,12 @@ public class GroundOverlay extends Overlay {
 			return false;
 
 		GroundOverlay gother = (GroundOverlay) tf;
-		boolean equals = closeFloat(altitude, gother.altitude)
-				&& closeFloat(east, gother.east)
-				&& closeFloat(north, gother.north)
-				&& closeFloat(west, gother.west)
-				&& closeFloat(south, gother.south)
-				&& closeFloat(rotation, gother.rotation);
+		boolean equals = closeDouble(altitude, gother.altitude)
+				&& closeDouble(east, gother.east)
+				&& closeDouble(north, gother.north)
+				&& closeDouble(west, gother.west)
+				&& closeDouble(south, gother.south)
+				&& closeDouble(rotation, gother.rotation);
 
 		if (!equals)
 			return false;
@@ -309,17 +310,6 @@ public class GroundOverlay extends Overlay {
 		else
 			return false;
         */
-	}
-
-	private boolean closeFloat(Double a, Double b) {
-		if (a == null && b == null)
-			return true;
-		else if (a != null && b != null) {
-			double delta = Math.abs(a - b);
-			return delta < 1e-5; // delta < epsilon
-		} else {
-			return false;
-		}
 	}
 
 	/* (non-Javadoc)
