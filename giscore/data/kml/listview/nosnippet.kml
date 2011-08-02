@@ -4,9 +4,9 @@
     <open>1</open>
     <Placemark>
       <name>My name</name>
+      <!-- Inhibit list view snippet of description -->
       <snippet />
       <description>My description for the balloon</description>
-      <!-- Inhibit list view snippet of description -->
       <Point>
         <coordinates>1,2</coordinates>
       </Point>
