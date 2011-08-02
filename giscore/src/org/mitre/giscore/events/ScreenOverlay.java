@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -127,7 +127,7 @@ public class ScreenOverlay extends Overlay {
 	 */
     public void setRotationAngle(Double rotationAngle) {
 		if (rotationAngle != null) {
-            double rotation = rotationAngle;
+            final double rotation = rotationAngle;
             if (Double.isNaN(rotation) || rotation < -180 || rotation > 180)
                 throw new IllegalArgumentException("Rotation out of range [-180,+180]: " + rotation);
         }
@@ -186,6 +186,5 @@ public class ScreenOverlay extends Overlay {
 		out.writeObject(size);
 		out.writeDouble(rotationAngle != null ? rotationAngle : 0.0);
 	}
-	
 	
 }
