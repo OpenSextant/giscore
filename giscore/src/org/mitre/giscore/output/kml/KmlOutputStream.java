@@ -76,6 +76,7 @@ import java.util.Queue;
  * <li> A few tags are not yet supported on features so are omitted from output:
  *  {@code address, Metadata, and phoneNumber}.
  * <li> Limited support for NetworkLinkControl.
+ * <li> Partial support for PhotoOverlay. Omits ViewVolume, ImagePyramid, and shape properties.
  * <li> Warns if shared styles appear in Folders. According to OGC KML specification
  *  shared styles shall only appear within a Document [OGC 07-147r2 section 6.4].
  *  </ul>
@@ -375,12 +376,29 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 					}
 				}
 
+                /*
+                    Camera | LookAt
+                      <element ref="kml:longitude" minOccurs="0"/>
+                      <element ref="kml:latitude" minOccurs="0"/>
+                      <element ref="kml:altitude" minOccurs="0"/>
+                      <element ref="kml:heading" minOccurs="0"/>
+                      <element ref="kml:tilt" minOccurs="0"/>
+                      <element ref="kml:roll" minOccurs="0"/> (*) // Camera only
+                      <element ref="kml:range" minOccurs="0"/> (*) // Lookat only
+                      <element ref="kml:altitudeModeGroup" minOccurs="0"/>
+                 */
+
 				handleTaggedElement(LONGITUDE, viewGroup);
 				handleTaggedElement(LATITUDE, viewGroup);
 				handleTaggedElement(ALTITUDE, viewGroup);
 				handleTaggedElement(HEADING, viewGroup);
 				handleTaggedElement(TILT, viewGroup);
-				handleTaggedElement(RANGE, viewGroup);
+                if (CAMERA.equals(tag)) {
+                    handleTaggedElement(ROLL, viewGroup); // Camera Only
+                }
+                if (LOOK_AT.equals(tag)) {
+				    handleTaggedElement(RANGE, viewGroup); // LookAt Only
+                }
 
 				// if altitudeMode is invalid then it will be omitted
 				AltitudeModeEnumType altMode = AltitudeModeEnumType.getNormalizedMode(viewGroup.get(ALTITUDE_MODE));
@@ -797,8 +815,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             handleNonNullSimpleElement(ROTATION, go.getRotation(), waitingList);
             if (waitingList.isEmpty()) writer.writeEndElement();
         } else if (overlay instanceof PhotoOverlay) {
-            // PhotoOverlay po = (PhotoOverlay) overlay;
-            // TODO: Fill in sometime
+            PhotoOverlay po = (PhotoOverlay) overlay;
+            // TODO: fill in other properties (ViewVolume, ImagePyramid, Point, shape)
+            handleNonNullSimpleElement(ROTATION, po.getRotation());
+            Geometry geom = po.getGeometry();
+            if (geom != null && geom.getClass() == Point.class)
+                visit((Point)geom); // handle Point
         } else if (overlay instanceof ScreenOverlay) {
             ScreenOverlay so = (ScreenOverlay) overlay;
             handleXY(OVERLAY_XY, so.getOverlay());
@@ -848,7 +870,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 						}
 					}
 					if (ICON.equals(elementName)) {
-						// photo overlay URLs may have entity substitution in URLs. restore any escaping done in UrlRef.escapeUri()
+						// photo overlay URLs may have entity substitution in URLs. Restore any escaping done in UrlRef.escapeUri()
+						// example: http://www.gigapan.org/get_ge_tile/46074/$[level]/$[y]/$[x]
+						// gets escaped as such: http://www.gigapan.org/get_ge_tile/46074/$%5Blevel%5D/$%5By%5D/$%5Bx%5D
 						try {
 							val = URLDecoder.decode(val, "UTF-8");
 						} catch (IllegalArgumentException e) {
@@ -985,8 +1009,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleGeometryAttributes(p);
                 //<extrude>0</extrude> <!-- boolean -->
                 //<altitudeMode>clampToGround</altitudeMode>
-                handleSimpleElement(COORDINATES, handleCoordinates(Collections
-                        .singletonList(p)));
+                handleSimpleElement(COORDINATES, handleSingleCoordinate(p));
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
                 throw new RuntimeException(e);
@@ -1007,9 +1030,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 					handleGeometryAttributes(circle);
 					//<extrude>0</extrude> <!-- boolean -->
 					//<altitudeMode>clampToGround</altitudeMode>
-					StringBuilder b = new StringBuilder();
-            		handleSingleCoordinate(b, circle);
-					handleSimpleElement(COORDINATES, b.toString());
+					handleSimpleElement(COORDINATES, handleSingleCoordinate(circle));
 					writer.writeEndElement();
 					return;
 				}
@@ -1052,7 +1073,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
     }
 
-	/**
+    /**
      * Output a multigeometry, represented by a geometry bag
      *
      * @param bag the geometry bag, ignored if <code>null</code> or empty
@@ -1214,6 +1235,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         for (Point point : coordinateList) {
             handleSingleCoordinate(b, point);
         }
+        return b.toString();
+    }
+
+    private String handleSingleCoordinate(Point point) {
+        StringBuilder b = new StringBuilder();
+        handleSingleCoordinate(b, point);
         return b.toString();
     }
 
