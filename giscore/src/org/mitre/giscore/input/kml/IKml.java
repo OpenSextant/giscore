@@ -111,6 +111,7 @@ public interface IKml {
 	static final String REFRESH_MODE = "refreshMode";
 	static final String REFRESH_VISIBILITY = "refreshVisibility";
 	static final String REGION = "Region";
+    static final String ROLL = "roll";
 	static final String ROTATION = "rotation";
 	static final String ROTATION_XY = "rotationXY";
 	static final String SCALE = "scale";
