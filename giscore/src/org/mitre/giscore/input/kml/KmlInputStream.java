@@ -1,4 +1,5 @@
 /****************************************************************************************
+/****************************************************************************************
  *  KmlInputStream.java
  *
  *  Created: Jan 26, 2009
@@ -71,7 +72,7 @@ import java.util.*;
  * </ul>
  * <p>
  * Supports KML Placemark, GroundOverlay, NetworkLink, Document, and Folder elements with
- * limited support for the lesser used NetworkLinkControl, ScreenOverlay, PhotoOverlay elements.
+ * limited/partial support for the lesser used NetworkLinkControl, ScreenOverlay, PhotoOverlay elements.
  * <p>
  * Geometry support includes: Point, LineString, LinearRing, Polygon, MultiGeometry, and Model(<A href="#Model">*</A>).
  * <p>
@@ -122,8 +123,8 @@ import java.util.*;
  * and GroundOverlay.
  * <p>
  * Limited support for {@code PhotoOverlay} which creates an basic overlay object
- * without retaining PhotoOverlay-specific properties (rotation, ViewVolume,
- * ImagePyramid, Point, shape, etc).
+ * with Point and rotation without retaining other PhotoOverlay-specific properties
+ * (ViewVolume, ImagePyramid, or shape).
  * <p>
  * <a name="Model">
  * Limited support for {@code Model} geometry type. Keeps only location and altitude
@@ -1692,11 +1693,27 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                                             ((ScreenOverlay) fs).setRotationAngle(rot);
                                         else
                                             log.warn("Invalid ScreenOverlay rotation value " + val);
-                                    } catch (NumberFormatException nfe) {
+                                    } catch (IllegalArgumentException nfe) {
                                         log.warn("Invalid ScreenOverlay rotation " + val + ": " + nfe);
                                     }
 							}
-						}
+						} else if (photo) {
+                            if (ROTATION.equals(localname)) {
+								String val = getNonEmptyElementText();
+                                if (val != null)
+                                    try {
+                                        double rot = Double.parseDouble(val);
+                                        if (Math.abs(rot) <= 180)
+                                            ((PhotoOverlay) fs).setRotation(rot);
+                                        else
+                                            log.warn("Invalid PhotoOverlay rotation value " + val);
+                                    } catch (IllegalArgumentException nfe) {
+                                        log.warn("Invalid PhotoOverlay rotation " + val + ": " + nfe);
+                                    }
+                            }
+                            // TODO: fill in other properties (ViewVolume, ImagePyramid, shape)
+                            // Note Point is populated above using setGeometry()
+                        }
 					} else if (network) {
 						if (REFRESH_VISIBILITY.equals(localname)) {
 							((NetworkLink) fs).setRefreshVisibility(isTrue(stream
