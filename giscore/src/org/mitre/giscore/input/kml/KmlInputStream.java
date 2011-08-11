@@ -1,5 +1,4 @@
 /****************************************************************************************
-/****************************************************************************************
  *  KmlInputStream.java
  *
  *  Created: Jan 26, 2009
@@ -1798,15 +1797,22 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					// e.g. http://www.google.com/kml/ext/2.2
 					// only add those element that are part of the KML namespace which we expect
 					String ns = qname.getNamespaceURI();
-					if (ns != null && !rootNs.equals(ns)) {
+                    if (ns != null && !rootNs.equals(ns)) {
                         if (!handleExtension(map, se, qname)) {
                             log.debug("Skip " + qname.getPrefix() + ":" + sename);
                         }
                         continue;
-					}
-				}
-				String value = getNonEmptyElementText();
+                    }
+                }
+                String value;
                 // ignore empty elements; e.g. <Icon><href /></Icon>
+                // except viewFormat tag in Link which is allowed to have empty string value
+                if (VIEW_FORMAT.equals(sename)) {
+                    value = stream.getElementText();
+                    if (value != null) value = value.trim();
+                } else {
+                    value = getNonEmptyElementText();
+                }
                 if (value != null)
                     map.put(sename, value);
 			}
