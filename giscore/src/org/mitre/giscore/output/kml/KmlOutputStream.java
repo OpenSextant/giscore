@@ -68,6 +68,9 @@ import java.util.Queue;
  * Following KML tags are supported: description, Document, ExtendedData,
  * Folder, Line, NetworkLink, Placemark, Point, Polygon, Schema, Snippet, etc.
  * <p/>
+ * If description contains HTML markup or special characters (e.g. '&', '<', '>', etc.)
+ * then a CDATA block will surround the unescaped text in generated KML output.
+ * <p/>
  * Elements such as atom:author, atom:link, xal:AddressDetails, and gx: extensions
  * must be added to the Feature object as {@link Element} objects.
  *
