@@ -1,16 +1,30 @@
+/*
+ *  KmlBaseReader.java
+ *
+ *  (C) Copyright MITRE Corporation 2009
+ *
+ *  The program is provided "as is" without any warranty express or implied, including
+ *  the warranty of non-infringement and the implied warranties of merchantability and
+ *  fitness for a particular purpose.  The Copyright owner will not be liable for any
+ *  damages suffered by you as a result of using the Program.  In no event will the
+ *  Copyright owner be liable for any special, indirect or consequential damages or
+ *  lost profits even if the Copyright owner has been advised of the possibility of
+ *  their occurrence.
+ *
+ */
 package org.mitre.giscore.input.kml;
 
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
+import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.events.NetworkLink;
 import org.mitre.giscore.events.TaggedMap;
 import org.slf4j.Logger;
@@ -19,7 +33,7 @@ import org.slf4j.LoggerFactory;
 /**
  * URL rewriting logic extracted from KmlReader handles low-level rewriting
  * URL href if relative link along with some other helper methods.
- *
+ * <p>
  * Makes best effort to resolve relative URLs but has some limitations such as if
  * KML has nested chain of network links with mix of KML and KMZ resources.
  * KMZ files nested inside KMZ files are not supported.
@@ -48,6 +62,13 @@ public abstract class KmlBaseReader implements IKml {
 	 */
 	private static final Map<String,String> httpQueryLabels = new HashMap<String,String>();
 
+    /**
+	 * names of supported viewFormat fields as of 2/19/09 in Google Earth 5.0.11337.1968 with KML 2.2
+	 * viewFormat names unchanged as of April 2011 with Google Earth 6.0.2.2074.
+	 * see http://code.google.com/apis/kml/documentation/kmlreference.html#link
+	 */
+	private static final Map<String,String> viewFormatLabels = new HashMap<String,String>();
+
 	static {
 		final String[] labels = {
 				"clientVersion", "5.2.1.1588",
@@ -57,31 +78,29 @@ public abstract class KmlBaseReader implements IKml {
 
 		for (int i = 0; i < labels.length; i += 2)
 			httpQueryLabels.put(labels[i], labels[i+1]);
-	}
 
-	/**
-	 * names of supported viewFormat fields as of 2/19/09 in Google Earth 5.0.11337.1968 with KML 2.2
-	 * viewFormat names unchanged as of April 2011 with Google Earth 6.0.2.2074.
-	 * see http://code.google.com/apis/kml/documentation/kmlreference.html#link
-	 */
-	private static final List<String> viewFormatLabels = Arrays.asList(
-			"bboxEast",
-			"bboxNorth",
-			"bboxSouth",
-			"bboxWest",
-			"horizFov",
-			"horizPixels",
-			"lookatHeading",
-			"lookatLat",
-			"lookatLon",
-			"lookatRange",
-			"lookatTerrainAlt",
-			"lookatTerrainLat",
-			"lookatTerrainLon",
-			"lookatTilt",
-			"terrainEnabled",
-			"vertFov",
-			"vertPixels");
+        final String[] viewLabels = {
+            "bboxEast",         "180",
+			"bboxNorth",        "90",
+			"bboxSouth",        "-45",
+			"bboxWest",         "-180",
+			"horizFov",         "60",
+			"horizPixels",      "917",
+			"lookatHeading",    "0",
+			"lookatLat",        "0",
+			"lookatLon",        "0",
+			"lookatRange",      "7190066.49",
+			"lookatTerrainAlt", "0",
+			"lookatTerrainLat", "0",
+			"lookatTerrainLon", "0",
+			"lookatTilt",       "0",
+			"terrainEnabled",   "1",
+			"vertFov",          "56.477",
+			"vertPixels",       "853" };
+
+        for (int i = 0; i < viewLabels.length; i += 2)
+			viewFormatLabels.put(viewLabels[i], viewLabels[i+1]);
+	}
 
 	/**
 	 * Pattern to match absolute URLs (e.g. http://host/file, ftp://host/file, file:/path/file, etc
@@ -103,17 +122,33 @@ public abstract class KmlBaseReader implements IKml {
 	 */
     @CheckForNull
 	protected URI getLinkHref(UrlRef parent, TaggedMap links) {
-		String href = links != null ? getTrimmedValue(links, HREF) : null;
+		String href = links != null ? trimToNull(links, HREF) : null;
 		if (href == null) return null;
 		URI uri = getLink(parent, href);
 		if (uri == null) return null;
 
-		String httpQuery = getTrimmedValue(links, HTTP_QUERY);
-		String viewFormat = getTrimmedValue(links, VIEW_FORMAT);
+		String httpQuery = trimToNull(links, HTTP_QUERY);
+		String viewFormat = trimToEmpty(links, VIEW_FORMAT); // allowed to be empty string
 		href = uri.toString();
 
+        /*
+        If you specify a <viewRefreshMode> of onStop and do not include the <viewFormat> tag in the file,
+        the following information is automatically appended to the query string:
+
+        BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth]
+
+        This information matches the Web Map Service (WMS) bounding box specification.
+        If you specify an empty <viewFormat> tag, no information is appended to the query string.
+        */
+        String viewRefreshMode = trimToNull(links, VIEW_REFRESH_MODE);
+        // System.out.printf("%nXXX: viewRefreshMode=%s viewFormat=%s%n%n", viewRefreshMode, viewFormat);
+        if ("onStop".equals(viewRefreshMode) && viewFormat == null) {
+            viewFormat = "BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth]";
+            // System.out.printf("XXX: new viewRefreshMode=%s viewFormat=%s%n%n", viewRefreshMode, viewFormat);
+        }
+
 		// if have NetworkLink href with no httpQuery/viewFormat then
-		// return href as-is otherwise modify href accordingly
+		// return href as-is otherwise modify href accordingly.
 		// Likewise if URI is local file then httpQuery and viewFormat are ignored
 		if (viewFormat == null && httpQuery == null || "file".equals(uri.getScheme())) {
 			// if URL was relative then getLink() rewrites URL to be absolute wrt to the baseURL
@@ -234,6 +269,7 @@ public abstract class KmlBaseReader implements IKml {
 
 	This information matches the Web Map Service (WMS) bounding box specification.
 	If you specify an empty <viewFormat> tag, no information is appended to the query string.
+
 	You can also specify a custom set of viewing parameters to add to the query string. If you supply a format string,
 	it is used instead of the BBOX information. If you also want the BBOX information, you need to add those parameters
 	along with the custom parameters.
@@ -248,7 +284,7 @@ public abstract class KmlBaseReader implements IKml {
 		* [horizFov], [vertFov] - horizontal, vertical field of view for the camera
 		* [horizPixels], [vertPixels] - size in pixels of the 3D viewer
 		* [terrainEnabled] - indicates whether the 3D viewer is showing terrain
-		*/
+        */
 
 		if (viewFormat != null) {
 			if (httpQuery != null)
@@ -260,15 +296,11 @@ public abstract class KmlBaseReader implements IKml {
 					int ind = viewFormat.indexOf(']', i + 1);
 					if (ind != -1) {
 						String key = viewFormat.substring(i + 1, ind);
-						if (viewFormatLabels.contains(key)) {
-							// insert "0" as replacement value for viewFormat fields (e.g. bboxWest, lookatLon. etc.)
+                        String value = viewFormatLabels.get(key);
+                        if (value != null) {
+                            // insert default values for viewFormat parameters
 							// see http://code.google.com/apis/kml/documentation/kmlreference.html#viewformat
-							// TODO: might want better defaults for fields such as {horiz/vert}Fov, {horiz/vert}Pixels, etc.
-							// otherwise might not get useful results.
-							if ("terrainEnabled".equals(key))
-								buf.append('1');
-							else
-								buf.append('0');
+                            buf.append(value);
 							i = ind;
 							continue;
 						}
@@ -295,6 +327,7 @@ public abstract class KmlBaseReader implements IKml {
 		}
 	}
 
+    @CheckForNull
 	protected URI getLink(UrlRef parent, String href) {
         // assumes href is not null nor zero length
         URI uri = null;
@@ -351,13 +384,26 @@ public abstract class KmlBaseReader implements IKml {
      * @param name
      * @return non-empty value if found and non-blank string otherwise <tt>null</tt>
      */
-    protected static String getTrimmedValue(TaggedMap map, String name) {
+    @Nullable
+    protected static String trimToNull(TaggedMap map, String name) {
         String val = map.get(name);
         if (val != null) {
             val = val.trim();
             if (val.length() == 0) return null;
         }
         return val;
+    }
+
+    /**
+     * Gets trimmed named value in TaggedMap or null if not found.
+     * @param map TaggedMap (never null)
+     * @param name
+     * @return trimmed value if found otherwise <tt>null</tt>
+     */
+    @Nullable
+    protected static String trimToEmpty(TaggedMap map, String name) {
+        String val = map.get(name);
+        return val != null ? val.trim() : null;
     }
 
     /**
@@ -369,7 +415,7 @@ public abstract class KmlBaseReader implements IKml {
     public static URI getLinkUri(NetworkLink link) {
         TaggedMap links = link.getLink();
         if (links != null) {
-            String href = getTrimmedValue(links, HREF);
+            String href = trimToNull(links, HREF);
             if (href != null)
                 try {
                     return new URI(href);
@@ -379,6 +425,36 @@ public abstract class KmlBaseReader implements IKml {
         }
 
         return null;
+    }
+
+    /**
+     * Override the default values for the HttpQuery parameters (e.g. clientVersion).
+     * These are appended to URLs when importing NetworkLinks.
+     * @param property Property name, not null
+     * @param value
+     * @throws IllegalArgumentException if property is not valid or value is empty or null.
+     */
+    public static void setHttpQuery(String property, String value) {
+        if (!httpQueryLabels.containsKey(property))
+            throw new IllegalArgumentException("invalid property: " + property);
+        if (StringUtils.isNotBlank(value))
+            throw new IllegalArgumentException("invalid property value: " + value);
+        httpQueryLabels.put(property, value);
+    }
+
+    /**
+     * Override the default values for the ViewFormat parameters (e.g. bboxEast).
+     * These are appended to URLs when importing NetworkLinks.
+     * @param property Property name, not null
+     * @param value
+     * @throws IllegalArgumentException if property is not valid or value is empty or null.
+     */
+    public static void setViewFormat(String property, String value) {
+        if (!viewFormatLabels.containsKey(property))
+            throw new IllegalArgumentException("invalid property: " + property);
+        if (StringUtils.isNotBlank(value))
+            throw new IllegalArgumentException("invalid property value: " + value);
+        viewFormatLabels.put(property, value);
     }
 
 }
