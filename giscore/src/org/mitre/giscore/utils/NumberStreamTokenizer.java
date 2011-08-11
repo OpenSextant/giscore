@@ -26,12 +26,14 @@ import java.io.Reader;
  * types of tokens that can be found are numbers, identifiers, quoted strings,
  * and different comment styles. The class can be used for limited processing
  * of source code of programming languages like Java, although it is nowhere
- * near a full parser.
+ * near a full parser. <P>
  *
- * Original source code from Apache Harmony 6.0M3 (apache-harmony-6.0-src-r991881).
  * NumberStreamTokenizer is a slightly modified version of java.io.StreamTokenizer
  * that handles exponents in numbers.
- * Modified by Jason Mathews August 2011.
+ * <br>
+ * Original source code from Apache Harmony 6.0M3 (apache-harmony-6.0-src-r991881).
+ * <P>
+ * Modified by Jason Mathews, August 2011.
  */
 public class NumberStreamTokenizer {
     /**
@@ -181,7 +183,7 @@ public class NumberStreamTokenizer {
     }
 */
 
-    /*
+    /**
      * Constructs a new {@code StreamTokenizer} with {@code r} as source reader.
      * The tokenizer's initial state is as follows:
      * <ul>
@@ -200,7 +202,6 @@ public class NumberStreamTokenizer {
      * @param r
      *            the source reader from which to parse tokens.
      */
-/*
     public NumberStreamTokenizer(Reader r) {
         this();
         if (r == null) {
@@ -208,7 +209,6 @@ public class NumberStreamTokenizer {
         }
         inReader = r;
     }
-*/
 
     /*
      * Create a tokenizer that parses the given String.
