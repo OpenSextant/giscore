@@ -281,7 +281,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 			// handle GroundOverlay, ScreenOverlay or PhotoOverlay href
 			Overlay o = (Overlay) gisObj;
 			TaggedMap icon = o.getIcon();
-			String href = icon != null ? getTrimmedValue(icon, HREF) : null;
+			String href = icon != null ? trimToNull(icon, HREF) : null;
 			if (href != null) {
 				// note PhotoOverlays may have entity replacements in URL
 				// see http://code.google.com/apis/kml/documentation/photos.html
