@@ -24,7 +24,7 @@ import java.awt.image.BufferedImage;
  * @author Jason Mathews, MITRE Corp.
  * Date: Mar 30, 2009 1:12:51 PM
  */
-public class TestKmlReader extends TestCase {
+public class TestKmlReader extends TestCase implements IKml {
 
 	/**
      * Test loading KMZ file with network link containing embedded KML
@@ -280,7 +280,7 @@ public class TestKmlReader extends TestCase {
 		assertTrue(obj instanceof GroundOverlay);
 		GroundOverlay o = (GroundOverlay)obj;
 		TaggedMap icon = o.getIcon();
-		String href = icon != null ? icon.get(IKml.HREF) : null;
+		String href = icon != null ? icon.get(HREF) : null;
 		assertNotNull(href);
 		//System.out.println(href);
 		UrlRef urlRef = new UrlRef(new URI(href));
@@ -296,8 +296,95 @@ public class TestKmlReader extends TestCase {
 			IOUtils.closeQuietly(is);
 		}
 	}
-    
-	/**
+
+    // create test KmlReader that allows access to getLinkHref() for testing
+    private static class StubKmlReader extends KmlReader {
+        StubKmlReader(File file) throws IOException {
+            super(file);
+        }
+
+        URI checkLink(UrlRef parent, TaggedMap links) {
+            return getLinkHref(parent, links);
+        }
+    }
+
+    @Test
+	public void testLinkHref() throws IOException {
+        String href = "http://127.0.0.1/kmlsvc";
+
+        final File file = new File("data/kml/Placemark/placemark.kml");
+        StubKmlReader reader = new StubKmlReader(file);
+
+        // If you specify a <viewRefreshMode> of onStop and do not include the <viewFormat> tag in the file,
+        // the following information is automatically appended to the query string: BBOX=[bboxWest],...
+        realTestLink(reader, new String[] { "href", href,
+                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP }, "BBOX=-180", null);
+        // expected -> http://127.0.0.1/kmlsvc?BBOX=-180,-45,180,90
+
+        // If you specify an empty <viewFormat> tag, no viewFormat information is appended to the query string.
+        realTestLink(reader, new String[] { "href", href,
+                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP, VIEW_FORMAT, ""}, null, "BBOX=");
+        // expected -> http://127.0.0.1/kmlsvc
+
+        realTestLink(reader, new String[] { "href", href,
+                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_REGION, REFRESH_MODE, REFRESH_MODE_ON_INTERVAL,
+                "httpQuery", "clientVersion=[clientVersion]&kmlVersion=[kmlVersion]&lang=[language]",
+                "viewFormat", "BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth]" }, "kmlVersion=2.2", "BBOX=0,0,0,0");
+        // expected -> http://127.0.0.1/kmlsvc?clientVersion=5.2.1.1588&kmlVersion=2.2&lang=en&BBOX=-180,-45,180,90
+
+        // test [name] strings in httpQuery/viewFormat that are not part of standard set - there are passed as-is
+        realTestLink(reader, new String[] { "href", href,
+                // viewRefreshMode=never (default), refreshMode=onChange (default)
+                "httpQuery", "foo=[bar]&lang=[language]" }, "foo=%5Bbar%5D", "BBOX=");
+        // expected -> http://127.0.0.1/kmlsvc?foo=%5Bbar%5D&lang=en
+        realTestLink(reader, new String[] { "href", href,
+                // viewRefreshMode=never (default), refreshMode=onChange (default)
+                "viewFormat", "foo=[bar]" }, "foo=%5Bbar%5D", "BBOX=");
+        // expected -> http://127.0.0.1/kmlsvc?foo=%5Bbar%5D
+
+        // file href will not have any viewFormat or httpQuery parameters appended to URL
+        realTestLink(reader, new String[] { "href", file.toURI().toASCIIString(),
+                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP, REFRESH_MODE, REFRESH_MODE_ON_EXPIRE,
+                "viewFormat", "BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth]" }, null, "BBOX=");
+        // expected -> file:/C:/projects/giscore/data/kml/Placemark/placemark.kml
+
+        realTestLink(reader, new String[] { "href", href,
+                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP, REFRESH_MODE, REFRESH_MODE_ON_CHANGE,
+                "viewFormat", "BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth]&terrain=[terrainEnabled]" }, "BBOX=", "BBOX=0,0,0,0");
+        // expected > http://127.0.0.1/kmlsvc?BBOX=-180,-45,180,90&terrain=1
+
+        // viewRefreshMode = never (default) - Ignore changes in the view. Also ignore <viewFormat> parameters, if any (sent as all 0's).
+        realTestLink(reader, new String[] { "href", href,
+                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_NEVER, REFRESH_MODE, REFRESH_MODE_ON_EXPIRE,
+                "viewFormat", "BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth]" }, "BBOX=0,0,0,0", null);
+        realTestLink(reader, new String[] { "href", href,
+                // viewRefreshMode=never (default), refreshMode=onChange (default)
+                "viewFormat", "BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth]" }, "BBOX=0,0,0,0", null);
+        // expected -> http://127.0.0.1/kmlsvc?BBOX=0,0,0,0
+
+        // override the default Link settings for target Google Earth client
+        KmlReader.setHttpQuery("clientVersion", "6.0.3.2197");
+        KmlReader.setViewFormat("lookatHeading", "5");
+        realTestLink(reader, new String[] { "href", href,
+                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP, "viewFormat", "lookatHeading=[lookatHeading]",
+                "httpQuery", "clientVersion=[clientVersion]" }, "clientVersion=6.0.3.2197&lookatHeading=5", null);
+        // expected -> http://127.0.0.1/kmlsvc?clientVersion=6.0.3.2197&lookatHeading=5
+    }
+
+    private void realTestLink(StubKmlReader reader, String[] values, String expectedSubstring, String notSubstring) {
+        TaggedMap links = new TaggedMap(LINK);
+        for (int i = 0; i < values.length; i += 2)
+			links.put(values[i], values[i+1]);
+        // System.out.println("XXX:" + links);
+        URI uri = reader.checkLink(null, links);
+        String href = uri.toString();
+        // System.out.println("XXX:" + href);
+        if (expectedSubstring != null) assertTrue(href.contains(expectedSubstring));
+        if (notSubstring != null) assertFalse(href.contains(notSubstring));
+        // System.out.println();
+    }
+
+    /**
      * Test IconStyle with KML from URL target with relative URL to icon
 	 * @throws Exception
 	 */
