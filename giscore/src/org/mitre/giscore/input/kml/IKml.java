@@ -111,7 +111,7 @@ public interface IKml {
 	static final String REFRESH_MODE = "refreshMode";
 	static final String REFRESH_VISIBILITY = "refreshVisibility";
 	static final String REGION = "Region";
-    static final String ROLL = "roll";
+	static final String ROLL = "roll";
 	static final String ROTATION = "rotation";
 	static final String ROTATION_XY = "rotationXY";
 	static final String SCALE = "scale";
@@ -139,12 +139,24 @@ public interface IKml {
 	static final String VALUE = "value";
 	static final String VIEW_BOUND_SCALE = "viewBoundScale";
 	static final String VIEW_FORMAT = "viewFormat";
+	static final String VIEW_FORMAT_DEFAULT = "BBOX=[bboxWest],[bboxSouth],[bboxEast],[bboxNorth]";
 	static final String VIEW_REFRESH_MODE = "viewRefreshMode";
 	static final String VIEW_REFRESH_TIME = "viewRefreshTime";
 	static final String VISIBILITY = "visibility";
 	static final String WEST = "west";
 	static final String WHEN = "when";
 	static final String WIDTH = "width";
+
+	// values for kml:viewRefreshMode
+	static final String VIEW_REFRESH_MODE_NEVER = "never"; // default
+	static final String VIEW_REFRESH_MODE_ON_STOP = "onStop";
+	static final String VIEW_REFRESH_MODE_ON_REQUEST = "onRequest";
+	static final String VIEW_REFRESH_MODE_ON_REGION = "onRegion";
+
+	// values for kml:refreshMode
+	static final String REFRESH_MODE_ON_CHANGE = "onChange"; // default
+	static final String REFRESH_MODE_ON_INTERVAL = "onInterval";
+	static final String REFRESH_MODE_ON_EXPIRE = "onExpire";
 
 	// Google KML extensions xmlns:gx="http://www.google.com/kml/ext/2.2"
 	static final String MULTI_TRACK = "MultiTrack";
