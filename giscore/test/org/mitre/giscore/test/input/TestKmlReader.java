@@ -328,9 +328,12 @@ public class TestKmlReader extends TestCase implements IKml {
         // expected -> http://127.0.0.1/kmlsvc
 
         // HREF with existing http query parameters - append parameters with '&' don't add another "?" to the URL
+        realTestLink(reader, new String[] { "href", href + "?",
+                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP }, "?BBOX=-180", null);
+        // expected -> http://127.0.0.1/kmlsvc?BBOX=-180,-45,180,90
         realTestLink(reader, new String[] { "href", href + "?foo=bar",
                 VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP }, "&BBOX=-180", null);
-        // expected -> XXX:http://127.0.0.1/kmlsvc?foo=bar&BBOX=-180,-45,180,90
+        // expected -> http://127.0.0.1/kmlsvc?foo=bar&BBOX=-180,-45,180,90
 
         // encodes whitespace
         realTestLink(reader, new String[] { "href", href,
