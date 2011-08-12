@@ -318,13 +318,24 @@ public class TestKmlReader extends TestCase implements IKml {
         // If you specify a <viewRefreshMode> of onStop and do not include the <viewFormat> tag in the file,
         // the following information is automatically appended to the query string: BBOX=[bboxWest],...
         realTestLink(reader, new String[] { "href", href,
-                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP }, "BBOX=-180", null);
+                // viewFormat = null
+                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP }, "?BBOX=-180", null);
         // expected -> http://127.0.0.1/kmlsvc?BBOX=-180,-45,180,90
 
         // If you specify an empty <viewFormat> tag, no viewFormat information is appended to the query string.
         realTestLink(reader, new String[] { "href", href,
                 VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP, VIEW_FORMAT, ""}, null, "BBOX=");
         // expected -> http://127.0.0.1/kmlsvc
+
+        // HREF with existing http query parameters - append parameters with '&' don't add another "?" to the URL
+        realTestLink(reader, new String[] { "href", href + "?foo=bar",
+                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP }, "&BBOX=-180", null);
+        // expected -> XXX:http://127.0.0.1/kmlsvc?foo=bar&BBOX=-180,-45,180,90
+
+        // encodes whitespace
+        realTestLink(reader, new String[] { "href", href,
+                "httpQuery", "p=foo bar" }, "p=foo%20bar", null);
+        // expected -> http://127.0.0.1/kmlsvc?p=foo%20bar
 
         realTestLink(reader, new String[] { "href", href,
                 VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_REGION, REFRESH_MODE, REFRESH_MODE_ON_INTERVAL,
