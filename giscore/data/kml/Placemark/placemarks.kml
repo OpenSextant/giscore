@@ -42,15 +42,15 @@ original: http://code.google.com/apis/kml/documentation/TimeStamp_example.kml
       </Point>
     </Placemark>
     <Placemark>
-      <styleUrl>#hiker-icon</styleUrl>
       <name>2</name>
+      <styleUrl>#hiker-icon</styleUrl>
       <Point>
         <coordinates>-122.536422,37.860303,0</coordinates>
       </Point>
     </Placemark>
     <Placemark>
-      <styleUrl>#hiker-icon</styleUrl>
       <name>3</name>
+      <styleUrl>#hiker-icon</styleUrl>
       <Point>
         <coordinates>-122.536688,37.860072,0</coordinates>
       </Point>
