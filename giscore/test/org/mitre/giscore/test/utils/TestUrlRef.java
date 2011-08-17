@@ -57,6 +57,11 @@ public class TestUrlRef extends TestCase {
         }
 	}
 
+    public void testIsAbsoluteUrl() {
+        assertTrue(UrlRef.isAbsoluteUrl("http://kml-samples.googlecode.com/svn/trunk/kml/Style/remote-style.kml"));
+        assertFalse(UrlRef.isAbsoluteUrl("remote-style.kml#style"));
+    }
+
 	public void testIsIdentifierWithWhitespace() {
 		assertFalse(UrlRef.isIdentifier("This has whitespace"));
 		assertTrue(UrlRef.isIdentifier("This has whitespace", true));
