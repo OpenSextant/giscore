@@ -412,7 +412,17 @@ public class KmlMetaDump implements IKml {
 				if (StringUtils.isBlank(name)) {
 					name = "out.kml";
 				} else {
-					String lowerCaseName = name.toLowerCase();
+                    URL baseUrl = reader.getBaseUrl();
+                    // check if name from URL with http parameters
+                    if (baseUrl != null && !"file".equals(baseUrl.getProtocol())) {
+                        int ind = name.indexOf('?');
+                        if (ind > 0) name = name.substring(0, ind);
+                    }
+                    // replace non-valid and whitespace chars with _'s then collapse sequences of _'s into single _
+                    // use inclusive vs exclusive regexp for valid file name.
+                    name = name.replaceAll("[^A-Za-z0-9()._+\\-!]+", "_").replaceAll("_+", "_");
+                    if (name.equals("_") || name.length() == 0) name = "out.kml"; // catch-all
+                    String lowerCaseName = name.toLowerCase();
 					if (!lowerCaseName.endsWith(".kml") && !lowerCaseName.endsWith(".kmz"))
 						name += ".kml";
 				}
