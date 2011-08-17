@@ -57,6 +57,7 @@ import java.util.*;
  *
  * Lists following conditions if found:
  * <ul>
+ *  <li> Absolute styleUrl (info)
  *  <li> Camera altitudeMode cannot be clampToGround [ATC 54.2] (warning)
  *  <li> comma found instead of whitespace between tuples (error)
  *  <li> Container end date is later than that of its ancestors (info)
@@ -95,6 +96,7 @@ import java.util.*;
  *  <li> Starting container tag with no matching end container (error)
  *  <li> StyleUrl must contain '#' with identifier reference (error)
  *  <li> StyleMap Pair must contain StyleUrl or Style
+ *  <li> StyleMap Pair with absolute StyleUrl (info)
  *  <li> StyleMap has inline Style (info)
  *  <li> Suspicious Pair id characters (warning)
  *  <li> Suspicious Schema id characters (warning)
@@ -757,9 +759,21 @@ public class KmlMetaDump implements IKml {
 					addTag(":StyleMap Pair must contain StyleUrl or Style");
 					if (verbose) System.out.printf(" Warning: StyleMap Pair %s must contain StyleUrl or Style%n", key);
 				} else {
-					if (styleUrl != null && styleUrl.startsWith("#") && !UrlRef.isIdentifier(styleUrl.substring(1))) {
-						addTag(":Suspicious StyleMap " + key + " URL characters");
-						if (verbose) System.out.printf(" Warning: StyleMap %s URL appears to contain invalid characters: %s%n", key, styleUrl);
+					if (styleUrl != null) {
+                        if (styleUrl.startsWith("#")) {
+                            if (!UrlRef.isIdentifier(styleUrl.substring(1))) {
+                                addTag(":Suspicious StyleMap " + key + " URL characters");
+                                if (verbose) System.out.printf(" Warning: StyleMap %s URL appears to contain invalid characters: %s%n", key, styleUrl);
+                            }
+                        } else {
+                            try {
+                                URI uri = new URI(styleUrl);
+                                if (uri.isAbsolute()) addTag(":StyleMap Pair with absolute StyleUrl", true);
+                            } catch (URISyntaxException e) {
+                                addTag(":Suspicious StyleMap " + key + " URL characters");
+                                if (verbose) System.out.printf(" Warning: StyleMap %s URL appears to contain invalid characters: %s%n", key, styleUrl);
+                            }
+                        }
 					}
 					if (pairStyle != null) {
 						addTag(":StyleMap has inline Style");
@@ -1056,6 +1070,12 @@ public class KmlMetaDump implements IKml {
 				// google earth allows this but this is an error wrt XML syntax
                 addTag(":StyleUrl must contain '#' with identifier reference", true);
 			} else {
+                try {
+                    URI uri = new URI(styleUrl);
+                    if (uri.isAbsolute()) addTag(":Absolute styleUrl", true);
+                } catch (URISyntaxException e) {
+                    // ignore
+                }
                 // check local reference: id reference should match NCName production in [Namespaces in XML]
 				// match xsd:ID type for "id" attribute. The base type of ID is NCName.
 				// Google Earth allows invalid characters in the "id" attribute and associated references
@@ -1075,7 +1095,7 @@ public class KmlMetaDump implements IKml {
                 // if start == stop then assume timestamp/when -- no way to determine if TimeSpan was used with start=end=timestamp
                 addTag(TIME_STAMP);
             } else {
-                // otherwise timespan used with start and/or end dates
+                // otherwise TimeSpan used with start and/or end dates
                 addTag(TIME_SPAN);
                 if (startTime != null && endTime != null && startTime.compareTo(endTime) > 0) {
                     // assertion: the begin value is earlier than the end value.
