@@ -20,7 +20,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -98,11 +97,6 @@ public abstract class KmlBaseReader implements IKml {
         for (int i = 0; i < viewLabels.length; i += 2)
 			viewFormatLabels.put(viewLabels[i], viewLabels[i+1]);
 	}
-
-	/**
-	 * Pattern to match absolute URLs (e.g. http://host/file, ftp://host/file, file:/path/file, etc
-	 */
-	protected static final Pattern absUrlPattern = Pattern.compile("^[a-zA-Z]+:");
 
 	public boolean isCompressed() {
 		return compressed;
@@ -338,8 +332,8 @@ public abstract class KmlBaseReader implements IKml {
 			// e.g. http://mw1.google.com/mw-earth-vectordb/kml-samples/gp/seattle/gigapxl/$[level]/r$[y]_c$[x].jpg
             href = UrlRef.escapeUri(href);            
 
-            // check if URL is absolute otherwise its relative to base URL if defined
-            if (absUrlPattern.matcher(href).lookingAt()) {
+            // check if URL is absolute otherwise it is relative to base URL if defined
+            if (UrlRef.isAbsoluteUrl(href)) {
                 // absolute URL (e.g. http://host/path/x.kml)
                 // uri = new URL(href).toURI();
                 uri = new URI(href);

@@ -86,6 +86,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.*;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -139,6 +140,11 @@ public final class UrlRef implements java.io.Serializable {
     // "GoogleEarth/5.2.1.1329(Windows;Microsoft Windows (5.1.2600.3);en-US;kml:2.2;client:Free;type:default)";
     // "GoogleEarth/5.2.1.1547(Windows;Microsoft Windows (5.1.2600.3);en-US;kml:2.2;client:Free;type:default)";
     public static final String USER_AGENT = "GoogleEarth/5.2.1.1588(Windows;Microsoft Windows (5.1.2600.3);en-US;kml:2.2;client:Free;type:default)";
+
+    /**
+	 * Pattern to match absolute URLs (e.g. http://host/file, ftp://host/file, file:/path/file, etc
+	 */
+	private static final Pattern absUrlPattern = Pattern.compile("^[a-zA-Z]+:");
 
     /**
      * Convert URL to internalized "kmz" URI with absolute URL of parent KMZ and the kmz
@@ -460,6 +466,16 @@ public final class UrlRef implements java.io.Serializable {
 			}
 		}
         return s;
+    }
+
+    /**
+     * Quick test if href is an absolute URL. This means
+     * the string matches the pattern /^[a-zA-Z]+:/
+     * @param href URL to test
+     * @return true if URL appears to be an absolute URL
+     */
+    public static boolean isAbsoluteUrl(String href) {
+        return absUrlPattern.matcher(href).lookingAt();
     }
     
     /**

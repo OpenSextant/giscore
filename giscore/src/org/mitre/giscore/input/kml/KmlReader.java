@@ -333,7 +333,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 			String href = style.getIconUrl();
 			// rewrite relative URLs with UrlRef to include context with parent source
 			// note: could also use URI.isAbsolute() to test rel vs abs URL
-			if (StringUtils.isNotBlank(href) && !absUrlPattern.matcher(href).lookingAt()) {
+			if (StringUtils.isNotBlank(href) && !UrlRef.isAbsoluteUrl(href)) {
 				//System.out.println("XXX: Relative iconStyle href: " + href);
 				URI uri = getLink(parent, href);
 				if (uri != null) {
