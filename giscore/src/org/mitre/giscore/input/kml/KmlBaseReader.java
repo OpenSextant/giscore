@@ -51,9 +51,6 @@ public abstract class KmlBaseReader implements IKml {
 	 */
 	protected boolean compressed;
 
-	/**
-	 * base URL of KML resource if passed in as a stream
-	 */
 	protected URL baseUrl;
 
 	/**
@@ -475,4 +472,12 @@ public abstract class KmlBaseReader implements IKml {
         viewFormatLabels.put(property, value);
     }
 
+    /**
+     * Get base URL of KML resource. May be null if URL is not applicable to
+     * the KML resource (e.g. internal byte stream).
+     */
+    @CheckForNull
+    public URL getBaseUrl() {
+        return baseUrl;
+    }
 }
