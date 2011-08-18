@@ -428,6 +428,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 feature.setName(getElementText(name));
                 return true;
             } else if (localname.equals(DESCRIPTION)) {
+                // description content with markup not enclosed in CDATA is invalid and cannot be parsed
                 feature.setDescription(getElementText(name));
 				return true;
             } else if (localname.equals(VISIBILITY)) {
@@ -500,7 +501,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
         return false;
 	}
 
-	/**
+    /**
 	 * @param cs
 	 * @param name  the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
@@ -839,19 +840,20 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			XMLGregorianCalendar o = fact.newXMLGregorianCalendar(datestr);
 			GregorianCalendar cal = o.toGregorianCalendar();
 			String type = o.getXMLSchemaType().getLocalPart();
-			boolean setTimeZone = true;
+			boolean useUTC = true;
 			if ("dateTime".equals(type)) {
 				// dateTime (YYYY-MM-DDThh:mm:ssZ)
 				// dateTime (YYYY-MM-DDThh:mm:sszzzzzz)
 				// Second form gives the local time and then the +/- conversion to UTC.
 				// Set timezone to UTC if other than dateTime formats with explicit timezones
-				// e.g. 2009-03-14T18:10:46+03:00, 2009-03-14T18:10:46-05:00
 				int ind = datestr.lastIndexOf('T') + 1; // index should never be -1 if type is dateTime
-				if (ind > 0 && (datestr.indexOf('+', ind) > 0 || datestr.indexOf('-', ind) > 0))
-					setTimeZone = false;
+				if (ind > 0 && (datestr.indexOf('+', ind) > 0 || datestr.indexOf('-', ind) > 0)) {
+                    // e.g. 2009-03-14T18:10:46+03:00 or 2009-03-14T18:10:46-05:00
+					useUTC = false;
+                }
 				// if timeZone is missing (e.g. 2009-03-14T21:10:50) then 'Z' is assumed and UTC is used
 			}
-			if (setTimeZone) cal.setTimeZone(UTC);
+			if (useUTC) cal.setTimeZone(UTC);
 			//else datestr += "*";
 			//System.out.format("%-10s\t%s%n", type, datestr);
 			/*
@@ -916,9 +918,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			e2.initCause(iae);
 			throw e2;
 		} catch (DatatypeConfigurationException ce) {
+            // NOTE: maybe JODA time would be be better generic time parser but would be a new dependency
 			// if unable to create factory then try brute force
 			log.error("Failed to get DatatypeFactory", ce);
-			// note this does not correctly handle dateTime (YYYY-MM-DDThh:mm:sszzzzzz) format
+			// note: this does not correctly handle dateTime (YYYY-MM-DDThh:mm:sszzzzzz) format
 			ParseException e = null;
 			for (DateFormat fmt : ms_dateFormats) {
 				try {
