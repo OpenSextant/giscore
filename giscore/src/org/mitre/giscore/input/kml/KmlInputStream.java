@@ -71,7 +71,8 @@ import java.util.*;
  * </ul>
  * <p>
  * Supports KML Placemark, GroundOverlay, NetworkLink, Document, and Folder elements with
- * limited/partial support for the lesser used NetworkLinkControl, ScreenOverlay, PhotoOverlay elements.
+ * limited/partial support for the lesser used NetworkLinkControl(<A href="#NetworkLinkControl">*</A>),
+ * ScreenOverlay, PhotoOverlay(<A href="#PhotoOverlay">*</A>) elements.
  * <p>
  * Geometry support includes: Point, LineString, LinearRing, Polygon, MultiGeometry, and Model(<A href="#Model">*</A>).
  * <p>
@@ -87,22 +88,23 @@ import java.util.*;
  * StyleMaps must specify {@code styleUrl} and/or inline Style. Nested StyleMaps are not supported.
  * <p>
  * If elements (e.g. {@code Style} or {@code StyleMap}) are out of order on input
- * that same order is preserved while enumerating elements in reading.
+ * that same order is preserved in the order of elements returned in {@link #read()}.
+ * For example, if Style/StyleMap elements appear incorrectly out of order such as
+ * after the firstFeature element then it will likewise be out of order. This will
+ * not be corrected by KmlWriter or KmlOutputStream, which assumes the caller writes
+ * those elements in a valid order. It should still work with Google Earth but it
+ * will not conform to the KML 2.2 spec.
  * <p>
  * <h4>Notes/Limitations:</h4>
  * <p>
  * The actual handling of containers and other features has some uniform
  * methods. Every feature in KML can have a set of common attributes and
- * additional elements. The
- * {@link #handleProperties(Common,XMLEvent,QName)} method takes care of
- * these. This returns {@code false} if the current element isn't a
- * common element, which allows the caller to handle the code.
- * <p>
+ * additional elements.
  * Geometry is handled by common code as well. All coordinates in KML are
  * transmitted as tuples of two or three elements. The formatting of these is
  * consistent and is handled by {@link #parseCoordinates(QName)}. {@code Tessellate},
- * {@code extrude}, and {@code altitudeMode} properties are maintained on the associated
- * Geometry.
+ * {@code extrude}, and {@code altitudeMode} properties are maintained on the
+ * associated Geometry.
  * <p>
  * <a name="ExtendedData">
  * Handles ExtendedData with Data/Value or SchemaData/SimpleData elements but does not handle the non-KML namespace
@@ -121,16 +123,18 @@ import java.util.*;
  * is handle specially and stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry,
  * and GroundOverlay.
  * <p>
+ * <a name="PhotoOverlay">
  * Limited support for {@code PhotoOverlay} which creates an basic overlay object
  * with Point and rotation without retaining other PhotoOverlay-specific properties
- * (ViewVolume, ImagePyramid, or shape).
+ * (ViewVolume, ImagePyramid, or shape).</a>
  * <p>
  * <a name="Model">
  * Limited support for {@code Model} geometry type. Keeps only location and altitude
  * properties.</a>
  * <p>
+ * <a name="NetworkLinkControl">
  * Limited support for {@code NetworkLinkControl} which creates an object wrapper for the link
- * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.
+ * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.</a>
  * <p>
  * Allows timestamps to omit seconds field as does Google Earth. Strict XML schema validation requires
  * seconds field in the dateTime ({@code YYYY-MM-DDThh:mm:ssZ}) format but Google Earth is lax in its rules.
