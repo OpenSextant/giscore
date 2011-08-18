@@ -260,7 +260,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				stream.nextEvent(); // Consume event
 			} else if (StringUtils.isNotBlank(nstr) && !ms_kml_ns.contains(nstr)
                     && (ms_features.contains(localPart) || ms_containers.contains(localPart))) {
-                // KML namespace not registered
+                // root element non-kml (e.g. GroundOverlay) and namespace is not registered.
+                // Add it otherwise will be parsed as foreign elements
                 log.info("Registering unrecognized KML namespace: " + nstr);
                 ms_kml_ns.add(nstr);
             }
