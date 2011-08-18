@@ -153,6 +153,7 @@ public class KmlMetaDump implements IKml {
 	private boolean verbose;
 
 	private boolean inheritsTime;
+    private boolean autoGenerateUniqueNames;
 	private Date containerStartDate;
 	private Date containerEndDate;
 	private final Stack<ContainerStart> containers = new Stack<ContainerStart>();
@@ -262,6 +263,14 @@ public class KmlMetaDump implements IKml {
 		this.useStdout = useStdout;
 	}
 
+    public boolean isAutoGenerateUniqueNames() {
+        return autoGenerateUniqueNames;
+    }
+
+    public void setAutoGenerateUniqueNames(boolean autoGenerateUniqueNames) {
+        this.autoGenerateUniqueNames = autoGenerateUniqueNames;
+    }
+
 	private void addTag(String tag) {
 		addTag(tag, false);
 	}
@@ -363,6 +372,8 @@ public class KmlMetaDump implements IKml {
 							last = uri;
 						}
 						checkObject(gisObj);
+                        // Note imported network links are not dumped as KML
+                        // if (writer != null && useStdout) writer.write(gisObj);
 						return true;
 					}
 				});
@@ -444,8 +455,27 @@ public class KmlMetaDump implements IKml {
                 }
                 */
                 if (out.exists()) {
-                    System.err.println("*** WARNING: target file " + out + " exists");
-                    return null;
+                    if (autoGenerateUniqueNames) {
+                        File origFile = out;
+                        int ind = name.lastIndexOf('.');
+                        String base, ext;
+                        if (ind > 0) {
+                            base = name.substring(0,ind);
+                            ext = name.substring(ind);
+                        } else {
+                            base = name;
+                            ext = ".kml";
+                        }
+                        // generate pseudo-random filename with unique prefix
+                        for (int suffixMod = 10; ; suffixMod *= 2) {
+                            out = new File(outPath, base + "-" + System.currentTimeMillis() % suffixMod + ext);
+                            if (!out.exists()) break;
+                        }
+                        System.err.printf("*** INFO: target output file %s exists. Using %s%n", origFile, out.getName());
+                    } else {
+                        System.err.println("*** WARNING: target output file " + out + " exists");
+                        return null;
+                    }
                 }
                 return new KmlWriter(out, reader.getEncoding());
 			} catch (IOException e) {
@@ -1378,6 +1408,8 @@ public class KmlMetaDump implements IKml {
 		System.out.println("     Writes KML/KMZ to file in specified directory using");
 		System.out.println("     same base file as original file.  Files with same name");
 		System.out.println("     in target location will be skipped as NOT to overwrite anything.");
+        System.out.println("     Use -a option with -o to generate unique file names.");
+        System.out.println("  -a Auto-generate unique names when writing KML output to directory");
 		System.out.println("  -f Follow networkLinks: recursively loads content from NetworkLinks");
 		System.out.println("     and adds features to resulting statistics");
 		System.out.println("  -m<MaxNetworkLinks>");
@@ -1401,11 +1433,13 @@ public class KmlMetaDump implements IKml {
 					app.setFollowLinks(true);
 				else if (arg.startsWith("-v"))
 					app.setVerbose(true);
+                else if (arg.startsWith("-a"))
+                    app.setAutoGenerateUniqueNames(true);
 				else if (arg.startsWith("-x"))
 					app.useSimpleFieldSet();
 				else if (arg.startsWith("-m") && arg.length() > 2)
 					app.setMaxLinkCount(Integer.parseInt(arg.substring(2)));
-				else if (arg.startsWith("-stdout"))
+				else if (arg.equals("-stdout"))
 					app.setUseStdout(true);
 				else usage();
 			} else
@@ -1445,7 +1479,7 @@ public class KmlMetaDump implements IKml {
 		app.dumpStats();
     }
 
-	private class MetaAppender extends AppenderSkeleton {
+    private class MetaAppender extends AppenderSkeleton {
 
 		@Override
 		protected void append(LoggingEvent event) {
