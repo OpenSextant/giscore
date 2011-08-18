@@ -59,7 +59,12 @@ public class TestUrlRef extends TestCase {
 
     public void testIsAbsoluteUrl() {
         assertTrue(UrlRef.isAbsoluteUrl("http://kml-samples.googlecode.com/svn/trunk/kml/Style/remote-style.kml"));
+        assertTrue(UrlRef.isAbsoluteUrl("http://[1080:0:0:0:8:800:200C:417A]/index.html")); // ipv6 URL
+        assertTrue(UrlRef.isAbsoluteUrl("file:///c:/data/test.kml"));
+
         assertFalse(UrlRef.isAbsoluteUrl("remote-style.kml#style"));
+        assertFalse(UrlRef.isAbsoluteUrl("file.kml#id"));
+        assertFalse(UrlRef.isAbsoluteUrl("file.query?url=http://s.com/foo"));
     }
 
 	public void testIsIdentifierWithWhitespace() {
