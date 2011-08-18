@@ -231,14 +231,17 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		try {
 			XMLEvent ev = stream.peek();
             // Find first StartElement in stream
-			while(ev != null && ! ev.isStartElement()) {
+			while (ev != null && ! ev.isStartElement()) {
 				ev = stream.nextEvent(); // Actually advance
-                if (ev != null && ev.isStartDocument()) {
-                    StartDocument doc = (StartDocument)ev;
-                    if (doc.encodingSet())
-						setEncoding(doc.getCharacterEncodingScheme()); // default UTF-8
+                if (ev != null) {
+                     if (ev.isStartDocument()) {
+                        // first element will be the XML header as StartDocument whether explicit or not
+                        StartDocument doc = (StartDocument)ev;
+                        if (doc.encodingSet())
+                            setEncoding(doc.getCharacterEncodingScheme()); // default UTF-8
+                    }
+                    ev = stream.peek();
                 }
-				ev = stream.peek();
 			}
             if (ev == null) return;
 			// The first start element may be a KML element, which isn't
@@ -247,14 +250,20 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			StartElement first = ev.asStartElement();
 			QName qname = first.getName();
 			String nstr = qname.getNamespaceURI();
-			if ("kml".equals(qname.getLocalPart())) {
+            final String localPart = qname.getLocalPart();
+            if ("kml".equals(localPart)) {
                 if (StringUtils.isNotBlank(nstr) && !ms_kml_ns.contains(nstr)) {
                     // KML namespace not registered
                     log.info("Registering unrecognized KML namespace: " + nstr);
                     ms_kml_ns.add(nstr);
                 }
 				stream.nextEvent(); // Consume event
-			}
+			} else if (StringUtils.isNotBlank(nstr) && !ms_kml_ns.contains(nstr)
+                    && (ms_features.contains(localPart) || ms_containers.contains(localPart))) {
+                // KML namespace not registered
+                log.info("Registering unrecognized KML namespace: " + nstr);
+                ms_kml_ns.add(nstr);
+            }
 			@SuppressWarnings("unchecked")
 			Iterator<Namespace> niter = first.getNamespaces();
 			while(niter.hasNext()) {
