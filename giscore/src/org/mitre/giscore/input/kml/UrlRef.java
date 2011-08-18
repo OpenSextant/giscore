@@ -144,7 +144,7 @@ public final class UrlRef implements java.io.Serializable {
     /**
 	 * Pattern to match absolute URLs (e.g. http://host/file, ftp://host/file, file:/path/file, etc
 	 */
-	private static final Pattern absUrlPattern = Pattern.compile("^[a-zA-Z]+:");
+	private static final Pattern absUrlPattern = Pattern.compile("^[a-zA-Z]+://");
 
     /**
      * Convert URL to internalized "kmz" URI with absolute URL of parent KMZ and the kmz
@@ -470,7 +470,7 @@ public final class UrlRef implements java.io.Serializable {
 
     /**
      * Quick test if href is an absolute URL. This means
-     * the string matches the pattern /^[a-zA-Z]+:/
+     * the string matches the regular expression ^[a-zA-Z]+://
      * @param href URL to test
      * @return true if URL appears to be an absolute URL
      */
@@ -532,6 +532,7 @@ public final class UrlRef implements java.io.Serializable {
                     // if '%' appears it must be followed by 2 hex-decimal chars
                     break;
                 default:
+                    // characters e.g. A-Za-z0-9_-+:?/ are not encoded
                     buf.append(c);
             }
         }
