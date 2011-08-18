@@ -264,7 +264,7 @@ public final class UrlRef implements java.io.Serializable {
             return getInputStream(url, proxy);
 
         String kmzPath = kmzRelPath;
-        // if whitespace appears in networkLink URLs then it's escaped to %20
+        // if whitespace appears in networkLink URLs then it's commonly escaped to %20
         // so need to convert back to spaces to match exactly how it is stored in KMZ file
         final boolean isEscaped = kmzPath.contains("%20");
         if (isEscaped) {
@@ -368,6 +368,7 @@ public final class UrlRef implements java.io.Serializable {
         // Note: just looking at file extension may not be enough to indicate its KMZ vs KML (misnamed, etc.)
         // proper way might be to use PushbackInputStream and check first characters of stream.
         // KMZ/ZIP header should be PK\003\004
+        // In rare occasions a KML file ends with ".kmz" file extension -- Google Earth allows this.
         String contentType = conn.getContentType();
         // contentType could end with mime parameters (e.g. application/vnd.google-earth.kmz; encoding=...) 
         if (contentType != null && contentType.startsWith(MIME_TYPE_KMZ) || url.getFile().toLowerCase().endsWith(".kmz")) {

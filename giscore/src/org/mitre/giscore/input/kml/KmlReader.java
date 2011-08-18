@@ -412,6 +412,8 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
                 InputStream is = null;
 				try {
                     UrlRef ref = new UrlRef(uri);
+                    // NOTE: if network link is a KML file with a .kmz extension or vice versa then it may fail.
+                    // Determination also uses the HTTP mime type for the resource.
                     is = ref.getInputStream(proxy);
                     if (is == null) continue;
                     int oldSize = networkLinks.size();
