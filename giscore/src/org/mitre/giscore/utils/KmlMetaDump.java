@@ -1065,17 +1065,14 @@ public class KmlMetaDump implements IKml {
               <styleUrl>eateries.kml#del my-lunch-spot</styleUrl>
               <styleUrl>root://styleMaps#default+nicon=0x307+hicon=0x317</styleUrl> KML 2.0 style
             */
+            if (UrlRef.isAbsoluteUrl(styleUrl)) {
+                addTag(":Absolute styleUrl", true);
+            }
             int ind = styleUrl.indexOf('#');
 			if (ind == -1) {
 				// google earth allows this but this is an error wrt XML syntax
                 addTag(":StyleUrl must contain '#' with identifier reference", true);
 			} else {
-                try {
-                    URI uri = new URI(styleUrl);
-                    if (uri.isAbsolute()) addTag(":Absolute styleUrl", true);
-                } catch (URISyntaxException e) {
-                    // ignore
-                }
                 // check local reference: id reference should match NCName production in [Namespaces in XML]
 				// match xsd:ID type for "id" attribute. The base type of ID is NCName.
 				// Google Earth allows invalid characters in the "id" attribute and associated references
