@@ -428,8 +428,16 @@ public abstract class KmlBaseReader implements IKml {
      * Override the default values for the HttpQuery parameters (e.g. clientVersion).
      * These are appended to URLs when importing NetworkLinks.
      * <P>
-     * Use cautiously and set only legal values that a Google Earth client could actually send.
+     * Valid values to set are the following: <ul>
+     * <li> clientVersion
+     * <li> kmlVersion
+     * <li> clientName
+     * <li> language
+     * </ul>
+     * <P>
+     * Use cautiously and set only legal values that a Google Earth client could actually send.<BR>
      * For example, do not set KML version to value out of range or non-decimal values, etc.
+     * because it could have unanticipated consequences.
      * <P>
      * See <a href="http://code.google.com/apis/kml/documentation/kmlreference.html#link">
      * <i>http://code.google.com/apis/kml/documentation/kmlreference.html#link</i></a>
@@ -449,8 +457,29 @@ public abstract class KmlBaseReader implements IKml {
      * Override the default values for the ViewFormat parameters (e.g. bboxEast).
      * These are appended to URLs when importing NetworkLinks.
      * <P>
-     * Use cautiously and set only legal values that a Google Earth client could actually send.
+     * Valid values to set are the following: <ul>
+     * <li>bboxEast
+     * <li>bboxNorth
+     * <li>bboxSouth
+     * <li>bboxWest
+     * <li>horizFov
+     * <li>horizPixels
+     * <li>lookatHeading
+     * <li>lookatLat
+     * <li>lookatLon
+     * <li>lookatRange
+     * <li>lookatTerrainAlt
+     * <li>lookatTerrainLat
+     * <li>lookatTerrainLon
+     * <li>lookatTilt
+     * <li>terrainEnabled
+     * <li>vertFov
+     * <li>vertPixels
+     * </ul>
+     * <P>
+     * Use cautiously and set only legal values that a Google Earth client could actually send.<BR>
      * For example, do not set bounding box to values out of range or non-decimal values, etc.
+     * because it could have unanticipated consequences.
      * <P>
      * See <a href="http://code.google.com/apis/kml/documentation/kmlreference.html#link">
      * <i>http://code.google.com/apis/kml/documentation/kmlreference.html#link</i></a>
