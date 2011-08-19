@@ -162,4 +162,24 @@ public interface IKml {
 	static final String MULTI_TRACK = "MultiTrack";
 	static final String TRACK = "Track";
 
+    // ViewFormat parameters
+    // see http://code.google.com/apis/kml/documentation/kmlreference.html#link
+    static final String BBOX_EAST = "bboxEast";
+    static final String BBOX_NORTH = "bboxNorth";
+    static final String BBOX_SOUTH = "bboxSouth";
+    static final String BBOX_WEST = "bboxWest";
+    static final String HORIZ_FOV = "horizFov";
+    static final String HORIZ_PIXELS = "horizPixels";
+    static final String LOOKAT_HEADING = "lookatHeading";
+    static final String LOOKAT_LAT = "lookatLat";
+    static final String LOOKAT_LON = "lookatLon";
+    static final String LOOKAT_RANGE = "lookatRange";
+    static final String LOOKAT_TERRAIN_ALT = "lookatTerrainAlt";
+    static final String LOOKAT_TERRAIN_LAT = "lookatTerrainLat";
+    static final String LOOKAT_TERRAIN_LON = "lookatTerrainLon";
+    static final String LOOKAT_TILT = "lookatTilt";
+    static final String TERRAIN_ENABLED = "terrainEnabled";
+    static final String VERT_FOV = "vertFov";
+    static final String VERT_PIXELS = "vertPixels";
+
 }
