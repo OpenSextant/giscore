@@ -13,9 +13,11 @@ http://kml-samples.googlecode.com/svn/trunk/kml/Style/styles.kml
       </ListStyle>
     </Style>
     <Style id="blueIcons">
-      <IconStyle>
-        <color>ffff0000</color>
-      </IconStyle>
+	<IconStyle>
+	    <Icon>
+		<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+	     </Icon>
+	</IconStyle>
     </Style>
   </Document>
 </kml>
