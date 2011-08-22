@@ -638,41 +638,7 @@ public class KmlMetaDump implements IKml {
 			// all in-sequence styles + styles should be part of the container they're contained in
 			checkStyle((StyleSelector)gisObj, true);
         } else if (gisObj instanceof Overlay) {
-            Overlay ov = (Overlay) gisObj;
-            addTag(ov.getClass());
-            if (ov instanceof GroundOverlay) {
-                GroundOverlay go = (GroundOverlay) ov;
-                if (go.getNorth() != null || go.getSouth() != null
-                        || go.getEast() != null || go.getWest() != null
-                        || go.getRotation() != null) {
-                    addTag(IKml.LAT_LON_BOX);
-					if (go.getEast() != null && go.getWest() != null) {
-						if (go.crossDateLine()) {
-							addTag(":GroundOverlay spans -180/+180 longitude line", true);
-							// e.g. west >= 0 && east < 0
-							// note associated bug:
-							// http://code.google.com/p/earth-issues/issues/detail?id=1145
-						}
-						// verify constraint: kml:east > kml:west
-						// Reference: OGC-07-147r2: cl. 11.3.2 ATC 11: LatLonBox
-						else if (go.getEast() <= go.getWest())
-							addTag(":GroundOverlay fails to satisfy east > west constraint [ATC 11]", true);
-					}
-					if (go.getNorth() != null && go.getSouth() != null && go.getNorth() <= go.getSouth())
-						addTag(":GroundOverlay fails to satisfy North > South constraint [ATC 11]", true);
-				}
-				AltitudeModeEnumType altMode = go.getAltitudeMode();
-				if (altMode == AltitudeModeEnumType.relativeToSeaFloor || altMode == AltitudeModeEnumType.clampToSeaFloor)
-					addTag("gx:altitudeMode");
-            }
-            if (ov.getIcon() == null)
-                addTag(":Overlay missing icon", true);
-			/*
-			final StyleSelector style = ov.getStyle();
-			if (style != null) {
-				addTag(":" + getClassName(cl) + " uses inline " + getClassName(style.getClass()), true); // Style or StyleMap
-			}
-			*/
+            checkOverlay((Overlay) gisObj);
         } else if (cl == Element.class) {
             Element e = (Element)gisObj;
             String prefix = e.getPrefix();
@@ -699,7 +665,58 @@ public class KmlMetaDump implements IKml {
         }
 	}
 
-	private void checkStyle(StyleSelector style, boolean checkSharedStyle) {
+    private void checkOverlay(Overlay ov) {
+        addTag(ov.getClass());
+
+        if (ov instanceof GroundOverlay) {
+            GroundOverlay go = (GroundOverlay) ov;
+            if (go.getNorth() != null || go.getSouth() != null
+                    || go.getEast() != null || go.getWest() != null
+                    || go.getRotation() != null) {
+                addTag(IKml.LAT_LON_BOX);
+                if (go.getEast() != null && go.getWest() != null) {
+                    if (go.crossDateLine()) {
+                        addTag(":GroundOverlay spans -180/+180 longitude line", true);
+                        // e.g. west >= 0 && east < 0
+                        // note associated bug:
+                        // http://code.google.com/p/earth-issues/issues/detail?id=1145
+                    }
+                    // verify constraint: kml:east > kml:west
+                    // Reference: OGC-07-147r2: cl. 11.3.2 ATC 11: LatLonBox
+                    else if (go.getEast() <= go.getWest())
+                        addTag(":GroundOverlay fails to satisfy east > west constraint [ATC 11]", true);
+                }
+                if (go.getNorth() != null && go.getSouth() != null && go.getNorth() <= go.getSouth())
+                    addTag(":GroundOverlay fails to satisfy North > South constraint [ATC 11]", true);
+            }
+            AltitudeModeEnumType altMode = go.getAltitudeMode();
+            if (altMode == AltitudeModeEnumType.relativeToSeaFloor || altMode == AltitudeModeEnumType.clampToSeaFloor)
+                addTag("gx:altitudeMode");
+        }
+
+        TaggedMap icon = ov.getIcon();
+        if (icon == null) {
+            addTag(":Overlay missing icon", true);
+        }
+        /*
+        else {
+            // check for networkLink-like overlay
+            String href = icon.get(HREF);
+            if (StringUtils.isEmpty(href)) return; // no URL
+            if (icon.get(HTTP_QUERY) != null || icon.get(VIEW_FORMAT) != null) {
+               System.out.println("XXX: networkLink Overlay");
+            }
+        }
+        */
+        /*
+        final StyleSelector style = ov.getStyle();
+        if (style != null) {
+            addTag(":" + getClassName(cl) + " uses inline " + getClassName(style.getClass()), true); // Style or StyleMap
+        }
+        */
+    }
+
+    private void checkStyle(StyleSelector style, boolean checkSharedStyle) {
 		final Class<? extends StyleSelector> aClass = style.getClass();
 		addTag(aClass);
 
