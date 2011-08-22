@@ -239,11 +239,28 @@ public class Style extends StyleSelector {
 	}
 
 	/**
+     * Get URL associated with IconStyle.
 	 * @return the url of the icon.
      *      If null then IconStyle did not have Icon element. If value is
      *      non-null then IconStyle should have an associated Icon element
-     *      present. If icon url is empty string then this indicates the href
-     *      value was either omitted, empty element or an empty string.
+     *      present.<P>
+     *      If icon URL is empty string then this indicates the href
+     *      element was omitted, an empty element or value was an empty string.<BR>
+     *      All 3 of these cases are handled the same in Google Earth which suppresses
+     *      showing an icon.
+     *      <pre>
+                1. &lt;IconStyle&gt;
+                    &lt;Icon/&gt;
+                   &lt;/IconStyle&gt;
+
+                2. &lt;Icon&gt;
+                        &lt;href/&gt;
+                   &lt;/Icon&gt;
+
+                3. &lt;Icon&gt;
+                        &lt;href&gt;&lt;/href&gt;
+                   &lt;/Icon&gt;
+     *      </pre>
 	 */
     @CheckForNull
 	public String getIconUrl() {
