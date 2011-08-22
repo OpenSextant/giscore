@@ -287,6 +287,9 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 				// see http://code.google.com/apis/kml/documentation/photos.html
 				// e.g. http://mw1.google.com/mw-earth-vectordb/kml-samples/gp/seattle/gigapxl/$[level]/r$[y]_c$[x].jpg</href>
 				// Given zoom level Google Earth client maps this URL to URLs such as this: level=1 => .../0/r0_c0.jpg and level=3 => 3/r3_c1.jpg
+                // TODO: GroundOverlay Icon is same kml:LinkType as NetworkLink Link element
+                // and URL needs to reflect viewFormat and httpQuery parameters.
+                // Maybe need to call getLinkHref() rather than getLink()
 				URI uri = getLink(parent, href);
 				if (uri != null) {
 					href = uri.toString();
