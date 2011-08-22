@@ -1270,9 +1270,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						//color = Color.white; // use default="ffffffff"
 					//}
 				} else if (localPart.equals(ICON)) {
+                    // IconStyle/Icon is kml:BasicLinkType with only href property
 					url = parseIconHref(qname);
-                    // if have Icon element but no href then use empty to indicate that Icon
-                    // was present but don't have an associated href as handled in KmlOutputStream
+                    // if have Icon element but no href then use empty string to indicate that Icon
+                    // was present but don't have an associated href as handled in KmlOutputStream.
+                    // Having empty Icon element is handled the same as having an empty href
+                    // element in Google Earth.
                     if (url == null) url = "";
 				}
 			}
