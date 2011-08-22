@@ -471,12 +471,18 @@ public final class UrlRef implements java.io.Serializable {
 
     /**
      * Quick test if href is an absolute URL. This means
-     * the string matches the regular expression ^[a-zA-Z]+://
+     * either the string starts with "file:" or matches the regular expression ^[a-zA-Z]+://
+     * <BR>For example, the following match true:
+     * <ul>
+     *     <li> http://mw1.google.com/gigapxl/r1_c0.jpg
+     *     <li> file:C:/path/test.kml
+     *     <li> file:/C:/path/test.kml
+     * </ul>
      * @param href URL to test
      * @return true if URL appears to be an absolute URL
      */
     public static boolean isAbsoluteUrl(String href) {
-        return absUrlPattern.matcher(href).lookingAt();
+        return href.startsWith("file:") || absUrlPattern.matcher(href).lookingAt();
     }
     
     /**
