@@ -48,6 +48,8 @@ Summary of tags and properties used in KML collection
 	Overlay missing icon
 	Region has invalid LatLonAltBox [ATC 8]
 	Shared styles in Folder not allowed [ATC 7]
+	StyleMap Pair must contain StyleUrl or Style
+	StyleMap has inline Style
 	Suspicious Schema name characters
 	Suspicious Style id characters
 	Suspicious StyleMap highlight URL characters
@@ -1424,6 +1426,7 @@ data\kml\Style\iconStyle.kmz
 data\kml\Style\inline-stylemap.kml
 
 	Feature uses inline StyleMap
+	StyleMap has inline Style
 	--
 	Placemark            1
 	Point                1
@@ -1453,6 +1456,17 @@ data\kml\Style\overrideStyles.kml
 	Point                2
 	Style                2
 	# features=2
+
+data\kml\Style\remote-style.kml
+	DEBUG [main] (Common.java:116) - fix StyleUrl identifier as local reference: complete garbage
+
+	Absolute styleUrl
+	Feature uses shared Style
+	Suspicious styleUrl characters
+	--
+	Placemark            5
+	Point                5
+	# features=5
 
 data\kml\Style\SharedStyle.kml
 
