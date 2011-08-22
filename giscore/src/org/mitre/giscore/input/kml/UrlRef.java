@@ -533,6 +533,8 @@ public final class UrlRef implements java.io.Serializable {
                 case '^':
                 case '[':
                 case ']':
+                    // NOTE: if URL is IPv6 format then may not want to encode brackets if enclosing IPv6 host address
+                    // e.g. (http://[1080:0:0:0:8:800:200C:417A]/index.html)
                 case '`':
                     buf.append('%').append(String.format("%02X", (int)c));
                     // note '#" is allowed in URI construction only once
