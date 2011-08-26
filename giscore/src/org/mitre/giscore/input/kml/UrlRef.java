@@ -142,9 +142,11 @@ public final class UrlRef implements java.io.Serializable {
     public static final String USER_AGENT = "GoogleEarth/5.2.1.1588(Windows;Microsoft Windows (5.1.2600.3);en-US;kml:2.2;client:Free;type:default)";
 
     /**
-	 * Pattern to match absolute URLs (e.g. http://host/file, ftp://host/file, file:/path/file, etc
-	 */
-	private static final Pattern absUrlPattern = Pattern.compile("^[a-zA-Z]+://");
+     * Pattern to match absolute URLs (e.g. http://host/file, ftp://host/file, file:/path/file, etc.
+     * Also matches <tt>C:/path/file</tt> which is not strictly a URL but it should
+     * not be interpreted as a relative path either.
+     */
+    private static final Pattern absUrlPattern = Pattern.compile("^[a-zA-Z]+:/");
 
     /**
      * Convert URL to internalized "kmz" URI with absolute URL of parent KMZ and the kmz
