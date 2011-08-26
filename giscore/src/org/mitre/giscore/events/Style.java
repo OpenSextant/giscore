@@ -240,7 +240,7 @@ public class Style extends StyleSelector {
 
 	/**
      * Get URL associated with IconStyle.
-	 * @return the url of the icon.
+	 * @return the url of the icon (non-empty or null value)
      *      If null then IconStyle did not have Icon element. If value is
      *      non-null then IconStyle should have an associated Icon element
      *      present.<P>
