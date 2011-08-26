@@ -65,7 +65,9 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 
 	private Proxy proxy;
 
-	/**
+    private boolean rewriteStyleUrls;
+
+    /**
 	 * Creates a <code>KmlStreamReader</code> and attempts to read
 	 * all GISObjects from a stream created from the <code>URL</code>.
 	 * @param url   the KML or KMZ URL to be opened for reading.
@@ -252,18 +254,22 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		final Class<? extends IGISObject> aClass = gisObj.getClass();
 		if (aClass == Feature.class) {
 			Feature f = (Feature)gisObj;
+            checkStyleUrl(parent, f); // rewrite relative-links in styleURL as absolute URLs
 			StyleSelector style = f.getStyle();
 			if (style != null) {
 				// handle IconStyle href if defined
 				checkStyleType(parent, style);
 			}
 		} else if (aClass == ContainerStart.class) {
-			for (StyleSelector s : ((ContainerStart)gisObj).getStyles()) {
+            final ContainerStart cs = (ContainerStart) gisObj;
+            checkStyleUrl(parent, cs);
+            for (StyleSelector s : cs.getStyles()) {
 				checkStyleType(parent, s);
 			}
 		} else if (gisObj instanceof NetworkLink) {
 			// handle NetworkLink href
 			NetworkLink link = (NetworkLink) gisObj;
+            checkStyleUrl(parent, link);
 			// adjust URL with httpQuery and viewFormat parameters
 			// if parent is compressed and URL is relative then rewrite URL
 			//log.debug("link href=" + link.getLink());
@@ -280,6 +286,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		} else if (gisObj instanceof Overlay) {
 			// handle GroundOverlay, ScreenOverlay or PhotoOverlay href
 			Overlay o = (Overlay) gisObj;
+            checkStyleUrl(parent, o);
 			TaggedMap icon = o.getIcon();
 			String href = icon != null ? trimToNull(icon, HREF) : null;
 			if (href != null) {
@@ -310,7 +317,32 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		return gisObj;
 	}
 
-	private void checkStyleType(UrlRef parent, StyleSelector s) {
+    /**
+     * Check for relative URLs in styleUrl value and rewrite
+     * to absolute URLs with respect to its parent URL context.
+     * @param parent Parent URL context
+     * @param f This common feature to check
+     */
+    private void checkStyleUrl(UrlRef parent, Common f) {
+        if (rewriteStyleUrls && baseUrl != null) {
+            String styleUrl = f.getStyleUrl();
+            // check for relative URLs (e.g. style.kml#blue-icon)
+            if (StringUtils.isNotEmpty(styleUrl)
+                && !UrlRef.isAbsoluteUrl(styleUrl) && styleUrl.indexOf('#') > 0)
+            {
+                //System.out.println("XXX: Relative Style href: " + styleUrl);
+                URI uri = getLink(parent, styleUrl);
+                if (uri != null) {
+                    styleUrl = uri.toString();
+                    // store rewritten relative URL back as absolute
+                    f.setStyleUrl(styleUrl);
+                    log.debug("XXX: rewrite relative styleUrl: " + styleUrl);
+                }
+            }
+        }
+    }
+
+    private void checkStyleType(UrlRef parent, StyleSelector s) {
 		if (s instanceof Style) {
 			// normalize iconStyle hrefs
 			checkStyle(parent, (Style)s);
@@ -322,6 +354,22 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	private void checkStyleMap(UrlRef parent, StyleMap sm) {
 		for(Iterator<Pair> it = sm.getPairs(); it.hasNext(); ) {
 			Pair pair = it.next();
+            if (rewriteStyleUrls && baseUrl != null) {
+                String styleUrl = pair.getStyleUrl();
+                // check for relative URLs (e.g. style.kml#blue-icon)
+                if (StringUtils.isNotEmpty(styleUrl)
+                    && !UrlRef.isAbsoluteUrl(styleUrl) && styleUrl.indexOf('#') > 0)
+                {
+                    // System.out.println("XXX: Relative StyleMap pair href: " + styleUrl);
+                    URI uri = getLink(parent, styleUrl);
+                    if (uri != null) {
+                        styleUrl = uri.toString();
+                        // store rewritten relative URL back as absolute
+                        pair.setStyleUrl(styleUrl);
+                        log.debug("XXX: rewrite relative StyleMap pair styleUrl: " + styleUrl);
+                    }
+                }
+            }
 			StyleSelector style = pair.getStyleSelector();
 			if (style instanceof Style) {
 				// normalize iconStyle hrefs
@@ -336,7 +384,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 			String href = style.getIconUrl();
 			// rewrite relative URLs with UrlRef to include context with parent source
 			// note: could also use URI.isAbsolute() to test rel vs abs URL
-			if (StringUtils.isNotBlank(href) && !UrlRef.isAbsoluteUrl(href)) {
+			if (StringUtils.isNotEmpty(href) && !UrlRef.isAbsoluteUrl(href)) {
 				//System.out.println("XXX: Relative iconStyle href: " + href);
 				URI uri = getLink(parent, href);
 				if (uri != null) {
@@ -513,7 +561,22 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
         return proxy;
     }
 
-	/**
+    public boolean isRewriteStyleUrls() {
+        return rewriteStyleUrls;
+    }
+
+    /**
+     * Set flag to rewrite styleUrls from relative to absolute with respect
+     * to its parent URL context. Otherwise may not be able to correctly resolve
+     * relative links resulting features from multiple NetworkLinks with
+     * different base URLs.
+     * @param rewriteStyleUrls True to enable styleUrl rewriting
+     */
+    public void setRewriteStyleUrls(boolean rewriteStyleUrls) {
+        this.rewriteStyleUrls = rewriteStyleUrls;
+    }
+
+    /**
      * ImportEventHandler interface used for callers to implement handling
      * of GISObjects encountered as NetworkLinks are parsed. If the callback
      * handleEvent() method returns false then recursion is aborted no more
