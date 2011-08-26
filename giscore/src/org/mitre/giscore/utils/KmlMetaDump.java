@@ -57,7 +57,6 @@ import java.util.*;
  *
  * Lists following conditions if found:
  * <ul>
- *  <li> Absolute styleUrl (info)
  *  <li> Camera altitudeMode cannot be clampToGround [ATC 54.2] (warning)
  *  <li> comma found instead of whitespace between tuples (error)
  *  <li> Container end date is later than that of its ancestors (info)
@@ -94,6 +93,8 @@ import java.util.*;
  *  <li> Shared styles in Folder not allowed [ATC 7] (warning)
  *  <li> Shared styles must have 'id' attribute [ATC 7] (warning)
  *  <li> Starting container tag with no matching end container (error)
+ *  <li> StyleUrl has absolute URL (info)
+ *  <li> StyleUrl has relative URL (info)
  *  <li> StyleUrl must contain '#' with identifier reference (error)
  *  <li> StyleMap Pair must contain StyleUrl or Style
  *  <li> StyleMap Pair with absolute StyleUrl (info)
@@ -493,7 +494,7 @@ public class KmlMetaDump implements IKml {
         if (verbose) {
 			// Style little too verbose
 			if (cl == Style.class)
-				System.out.println("Style id="+((Style)gisObj).getId());
+				System.out.println("Style id=" + ((Style)gisObj).getId());
 			else
 				System.out.println(gisObj);
 		}
@@ -806,22 +807,32 @@ public class KmlMetaDump implements IKml {
 					addTag(":StyleMap Pair must contain StyleUrl or Style");
 					if (verbose) System.out.printf(" Warning: StyleMap Pair %s must contain StyleUrl or Style%n", key);
 				} else {
+                    // check styleUrl
 					if (styleUrl != null) {
-                        if (styleUrl.startsWith("#")) {
+                        int ind = styleUrl.indexOf('#');
+                        if (ind == 0) {
+                            // URL starts with '#' -> reference anchor (e.g. #blue-icon)
                             if (!UrlRef.isIdentifier(styleUrl.substring(1))) {
                                 addTag(":Suspicious StyleMap " + key + " URL characters");
                                 if (verbose) System.out.printf(" Warning: StyleMap %s URL appears to contain invalid characters: %s%n", key, styleUrl);
                             }
                         } else {
+                            if (ind == -1) addTag(":StyleUrl must contain '#' with identifier reference", true);
                             try {
                                 URI uri = new URI(styleUrl);
                                 if (uri.isAbsolute()) addTag(":StyleMap Pair with absolute StyleUrl", true);
+                                else addTag(":StyleMap Pair with relative StyleUrl", true);
                             } catch (URISyntaxException e) {
+                                if (UrlRef.isAbsoluteUrl(styleUrl))
+                                    addTag(":StyleMap Pair with absolute StyleUrl", true);
+                                else if (ind > 0)
+                                    addTag(":StyleMap Pair with relative StyleUrl", true);
                                 addTag(":Suspicious StyleMap " + key + " URL characters");
                                 if (verbose) System.out.printf(" Warning: StyleMap %s URL appears to contain invalid characters: %s%n", key, styleUrl);
                             }
                         }
 					}
+                    // check inline style
 					if (pairStyle != null) {
 						addTag(":StyleMap has inline Style");
 						checkStyle(pairStyle, false);
@@ -1112,15 +1123,22 @@ public class KmlMetaDump implements IKml {
               <styleUrl>eateries.kml#del my-lunch-spot</styleUrl>
               <styleUrl>root://styleMaps#default+nicon=0x307+hicon=0x317</styleUrl> KML 2.0 style
             */
-            if (UrlRef.isAbsoluteUrl(styleUrl)) {
-                addTag(":Absolute styleUrl", true);
+            final boolean isAbsoluteUrl = UrlRef.isAbsoluteUrl(styleUrl);
+            if (isAbsoluteUrl) {
+                addTag(":StyleUrl has absolute URL", true);
             }
             int ind = styleUrl.indexOf('#');
 			if (ind == -1) {
 				// google earth allows this but this is an error wrt XML syntax
                 addTag(":StyleUrl must contain '#' with identifier reference", true);
 			} else {
-                // check local reference: id reference should match NCName production in [Namespaces in XML]
+                if (!isAbsoluteUrl && ind > 0) {
+                    addTag(":StyleUrl has relative URL");
+                    if (verbose) System.out.println(" StyleUrl has relative URL: " + styleUrl);
+                }
+                // otherwise if ind == 0 then have reference anchor which is the most common styleUrl form
+
+                // next check local reference: id reference should match NCName production in [Namespaces in XML]
 				// match xsd:ID type for "id" attribute. The base type of ID is NCName.
 				// Google Earth allows invalid characters in the "id" attribute and associated references
 				// ind = 0 relative identifier and ind > 0: styleUrl can be absolute URL to style identifier
