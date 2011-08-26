@@ -111,8 +111,10 @@ public abstract class Common extends Row {
 	 */
 	public void setStyleUrl(String styleUrl) {
         styleUrl = StringUtils.trimToNull(styleUrl);
-        // test if url relative identifier not starting with '#' then prepend '#' to url
-        if (styleUrl != null && !styleUrl.startsWith("#") && UrlRef.isIdentifier(styleUrl, true)) {
+        // test if url dangling anchor reference (neither relative or absolute URL)
+        // not containing '#' then prepend '#' to URL (e.g. blueIcon -> #blueIcon)
+        // REVIEW: this might not work with all relative URLs...
+        if (styleUrl != null && styleUrl.indexOf('#') == -1 && UrlRef.isIdentifier(styleUrl, true)) {
             log.debug("fix StyleUrl identifier as local reference: " + styleUrl);
             styleUrl = "#" + styleUrl;
         }
