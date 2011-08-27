@@ -29,8 +29,8 @@ This file contains styleUrls to external KML files with relative and absolute UR
         </Point>
     </Placemark>
 
-    <Placemark id="radio-relative">
-        <name>radio-relative</name>
+    <Placemark id="relative">
+        <name>relative-styleurl</name>
         <description>styleUrl is relative</description>
         <styleUrl>styles.kml#blueIcons</styleUrl>
         <Point>
@@ -38,8 +38,8 @@ This file contains styleUrls to external KML files with relative and absolute UR
         </Point>
     </Placemark>
 
-    <Placemark id="radio-absolute">
-        <name>radio-absolute</name>
+    <Placemark id="absolute">
+        <name>absolute-styleurl</name>
         <description>styleUrl is absolute</description>
         <styleUrl>http://jason-stage.mitre.org/kml/samples/Style/styles.kml#blueIcons</styleUrl>
 	<!--styleUrl>http://kml-samples.googlecode.com/svn/trunk/kml/Style/styles.kml#blueIcons</styleUrl-->
