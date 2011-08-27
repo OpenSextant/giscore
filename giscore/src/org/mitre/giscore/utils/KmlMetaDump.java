@@ -284,8 +284,6 @@ public class KmlMetaDump implements IKml {
 			else
 				val = Integer.valueOf(val.intValue() + 1);
 			tagSet.put(tag, val);
-            if ("Style".equals(tag))
-                System.out.println("XXX: style XXX");
 			if (verbose && verboseMode) {
 				if (tag.startsWith(":")) tag = tag.substring(1);
 				System.out.printf(" %s%n", tag);
