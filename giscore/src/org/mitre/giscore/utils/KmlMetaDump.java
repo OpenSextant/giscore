@@ -284,6 +284,8 @@ public class KmlMetaDump implements IKml {
 			else
 				val = Integer.valueOf(val.intValue() + 1);
 			tagSet.put(tag, val);
+            if ("Style".equals(tag))
+                System.out.println("XXX: style XXX");
 			if (verbose && verboseMode) {
 				if (tag.startsWith(":")) tag = tag.substring(1);
 				System.out.printf(" %s%n", tag);
@@ -1259,11 +1261,8 @@ public class KmlMetaDump implements IKml {
             features++; // count of Placemark + NetworkLink + {Ground|Photo|Screen} Overlays
 			Feature feature = (Feature)f;
 			final StyleSelector style = feature.getStyle();
-			String styleClass = null;
 			if (style != null) {
-				styleClass = getClassName(style.getClass());
-				addTag(styleClass);
-				checkStyle(style, false);
+				checkStyle(style, false); // Style or StyleMap
 			}
 			if (StringUtils.isNotBlank(f.getStyleUrl())) {
 				if (style == null)
@@ -1271,6 +1270,7 @@ public class KmlMetaDump implements IKml {
 				else
                     addTag(":Feature uses merged shared/inline Style", true);
 			} else if (style != null) {
+                String styleClass = getClassName(style.getClass());
 				addTag(":Feature uses inline " + styleClass, true); // Style | StyleMap
 			}
         }
