@@ -34,7 +34,16 @@ This file contains styleUrls to external KML files with relative and absolute UR
         <description>styleUrl is relative</description>
         <styleUrl>styles.kml#blueIcons</styleUrl>
         <Point>
-          <coordinates>-122.537469,37.85907,0</coordinates>
+          <coordinates>-122.537469,37.85907</coordinates>
+        </Point>
+    </Placemark>
+
+    <Placemark id="relativeStyleMap">
+        <name>relative-styleMapurl</name>
+        <description>styleUrl is relative</description>
+        <styleUrl>styles.kml#msn_blue</styleUrl>
+        <Point>
+          <coordinates>-122.537469,37.85907</coordinates>
         </Point>
     </Placemark>
 
@@ -44,7 +53,7 @@ This file contains styleUrls to external KML files with relative and absolute UR
         <styleUrl>http://jason-stage.mitre.org/kml/samples/Style/styles.kml#blueIcons</styleUrl>
 	<!--styleUrl>http://kml-samples.googlecode.com/svn/trunk/kml/Style/styles.kml#blueIcons</styleUrl-->
         <Point>
-          <coordinates>-122.537848,37.858526,0</coordinates>
+          <coordinates>-122.537848,37.858526</coordinates>
         </Point>
     </Placemark>
   </Document>

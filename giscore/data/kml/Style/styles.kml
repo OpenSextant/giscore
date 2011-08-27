@@ -7,11 +7,13 @@ http://kml-samples.googlecode.com/svn/trunk/kml/Style/styles.kml
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Document id="globalStyles">
+
     <Style id="radioFolder">
       <ListStyle>
         <listItemType>radioFolder</listItemType>
       </ListStyle>
     </Style>
+
     <Style id="blueIcons">
 	<IconStyle>
 	    <Icon>
@@ -19,5 +21,25 @@ http://kml-samples.googlecode.com/svn/trunk/kml/Style/styles.kml
 	     </Icon>
 	</IconStyle>
     </Style>
+
+    <Style id="sh_blueIcons">
+	<IconStyle>
+	    <scale>1.1</scale>
+	    <Icon>
+		<href>http://maps.google.com/mapfiles/kml/pushpin/blue-pushpin.png</href>
+	     </Icon>
+	</IconStyle>
+    </Style>
+
+   <StyleMap id="msn_blue">
+        <Pair>
+            <key>normal</key>
+            <styleUrl>#blueIcons</styleUrl>
+        </Pair>
+        <Pair>
+            <key>highlight</key>
+            <styleUrl>#sh_blueIcons</styleUrl>
+        </Pair>
+    </StyleMap>
   </Document>
 </kml>
