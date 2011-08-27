@@ -43,7 +43,7 @@ This file contains styleUrls to external KML files with relative and absolute UR
         <description>styleUrl is relative</description>
         <styleUrl>styles.kml#msn_blue</styleUrl>
         <Point>
-          <coordinates>-122.537469,37.85907</coordinates>
+          <coordinates>-122.5372753338203,37.85932697802468</coordinates>
         </Point>
     </Placemark>
 
