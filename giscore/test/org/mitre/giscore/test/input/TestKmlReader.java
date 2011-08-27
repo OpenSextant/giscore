@@ -255,6 +255,33 @@ public class TestKmlReader extends TestCase implements IKml {
 		assertTrue(geom instanceof Point);
 	}
 
+    @Test
+    public void testRewriteStyleUrls() throws Exception {
+        KmlReader reader = new KmlReader(new File("data/kml/Style/remote-style.kml"));
+        reader.setRewriteStyleUrls(true);
+        int count = 0;
+        try {
+			IGISObject gisObj;
+			while ((gisObj = reader.read()) != null) {
+                count++;
+                if (gisObj.getClass() == Feature.class) {
+                    Feature f = (Feature)gisObj;
+                    if ("relative".equals(f.getId())) {
+                        final String styleUrl = f.getStyleUrl();
+                        assertTrue(styleUrl.startsWith("file:"));
+                        URL url = new URL(styleUrl);
+                        int len = url.openConnection().getContentLength();
+                        // external style file exists and must have length greater than 0
+                        assertTrue(len > 0);
+                    }
+                }
+			}
+		} finally {
+			reader.close();
+		}
+        assertEquals(8, count);
+    }
+
 	/**
      * Test ground overlay from KMZ file target
      */
