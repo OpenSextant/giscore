@@ -279,7 +279,7 @@ public class TestKmlReader extends TestCase implements IKml {
 		} finally {
 			reader.close();
 		}
-        assertEquals(8, count);
+        assertEquals(9, count);
     }
 
 	/**
