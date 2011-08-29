@@ -547,7 +547,7 @@ public class KmlMetaDump implements IKml {
             addTag(((ContainerStart) gisObj).getType()); // Document | Folder
             containers.push(cs);
 			for (StyleSelector s : cs.getStyles()) {
-				checkStyle(s, true);
+				checkStyle(s, true, true);
 			}
             Date startTime = cs.getStartTime();
             Date endTime = cs.getEndTime();
@@ -637,7 +637,7 @@ public class KmlMetaDump implements IKml {
         } else if (gisObj instanceof StyleSelector) {
 			// these are out of order styles
 			// all in-sequence styles + styles should be part of the container they're contained in
-			checkStyle((StyleSelector)gisObj, true);
+			checkStyle((StyleSelector)gisObj, true, true);
         } else if (gisObj instanceof Overlay) {
             checkOverlay((Overlay) gisObj);
         } else if (cl == Element.class) {
@@ -717,9 +717,15 @@ public class KmlMetaDump implements IKml {
         */
     }
 
-    private void checkStyle(StyleSelector style, boolean checkSharedStyle) {
-		final Class<? extends StyleSelector> aClass = style.getClass();
-		addTag(aClass);
+    /**
+     * Check Style
+     * @param style Style or StyleMap to check
+     * @param checkSharedStyle Flag to check Style as shared style in context of a container
+     * @param addTag Flag to add count Style or StyleMap if top-level, not counted if inline Style in StyleMap
+     */
+    private void checkStyle(StyleSelector style, boolean checkSharedStyle, boolean addTag) {
+        final Class<? extends StyleSelector> aClass = style.getClass();
+        if (addTag) addTag(aClass);
 
 		if (checkSharedStyle) {
 			if (!containers.isEmpty()
@@ -835,7 +841,7 @@ public class KmlMetaDump implements IKml {
                     // check inline style
 					if (pairStyle != null) {
 						addTag(":StyleMap has inline Style");
-						checkStyle(pairStyle, false);
+						checkStyle(pairStyle, false, false);
 					}
 				}
 			}
@@ -1260,7 +1266,7 @@ public class KmlMetaDump implements IKml {
 			Feature feature = (Feature)f;
 			final StyleSelector style = feature.getStyle();
 			if (style != null) {
-				checkStyle(style, false); // Style or StyleMap
+				checkStyle(style, false, true); // Style or StyleMap
 			}
 			if (StringUtils.isNotBlank(f.getStyleUrl())) {
 				if (style == null)
