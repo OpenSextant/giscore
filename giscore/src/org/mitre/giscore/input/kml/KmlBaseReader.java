@@ -503,4 +503,8 @@ public abstract class KmlBaseReader implements IKml {
     public URL getBaseUrl() {
         return baseUrl;
     }
+
+    public String toString() {
+	    return baseUrl != null ? baseUrl.toString() : super.toString();
+    }
 }
