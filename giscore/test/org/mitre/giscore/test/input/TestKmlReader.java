@@ -282,6 +282,33 @@ public class TestKmlReader extends TestCase implements IKml {
         assertEquals(9, count);
     }
 
+    @Test
+    public void testRelativeKmzStyles() throws Exception {
+        System.out.println("*** testRelativeKmzStyles");
+        KmlReader reader = new KmlReader(new File("data/kml/Style/rel-styles.kmz"));
+        reader.setRewriteStyleUrls(true);
+        List<IGISObject> features = reader.readAll(); // implicit close
+        assertEquals(5, features.size());
+        List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
+        assertEquals(11, linkedFeatures.size());
+        for (IGISObject gisObj : linkedFeatures) {
+            if (gisObj.getClass() == Feature.class) {
+                Feature f = (Feature) gisObj;
+                final String styleUrl = f.getStyleUrl();
+                if ("P2.2".equals(f.getName())) {
+                    assertEquals("#localStyle_relUrl", styleUrl);
+                    // System.out.println(styleUrl);
+                } else {
+                    // kmzfile:/C:/projects/giscore/data/kml/Style/rel-styles.kmz?file=styles.kml#style1
+                    assertTrue(styleUrl.startsWith("kmzfile:"));
+                    UrlRef urlRef = new UrlRef(new URI(styleUrl));
+                    assertTrue(urlRef.isKmz());
+                    assertTrue(urlRef.getKmzRelPath().startsWith("styles.kml#"));
+                }
+            }
+        }
+    }
+
 	/**
      * Test ground overlay from KMZ file target
      */
