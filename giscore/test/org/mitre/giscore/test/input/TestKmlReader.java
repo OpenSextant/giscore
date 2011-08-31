@@ -90,7 +90,8 @@ public class TestKmlReader extends TestCase implements IKml {
     @Test
 	public void testUrlNetworkLink() throws IOException {
 		// test NetworkLink that contains viewFormat + httpQuery elements which get populated in URL
-		// via KmlBaseReader.getLinkHref()
+		// via KmlBaseReader.getLinkHref().
+        // Note: this test must use a non-file URL otherwise the viewFormat/httpQuery are not appended
 		URL url;
 		InputStream is;
         try {
@@ -98,7 +99,7 @@ public class TestKmlReader extends TestCase implements IKml {
 			is = UrlRef.getInputStream(url);
         } catch(Exception e) {
             // host/service not available - skip test
-			System.err.println("INFO: kmlWeb service not available: skip test");
+			System.err.println("WARN: kmlWeb service not available: skip test");
             return;
 		}
 		KmlReader reader = new KmlReader(is, false, url, null);
@@ -115,6 +116,11 @@ public class TestKmlReader extends TestCase implements IKml {
 		//assertEquals(2, linkedFeatures.size());
     }
 
+    /**
+     * Test loading compressed byte stream for KMZ via InputStream
+     *
+     * @throws IOException if an I/O error occurs
+     */
 	@Test
 	public void testKmzUrl() throws IOException {
 		URL url;
@@ -124,8 +130,9 @@ public class TestKmlReader extends TestCase implements IKml {
 			is = UrlRef.getInputStream(url);
         } catch(Exception e) {
             // host/service not available - skip test
-			System.err.println("INFO: kmlWeb service not available: skip test");
-            return;
+			System.err.println("WARN: kmlWeb service not available: use local file for test");
+            url = new File("data/kml/kmz/networklink/hier.kmz").toURI().toURL();
+            is = UrlRef.getInputStream(url);
 		}
 		KmlReader reader = new KmlReader(is, true, url, null);
 		List<IGISObject> features = reader.readAll(); // implicit close
@@ -149,7 +156,7 @@ public class TestKmlReader extends TestCase implements IKml {
 			is = UrlRef.getInputStream(url, proxy);
         } catch(Exception e) {
             // host/service not available - skip test
-			System.err.println("INFO: remote content not accessible: skip test");
+			System.err.println("WARN: remote content not accessible: skip test");
             return;
 		}
 		KmlReader reader = new KmlReader(is, false, url, proxy);
@@ -168,9 +175,10 @@ public class TestKmlReader extends TestCase implements IKml {
         File file = new File("data/kml/kmz/networklink/hier.kmz");
         // e.g. http://kml-samples.googlecode.com/svn/trunk/kml/kmz/networklink/hier.kmz
         KmlReader reader = new KmlReader(file);
-        List<IGISObject> features = reader.readAll(); // implicit close
+        List<IGISObject> objs = reader.readAll(); // implicit close
+        assertEquals(5, objs.size());
         /*
-        for(IGISObject obj : features) {
+        for(IGISObject obj : objs) {
             if (obj instanceof NetworkLink) {
                 NetworkLink nl = (NetworkLink)obj;
                 URI linkUri = KmlReader.getLinkUri(nl);
@@ -200,6 +208,25 @@ public class TestKmlReader extends TestCase implements IKml {
         assertTrue(o3 instanceof Feature && "outside.kml".equals(((Feature)o3).getName()));
     }
 
+    @Test
+    public void testNetworkLinksWithCallback() throws IOException {
+        File file = new File("data/kml/kmz/networklink/hier.kmz");
+		KmlReader reader = new KmlReader(file);
+		List<IGISObject> objs = reader.readAll(); // implicit close
+        assertEquals(5, objs.size());
+        final List<IGISObject> linkedFeatures = new ArrayList<IGISObject>();
+        reader.importFromNetworkLinks(new KmlReader.ImportEventHandler() {
+            public boolean handleEvent(UrlRef ref, IGISObject gisObj) {
+                linkedFeatures.add(gisObj);
+                return false; // explicitly force import to abort
+            }
+        });
+        List<URI> networkLinks = reader.getNetworkLinks();
+		assertEquals(2, networkLinks.size());
+        // only one feature is added before import is aborted
+        assertEquals(1, linkedFeatures.size());
+    }
+
 	/**
      * Test loading KMZ file with 2 levels of network links
 	 * recursively loading each NetworkLink.
@@ -208,7 +235,7 @@ public class TestKmlReader extends TestCase implements IKml {
      */
     @Test
 	public void testMultiLevelNetworkLinks() throws IOException {
-		File file = new File("data/kml/NetworkLink/multiLevelNetworkLinks2.kmz");
+        File file = new File("data/kml/NetworkLink/multiLevelNetworkLinks2.kmz");
 		KmlReader reader = new KmlReader(file);
 		List<IGISObject> objs = reader.readAll(); // implicit close
 		assertEquals(5, objs.size());
@@ -229,7 +256,7 @@ public class TestKmlReader extends TestCase implements IKml {
 	 * recursively loading each NetworkLink using callback to handle
      * objects found in network links.
      *
-	 * @throws IOException if an I/O error occurs
+	 * @throws IOException if an I/O error occurs                             `
      */
     @Test
 	public void testMultiLevelNetworkLinksWithCallback() throws IOException {
