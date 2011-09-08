@@ -1141,13 +1141,17 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleBalloonStyle(Style style, QName qname) throws XMLStreamException {
-		String text = "";
-		Color color = Color.white;
-		Color textColor = Color.black;
+		String text = null;
+		Color color = null;
+		Color textColor = null;
 		String displayMode = "default"; // [default] | hide
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (foundEndTag(e, qname)) {
+                if (text != null) {
+                    if (color == null) color = Color.white;         // use default 0xffffffff
+                    if (textColor == null) textColor = Color.black; // use default 0xff000000
+                }
 				style.setBalloonStyle(color, text, textColor, displayMode);
 				return;
 			}
@@ -1155,14 +1159,18 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(TEXT)) {
-					text = stream.getElementText();
+                    text = getNonEmptyElementText();
 				} else if (name.equals(BG_COLOR)) {
 					color = parseColor(stream.getElementText());
 				} else if (name.equals(DISPLAY_MODE)) {
 					displayMode = getNonEmptyElementText();
 				} else if (name.equals(TEXT_COLOR)) {
 					textColor = parseColor(stream.getElementText());
-				}
+				} else if (name.equals(COLOR)) {
+                    // color element is deprecated in KML 2.1
+                    // this is alias for bgColor
+					color = parseColor(stream.getElementText());
+                }
 			}
 		}
 	}
