@@ -86,8 +86,17 @@ public class TestKmlWriter extends TestGISBase {
         List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
         List<URI> links = reader.getNetworkLinks();
         // ignore error if remote test host: if unavailable then skip assertion test
-        if (!links.isEmpty() && !links.get(0).toString().startsWith("http://jason-stage")) {
-            assertTrue(linkedFeatures.size() != 0);
+        if (!links.isEmpty()) {
+            // && !links.get(0).toString().startsWith("http://jason-stage")) {
+            for (URI link : links) {
+                if ("file".equals(link.getScheme())) {
+                    // if load link from local file then should have linked features
+                    assertFalse(linkedFeatures.isEmpty());
+                    break;
+                }
+            }
+            // if failed to import Failed to import from network link then linked feature count might be 0
+            // assertTrue(linkedFeatures.size() != 0);
         }
         File temp;
         if (autoDelete)
