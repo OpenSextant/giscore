@@ -198,6 +198,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 			if (!Character.isLetterOrDigit(ch) && !Character.isWhitespace(ch)
 					&& ALLOWED_SPECIAL_CHARACTERS.indexOf(ch) == -1) {
 				foundSpecial = true;
+                // unsafe/special characters include: <>&%
 				break;
 			}
 		}

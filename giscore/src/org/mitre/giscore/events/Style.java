@@ -342,12 +342,16 @@ public class Style extends StyleSelector {
 	 */
 	public void setBalloonStyle(Color bgColor, String text, Color textColor,
 			String displayMode) {
-        this.balloonText = text == null ? null : text.trim();
+        this.balloonText = StringUtils.trimToNull(text);
         hasBalloonStyle = balloonText != null || bgColor != null || textColor != null || "hide".equals(displayMode);
         // having display mode=default and all other properties null basically same as having no balloonStyle at all
 		this.balloonBgColor = bgColor;
 		this.balloonTextColor = textColor;
-		this.balloonDisplayMode = StringUtils.isBlank(displayMode) ? "default" : displayMode;
+        if (hasBalloonStyle) {
+            this.balloonDisplayMode = StringUtils.isBlank(displayMode) ? "default" : displayMode;
+        } else {
+            this.balloonDisplayMode = displayMode;
+        }
 	}
 
 	/**
