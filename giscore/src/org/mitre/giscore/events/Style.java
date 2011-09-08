@@ -344,6 +344,7 @@ public class Style extends StyleSelector {
 			String displayMode) {
         this.balloonText = StringUtils.trimToNull(text);
         hasBalloonStyle = balloonText != null || bgColor != null;
+        // if textColor or displayMode is set without balloonText has no effect
 		this.balloonBgColor = bgColor;
 		this.balloonTextColor = textColor;
 		this.balloonDisplayMode = displayMode;
