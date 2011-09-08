@@ -335,19 +335,19 @@ public class Style extends StyleSelector {
 	 *            the color for the text in the balloon.
      *            The default is black (ff000000). 
 	 * @param displayMode
-     *            If <displayMode> is default, Google Earth uses the information
+     *            If <displayMode> is "default", Google Earth uses the information
      *            supplied in <text> to create a balloon . If <displayMode> is hide,
      *            Google Earth does not display the balloon. "default" is the default value
      *            if <tt>null</tt> value is supplied.
 	 */
 	public void setBalloonStyle(Color bgColor, String text, Color textColor,
 			String displayMode) {
-        this.balloonText = StringUtils.trimToNull(text);
-        hasBalloonStyle = balloonText != null || bgColor != null;
-        // if textColor or displayMode is set without balloonText has no effect
+        this.balloonText = text == null ? null : text.trim();
+        hasBalloonStyle = balloonText != null || bgColor != null || textColor != null || "hide".equals(displayMode);
+        // having display mode=default and all other properties null basically same as having no balloonStyle at all
 		this.balloonBgColor = bgColor;
 		this.balloonTextColor = textColor;
-		this.balloonDisplayMode = displayMode;
+		this.balloonDisplayMode = StringUtils.isBlank(displayMode) ? "default" : displayMode;
 	}
 
 	/**

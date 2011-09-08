@@ -1500,8 +1500,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             throws XMLStreamException {
         writer.writeStartElement(BALLOON_STYLE);
         handleColor(BG_COLOR, style.getBalloonBgColor());
+        final String text = style.getBalloonText();
         handleColor(TEXT_COLOR, style.getBalloonTextColor());
-        handleSimpleElement(TEXT, style.getBalloonText());
+        if (text != null) handleSimpleElement(TEXT, text);
         String displayMode = style.getBalloonDisplayMode();
         // ignore default displayMode value (default)
         if (displayMode != null && "hide".equals(displayMode))

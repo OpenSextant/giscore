@@ -1144,7 +1144,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		String text = null;
 		Color color = null;
 		Color textColor = null;
-		String displayMode = "default"; // [default] | hide
+		String displayMode = null; // [default] | hide
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (foundEndTag(e, qname)) {
@@ -1159,7 +1159,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(TEXT)) {
-                    text = getNonEmptyElementText();
+                    text = stream.getElementText();
 				} else if (name.equals(BG_COLOR)) {
 					color = parseColor(stream.getElementText());
 				} else if (name.equals(DISPLAY_MODE)) {
