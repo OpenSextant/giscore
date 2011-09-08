@@ -19,6 +19,7 @@
 package org.mitre.giscore.events;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.mitre.giscore.IStreamVisitor;
@@ -337,13 +338,13 @@ public class Style extends StyleSelector {
      *            If <displayMode> is default, Google Earth uses the information
      *            supplied in <text> to create a balloon . If <displayMode> is hide,
      *            Google Earth does not display the balloon. "default" is the default value
-     *            if null value is supplied.     
+     *            if <tt>null</tt> value is supplied.
 	 */
 	public void setBalloonStyle(Color bgColor, String text, Color textColor,
 			String displayMode) {
-        hasBalloonStyle = text != null || bgColor != null;
+        this.balloonText = StringUtils.trimToNull(text);
+        hasBalloonStyle = balloonText != null || bgColor != null;
 		this.balloonBgColor = bgColor;
-		this.balloonText = text;
 		this.balloonTextColor = textColor;
 		this.balloonDisplayMode = displayMode;
 	}
