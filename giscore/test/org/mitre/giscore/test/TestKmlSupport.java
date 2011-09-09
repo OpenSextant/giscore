@@ -357,8 +357,18 @@ public class TestKmlSupport extends TestGISBase {
                 fail("approximatelyEquals");
             }
         } else {
+			/*
+			if (!source.equals(test)) {
+				System.out.println("expected: <" +
+						ToStringBuilder.reflectionToString(source,
+								ToStringStyle.MULTI_LINE_STYLE));
+				System.out.printf("> but was: <%s>%n",
+						ToStringBuilder.reflectionToString(test,
+								ToStringStyle.MULTI_LINE_STYLE));
+				fail("objects not equal");
+			}
+			*/
 			assertEquals(source, test);
 		}
 	}
 }
-
