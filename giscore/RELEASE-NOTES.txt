@@ -320,3 +320,49 @@ UrlRef
 
 ------------------------------------------------------------------------------
 
+Release 0.6.2
+
+This release fixes minor bugs and enhancements in KML handling.
+
+IKml
+-add viewRefreshMode and refreshMode enumeration values as constants
+
+KmlBaseReader
+-Added setHttpQuery and setViewFormat to override default query/format parameter values
+-Changed default viewFormat default values from 0's to more meaningful values
+-Renamed getTrimmedValue() to trimToNull()
+-Added trimToEmpty()
+-Added getBaseUrl()
+
+KmlReader
+-Added isMaxLinkCountExceeded() to flag if limit was reached
+
+KmlInputStream
+-Support rotation element for PhotoOverlays
+-Allow viewFormat tag in Link to have empty string value (Before empty strings were treated as nulls)
+-Support deprecated color element in BalloonStyle
+
+KmlOutputStream
+-Add missing roll element for Camera in output
+-Output Point and rotation elements for PhotoOverlay
+
+KmlMetaDump
+-add check for valid output file names in getWriter()
+-added test for absolute/relative styleUrl in Features and StyleMap Pairs
+
+NumberStreamTokenizer
+-reimplemented using Apache Harmony project and its implementation
+ of java.io.StreamTokenizer. This has Apache vs GPLv2 license.
+
+PhotoOverlay
+-add rotation field
+-implement readData(), approximatelyEquals(), writeData() methods
+
+Style
+-Updated checks in setBalloonStyles()
+
+UrlRef
+-Added isAbsoluteUrl() helper method
+
+------------------------------------------------------------------------------
+
