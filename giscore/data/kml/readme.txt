@@ -49,7 +49,10 @@ Summary of tags and properties used in KML collection
 	Region has invalid LatLonAltBox [ATC 8]
 	Shared styles in Folder not allowed [ATC 7]
 	StyleMap Pair must contain StyleUrl or Style
+	StyleMap Pair with relative StyleUrl
 	StyleMap has inline Style
+	StyleUrl has absolute URL
+	StyleUrl has relative URL
 	Suspicious Schema name characters
 	Suspicious Style id characters
 	Suspicious StyleMap highlight URL characters
@@ -147,13 +150,13 @@ data\kml\BalloonStyle\displayMode.kml
 
 	Feature uses shared Style
 	--
-	BalloonStyle         3
+	BalloonStyle         4
 	Document             1
 	Folder               2
-	Placemark            6
-	Point                6
-	Style                3
-	# features=6
+	Placemark            8
+	Point                8
+	Style                4
+	# features=8
 
 data\kml\BalloonStyle\simpleBalloonStyles.kml
 
@@ -184,7 +187,7 @@ data\kml\ExtendedData\data-ext-ns.kml
 
 data\kml\ExtendedData\data-golf.kml
 
-	Feature uses inline Style
+	Feature uses shared Style
 	--
 	BalloonStyle         2
 	ExtendedData         2
@@ -472,6 +475,7 @@ data\kml\kmz\networklink\hier.kmz
 
         url=outside.kml
         url=within.kml
+	--
         NetworkLink          2
         Placemark            2
 	# features=4
@@ -514,6 +518,7 @@ data\kml\kmz\simple\big.kmz
 data\kml\kmz\simple\spaceInLink1.kmz
 
 	url=my%20office.kml
+	--
 	NetworkLink          1
 	Placemark            1
 	Point                1
@@ -522,6 +527,7 @@ data\kml\kmz\simple\spaceInLink1.kmz
 data\kml\kmz\simple\spaceInLink2.kmz
 
 	url=my%20office.kml
+	--
 	NetworkLink          1
 	Placemark            1
 	Point                1
@@ -530,6 +536,7 @@ data\kml\kmz\simple\spaceInLink2.kmz
 data\kml\LinkType\life-of-a-link-basic.kml
 
 	url=file:/C:/projects/giscore/data/kml/kmz/simple/big.kmz
+	--
 	GroundOverlay        1
 	LatLonBox            1
 	Model                1
@@ -650,6 +657,7 @@ data\kml\Metadata\metadata-yourstuff.kml
 data\kml\Model\House.kmz
 
 	Feature uses inline Style
+	--
 	Folder               2
 	LookAt               2
 	Model                1
@@ -690,6 +698,10 @@ data\kml\MultiGeometry\multi-linestrings.kml
 
 data\kml\MultiGeometry\multi-rollover.kml
 
+	Feature uses shared Style
+	LinearRing cannot self-intersect
+	Outer ring has duplicate consecutive points
+	--
 	LabelStyle           1
 	LineStyle            2
 	MultiGeometry        1
@@ -727,7 +739,6 @@ data\kml\MultiGeometry\NestedMultiGeoms.kml
 	# features=1
 
 data\kml\MultiGeometry\polygon-point.kml
-	DEBUG [main] (LinearRing.java:201) - LinearRing self-intersects at i=0 j=59
 
 	Feature uses inline Style
 	LinearRing can not self-intersect
@@ -758,6 +769,7 @@ data\kml\MultiGeometry\testLayers.kml
 data\kml\NetworkLink\aliasing\2xnl.kml
 
 	url=file:/C:/projects/giscore/data/kml/NetworkLink/aliasing/a.kml
+	--
 	NetworkLink          2
 	Placemark            1
 	Point                1
@@ -772,6 +784,7 @@ data\kml\NetworkLink\aliasing\a.kml
 data\kml\NetworkLink\aliasing\nl+desc.kml
 
 	url=file:/C:/projects/giscore/data/kml/NetworkLink/aliasing/a.kml
+	--
 	NetworkLink          1
 	Placemark            3
 	Point                1
@@ -796,6 +809,7 @@ data\kml\NetworkLink\flyToView\flyToView.kml
 	url=file:/C:/projects/giscore/data/kml/NetworkLink/flyToView/d-p-lookat.kml
 	url=file:/C:/projects/giscore/data/kml/NetworkLink/flyToView/nlc-lookat-p-lookat.kml
 	url=file:/C:/projects/giscore/data/kml/NetworkLink/flyToView/nlc-lookat.kml
+	--
 	Document             3
 	LookAt               5
 	NetworkLink          4
@@ -829,6 +843,7 @@ data\kml\NetworkLink\multiLevelNetworkLinks2.kmz
 	Feature uses inline Style
 	url=placemark.kml
 	url=sub1.kml
+	--
 	Document             2
 	IconStyle            3
 	NetworkLink          2
@@ -850,6 +865,7 @@ data\kml\NetworkLink\placemark.kml
 data\kml\NetworkLink\visibility.kml
 
 	url=file:/C:/projects/giscore/data/kml/NetworkLink/placemark.kml
+	--
 	NetworkLink          2
 	Placemark            1
 	Point                1
@@ -936,6 +952,8 @@ data\kml\Placemark\LineString\straight.kml
 
 data\kml\Placemark\LineString\styled.kml
 
+	Feature uses shared Style
+	--
 	Line                 1
 	LineStyle            1
 	LookAt               1
@@ -1280,6 +1298,7 @@ java.lang.IllegalArgumentException: Angle 52.35987755982989 radians is too big
  WARN [main] (KmlInputStream.java:1508) - Failed geometry: Feature data=[name = polygon4, description = polygon with no outer boundary]
  java.lang.IllegalStateException: Bad poly found, no outer ring
 
+	Angle radians is too big
 	Bad poly found, no outer ring
 	Feature uses inline Style
 	Feature uses shared Style
@@ -1457,16 +1476,35 @@ data\kml\Style\overrideStyles.kml
 	Style                2
 	# features=2
 
-data\kml\Style\remote-style.kml
-	DEBUG [main] (Common.java:116) - fix StyleUrl identifier as local reference: complete garbage
+data\kml\Style\rel-styles.kmz
+	DEBUG [main] (KmlReader.java:473) - Parse networkLink: file:/C:/projects/giscore/data/kml/Style/rel-styles.kmz/1.kml
+	DEBUG [main] (KmlReader.java:473) - Parse networkLink: file:/C:/projects/giscore/data/kml/Style/rel-styles.kmz/2.kml
 
-	Absolute styleUrl
 	Feature uses shared Style
-	Suspicious styleUrl characters
+	StyleMap Pair with relative StyleUrl
+	StyleUrl has relative URL
+	url=1.kml
+	url=2.kml
 	--
+	Document             3
+	LookAt               1
+	NetworkLink          2
 	Placemark            5
 	Point                5
-	# features=5
+	StyleMap             1
+	# features=7
+
+data\kml\Style\remote-style.kml
+	DEBUG [main] (Common.java:118) - fix StyleUrl identifier as local reference: complete garbage
+
+	Feature uses shared Style
+	StyleUrl has absolute URL
+	StyleUrl has relative URL
+	Suspicious styleUrl characters
+	--
+	Placemark            6
+	Point                6
+	# features=6
 
 data\kml\Style\SharedStyle.kml
 
@@ -1524,9 +1562,10 @@ data\kml\Style\styled_placemark.kml
 
 data\kml\Style\styles.kml
 
-	IconStyle            1
+	IconStyle            2
 	ListStyle            1
-	Style                2
+	Style                3
+	StyleMap             1
 
 data\kml\time\080708_dirtdevil_test1.kml
 
