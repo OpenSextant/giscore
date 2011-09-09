@@ -1142,16 +1142,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	private void handleBalloonStyle(Style style, QName qname) throws XMLStreamException {
 		String text = null;
-		Color color = null;
-		Color textColor = null;
+		Color color = null;        // default 0xffffffff
+		Color textColor = null;    // default 0xff000000
 		String displayMode = null; // [default] | hide
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (foundEndTag(e, qname)) {
-                if (text != null) {
-                    if (color == null) color = Color.white;         // use default 0xffffffff
-                    if (textColor == null) textColor = Color.black; // use default 0xff000000
-                }
 				style.setBalloonStyle(color, text, textColor, displayMode);
 				return;
 			}
@@ -1159,8 +1155,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(TEXT)) {
-                    //text = stream.getElementText();
-                    text = getNonEmptyElementText();
+                    // Note: Google Earth 6.0.3 treats blank/empty text same as if missing.
+                    // It's suggested that an earlier version handled blank string differently
+                    // according to comments in some KML samples so we're preserving empty strings
+                    // to force a BalloonStyle to be retained.
+                    text = StringUtils.trim(stream.getElementText()); // allow empty string
 				} else if (name.equals(BG_COLOR)) {
 					color = parseColor(stream.getElementText());
 				} else if (name.equals(DISPLAY_MODE)) {
@@ -1168,16 +1167,16 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				} else if (name.equals(TEXT_COLOR)) {
 					textColor = parseColor(stream.getElementText());
 				} else if (name.equals(COLOR)) {
-                    // color element is deprecated in KML 2.1
-                    // this is alias for bgColor
+					// color element is deprecated in KML 2.1
+					// this is alias for bgColor
 					color = parseColor(stream.getElementText());
-                }
+				}
 			}
 		}
 	}
 
     /**
-	 * Get the href subelement from the Icon element.
+	 * Get the href property from the Icon element.
 	 *
 	 * @param qname the qualified name of this event
 	 * @return the href, <code>null</code> if not found.
@@ -1560,7 +1559,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
 	/**
-	 * Returns non-empty text value from attribute
+	 * Returns non-empty text value from attribute. Functionally
+     * same as calling <tt>StringUtils.trimToNull(attr.getValue())</tt>.
 	 * @param attr Attribute
 	 * @return non-empty text value trimmed from attribute,
 	 * 			null if empty
@@ -1837,8 +1837,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                 // ignore empty elements; e.g. <Icon><href /></Icon>
                 // except viewFormat tag in Link which is allowed to have empty string value
                 if (VIEW_FORMAT.equals(sename)) {
-                    value = stream.getElementText();
-                    if (value != null) value = value.trim();
+                    value = StringUtils.trim(stream.getElementText()); // allow empty string
                 } else {
                     value = getNonEmptyElementText();
                 }

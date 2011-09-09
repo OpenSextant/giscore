@@ -40,7 +40,6 @@ import java.io.IOException;
  * fully transparent and ff is fully opaque. The order of expression is
  * aabbggrr, where aa=alpha (00 to ff); bb=blue (00 to ff); gg=green (00 to ff);
  * rr=red (00 to ff). For example, if you want to apply a blue color with 50
- *
  * percent opacity to an overlay, you would specify the following:
  * <color>7fff0000</color>, where alpha=0x7f, blue=0xff, green=0x00, and
  * red=0x00.
@@ -336,22 +335,18 @@ public class Style extends StyleSelector {
      *            The default is black (ff000000). 
 	 * @param displayMode
      *            If <displayMode> is "default", Google Earth uses the information
-     *            supplied in <text> to create a balloon . If <displayMode> is hide,
-     *            Google Earth does not display the balloon. "default" is the default value
-     *            if <tt>null</tt> value is supplied.
+     *            supplied in <text> to create a balloon . If <displayMode> is "hide",
+     *            Google Earth does not display the balloon. "default" is the default
+     *            value if <tt>null</tt>, blank or empty string value is supplied.
 	 */
 	public void setBalloonStyle(Color bgColor, String text, Color textColor,
 			String displayMode) {
-        this.balloonText = StringUtils.trimToNull(text);
-        hasBalloonStyle = balloonText != null || bgColor != null || textColor != null || "hide".equals(displayMode);
-        // having display mode=default and all other properties null basically same as having no balloonStyle at all
+        this.balloonDisplayMode = StringUtils.trimToNull(displayMode);
+        hasBalloonStyle = text != null || bgColor != null || textColor != null || balloonDisplayMode != null;
+        this.balloonText = text == null ? null : text.trim(); // allow empty string
+        // Note: having display mode=default and all other properties null basically same as having no BalloonStyle at all
 		this.balloonBgColor = bgColor;
 		this.balloonTextColor = textColor;
-        if (hasBalloonStyle) {
-            this.balloonDisplayMode = StringUtils.isBlank(displayMode) ? "default" : displayMode;
-        } else {
-            this.balloonDisplayMode = displayMode;
-        }
 	}
 
 	/**
@@ -401,11 +396,11 @@ public class Style extends StyleSelector {
 	/**
 	 * Valid if {@link #hasBalloonStyle} returns <code>true</code>.
 	 * 
-	 * @return the balloonDisplayMode, If <displayMode> is default, Google Earth
+	 * @return the balloonDisplayMode, If <displayMode> is 'default', Google Earth
 	 *         uses the information supplied in <text> to create a balloon . If
-	 *         <displayMode> is hide, Google Earth does not display the balloon.
+	 *         <displayMode> is 'hide', Google Earth does not display the balloon.
 	 *         In Google Earth, clicking the List View icon for a Placemark
-	 *         whose balloon's <displayMode> is hide causes Google Earth to fly
+	 *         whose balloon's <displayMode> is 'hide' causes Google Earth to fly
 	 *         to the Placemark.
 	 */
     @CheckForNull
@@ -417,6 +412,7 @@ public class Style extends StyleSelector {
 	 * Set the label style
 	 * 
 	 * @param color
+     *            the color for the label, can be null if want to use default color.
 	 * @param scale
 	 *            the scale of the labels, nullable (1.0=normal size, 2.0=twice normal size, etc.)
 	 */
@@ -450,6 +446,7 @@ public class Style extends StyleSelector {
 	 * Set the poly style
 	 * 
 	 * @param color Polygon color
+     *            the color for the Polygon, can be null if want to use default color.
 	 * @param fill Specifies whether to fill the polygon
 	 * @param outline Specifies whether to outline the polygon. Polygon outlines use the current LineStyle. 
 	 */

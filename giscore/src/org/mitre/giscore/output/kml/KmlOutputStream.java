@@ -1502,10 +1502,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         handleColor(BG_COLOR, style.getBalloonBgColor());
         handleColor(TEXT_COLOR, style.getBalloonTextColor());
         final String text = style.getBalloonText();
-        if (text != null) handleSimpleElement(TEXT, text);
+        if (text != null) handleSimpleElement(TEXT, text.isEmpty() ? null : text);
         String displayMode = style.getBalloonDisplayMode();
         // ignore default displayMode value (default)
-        if (displayMode != null && "hide".equals(displayMode))
+        if (displayMode != null && ("hide".equals(displayMode) || "default".equals(displayMode)))
             handleSimpleElement(DISPLAY_MODE, displayMode);
         writer.writeEndElement();
     }
