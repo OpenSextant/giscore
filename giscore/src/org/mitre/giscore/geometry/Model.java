@@ -6,6 +6,7 @@ import java.util.List;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.AltitudeModeEnumType;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
@@ -39,6 +40,10 @@ public class Model extends Geometry {
         // empty constructor
 	}
 
+    /**
+     * Get the exact coordinates of the Model's origin in latitude, longitude, and altitude.
+     * @return location, <tt>null</tt> if not defined
+     */
     @CheckForNull
     public Geodetic2DPoint getLocation() {
         return location;
@@ -52,6 +57,10 @@ public class Model extends Geometry {
 			bbox = new Geodetic2DBounds(location);
 	}
 
+    /**
+     * Set the exact coordinates of the Model's origin in latitude, longitude, and altitude.
+     * @param gp
+     */
 	public void setLocation(Geodetic2DPoint gp) {
         this.location = gp;
         if (gp != null) {
@@ -101,12 +110,13 @@ public class Model extends Geometry {
 
     /**
 	 * This method returns a Geodetic2DPoint that is at the center of this
-	 * Model's Bounding Box, or null if the bounding box (location) is not
+	 * Model's Bounding Box, or <tt>null</tt> if the bounding box (location) is not
 	 * defined.
 	 *
 	 * @return Geodetic2DPoint or Geodetic3DPoint at the center of this Model
 	 */
     @Override
+    @CheckForNull
 	public Geodetic2DPoint getCenter() {
 		// for point feature just return the point
 		return location;
@@ -136,7 +146,9 @@ public class Model extends Geometry {
 			IllegalAccessException {
 		super.readData(in);
         boolean isNull = in.readBoolean();
-        if (!isNull) {
+        if (isNull) {
+            location = null;
+        } else {
             boolean is3d = in.readBoolean();
             double elevation = 0.0;
             if (is3d) {
