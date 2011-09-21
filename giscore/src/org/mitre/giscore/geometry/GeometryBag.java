@@ -33,11 +33,7 @@ import org.apache.commons.lang.builder.ToStringStyle;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
-import org.mitre.itf.geodesy.Angle;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
-import org.mitre.itf.geodesy.Geodetic2DPoint;
-import org.mitre.itf.geodesy.Latitude;
-import org.mitre.itf.geodesy.Longitude;
 
 /**
  * This is a simple typed collection of geometries. The methods aggregate answers
@@ -129,7 +125,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 
     /**
 	 * @param i the desired part, 0 origin
-	 * @return the referenced part
+	 * @return the referenced part, <tt>null</tt> if index out of range
 	 */
 	@Override
 	@Nullable
