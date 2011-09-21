@@ -50,6 +50,8 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 
 	private final List<Geometry> geometries = new ArrayList<Geometry>();
 
+    private static final Geodetic2DBounds EMPTY_BOUNDS = new Geodetic2DBounds();
+
 	/**
 	 * Empty ctor for object io.
 	 */
@@ -94,35 +96,23 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		if (rval != null)
 			bbox = rval;
 		else
-			bbox = new Geodetic2DBounds();
+			bbox = EMPTY_BOUNDS;
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.geometry.Geometry#getCenter()
+    /**
+	 * This method returns the Geodetic2DBounds that encloses this Geometry
+	 * object.
+	 *
+	 * @return Geodetic2DBounds object enclosing this Geometry object.
+     *          <tt>null</tt> if no contained geometry has a bounding box.
 	 */
-	@Override
     @CheckForNull
-	public Geodetic2DPoint getCenter() {
-        // NOTE: maybe better to compute center from bounding box
-        // since bounding box is computed once and don't need to enumerate
-        // all geometries when this is called
-		double lat = 0.0;
-		double lon = 0.0;
-		double count = 0;
-		for(Geometry geo : geometries) {
-            Geodetic2DPoint cen = geo.getCenter();
-            if (cen != null) {
-                lat += cen.getLatitudeAsDegrees();
-                lon += cen.getLongitudeAsDegrees();
-                count++;
-            }
+    @Override
+	public Geodetic2DBounds getBoundingBox() {
+		if (bbox == null) {
+			computeBoundingBox();
 		}
-        if (count == 0) return null;
-		// Compute Averages
-        lat = lat / count;
-        lon = lon / count;
-		return new Geodetic2DPoint(new Longitude(lon, Angle.DEGREES),
-				new Latitude(lat, Angle.DEGREES));
+		return bbox == EMPTY_BOUNDS ? null : bbox;
 	}
 
 	/* (non-Javadoc)
