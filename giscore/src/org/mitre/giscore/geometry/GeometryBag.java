@@ -194,9 +194,9 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 * @see java.util.Collection#addAll(java.util.Collection)
 	 */
 	public boolean addAll(Collection<? extends Geometry> c) {
-        // if non-null then need to recompute bbox
-        if (c != null) bbox = null;
-		return geometries.addAll(c);
+        final boolean modified = geometries.addAll(c);
+        if (modified) bbox = null; // need to recompute bbox if modified
+		return modified;
 	}
 
 	/**
@@ -243,27 +243,27 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 * @see java.util.Collection#remove(java.lang.Object)
 	 */
 	public boolean remove(Object o) {
-        final boolean b = geometries.remove(o);
-        if (b) bbox = null; // need to recompute bbox if list changed
-        return b;
+        final boolean modified = geometries.remove(o);
+        if (modified) bbox = null; // need to recompute bbox if list changed
+        return modified;
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Collection#removeAll(java.util.Collection)
 	 */
 	public boolean removeAll(Collection<?> c) {
-        final boolean b = geometries.removeAll(c);
-        if (b) bbox = null; // need to recompute bbox if list changed
-        return b;
+        final boolean modified = geometries.removeAll(c);
+        if (modified) bbox = null; // need to recompute bbox if list changed
+        return modified;
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Collection#retainAll(java.util.Collection)
 	 */
 	public boolean retainAll(Collection<?> c) {
-        final boolean b = geometries.retainAll(c);
-        if (b) bbox = null; // need to recompute bbox if list changed
-        return b;
+        final boolean modified = geometries.retainAll(c);
+        if (modified) bbox = null; // need to recompute bbox if list changed
+        return modified;
 	}
 
 	/* (non-Javadoc)
@@ -281,8 +281,16 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		return geometries.toArray();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Collection#toArray(T[])
+	/**
+     * Returns an array containing all of the elements in this GeometryBag in
+     * proper sequence (from first to last element); the runtime type of
+     * the returned array is that of the specified array.
+     *
+	 * @throws ArrayStoreException if the runtime type of the specified array
+     *         is not a supertype of the runtime type of every element in
+     *         this list
+     * @throws NullPointerException if the specified array is null
+     * @see java.util.Collection#toArray(T[])
 	 */
 	@NonNull    
 	public <T> T[] toArray(T[] a) {
