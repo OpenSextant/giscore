@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.builder.ToStringBuilder;
@@ -82,11 +83,13 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		Geodetic2DBounds rval = null;
 		for(Geometry geo : geometries) {
 			Geodetic2DBounds bounds = geo.getBoundingBox();
-			if (rval == null) {
-				rval = new Geodetic2DBounds(bounds);
-			} else {
-				rval.include(bounds);
-			}
+            if (bounds != null) {
+                if (rval == null) {
+                    rval = new Geodetic2DBounds(bounds);
+                } else {
+                    rval.include(bounds);
+                }
+            }
 		}
 		if (rval != null)
 			bbox = rval;
@@ -98,8 +101,11 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 * @see org.mitre.giscore.geometry.Geometry#getCenter()
 	 */
 	@Override
-	@NonNull
+    @CheckForNull
 	public Geodetic2DPoint getCenter() {
+        // NOTE: maybe better to compute center from bounding box
+        // since bounding box is computed once and don't need to enumerate
+        // all geometries when this is called
 		double lat = 0.0;
 		double lon = 0.0;
 		double count = 0;
@@ -111,11 +117,10 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
                 count++;
             }
 		}
+        if (count == 0) return null;
 		// Compute Averages
-        if (count != 0) {
-		    lat = lat / count;
-		    lon = lon / count;
-        }
+        lat = lat / count;
+        lon = lon / count;
 		return new Geodetic2DPoint(new Longitude(lon, Angle.DEGREES),
 				new Latitude(lat, Angle.DEGREES));
 	}
@@ -169,6 +174,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 */
 	@Override
 	public boolean is3D() {
+        // returns true if any child geometry is 3d
 		for(Geometry geo : geometries) {
 			if (geo.is3D) return true;
 		}
@@ -192,14 +198,18 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	/* (non-Javadoc)
 	 * @see java.util.Collection#add(java.lang.Object)
 	 */
-	public boolean add(Geometry e) {
-		return geometries.add(e);
+	public boolean add(Geometry geom) {
+        // if non-null then need to recompute bbox
+        if (geom != null) bbox = null;
+		return geometries.add(geom);
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Collection#addAll(java.util.Collection)
 	 */
 	public boolean addAll(Collection<? extends Geometry> c) {
+        // if non-null then need to recompute bbox
+        if (c != null) bbox = null;
 		return geometries.addAll(c);
 	}
 
@@ -208,6 +218,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
      * The list will be empty after this call returns.
 	 */
 	public void clear() {
+        bbox = null; // need to recompute bbox
 		geometries.clear();
 	}
 
@@ -246,21 +257,27 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 * @see java.util.Collection#remove(java.lang.Object)
 	 */
 	public boolean remove(Object o) {
-		return geometries.remove(o);
+        final boolean b = geometries.remove(o);
+        if (b) bbox = null; // need to recompute bbox if list changed
+        return b;
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Collection#removeAll(java.util.Collection)
 	 */
 	public boolean removeAll(Collection<?> c) {
-		return geometries.removeAll(c);
+        final boolean b = geometries.removeAll(c);
+        if (b) bbox = null; // need to recompute bbox if list changed
+        return b;
 	}
 
 	/* (non-Javadoc)
 	 * @see java.util.Collection#retainAll(java.util.Collection)
 	 */
 	public boolean retainAll(Collection<?> c) {
-		return geometries.retainAll(c);
+        final boolean b = geometries.retainAll(c);
+        if (b) bbox = null; // need to recompute bbox if list changed
+        return b;
 	}
 
 	/* (non-Javadoc)
@@ -298,6 +315,7 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 		if (!geometries.isEmpty()) geometries.clear();
 		if (list != null && !list.isEmpty())
 			geometries.addAll(list);
+        bbox = null; // need to recompute bbox
 	}
 
 	/* (non-Javadoc)
