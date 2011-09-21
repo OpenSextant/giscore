@@ -327,6 +327,11 @@ This release fixes minor bugs and enhancements in KML handling.
 IKml
 -add viewRefreshMode and refreshMode enumeration values as constants
 
+GeometryBag
+-Adjust all methods that change the geometries list to reset the bbox field (e.g. add(), addAll(), remove(), etc.)
+-getCenter() now returns null if no contained geometies has a center point
+-Override getBoundingBox() and return null if cannot compute a bounding box
+
 KmlBaseReader
 -Added setHttpQuery and setViewFormat to override default query/format parameter values
 -Changed default viewFormat default values from 0's to more meaningful values
