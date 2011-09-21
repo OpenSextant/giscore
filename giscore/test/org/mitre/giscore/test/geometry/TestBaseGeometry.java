@@ -295,8 +295,8 @@ public class TestBaseGeometry extends TestGISBase {
 
         // center = (1° 15' 0" E, 1° 15' 0" N)
         final Geodetic2DPoint cp = geo.getCenter();
-        assertEquals(1.25, cp.getLatitudeAsDegrees(), EPSILON);
-        assertEquals(1.25, cp.getLongitudeAsDegrees(), EPSILON);
+        assertEquals(1.0, cp.getLatitudeAsDegrees(), EPSILON);
+        assertEquals(1.0, cp.getLongitudeAsDegrees(), EPSILON);
 
 		geo.clear();
 		assertEquals(0, geo.size());
