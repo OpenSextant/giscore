@@ -2049,6 +2049,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					QName qname = se.getName();
 					String localPart = qname.getLocalPart();
 					if (localPart.equals(LOCATION)) {
+                        // Location specifies the exact coordinates of the Model's origin in latitude, longitude, and altitude.
                         Geodetic2DPoint point = parseLocation(qname);
                         if (point != null)
                             model.setLocation(point);
