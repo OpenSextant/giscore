@@ -185,9 +185,12 @@ public class GeometryBag extends Geometry implements Collection<Geometry> {
 	 * @see java.util.Collection#add(java.lang.Object)
 	 */
 	public boolean add(Geometry geom) {
-        // if non-null then need to recompute bbox
-        if (geom != null) bbox = null;
-		return geometries.add(geom);
+		// if non-null then need to recompute bbox
+		if (geom != null) {
+			bbox = null;
+			return geometries.add(geom);
+		}
+		return false;
 	}
 
 	/* (non-Javadoc)
