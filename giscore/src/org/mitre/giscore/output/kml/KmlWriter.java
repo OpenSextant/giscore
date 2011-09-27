@@ -42,14 +42,15 @@ import java.net.URISyntaxException;
  * <ul>
  * <li>write to KMZ/KML files transparently. If file has a .kmz file extension (or .zip) then a KMZ (ZIP)
  *    file is created with that file name.
- * <li>discards empty containers if ContainerStart is followed by a ContainerEnd element
+ * <li>discards empty containers if ContainerStart is immediately followed by a ContainerEnd element
  *    in a successive write() call.
  * <li>write Files or contents from inputStream to entries in KMZ for networkLinked content,
  *    overlay images, icons, etc.
  * </ul>
  * 
- * Complements the KmlReader class. Advanced KML support with more direct access may require
- * using the <code>KmlOutputStream</code> or <code>KmzOutputStream</code> classes directly.
+ * Complements the {@link org.mitre.giscore.input.kml.KmlReader} class. Advanced KML
+ * support with more direct access may require using the {@link KmlOutputStream}
+ * or {@link KmzOutputStream} classes directly.
  * 
  * @author Jason Mathews, MITRE Corp.
  * Created: Mar 13, 2009 10:06:17 AM

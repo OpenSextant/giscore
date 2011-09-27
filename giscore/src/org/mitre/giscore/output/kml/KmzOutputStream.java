@@ -33,7 +33,7 @@ import org.mitre.giscore.output.IGISOutputStream;
 
 /**
  * The kmz output stream creates a result KMZ file using the given output
- * stream. It delegates the GIS output to a {@code KmlOutputStream}.
+ * stream. It delegates the GIS output to a {@link KmlOutputStream}.
  * <p>
  * After all of the GIS objects have been written, additional zip entries can be
  * added with the {@code addEntry()} methods.
@@ -41,7 +41,7 @@ import org.mitre.giscore.output.IGISOutputStream;
  * TODO: Add special handling for the COLLADA models:
  * http://code.google.com/apis/kml/documentation/kml_21tutorial.html
  * <p> 
- * See also {@code KmlWriter} which wraps KmlOutputStream and handles KML or KMZ
+ * See also {@link KmlWriter} which wraps KmlOutputStream and handles KML or KMZ
  * depending on file extension.
  *
  * @author jgibson
@@ -79,7 +79,7 @@ public class KmzOutputStream implements IGISOutputStream {
 	/**
 	 * {@inheritDoc}
 	 *
-	 * @throws IllegalStateException if the underlying kmlStream has already
+	 * @throws IllegalStateException if the underlying stream has already
 	 *  been closed. (By adding additional file entries, for example).
 	 */
 	public void write(IGISObject object) throws IllegalStateException {
@@ -104,7 +104,7 @@ public class KmzOutputStream implements IGISOutputStream {
 	 * <br/>
 	 * This is useful if you want to write additional objects into the KMZ.
 	 *
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 * @see KmlOutputStream#closeWriter()
 	 */
 	public void closeWriter() throws IOException {
