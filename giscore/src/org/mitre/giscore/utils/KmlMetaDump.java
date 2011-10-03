@@ -14,6 +14,23 @@
  ***************************************************************************************/
 package org.mitre.giscore.utils;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Stack;
+import java.util.TreeSet;
+
+import javax.xml.stream.XMLStreamException;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.Level;
@@ -21,8 +38,33 @@ import org.apache.log4j.Logger;
 import org.apache.log4j.spi.LocationInfo;
 import org.apache.log4j.spi.LoggingEvent;
 import org.apache.log4j.spi.ThrowableInformation;
-import org.mitre.giscore.events.*;
-import org.mitre.giscore.geometry.*;
+import org.mitre.giscore.events.AltitudeModeEnumType;
+import org.mitre.giscore.events.Comment;
+import org.mitre.giscore.events.Common;
+import org.mitre.giscore.events.ContainerEnd;
+import org.mitre.giscore.events.ContainerStart;
+import org.mitre.giscore.events.DocumentStart;
+import org.mitre.giscore.events.Element;
+import org.mitre.giscore.events.Feature;
+import org.mitre.giscore.events.GroundOverlay;
+import org.mitre.giscore.events.IGISObject;
+import org.mitre.giscore.events.NetworkLink;
+import org.mitre.giscore.events.Overlay;
+import org.mitre.giscore.events.Pair;
+import org.mitre.giscore.events.Schema;
+import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.events.Style;
+import org.mitre.giscore.events.StyleMap;
+import org.mitre.giscore.events.StyleSelector;
+import org.mitre.giscore.events.TaggedMap;
+import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.geometry.GeometryBag;
+import org.mitre.giscore.geometry.GeometryBase;
+import org.mitre.giscore.geometry.Line;
+import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.Model;
+import org.mitre.giscore.geometry.Point;
+import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.KmlReader;
 import org.mitre.giscore.input.kml.UrlRef;
@@ -31,15 +73,6 @@ import org.mitre.giscore.output.kml.KmlOutputStream;
 import org.mitre.giscore.output.kml.KmlWriter;
 import org.mitre.itf.geodesy.Geodetic2DBounds;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
-
-import javax.xml.stream.XMLStreamException;
-import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.util.*;
 
 /**
  * Simple KML Debugging Tool to read KML/KMZ documents by File, URL or recursively

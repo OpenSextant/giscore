@@ -19,8 +19,6 @@
 		<artifact name="giscore" type="javadoc" ext="jar" conf="pubextra" />
 	</publications>
 	<dependencies defaultconf="compile->default">
-		<dependency org="org.mitre.javautil" name="javautil-tiger"
-			rev="1.0.14" />
 		<dependency org="org.mitre.itf" name="geodesy" rev="1.9.23" />
 		<dependency org="commons-lang" name="commons-lang" rev="2.5" />
 		<dependency org="commons-io" name="commons-io" rev="1.4" />

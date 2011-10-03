@@ -21,7 +21,7 @@ package org.mitre.giscore.output.esri;
 import java.io.File;
 import java.io.IOException;
 
-import org.mitre.javautil.Pair;
+import org.mitre.giscore.utils.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,21 +96,25 @@ public final class ESRIInitializer {
 				// JVM if the libraries can't be found.
 				String arcHome = System.getenv("ARCGISHOME");
 				if(arcHome == null || arcHome.length() < 1) {
-					throw new UnsatisfiedLinkError("ArcGIS home (ARCGISHOME) not defined.");
+					// Try desktop env variable (v10)
+					arcHome = System.getenv("AGSDESKTOPJAVA");
 				}
+				if(arcHome == null || arcHome.length() < 1) {
+					throw new UnsatisfiedLinkError("ArcGIS home (ARCGISHOME) not defined.");
+				}		
 				// Normalize arcHome
 				arcHome = arcHome.replaceAll("\\\\", "/");
 				if (! arcHome.endsWith("/")) {
 					arcHome = arcHome + "/"; 
 				}
-				logger.debug("ARCGISHOME found at " + arcHome);
+				logger.debug("ARCGISHOME or AGSDESKTOPJAVA found at " + arcHome);
 				String libName = System.mapLibraryName(TEST_DLL);
 				String parent = arcHome + "bin";
 				File f = new File(parent, libName);
 				if(!f.exists() || !f.isFile()) {
 					throw new UnsatisfiedLinkError("Sample library '" + 
 							f.getAbsolutePath() + "' not found");
-				}
+				}			
 				logger.debug("Test DLL found at " + f.getAbsolutePath());
 
 				// This should only be attempted with version 9.3.0.B or with
@@ -131,43 +135,43 @@ public final class ESRIInitializer {
 			for(int i = 0; i < LicensesToTry.length; i++) {
 				// Step 2: Initialize a valid license. 
 				try {
-					int code = new AoInitialize().initialize(LicensesToTry[i].a);
+					int code = new AoInitialize().initialize(LicensesToTry[i].getFirst());
 					if (code == esriLicenseStatus.esriLicenseAvailable ||
 							code == esriLicenseStatus.esriLicenseAlreadyInitialized) {
-						logger.info("Successfully initialized ESRI using license: {}", LicensesToTry[i].b);
+						logger.info("Successfully initialized ESRI using license: {}", LicensesToTry[i].getSecond());
 						worked = true;
 						break; // Worked!
 					}
 					if(logger.isDebugEnabled()) {
 						switch(code) {
 							case esriLicenseStatus.esriLicenseCheckedIn:
-								logger.debug("Initialization of " + LicensesToTry[i].b + " reported license checked in.");
+								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported license checked in.");
 								break;
 							case esriLicenseStatus.esriLicenseCheckedOut:
-								logger.debug("Initialization of " + LicensesToTry[i].b + " reported license checked out.");
+								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported license checked out.");
 								break;
 							case esriLicenseStatus.esriLicenseFailure:
-								logger.debug("Initialization of " + LicensesToTry[i].b + " reported license failure.");
+								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported license failure.");
 								break;
 							case esriLicenseStatus.esriLicenseNotInitialized:
-								logger.debug("Initialization of " + LicensesToTry[i].b + " reported license not initialized.");
+								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported license not initialized.");
 								break;
 							case esriLicenseStatus.esriLicenseNotLicensed:
-								logger.debug("Initialization of " + LicensesToTry[i].b + " reported not licensed.");
+								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported not licensed.");
 								break;
 							case esriLicenseStatus.esriLicenseUnavailable:
-								logger.debug("Initialization of " + LicensesToTry[i].b + " reported license unavailable.");
+								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported license unavailable.");
 								break;
 							default:
-								logger.debug("Initialization of " + LicensesToTry[i].b + " reported strange license response: " + code);
+								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported strange license response: " + code);
 						}
 					}
 				} catch(AutomationException e) {
 					// Ignore
-					logger.debug("Automation exception initializing ESRI using license: {} : {}", LicensesToTry[i].b, e.getMessage());
+					logger.debug("Automation exception initializing ESRI using license: {} : {}", LicensesToTry[i].getSecond(), e.getMessage());
 				} catch(IOException e) {
 					// Ignore
-					logger.debug("IO exception initializing ESRI using license: {} : {}", LicensesToTry[i].b, e.getMessage());
+					logger.debug("IO exception initializing ESRI using license: {} : {}", LicensesToTry[i].getSecond(), e.getMessage());
 				}
 			}
 			if(!worked) {
