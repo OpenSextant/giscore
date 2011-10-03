@@ -425,7 +425,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
             if (localname.equals(NAME)) {
 				// sometimes markup found in names (e.g. <name><B>place name</B></name>)
 				// where is should be in the description and/or BalloonStyle
-                feature.setName(getElementText(name));
+                feature.setName(getElementText(name)); // non-empty or null value
                 return true;
             } else if (localname.equals(DESCRIPTION)) {
                 // description content with markup not enclosed in CDATA is invalid and cannot be parsed
