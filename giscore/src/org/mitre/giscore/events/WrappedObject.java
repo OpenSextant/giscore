@@ -27,7 +27,7 @@ import java.io.Serializable;
  * In reading a GISStream sometimes elements are sometimes out of order and a
  * straight-forward processing could encounter errors so such elements that
  * require special handling are wrapped in a <code>WrappedObject</code>.
- * Without explicit handling these are treated as <code>Comment</code>
+ * Without explicit handling these objects are treated as <code>Comment</code>
  * objects and generally ignored or passed around without any processing.
  *
  * @author Jason Mathews, MITRE Corp.
@@ -43,7 +43,7 @@ public class WrappedObject extends Comment implements IDataSerializable, Seriali
      * Empty constructor for data IO
      */
     public WrappedObject() {
-        super();
+        // default constructor
     }
 
     public WrappedObject(IGISObject obj) {
@@ -57,10 +57,11 @@ public class WrappedObject extends Comment implements IDataSerializable, Seriali
      */
     public String getText() {
         StringBuilder sb = new StringBuilder()
-                .append("[Comment: ");
+                .append("[WrappedObject");
         if (wrappedObject != null)
-            sb.append('\n')
-                    .append(ToStringBuilder.reflectionToString(wrappedObject, ToStringStyle.SHORT_PREFIX_STYLE));
+            sb.append(": \n")
+                    .append(ToStringBuilder.reflectionToString(wrappedObject,
+                            ToStringStyle.SHORT_PREFIX_STYLE));
         return sb.append(']').toString();
     }
 
