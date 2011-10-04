@@ -205,9 +205,11 @@ public class KmlMetaDump implements IKml {
 	private final Set<String> totals = new TreeSet<String>();
 	private boolean useStdout;
 
+    private final long startTime;
+
 	private static final String CLAMP_TO_GROUND = "clampToGround";
 
-	public KmlMetaDump() {
+    public KmlMetaDump() {
 		try {
 			//Get the root logger
 			Logger root = Logger.getRootLogger();
@@ -219,6 +221,7 @@ public class KmlMetaDump implements IKml {
 		} catch (Exception e) {
 			//ignore
 		}
+        startTime = System.currentTimeMillis();
 	}
 
 	public void checkSource(URL url) throws IOException {
@@ -1414,6 +1417,8 @@ public class KmlMetaDump implements IKml {
 	}
 
 	private void dumpStats() {
+        long elapsed = verbose ? System.currentTimeMillis() - startTime : 0;
+
 		if (dumpCount > 1 && !totals.isEmpty()) {
 			System.out.println("Summary: " + dumpCount + " KML resources\n");
 			boolean metaProp = false;
@@ -1439,6 +1444,7 @@ public class KmlMetaDump implements IKml {
 					System.out.println("\t" + name);
 				}
 		}
+        if (verbose) System.out.printf("%nElapsed time = %d ms%n", elapsed);
 	}
 
 	private void addTag(Class<? extends IGISObject> aClass) {
