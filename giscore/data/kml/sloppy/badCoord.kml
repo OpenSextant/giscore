@@ -151,7 +151,6 @@
         <Placemark>
             <name>point9</name>
             <description>[200,45,300] shown on map @ -160 Lon / +45 Lat w/no icon</description>
-            <!-- shouldn't 200 longitude be normalized as -170 not -160 ?? -->
             <Point>
                 <coordinates>200,45,300</coordinates>
             </Point>
@@ -181,24 +180,24 @@
             </Point>
         </Placemark>
 
-    <Placemark>
-      <name>PointNoLabel</name>
-      <description>
+        <Placemark>
+          <name>PointNoLabel</name>
+          <description>
 	<![CDATA[Shows same behavior on map as line/ring/polygon w/1 pt.<P>
 	See <a href="#Line3">Line3</a> or <a href="#polygon1">polygon1</a>.]]>
-      </description>
-      <Style>
-        <IconStyle>
-          <Icon />
-        </IconStyle>
-        <LabelStyle>
-          <scale>0</scale>
-        </LabelStyle>
-      </Style>
-      <Point>
-        <coordinates>5.2,2.02,0</coordinates>
-      </Point>
-    </Placemark>
+          </description>
+          <Style>
+            <IconStyle>
+              <Icon/>
+            </IconStyle>
+            <LabelStyle>
+              <scale>0</scale>
+            </LabelStyle>
+          </Style>
+          <Point>
+            <coordinates>5.2,2.02,0</coordinates>
+          </Point>
+        </Placemark>
 
     </Folder>
 

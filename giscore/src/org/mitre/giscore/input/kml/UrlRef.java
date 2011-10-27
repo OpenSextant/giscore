@@ -530,7 +530,7 @@ public final class UrlRef implements java.io.Serializable {
                     // unwise characters
                 case '{':
                 case '}':
-                case '|': // %7C
+                case '|': // %7C: otherwise java.net.URISyntaxException: Illegal character
                 case '\\':
                 case '^':
                 case '[':
