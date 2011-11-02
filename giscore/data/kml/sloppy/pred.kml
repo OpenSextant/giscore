@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
- Well-formed XML but fails KML schema and spec in several places:
+  Well-formed XML but fails KML schema and spec in several places:
   Sample KML with extra whitespace and newlines in various fields.
   Invalid color values with 3-hex values not 4.
 
- Representation of UDOP USCENTCOM predator KML feed.
+  Representation of UDOP USCENTCOM predator KML feed.
+  System still generates this "bad" KML as of Oct 2011.
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
 <Document>
+<open>1</open>
 <ExtendedData>
 <Data name="refreshTime">
 <value>
@@ -90,6 +92,12 @@ ffffffff
 <altitudeMode>
 absolute
 </altitudeMode>
+<!--
+ GE 4.x, 5.x interpreted this as a line with 2 coords.
+ But now this is interpreted in GE 6.1.0.5001 as following:
+ -81.9916466079043,0,0 29.9420387052815,0,0 0,0,0
+ -81.9980316162109,0,0 29.9407501220703,0,0 567.794982910156,0,0
+-->
 <coordinates>
 -81.9916466079043, 29.9420387052815, 0.0, -81.9980316162109, 29.9407501220703, 567.794982910156
 </coordinates>
