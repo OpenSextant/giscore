@@ -45,6 +45,7 @@ import org.mitre.giscore.output.remote.ClientOutputStream;
 import org.mitre.giscore.output.remote.RemoteOutputStream;
 import org.mitre.giscore.output.shapefile.PointShapeMapper;
 import org.mitre.giscore.output.shapefile.ShapefileOutputStream;
+import org.mitre.giscore.output.wkt.WKTOutputStream;
 
 /**
  * Factory class which creates concrete instantiations of input and output
@@ -257,6 +258,11 @@ public class GISFactory {
 							arguments,
 							new boolean[] {  });
 					return new GeoAtomOutputStream(outputStream, arguments);
+				case WKT:
+					checkArguments(new Class[] { },
+							arguments,
+							new boolean[] { false });
+					return new WKTOutputStream(outputStream, arguments);
 				default:
 					throw new UnsupportedOperationException(
 							"Cannot create an output stream for type " + type);

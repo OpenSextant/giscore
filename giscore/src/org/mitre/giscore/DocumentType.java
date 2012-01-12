@@ -46,7 +46,9 @@ public enum DocumentType {
     /* GeoRSS-Simple Format */
 	GeoRSS(false,false),
 	/* GeoAtom with embedded extended data */
-	GeoAtom(false,false)
+	GeoAtom(false,false),
+	/* OGC Well Known Text format */
+	WKT(false, false)
 	;
 	
 	private boolean requiresZipStream;
