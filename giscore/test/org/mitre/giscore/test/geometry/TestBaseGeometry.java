@@ -14,6 +14,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
 
 /**
  * Test base geometry classes with geometry creation and various
@@ -339,7 +340,7 @@ public class TestBaseGeometry extends TestGISBase {
 
         // (0° 14' 24" E, 0° 14' 24" N) @ 0m
         final Geodetic2DPoint cp = geo.getCenter();
-        System.out.println(cp);
+        System.out.println("multiline center=" + cp);
         assertEquals(0.24, cp.getLatitudeAsDegrees(), EPSILON);
         assertEquals(0.24, cp.getLongitudeAsDegrees(), EPSILON);
 
@@ -406,7 +407,7 @@ public class TestBaseGeometry extends TestGISBase {
     public void testClippedAtDateLine() {
         // create outline of Fiji islands which wrap international date line
 		List<Point> pts = new ArrayList<Point>();
-        final Point firstPt = new Point(-16.68226928264316, 179.900033693558);
+		final Point firstPt = new Point(-16.68226928264316, 179.900033693558);
         pts.add(firstPt);
         pts.add(new Point(-16.68226928264316, -180));
 		pts.add(new Point(-17.01144405215603, -180));
@@ -415,7 +416,38 @@ public class TestBaseGeometry extends TestGISBase {
         Line line = new Line(pts);
         assertTrue(line.clippedAtDateLine());
 
+		// (179° 57' 0" E, 16° 50' 49" S)
+		Geodetic2DPoint cp = line.getCenter();
+		// System.out.println("Fctr=" + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
+		assertEquals(-16.846856667399592, cp.getLatitudeAsDegrees(), EPSILON);
+        assertEquals(179.950016846779, cp.getLongitudeAsDegrees(), EPSILON);
+
         LinearRing ring = new LinearRing(pts, true);
         assertTrue(ring.clippedAtDateLine());
+		assertEquals(cp, ring.getCenter());
+     }
+
+	@Test
+    public void testWrapDateLine() {
+        // create outline of Fiji islands which wrap international date line
+		List<Point> pts = new ArrayList<Point>();
+		final Point firstPt = new Point(-16.68226928264316, 179.900033693558);
+        pts.add(firstPt);
+        pts.add(new Point(-16.68226928264316, -179.65));
+		pts.add(new Point(-17.01144405215603, -180));
+		pts.add(new Point(-17.01144405215603, 179.900033693558));
+		pts.add(firstPt);
+        Line line = new Line(pts);
+        assertTrue(line.clippedAtDateLine());
+
+		// (179° 52' 30" W, 16° 50' 49" S)
+		Geodetic2DPoint cp = line.getCenter();
+		// System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
+		assertEquals(-16.846856667399592, cp.getLatitudeAsDegrees(), EPSILON);
+        assertEquals(-179.874983153221, cp.getLongitudeAsDegrees(), EPSILON);
+
+        LinearRing ring = new LinearRing(pts, true);
+        assertTrue(ring.clippedAtDateLine());
+		assertEquals(cp, ring.getCenter());
      }
 }
