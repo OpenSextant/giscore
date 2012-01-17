@@ -18,6 +18,7 @@ package org.mitre.giscore.output;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -47,6 +48,8 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 		IGISOutputStream {
 
     private static final Logger log = LoggerFactory.getLogger(XmlOutputStreamBase.class);
+
+	private final DecimalFormat formatter = new DecimalFormat("0.##########");
 
     protected OutputStream stream;
     
@@ -406,15 +409,21 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     }
 
     /**
-     * Simple Double formatter strips ".0" suffix (e.g. 1.0 -> 1).
-     * First performs Double.toString() then strips redundant ".0" suffix if value has no fractional part.
+     * Formats double values suitable for XML output using DecimalFormater.
+     * Rounds off decimal value at 10-decimal places eliminating most common
+     * round-off errors which are typically at 14 decimal places or beyond
+     * (e.g. -34.93 may get converted to -34.93000000000001 with conversion
+     * from decimal degrees to radians and back to degrees.
      * @param d double value
      * @return formatted decimal value
      */
-    protected static String formatDouble(double d) {
-        String dval = Double.toString(d);
-        int len = dval.length();
-        return len > 2 && dval.endsWith(".0") ? dval.substring(0,len-2) : dval;
+    protected String formatDouble(double d) {
+        // note doubles like -34.93 may get formatted as -34.93000000000001
+        // if using Double.toString()
+        // string parsed decimal degrees -> radians -> printed out as decimal degrees
+        // using java.text.DecimalFormat("0.########") with 10 decimal places to be safe
+        // since 8 decimal places .00000001 is 1mm resolution and anything beyond is round-off error
+        return formatter.format(d);
     }
 
 }
