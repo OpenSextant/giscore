@@ -1,5 +1,5 @@
 /****************************************************************************************
- *  TestWKT.java
+ *  TestPrj.java
  *
  *  Created: Jul 28, 2009
  *
@@ -20,14 +20,14 @@ package org.mitre.giscore.test.input;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.mitre.giscore.input.shapefile.WKTReader;
+import org.mitre.giscore.input.shapefile.PrjReader;
 
 /**
  * Test WKT format utility
  * 
  * @author DRAND
  */
-public class TestWKT {
+public class TestPrj {
 	String WKT1 = "PROJCS[\"NAD_1983_StatePlane_Pennsylvania_South_FIPS_3702_Feet\","
 			+ "GEOGCS[\"GCS_North_American_1983\","
 			+ "DATUM[\"D_North_American_1983\","
@@ -52,8 +52,8 @@ public class TestWKT {
 	String WKT3 = "PROJCS[\"WGS_1984_UTM_Zone_35S\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137,298.257223563]],PRIMEM[\"Greenwich\",0],UNIT[\"Degree\",0.017453292519943295]],PROJECTION[\"Transverse_Mercator\"],PARAMETER[\"Central_Meridian\",27],PARAMETER[\"Latitude_Of_Origin\",0],PARAMETER[\"Scale_Factor\",0.9996],PARAMETER[\"False_Easting\",500000],PARAMETER[\"False_Northing\",10000000],UNIT[\"Meter\",1]]";
 	
 	@Test public void test1() throws Exception {
-		WKTReader reader = new WKTReader(WKT1);
-		WKTReader.Entry ent = reader.getEntry("PROJCS");
+		PrjReader reader = new PrjReader(WKT1);
+		PrjReader.Entry ent = reader.getEntry("PROJCS");
 		assertNotNull(ent);
 		ent = reader.getEntry("PROJCS","GEOGCS");
 		assertNotNull(ent);
@@ -67,8 +67,8 @@ public class TestWKT {
 	}
 	
 	@Test public void test2() throws Exception {
-		WKTReader reader = new WKTReader(WKT2);
-		WKTReader.Entry ent = reader.getEntry("GEOGCS");
+		PrjReader reader = new PrjReader(WKT2);
+		PrjReader.Entry ent = reader.getEntry("GEOGCS");
 		assertNotNull(ent);
 		ent = reader.getEntry("GEOGCS","DATUM");
 		assertNotNull(ent);
@@ -77,8 +77,8 @@ public class TestWKT {
 	}
 	
 	@Test public void test3() throws Exception {
-		WKTReader reader = new WKTReader(WKT3);
-		WKTReader.Entry ent = reader.getEntry("PROJCS","GEOGCS");
+		PrjReader reader = new PrjReader(WKT3);
+		PrjReader.Entry ent = reader.getEntry("PROJCS","GEOGCS");
 		assertNotNull(ent);
 		ent = reader.getEntry("PROJCS","GEOGCS","DATUM");
 		assertNotNull(ent);

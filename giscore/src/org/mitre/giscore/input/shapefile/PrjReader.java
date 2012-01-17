@@ -1,5 +1,5 @@
 /****************************************************************************************
- *  WKTReader.java
+ *  PrjReader.java
  *
  *  Created: Jul 28, 2009
  *
@@ -25,7 +25,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Read WKT for a spatial reference system from a source into an internal
+ * Read ESRI WKT for a spatial reference system from a source into an internal
  * datastructure for processing. Each WKT entry is of the following form:<br>
  * TAG := [a-zA-Z]{1}[a-zA-Z0-9_]*<br>
  * START := '['<br>
@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  * @author DRAND
  * 
  */
-public class WKTReader {
+public class PrjReader {
 
 	private static final Pattern TAG = Pattern
 			.compile("\\s*(\\p{Alpha}[\\p{Alnum}_]*)");
@@ -140,7 +140,7 @@ public class WKTReader {
 	 * @param text
 	 *            text to parse, never <code>null</code> or empty
 	 */
-	public WKTReader(String text) {
+	public PrjReader(String text) {
 		if (text == null || text.trim().length() == 0) {
 			throw new IllegalArgumentException(
 					"text should never be null or empty");

@@ -33,6 +33,7 @@ import org.mitre.giscore.input.csv.CsvInputStream;
 import org.mitre.giscore.input.gdb.GdbInputStream;
 import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.input.shapefile.ShapefileInputStream;
+import org.mitre.giscore.input.wkt.WKTInputStream;
 import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.atom.GeoAtomOutputStream;
@@ -116,6 +117,11 @@ public class GISFactory {
 					arguments,
 					new boolean[] {  });
 			return new GeoAtomInputStream(stream, arguments);
+		} else if (DocumentType.WKT.equals(type)) {
+			checkArguments(new Class[] {},
+					arguments, 
+					new boolean[] {});
+			return new WKTInputStream(stream, arguments);
 		} else {
 			throw new UnsupportedOperationException(
 					"Cannot create an input stream for type " + type);

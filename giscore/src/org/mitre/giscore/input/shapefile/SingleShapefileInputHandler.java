@@ -185,8 +185,8 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 			Reader reader = new InputStreamReader(fis, "UTF8");
 			StringWriter writer = new StringWriter();
 			IOUtils.copy(reader, writer);
-			WKTReader wkt = new WKTReader(writer.toString());
-			WKTReader.Entry geogcs = wkt.getEntry("GEOGCS");
+			PrjReader wkt = new PrjReader(writer.toString());
+			PrjReader.Entry geogcs = wkt.getEntry("GEOGCS");
 			if (geogcs != null && geogcs.getValues().size() > 0) {
 				Object v1 = geogcs.getValues().get(0);
 				if (v1 instanceof String) {
