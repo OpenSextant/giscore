@@ -239,24 +239,6 @@ data\kml\feature-anchor\eat-at-google.kml
 	Point                2
 	# features=2
 
-data\kml\feature-anchor\feature-anchor-amp.kml
-
-	Placemark            7
-	Point                7
-	# features=7
-
-data\kml\feature-anchor\feature-anchor-pipe.kml
-
-	Placemark            7
-	Point                7
-	# features=7
-
-data\kml\feature-anchor\feature-anchor-rel-070531.kml
-
-	Placemark            6
-	Point                6
-	# features=6
-
 data\kml\feature-anchor\feature-anchor-semi.kmz
 
 	Placemark            7
@@ -574,6 +556,8 @@ data\kml\ListStyle\check.kml
 
 data\kml\ListStyle\item-icon-hotspot.kml
 
+	Feature uses shared Style
+	--
 	IconStyle            1
 	Placemark            1
 	Point                1
@@ -1447,6 +1431,7 @@ data\kml\Style\inline-stylemap.kml
 	Feature uses inline StyleMap
 	StyleMap has inline Style
 	--
+	IconStyle            2
 	Placemark            1
 	Point                1
 	StyleMap             1
