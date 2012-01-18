@@ -1981,7 +1981,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
      *          otherwise null if no valid Geometry can be constructed
      * @throws XMLStreamException if there is an error with the underlying XML
      * @throws IllegalStateException if geometry is invalid
-     * @throws IllegalArgumentException if geometry is invalid (e.g. Line has < 2 points, etc.)
+     * @throws IllegalArgumentException if geometry is invalid (e.g. invalid Lon/Lat, Line has < 2 points, etc.)
 	 */
 	@SuppressWarnings("unchecked")
 	private Geometry handleGeometry(StartElement sl) throws XMLStreamException {
@@ -2230,6 +2230,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param qname  the qualified name of this event
      * @param geom GeomBase, never null
 	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 * @throws IllegalArgumentException error if lat/lon coordinate values are out of range
 	 */
 	private void parseCoordinates(QName qname, GeometryGroup geom) throws XMLStreamException {
 		while (true) {
@@ -2292,6 +2293,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param name  the qualified name of this event
 	 * @return the coordinate (first valid coordinate if found), null if not
 	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 * @throws IllegalArgumentException error if coordinates values are out of range
 	 */
 	private Point parseCoordinate(QName name) throws XMLStreamException {
 		Point rval = null;
@@ -2336,6 +2338,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		return rval;
 	}
 
+	/**
+	 *
+	 * @throws IllegalArgumentException error if coordinates values are out of range
+	 */
 	private static Point parsePointCoord(String coord) {
 		List<Point> list = parseCoord(coord);
 		return list.isEmpty() ? null : list.get(0);
@@ -2356,6 +2362,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 *
 	 * @param coord Coordinate string
 	 * @return list of coordinates. Returns empty list if no coordinates are valid, never null
+	 * @throws IllegalArgumentException error if lat/lon coordinate values are out of range
 	 */
     @NonNull
 	public static List<Point> parseCoord(String coord) {
@@ -2401,8 +2408,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 										lon = new Longitude(); // skipped longitude (use 0 degrees)
 										numparts = 2;
 									} else {
-										// starting new coordinate
+										// starting new coordinate (numparts => 1)
 										lon = new Longitude(st.nval, Angle.DEGREES);
+										if (log.isDebugEnabled() && Math.abs(st.nval) > 180) log.debug("longitude out of range: " + st.nval);
 									}
 									break;
 
@@ -2417,6 +2425,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 										//else System.out.println("\tERROR: drop bad coord");
 										// start new tuple
 										lon = new Longitude(st.nval, Angle.DEGREES);
+										if (log.isDebugEnabled() && Math.abs(st.nval) > 180) log.debug("longitude out of range: " + st.nval);
 										numparts = 1;
 									}
 									break;
@@ -2429,8 +2438,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 											list.add(new Point(new Geodetic2DPoint(lon, lat)));
 										//else System.out.println("\tERROR: drop bad coord");
 										// start new tuple
-										numparts = 1;
 										lon = new Longitude(st.nval, Angle.DEGREES);
+										if (log.isDebugEnabled() && Math.abs(st.nval) > 180) log.debug("longitude out of range: " + st.nval);
+										numparts = 1;
 									}
 									break;
 							}
