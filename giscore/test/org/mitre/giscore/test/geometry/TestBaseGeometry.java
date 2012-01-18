@@ -450,4 +450,28 @@ public class TestBaseGeometry extends TestGISBase {
         assertTrue(ring.clippedAtDateLine());
 		assertEquals(cp, ring.getCenter());
      }
+
+	@Test
+	public void testAtPoles() {
+		// create outline of antarctica
+		List<Point> pts = new ArrayList<Point>();
+		final Point firstPt = new Point(-64.2378603202, -57.1573913081);
+		pts.add(firstPt);
+		pts.add(new Point(-70.2956070281, 26.0747738693));
+		pts.add(new Point(-66.346745474, 129.2349114494));
+		pts.add(new Point(-72.8459462179, -125.7310989568));
+		pts.add(firstPt);
+		Line line = new Line(pts);
+
+		Geodetic2DPoint cp = line.getCenter();
+		// (1° 45' 7" E, 68° 32' 31" S) -68.54190326905 1.7519062462999895
+		// System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
+
+		Geodetic2DBounds bbox = line.getBoundingBox();
+		// bbox=(125° 43' 52" W, 72° 50' 45" S) .. (129° 14' 6" E, 64° 14' 16" S)
+		assertTrue(bbox != null && bbox.contains(cp));
+
+		//LinearRing ring = new LinearRing(pts, true); // -> Error: LinearRing cannot self-intersect
+		//assertEquals(cp, ring.getCenter());
+	}
 }
