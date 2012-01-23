@@ -454,7 +454,7 @@ public class TestBaseGeometry extends TestGISBase {
 	@Test
 	public void testAtPoles() {
 		// create outline of antarctica
-		List<Point> pts = new ArrayList<Point>();
+		List<Point> pts = new ArrayList<Point>(5);
 		final Point firstPt = new Point(-64.2378603202, -57.1573913081);
 		pts.add(firstPt);
 		pts.add(new Point(-70.2956070281, 26.0747738693));
@@ -473,5 +473,44 @@ public class TestBaseGeometry extends TestGISBase {
 
 		//LinearRing ring = new LinearRing(pts, true); // -> Error: LinearRing cannot self-intersect
 		//assertEquals(cp, ring.getCenter());
+	}
+
+	@Test
+	public void testRegionAtPole() {
+		List<Point> pts = new ArrayList<Point>(5);
+
+		// 3km box that closely matches google earth lat/lon grids lines
+		// ctr=(65° 0' 0" E, 89° 54' 18" S) -89.905 65.0
+		// bbox=(60° 0' 0" E, 89° 54' 36" S) .. (70° 0' 0" E, 89° 54' 0" S)
+		final Point firstPt = new Point(-89.90,70.0);
+		pts.add(firstPt);
+		pts.add(new Point(-89.90,60.0));
+		pts.add(new Point(-89.91,60.0));
+		pts.add(new Point(-89.91,70.0));
+		pts.add(firstPt);
+
+		Line line = new Line(pts);
+		Geodetic2DPoint cp = line.getCenter();
+		// System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
+
+		final Geodetic2DBounds bbox = line.getBoundingBox();
+		assertTrue(bbox != null && bbox.contains(cp));
+
+		// System.out.println("bbox=" + bbox);
+		assertTrue(bbox.getNorthLat().inDegrees() > bbox.getSouthLat().inDegrees()); // north=-89.90 south=-89.91
+		assertTrue(bbox.getWestLon().inDegrees() < bbox.getEastLon().inDegrees());   // west=60.0 east=70.0 degs
+
+		Geodetic2DBounds bounds = new Geodetic2DBounds(bbox);
+		bounds.grow(100); // grow 100 bbox meters larger
+		assertTrue(bounds.contains(bbox));
+		for(Point pt : pts) {
+			assertTrue(bounds.contains(pt.asGeodetic2DPoint()));
+		}
+
+		// create a bounding box from 1-km MGRS grid that intersects the region
+		MGRS mgrs = new MGRS(new MGRS(cp).toString(2)); // BAN0904
+		bounds = mgrs.getBoundingBox();
+		assertTrue(bounds.intersects(bbox));
+		assertTrue(bbox.intersects(bounds));
 	}
 }
