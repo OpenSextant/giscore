@@ -213,7 +213,7 @@ public class TestBaseGeometry extends TestGISBase {
 
     @Test
     public void testPolygon() {
-		List<Point> pts = new ArrayList<Point>();
+		List<Point> pts = new ArrayList<Point>(6);
         // Outer LinearRing in Polygon must be in clockwise point order
 		pts.add(new Point(0.0, 0.0));
         pts.add(new Point(1.0, 0.0));
@@ -248,6 +248,41 @@ public class TestBaseGeometry extends TestGISBase {
         assertEquals(1.0, cp.getLatitudeAsDegrees(), EPSILON);
         assertEquals(1.0, cp.getLongitudeAsDegrees(), EPSILON);
     }
+
+	@Test
+    public void testInvalidPolygon() {
+		List<Point> pts = new ArrayList<Point>(5);
+        // Outer LinearRing in Polygon must be in clockwise point order
+		// create outer ring in counter-clockwise order
+		pts.add(new Point(0.0, 0.0));
+		pts.add(new Point(0.0, 1.0));
+		pts.add(new Point(1.0, 1.0));
+        pts.add(new Point(1.0, 0.0));
+        pts.add(new Point(0.0, 0.0));
+        LinearRing ring = new LinearRing(pts, true);
+		try {
+			new Polygon(ring, true);
+			fail("Expected to throw IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			// expected exception => Outer LinearRing in Polygon must be in clockwise point order
+		}
+
+		List<Point> cwPts = new ArrayList<Point>(5);
+		// inner rings must be in counter-clockwise point order, and fully
+		// contained in the outer ring, and are non-intersecting with each other.
+		cwPts.add(new Point(10.0, 10.0));
+		cwPts.add(new Point(20.0, 10.0));
+		cwPts.add(new Point(20.0, 20.0));
+        cwPts.add(new Point(10.0, 20.0));
+        cwPts.add(new Point(10.0, 10.0));
+		LinearRing outRing = new LinearRing(cwPts, true);
+		try {
+			new Polygon(outRing, Collections.singletonList(ring), true);
+			fail("Expected to throw IllegalArgumentException");
+		} catch (IllegalArgumentException e) {
+			// expected exception => All inner rings in Polygon must be properly contained in outer ring
+		}
+	}
 
     /*
     @Test
