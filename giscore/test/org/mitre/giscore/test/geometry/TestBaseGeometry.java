@@ -306,9 +306,16 @@ public class TestBaseGeometry extends TestGISBase {
 		assertFalse(geo.is3D());
 
 		geometries.clear();
-		geometries.add(new Point(30.0, 40.0, 400));
+		final Point pt = new Point(30.0, 40.0, 400);
+		geometries.add(pt);
 		geo = new GeometryBag(geometries);
+		assertEquals(1, geo.size());
 		assertTrue(geo.is3D());
+		Object[] objs = geo.toArray();
+		assertTrue(objs.length == 1);
+		assertTrue(geo.remove(pt));
+		assertEquals(0, geo.size());
+		assertNull(geo.getBoundingBox());
     }
 
     @Test
@@ -492,6 +499,9 @@ public class TestBaseGeometry extends TestGISBase {
 		Line line = new Line(pts);
 		Geodetic2DPoint cp = line.getCenter();
 		// System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
+
+		LinearRing ring = new LinearRing(pts, true);
+		assertEquals(cp, ring.getCenter());
 
 		final Geodetic2DBounds bbox = line.getBoundingBox();
 		assertTrue(bbox != null && bbox.contains(cp));
