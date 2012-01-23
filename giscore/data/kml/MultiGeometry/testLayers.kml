@@ -33,13 +33,13 @@
         <description><![CDATA[<b type="C">geotype: </b>Two line multiline]]></description>
         <MultiGeometry>
           <Point>
-            <coordinates>-71.19999999999999,42.1</coordinates>
+            <coordinates>-71.2,42.1</coordinates>
           </Point>
           <LineString>
-            <coordinates>-71.1,42.1 -71.19999999999999,42.1</coordinates>
+            <coordinates>-71.1,42.1 -71.2,42.1</coordinates>
           </LineString>
           <LineString>
-            <coordinates>-71.3,42.1 -71.40000000000002,42.1</coordinates>
+            <coordinates>-71.3,42.1 -71.4,42.1</coordinates>
           </LineString>
         </MultiGeometry>
       </Placemark>
@@ -50,7 +50,7 @@
         <description><![CDATA[<b type="C">geotype: </b>Two point multipoint]]></description>
         <MultiGeometry>
           <Point>
-            <coordinates>-71.0,41.900000000000006</coordinates>
+            <coordinates>-71.0,41.9</coordinates>
           </Point>
           <Point>
             <coordinates>-71.0,41.95</coordinates>
@@ -64,10 +64,10 @@
         <description><![CDATA[<b type="C">geotype: </b>Four point ring]]></description>
         <MultiGeometry>
           <Point>
-            <coordinates>-71.12,41.82500000000001</coordinates>
+            <coordinates>-71.12,41.825</coordinates>
           </Point>
           <LinearRing>
-            <coordinates>-71.13000000000001,41.800000000000004 -71.13000000000001,41.85000000000001 -71.11,41.85000000000001 -71.11,41.800000000000004 -71.13000000000001,41.800000000000004</coordinates>
+            <coordinates>-71.13,41.8 -71.13,41.85 -71.11,41.85 -71.11,41.8 -71.13,41.8</coordinates>
           </LinearRing>
         </MultiGeometry>
       </Placemark>
@@ -81,10 +81,10 @@
             <coordinates>-71.12,41.625</coordinates>
           </Point>
           <LinearRing>
-            <coordinates>-71.13000000000001,41.6 -71.13000000000001,41.65 -71.11,41.65 -71.11,41.6 -71.13000000000001,41.6</coordinates>
+            <coordinates>-71.13,41.6 -71.13,41.65 -71.11,41.65 -71.11,41.6 -71.13,41.6</coordinates>
           </LinearRing>
           <LinearRing>
-            <coordinates>-71.12499999999999,41.61000000000001 -71.12499999999999,41.64 -71.115,41.64 -71.115,41.61000000000001 -71.12499999999999,41.61000000000001</coordinates>
+            <coordinates>-71.125,41.61 -71.125,41.64 -71.115,41.64 -71.115,41.61 -71.125,41.61</coordinates>
           </LinearRing>
         </MultiGeometry>
       </Placemark>
@@ -100,12 +100,12 @@
           <Polygon>
             <outerBoundaryIs>
               <LinearRing>
-                <coordinates>-71.13000000000001,42.4 -71.13000000000001,42.45 -71.11,42.45 -71.11,42.4 -71.13000000000001,42.4</coordinates>
+                <coordinates>-71.13,42.4 -71.13,42.45 -71.11,42.45 -71.11,42.4 -71.13,42.4</coordinates>
               </LinearRing>
             </outerBoundaryIs>
             <innerBoundaryIs>
               <LinearRing>
-                <coordinates>-71.12499999999999,42.40999999999999 -71.115,42.40999999999999 -71.115,42.44 -71.12499999999999,42.44 -71.12499999999999,42.40999999999999</coordinates>
+                <coordinates>-71.125,42.41 -71.115,42.41 -71.115,42.44 -71.125,42.44 -71.125,42.41</coordinates>
               </LinearRing>
             </innerBoundaryIs>
           </Polygon>
@@ -123,12 +123,12 @@
           <Polygon>
             <outerBoundaryIs>
               <LinearRing>
-                <coordinates>-71.13000000000001,41.4 -71.13000000000001,41.45 -71.11,41.45 -71.11,41.4 -71.13000000000001,41.4</coordinates>
+                <coordinates>-71.13,41.4 -71.13,41.45 -71.11,41.45 -71.11,41.4 -71.13,41.4</coordinates>
               </LinearRing>
             </outerBoundaryIs>
             <innerBoundaryIs>
               <LinearRing>
-                <coordinates>-71.12499999999999,41.41 -71.115,41.41 -71.115,41.44 -71.12499999999999,41.44 -71.12499999999999,41.41</coordinates>
+                <coordinates>-71.125,41.41 -71.115,41.41 -71.115,41.44 -71.125,41.44 -71.125,41.41</coordinates>
               </LinearRing>
             </innerBoundaryIs>
           </Polygon>
@@ -140,7 +140,7 @@
             </outerBoundaryIs>
             <innerBoundaryIs>
               <LinearRing>
-                <coordinates>-70.96500000000002,41.41 -70.96500000000002,41.44 -70.955,41.44 -70.955,41.41 -70.96500000000002,41.41</coordinates>
+                <coordinates>-70.965,41.41 -70.965,41.44 -70.955,41.44 -70.955,41.41 -70.965,41.41</coordinates>
               </LinearRing>
             </innerBoundaryIs>
           </Polygon>
@@ -149,4 +149,3 @@
     </Folder>
   </Document>
 </kml>
-
