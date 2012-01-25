@@ -186,6 +186,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         // Look at each line segment in turn, and compare to every other non-neighbor
         // For neighbor segments, make sure distance to non-shared endpoint is positive.
         // This requires (n*(n-1)/2) comparisons
+		// TODO: if points are at polar projection and wrap IDL then test fails
         Geodetic2DPoint gp1, gp2, gp3, gp4;
         for (int i = 0; i < n - 2; i++) {
             gp1 = pts.get(i).asGeodetic2DPoint();
