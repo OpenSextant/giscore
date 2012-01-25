@@ -43,7 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Outputs a OGC WKT format of a series of geometry objects. This only deals
+ * Outputs an OGC Well-known text (WKT) format of a series of geometry objects. This only deals
  * with WGS 84 right now.
  * 
  * @author DRAND
@@ -51,8 +51,7 @@ import org.slf4j.LoggerFactory;
  */
 public class WKTOutputStream extends StreamVisitorBase implements
 		IGISOutputStream {
-	private static final Logger log = LoggerFactory
-			.getLogger(WKTOutputStream.class);
+	private static final Logger log = LoggerFactory.getLogger(WKTOutputStream.class);
 	private Writer writer;
 
 	/**
@@ -60,7 +59,8 @@ public class WKTOutputStream extends StreamVisitorBase implements
 	 * 
 	 * @param outputStream
 	 * @param arguments
-	 * @throws IOException
+	 * @throws IOException if an error occurs
+	 * @throws IllegalArgumentException if stream is null
 	 */
 	public WKTOutputStream(OutputStream outputStream, Object[] arguments)
 			throws IOException {
@@ -72,7 +72,8 @@ public class WKTOutputStream extends StreamVisitorBase implements
 	 * 
 	 * @param stream
 	 *            output stream to send the WKT output to
-	 * @throws IOException
+	 * @throws IOException if an error occurs
+	 * @throws IllegalArgumentException if stream is null
 	 */
 	public WKTOutputStream(OutputStream stream) throws IOException {
 		if (stream == null) {
@@ -99,7 +100,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 			writer.append("POINT (");
 			Geodetic2DPoint center = point.asGeodetic2DPoint();
 			handlePoint(center);
-			writer.append(")");
+			writer.append(')');
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -121,7 +122,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 	 * Handle polygon
 	 * 
 	 * @param polygon
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	private void handlePoly(Polygon polygon) throws IOException {
 		writer.append("(");
@@ -130,14 +131,14 @@ public class WKTOutputStream extends StreamVisitorBase implements
 			writer.append(",\n  ");
 			handlePointList(ring.getPoints());
 		}
-		writer.append(")");
+		writer.append(')');
 	}
 
 	/**
 	 * Output a list of points
 	 * 
 	 * @param points
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	public void handlePointList(List<Point> points) throws IOException {
 		int count = points.size();
@@ -149,7 +150,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 			Geodetic2DPoint pnt = points.get(i).getCenter();
 			handlePoint(pnt);
 		}
-		writer.append(")");
+		writer.append(')');
 	}
 
 	/*
@@ -181,7 +182,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 		try {
 			writer.append("POLYGON (");
 			handlePointList(ring.getPoints());
-			writer.append(")");
+			writer.append(')');
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -243,7 +244,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 				Line line = iter.next();
 				handlePointList(line.getPoints());
 			}
-			writer.append(")");
+			writer.append(')');
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -271,7 +272,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 				handlePointList(ring.getPoints());
 				writer.append(")");
 			}
-			writer.append(")");
+			writer.append(')');
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -297,7 +298,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 				Polygon poly = iter.next();
 				handlePoly(poly);
 			}
-			writer.append(")");
+			writer.append(')');
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -312,28 +313,29 @@ public class WKTOutputStream extends StreamVisitorBase implements
 	 */
 	@Override
 	public void visit(GeometryBag geobag) {
-		try {
-			writer.append("GEOMETRYCOLLECTION (");
-			int count = geobag.size();
-			for (int i = 0; i < count; i++) {
-				if (i > 0) {
-					writer.append(",\n  ");
+		if (geobag != null && !geobag.isEmpty()) {
+			try {
+				writer.append("GEOMETRYCOLLECTION (");
+				int count = geobag.size();
+				for (int i = 0; i < count; i++) {
+					if (i > 0) {
+						writer.append(",\n  ");
+					}
+					geobag.getPart(i).accept(this);
 				}
-				geobag.getPart(i).accept(this);
-			}
 
-			writer.append(")");
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+				writer.append(')');
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
+	/**
+	 * @throws IllegalArgumentException if object is null
+	 * @throws RuntimeException if an I/O error occurs
 	 * @see
-	 * org.mitre.giscore.output.IGISOutputStream#write(org.mitre.giscore.events
-	 * .IGISObject)
+	 * org.mitre.giscore.output.IGISOutputStream#write(org.mitre.giscore.events.IGISObject)
 	 */
 	public void write(IGISObject object) {
 		if (object == null) {

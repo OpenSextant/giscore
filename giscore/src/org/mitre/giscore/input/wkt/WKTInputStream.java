@@ -50,7 +50,7 @@ import org.mitre.itf.geodesy.Longitude;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
- * Reads geometries from an OGC WKT formatted file. Geometries are formatted
+ * Reads geometries from an OGC Well-known text (WKT) formatted file. Geometries are formatted
  * in a straightforward fashion in WKT. Each geometry is introduced by a 
  * word and followed by a parenthesized list of coordinates.
  * 
@@ -65,14 +65,15 @@ import edu.umd.cs.findbugs.annotations.NonNull;
  */
 public class WKTInputStream implements IGISInputStream {
 	protected Reader reader;
-	private WKTLexer lexer = null;
-	private WKTToken currentop = null;
+	private WKTLexer lexer;
+	private WKTToken currentop;
 	private boolean isM = false;
 	private boolean isZ = false;
 	
 	/**
 	 * Ctor
 	 * @param stream
+	 * @throws IllegalArgumentException if stream is null
 	 */
 	public WKTInputStream(InputStream stream) {
 		if (stream == null) {
@@ -91,6 +92,7 @@ public class WKTInputStream implements IGISInputStream {
 	 * Ctor
 	 * @param stream
 	 * @param arguments
+	 * @throws IllegalArgumentException if stream is null
 	 */
 	public WKTInputStream(InputStream stream, Object[] arguments) {
 		this(stream);
@@ -291,7 +293,7 @@ public class WKTInputStream implements IGISInputStream {
 	 * Read 2, 3 or 4 numbers depending on the values of isM and isZ. Then 
 	 * use the appropriate constructor to make a point.
 	 * @return the point constructed
-	 * @throws IOException 
+	 * @throws IOException if an error occurs
 	 */
 	private Geodetic2DPoint readCoordinate() throws IOException {
 		WKTToken x, y, z = null, m;
