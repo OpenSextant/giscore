@@ -170,8 +170,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	private Map<String, String> schemaAliases;
 	private final Map<String, Schema> schemata = new HashMap<String, Schema>();
+	private boolean dupAltitudeModeWarn;
 
-    static {
+	static {
 		// all non-container elements that extend kml:AbstractFeatureType base type in KML Schema
 		ms_features.add(PLACEMARK);
 		ms_features.add(NETWORK_LINK);
@@ -1910,7 +1911,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				// for backward compatibility breaking strict conformance to the official OGC KML 2.2 Schema !!!
 				// see http://code.google.com/p/earth-issues/issues/detail?id=1182
                 if (map.containsKey(ALTITUDE_MODE)) {
-                    log.debug("Element has duplicate altitudeMode defined"); // ignore but return as element processed
+					if (!dupAltitudeModeWarn) {
+						// Google Earth-generated output may have this on every placemark
+                    	log.debug("Element has duplicate altitudeMode defined"); // ignore but return as element processed
+						dupAltitudeModeWarn = true;
+					}
                     return true;
                 }
             } else {
@@ -2319,9 +2324,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					// if have both forms then use one from KML namespace as done in handleElementExtension()
 					if (altitudeMode == null || ms_kml_ns.contains(qName.getNamespaceURI()))
 						altitudeMode = getNonEmptyElementText();
-					else {
+					else if (!dupAltitudeModeWarn) {
 						// e.g. qName = {http://www.google.com/kml/ext/2.2}altitudeMode
 						log.debug("Skip duplicate value for " + qName);
+						dupAltitudeModeWarn = true;
 					}
 				}
 				else if (EXTRUDE.equals(localPart)) {
