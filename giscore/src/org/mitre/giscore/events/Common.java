@@ -26,23 +26,25 @@ import java.util.List;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.StringUtils;
+import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.input.kml.UrlRef;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
+import org.mitre.itf.geodesy.Geodetic2DBounds;
+import org.mitre.itf.geodesy.Geodetic3DBounds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Common abstract superclass for features of various kinds.
- * 
+ *
  * @author DRAND
- * 
  */
 public abstract class Common extends Row {
-	
+
 	private static final long serialVersionUID = 1L;
 
-    private static final Logger log = LoggerFactory.getLogger(Common.class);
+	private static final Logger log = LoggerFactory.getLogger(Common.class);
 
 	protected String name;
 	protected String description;
@@ -60,14 +62,13 @@ public abstract class Common extends Row {
 	/**
 	 * @return the name
 	 */
-    @CheckForNull
+	@CheckForNull
 	public String getName() {
 		return name;
 	}
 
 	/**
-	 * @param name
-	 *            the name to set
+	 * @param name the name to set
 	 */
 	public void setName(String name) {
 		this.name = name;
@@ -76,14 +77,13 @@ public abstract class Common extends Row {
 	/**
 	 * @return the description
 	 */
-    @CheckForNull
+	@CheckForNull
 	public String getDescription() {
 		return description;
 	}
 
 	/**
-	 * @param description
-	 *            the description to set
+	 * @param description the description to set
 	 */
 	public void setDescription(String description) {
 		this.description = description;
@@ -100,69 +100,66 @@ public abstract class Common extends Row {
 	/**
 	 * @return the styleUrl
 	 */
-    @CheckForNull
+	@CheckForNull
 	public String getStyleUrl() {
 		return styleUrl;
 	}
 
 	/**
-	 * @param styleUrl
-	 *            the styleUrl to set
+	 * @param styleUrl the styleUrl to set
 	 */
 	public void setStyleUrl(String styleUrl) {
-        styleUrl = StringUtils.trimToNull(styleUrl);
-        // test if url dangling anchor reference (neither relative or absolute URL)
-        // not containing '#' then prepend '#' to URL (e.g. blueIcon -> #blueIcon)
-        // REVIEW: this might not work with all relative URLs...
-        if (styleUrl != null && styleUrl.indexOf('#') == -1 && UrlRef.isIdentifier(styleUrl, true)) {
-            log.debug("fix StyleUrl identifier as local reference: " + styleUrl);
-            styleUrl = "#" + styleUrl;
-        }
+		styleUrl = StringUtils.trimToNull(styleUrl);
+		// test if url dangling anchor reference (neither relative or absolute URL)
+		// not containing '#' then prepend '#' to URL (e.g. blueIcon -> #blueIcon)
+		// REVIEW: this might not work with all relative URLs...
+		if (styleUrl != null && styleUrl.indexOf('#') == -1 && UrlRef.isIdentifier(styleUrl, true)) {
+			log.debug("fix StyleUrl identifier as local reference: " + styleUrl);
+			styleUrl = "#" + styleUrl;
+		}
 		this.styleUrl = styleUrl;
 	}
 
 	/**
 	 * @return the startTime
 	 */
-    @CheckForNull
+	@CheckForNull
 	public Date getStartTime() {
-        // note this exposes the internal representation by returning reference to mutable object
+		// note this exposes the internal representation by returning reference to mutable object
 		return startTime;
 	}
 
 	/**
-	 * @param startTime
-	 *            the startTime to set
+	 * @param startTime the startTime to set
 	 */
 	public void setStartTime(Date startTime) {
-		this.startTime = startTime == null ? null : (Date)startTime.clone();
+		this.startTime = startTime == null ? null : (Date) startTime.clone();
 	}
 
 	/**
 	 * @return the endTime
 	 */
-    @CheckForNull
+	@CheckForNull
 	public Date getEndTime() {
-        // note this exposes the internal representation by returning reference to mutable object
+		// note this exposes the internal representation by returning reference to mutable object
 		return endTime;
 	}
 
 	/**
-	 * @param endTime
-	 *            the endTime to set
+	 * @param endTime the endTime to set
 	 */
 	public void setEndTime(Date endTime) {
-        this.endTime = endTime == null ? null : (Date)endTime.clone();
+		this.endTime = endTime == null ? null : (Date) endTime.clone();
 	}
 
 	/**
 	 * Get ViewGroup TaggedMap and <tt>null</tt> if not defined.
-	 * <P>
+	 * <p/>
 	 * This will represent name-value pairs that define the view and orientation
 	 * of this object. Compound elements will have its names flattened or
 	 * normalized with any namespace prepended to the name and each name appended
 	 * with a slash (/) delimiter as in a XPATH like syntax.
-	 * <P>
+	 * <p/>
 	 * For KML context a ViewGroup will represent a Camera or LookAt with
 	 * name-values pairs for properties such as latitude, longitude, tilt, etc.
 	 * Also supported are non-simple name-value pairs such as Google Extensions
@@ -181,68 +178,156 @@ public abstract class Common extends Row {
 	 *  	&lt;latitude&gt;37.1565775502346&lt;/latitude&gt;
 	 *     &lt;/LookAt&gt;
 	 * </pre>
+	 *
 	 * @return TaggedMap or <tt>null</tt> if none is defined
 	 */
-    @CheckForNull
+	@CheckForNull
 	public TaggedMap getViewGroup() {
 		return viewGroup;
 	}
 
-    /**
-     * Set ViewGroup on feature (e.g. Camera or LookAt element)
-     * @param viewGroup
+	/**
+	 * Set ViewGroup on feature (e.g. Camera or LookAt element)
+	 *
+	 * @param viewGroup
 	 * @see #getViewGroup()
-     */
+	 */
 	public void setViewGroup(TaggedMap viewGroup) {
 		this.viewGroup = viewGroup;
 	}
 
-    @CheckForNull
+	@CheckForNull
 	public TaggedMap getRegion() {
 		return region;
 	}
 
-    /**
-     * Set Region on feature
-     * @param region
-     */
+	/**
+	 * Set Region on feature
+	 *
+	 * @param region
+	 */
 	public void setRegion(TaggedMap region) {
 		this.region = region;
 	}
 
-    @CheckForNull
+	/**
+	 * Set Region on feature.
+	 * Caller should set  <em<>minLodPixels</em> on the region TaggedMap instance after
+	 * calling this method since this is not defined here and it is a required field.
+	 *
+	 * @param bbox Bounding box from which to set the region. If bbox Geodetic3DBounds
+	 *             instance then minAltitude and maxAltitude will be ignored by default.
+	 *             To preserve the min/max altitude of the bbox call {@link #setRegion(Geodetic2DBounds, boolean)}
+	 *             with <tt>true</tt> value instead.
+	 */
+	public void setRegion(Geodetic2DBounds bbox) {
+		setRegion(bbox, false);
+	}
+
+	/**
+	 * Set Region on feature.
+	 * Caller should set  <em<>minLodPixels</em> on the region TaggedMap instance after
+	 * calling this method since this is not defined here and it is a required field.
+	 *
+	 * @param bbox Bounding box from which to set the region. If bbox is a <em>Geodetic3DBounds</em>
+	 *             instance then minAltitude and maxAltitude will be set accordingly if the
+	 *             <tt>allowAltitude</tt> flag is <em>true</em> otherwise region will not include an altitude.
+	 */
+	public void setRegion(Geodetic2DBounds bbox, boolean allowAltitude) {
+		if (bbox == null) {
+			return;
+		}
+		if (region == null) {
+			region = new TaggedMap(IKml.LAT_LON_ALT_BOX);
+		} else if (!allowAltitude) {
+			region.remove(IKml.MIN_ALTITUDE);
+			region.remove(IKml.MAX_ALTITUDE);
+			// force no altitude on the region
+		}
+		/*
+				  <element name="LatLonAltBox">
+				  <complexType>
+					<complexContent>
+						<sequence>
+						  <element ref="kml:north" minOccurs="0"/>
+						  <element ref="kml:south" minOccurs="0"/>
+						  <element ref="kml:east" minOccurs="0"/>
+						  <element ref="kml:west" minOccurs="0"/>
+						  <element ref="kml:minAltitude" minOccurs="0"/>
+						  <element ref="kml:maxAltitude" minOccurs="0"/>
+						  <element ref="kml:altitudeModeGroup" minOccurs="0"/>
+						</sequence>
+					  </extension>
+					</complexContent>
+
+				  <element name="Lod">
+				  <complexType>
+					<complexContent>
+					  <extension base="kml:AbstractObjectType">
+						<sequence>
+						  <element ref="kml:minLodPixels" minOccurs="0"/>
+						  <element ref="kml:maxLodPixels" minOccurs="0"/>
+						  <element ref="kml:minFadeExtent" minOccurs="0"/>
+						  <element ref="kml:maxFadeExtent" minOccurs="0"/>
+						</sequence>
+					  </extension>
+					</complexContent>
+				  </complexType>
+				 */
+		region.put(IKml.NORTH, String.valueOf(bbox.getNorthLat().inDegrees()));
+		region.put(IKml.SOUTH, String.valueOf(bbox.getSouthLat().inDegrees()));
+		region.put(IKml.EAST, String.valueOf(bbox.getEastLon().inDegrees()));
+		region.put(IKml.WEST, String.valueOf(bbox.getWestLon().inDegrees()));
+		if (allowAltitude && bbox instanceof Geodetic3DBounds) {
+			Geodetic3DBounds bounds = (Geodetic3DBounds) bbox;
+			double minElev = bounds.minElev;
+			double maxElev = bounds.maxElev;
+			if (minElev > maxElev) {
+				double temp = minElev;
+				minElev = maxElev;
+				maxElev = temp;
+			}
+			region.put(IKml.MIN_ALTITUDE, String.valueOf(minElev));
+			region.put(IKml.MAX_ALTITUDE, String.valueOf(maxElev));
+		}
+	}
+
+	@CheckForNull
 	public Boolean getVisibility() {
 		return visibility;
 	}
 
-    /**
-     * Specifies whether the feature is "visible" when it is initially loaded
-     * @param visibility Flag whether feature is visible or not.
-     *      default value is null (or undefined).
-     */
-    public void setVisibility(Boolean visibility) {
-        this.visibility = visibility;
-    }
-    
+	/**
+	 * Specifies whether the feature is "visible" when it is initially loaded
+	 *
+	 * @param visibility Flag whether feature is visible or not.
+	 *                   default value is null (or undefined).
+	 */
+	public void setVisibility(Boolean visibility) {
+		this.visibility = visibility;
+	}
+
 	/**
 	 * @return the elements, never null
 	 */
-    @NonNull
+	@NonNull
 	public List<Element> getElements() {
 		return elements;
 	}
 
 	/**
 	 * Add single element to list
+	 *
 	 * @param element
 	 */
 	public void addElement(Element element) {
 		if (element != null)
-		    elements.add(element);
+			elements.add(element);
 	}
 
 	/**
 	 * Replaces current list with new list of elements
+	 *
 	 * @param elements the elements to set
 	 */
 	public void setElements(List<Element> elements) {
@@ -251,9 +336,8 @@ public abstract class Common extends Row {
 
 	/**
 	 * Read object from the data stream.
-	 * 
-	 * @param in
-	 *            the input stream, never <code>null</code>
+	 *
+	 * @param in the input stream, never <code>null</code>
 	 * @throws IOException
 	 * @throws ClassNotFoundException
 	 */
@@ -283,7 +367,7 @@ public abstract class Common extends Row {
 
 	/**
 	 * Write the object to the data stream
-	 * 
+	 *
 	 * @param out
 	 * @throws IOException
 	 */
@@ -294,11 +378,11 @@ public abstract class Common extends Row {
 		out.writeString(styleUrl);
 		if (startTime != null)
 			out.writeLong(startTime.getTime());
-		else 
+		else
 			out.writeLong(-1);
 		if (endTime != null)
 			out.writeLong(endTime.getTime());
-		else 
+		else
 			out.writeLong(-1);
 		out.writeObject(viewGroup);
 		out.writeObject(region);
@@ -390,48 +474,48 @@ public abstract class Common extends Row {
 	 */
 	@Override
 	public String toString() {
-        StringBuilder b = new StringBuilder(super.toString());
-        if (name != null) {
-            b.append(" name = ");
-            b.append(name);
-            b.append('\n');
-        }
-        if (description != null) {
-            b.append(" description = ");
-            b.append(description);
-            b.append('\n');
-        }
-        if (startTime != null) {
-            b.append(" startTime = ");
-            b.append(startTime);
-            b.append('\n');
-        }
-        if (endTime != null) {
-            b.append(" endTime = ");
-            b.append(endTime);
-            b.append('\n');
-        }
-        if (styleUrl != null) {
-            b.append(" styleUrl = ");
-            b.append(styleUrl);
-            b.append('\n');
-        }
-        if (viewGroup != null && !viewGroup.isEmpty()) {
-            b.append(" viewGroup = ");
-            b.append(viewGroup);
-            b.append('\n');
-        }
-        if (region != null && !region.isEmpty()) {
-            b.append(" region = ");
-            b.append(region);
-            b.append('\n');
-        }
-        if (!elements.isEmpty()) {
-            b.append(" elements = ");
-            b.append(elements);
-            b.append('\n');
-        }
-        return b.toString();
+		StringBuilder b = new StringBuilder(super.toString());
+		if (name != null) {
+			b.append(" name = ");
+			b.append(name);
+			b.append('\n');
+		}
+		if (description != null) {
+			b.append(" description = ");
+			b.append(description);
+			b.append('\n');
+		}
+		if (startTime != null) {
+			b.append(" startTime = ");
+			b.append(startTime);
+			b.append('\n');
+		}
+		if (endTime != null) {
+			b.append(" endTime = ");
+			b.append(endTime);
+			b.append('\n');
+		}
+		if (styleUrl != null) {
+			b.append(" styleUrl = ");
+			b.append(styleUrl);
+			b.append('\n');
+		}
+		if (viewGroup != null && !viewGroup.isEmpty()) {
+			b.append(" viewGroup = ");
+			b.append(viewGroup);
+			b.append('\n');
+		}
+		if (region != null && !region.isEmpty()) {
+			b.append(" region = ");
+			b.append(region);
+			b.append('\n');
+		}
+		if (!elements.isEmpty()) {
+			b.append(" elements = ");
+			b.append(elements);
+			b.append('\n');
+		}
+		return b.toString();
 	}
 
 }
