@@ -56,9 +56,9 @@ absolute
     <latitude>50.444124355603</latitude>
     <altitude>0.0</altitude>
 </Location>
-<Link>
+<!--Link>
 <href>models/House.dae</href>       
-</Link>
+</Link-->
 </Model>
 <name>
 SCARLET
@@ -68,7 +68,7 @@ SCARLET
 <Placemark id="SCARLET-sensor">
 <Style>
 <BalloonStyle>
-<text><![CDATA[<b>$[id]br/>$[description]]]></text><bgcolor>ffe6e7e6</bgcolor>
+<text><![CDATA[<b>$[id]<br/>$[description]]]></text><bgcolor>ffe6e7e6</bgcolor>
 </BalloonStyle>
 <LineStyle>
 <color>
