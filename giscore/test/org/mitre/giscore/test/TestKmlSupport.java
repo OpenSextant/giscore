@@ -18,13 +18,14 @@
  ***************************************************************************************/
 package org.mitre.giscore.test;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.fail;
+import static junit.framework.Assert.*;
 import static org.junit.Assert.assertNotNull;
 
 import java.awt.Color;
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
@@ -39,12 +40,15 @@ import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.apache.commons.io.IOUtils;
 import org.mitre.giscore.output.kml.KmlOutputStream;
+import org.mitre.itf.geodesy.Geodetic2DBounds;
+import org.mitre.itf.geodesy.Geodetic2DPoint;
+import org.mitre.itf.geodesy.Geodetic3DBounds;
+import org.mitre.itf.geodesy.Geodetic3DPoint;
 
 import javax.xml.stream.XMLStreamException;
 
 /**
  * @author DRAND
- *
  */
 public class TestKmlSupport extends TestGISBase {
 
@@ -53,116 +57,179 @@ public class TestKmlSupport extends TestGISBase {
 	 */
 	public static final String base_path = "data/kml/";
 
-	@Test public void testAtom() throws Exception {
+	@Test
+	public void testAtom() throws Exception {
 		runTestsOnDir("atom");
 	}
-	
-	@Test public void testBalloon() throws Exception {
+
+	@Test
+	public void testBalloon() throws Exception {
 		runTestsOnDir("balloon");
 	}
-	
-	@Test public void testBalloonStyle() throws Exception {
+
+	@Test
+	public void testBalloonStyle() throws Exception {
 		runTestsOnDir("BalloonStyle");
 	}
 
-	@Test public void testCamera() throws Exception {
+	@Test
+	public void testCamera() throws Exception {
 		runTestsOnDir("Camera");
 	}
-	
-	@Test public void testExtendedData() throws Exception {
+
+	@Test
+	public void testExtendedData() throws Exception {
 		runTestsOnDir("ExtendedData");
 	}
-	
-	@Test public void testFeatureAnchor() throws Exception {
+
+	@Test
+	public void testFeatureAnchor() throws Exception {
 		runTestsOnDir("feature-anchor");
 	}
 
-	@Test public void testFeatureType() throws Exception {
+	@Test
+	public void testFeatureType() throws Exception {
 		runTestsOnDir("FeatureType");
 	}
 
-	@Test public void testGroundOverlay() throws Exception {
+	@Test
+	public void testGroundOverlay() throws Exception {
 		runTestsOnDir("GroundOverlay");
 	}
-	
-	@Test public void testItemIcon() throws Exception {
+
+	@Test
+	public void testItemIcon() throws Exception {
 		runTestsOnDir("ItemIcon");
 	}
-	
-	@Test public void testLinkType() throws Exception {
+
+	@Test
+	public void testLinkType() throws Exception {
 		runTestsOnDir("LinkType");
 	}
 
-	@Test public void testLinkStyle() throws Exception {
+	@Test
+	public void testLinkStyle() throws Exception {
 		runTestsOnDir("LinkStyle");
 	}
-	
-	@Test public void testlistview() throws Exception {
+
+	@Test
+	public void testlistview() throws Exception {
 		runTestsOnDir("listview");
 	}
-	
-	@Test public void testMetadata() throws Exception {
+
+	@Test
+	public void testMetadata() throws Exception {
 		runTestsOnDir("Metadata");
 	}
-	
-	@Test public void testMultiGeometry() throws Exception {
+
+	@Test
+	public void testMultiGeometry() throws Exception {
 		runTestsOnDir("MultiGeometry");
 	}
-	
-	@Test public void testNetworkLink() throws Exception {
+
+	@Test
+	public void testNetworkLink() throws Exception {
 		runTestsOnDir("NetworkLink");
 	}
 
-	@Test public void testPhotoOverlay() throws Exception {
+	@Test
+	public void testPhotoOverlay() throws Exception {
 		runTestsOnDir("PhotoOverlay");
 	}
-	
-	@Test public void testPlacemark() throws Exception {
+
+	@Test
+	public void testPlacemark() throws Exception {
 		runTestsOnDir("Placemark");
 	}
-	
-	@Test public void testPolygon() throws Exception {
+
+	@Test
+	public void testPolygon() throws Exception {
 		runTestsOnDir("Polygon");
 	}
-	
-	@Test public void testRegion() throws Exception {
+
+	@Test
+	public void testRegion() throws Exception {
 		runTestsOnDir("Region");
 	}
-	
-	@Test public void testSchema() throws Exception {
+
+	@Test
+	public void testSchema() throws Exception {
 		runTestsOnDir("Schema");
 	}
 
-	@Test public void testScreenOverlay() throws Exception {
+	@Test
+	public void testScreenOverlay() throws Exception {
 		runTestsOnDir("ScreenOverlay");
 	}
-	
-	@Test public void testsky() throws Exception {
+
+	@Test
+	public void testsky() throws Exception {
 		runTestsOnDir("sky");
-	}	
-	
-	@Test public void testStyle() throws Exception {
+	}
+
+	@Test
+	public void testStyle() throws Exception {
 		runTestsOnDir("Style");
-	}	
+	}
 
-	@Test public void testTime() throws Exception {
+	@Test
+	public void testTime() throws Exception {
 		runTestsOnDir("time");
-	}	
+	}
 
-	@Test public void testXmlns() throws Exception {
+	@Test
+	public void testXmlns() throws Exception {
 		runTestsOnDir("xmlns");
-	}	
-	
+	}
+
+	@Test
+	public void testRegionFromBounds() {
+		Feature f = new Feature();
+		f.setGeometry(new Point(42.0, -71.0));
+		f.setName("test");
+		f.setDescription("this is a test placemark");
+		Geodetic2DPoint pt = ((Point) f.getGeometry()).asGeodetic2DPoint();
+		Geodetic2DBounds bbox = new Geodetic2DBounds(pt);
+		bbox.grow(100000); // 100km
+		f.setRegion(bbox);
+		assertTrue(bbox.contains(pt));
+		TaggedMap region = f.getRegion();
+		String[] tags = {IKml.NORTH, IKml.SOUTH, IKml.EAST, IKml.WEST};
+		//List<String> tagList = Arrays.asList(tags);
+		for (String key : tags) {
+			assertTrue(region.containsKey(key));
+		}
+		assertFalse(region.containsKey(IKml.MIN_ALTITUDE));
+		assertFalse(region.containsKey(IKml.MAX_ALTITUDE));
+
+		Geodetic3DPoint pt3d = (Geodetic3DPoint) (new Point(42.0, -71.0, 5000).asGeodetic2DPoint());
+		Geodetic3DBounds bbox3d = new Geodetic3DBounds(pt3d);
+		bbox3d.maxElev = 10000;
+		bbox3d.grow(100000); // 100km
+		f.setRegion(bbox3d, true);
+		assertTrue(bbox3d.contains(pt3d));
+		region = f.getRegion();
+		for (String key : tags) {
+			assertTrue(region.containsKey(key));
+		}
+		final Double minAltitude = region.getDoubleValue(IKml.MIN_ALTITUDE);
+		assertNotNull(minAltitude);
+		final Double maxAltitude = region.getDoubleValue(IKml.MAX_ALTITUDE);
+		assertNotNull(maxAltitude);
+		assertTrue(maxAltitude > minAltitude);
+	}
+
 	/**
 	 * Iterate over the files in the directory
+	 *
 	 * @param dirname
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	private void runTestsOnDir(String dirname) throws IOException {
 		File dir = new File(base_path, dirname);
-        File contents[] = dir.listFiles();
+		File contents[] = dir.listFiles();
 		if (contents != null) {
-			for(File testcase : contents) {
+			for (File testcase : contents) {
 				if (testcase.isFile() && testcase.getName().endsWith(".kml")) {
 					doTest(testcase);
 				}
@@ -174,109 +241,111 @@ public class TestKmlSupport extends TestGISBase {
 	 * Do the actual test. The actual test reads in the original file, writes
 	 * out the data, then compares the data for essential equality. This means
 	 * that for features, the geometry is not compared precisely
-	 * 
+	 *
 	 * @param testcase the file being checked
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	private void doTest(File testcase) throws IOException {
 		System.out.println("Testing " + testcase);
-        File temp = null;
-        FileInputStream fs = new FileInputStream(testcase);
-        List<IGISObject> elements = new ArrayList<IGISObject>();
-        try {
-            KmlInputStream kis = (KmlInputStream) GISFactory.getInputStream(DocumentType.KML, fs);
-		    temp = createTemp(testcase.getName(), ".kml");
+		File temp = null;
+		FileInputStream fs = new FileInputStream(testcase);
+		List<IGISObject> elements = new ArrayList<IGISObject>();
+		try {
+			KmlInputStream kis = (KmlInputStream) GISFactory.getInputStream(DocumentType.KML, fs);
+			temp = createTemp(testcase.getName(), ".kml");
 			OutputStream fos = new FileOutputStream(temp);
-            String encoding = kis.getEncoding();
-            assertNotNull(encoding);
-            IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos, encoding);
-            IGISObject current;
-            while ((current = kis.read()) != null) {
-                os.write(current);
-                elements.add(current);
-            }
+			String encoding = kis.getEncoding();
+			assertNotNull(encoding);
+			IGISOutputStream os = GISFactory.getOutputStream(DocumentType.KML, fos, encoding);
+			IGISObject current;
+			while ((current = kis.read()) != null) {
+				os.write(current);
+				elements.add(current);
+			}
 
-            kis.close();
-            fs.close();
+			kis.close();
+			fs.close();
 
-            os.close();
-            fos.close();
+			os.close();
+			fos.close();
 
-            //System.out.println("Testing rewritten file: " + testcase.getName());
+			//System.out.println("Testing rewritten file: " + testcase.getName());
 
-            // Test for equivalence
-            fs = new FileInputStream(temp);
-            IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
-            int index = 0;
-            while ((current = is.read()) != null) {
-                //elements2.add(current);
-                if (index >= elements.size()) {
-                    fail("Found at least one extra element " + current);
-                }
-                IGISObject prev = elements.get(index++);
-                if (prev instanceof Schema) {
-                    Schema schema = (Schema)prev;
-                    // if schema aliasing is used by presence of parent element or attribute
-                    // (old-style KML schema feature) then skip approx test for this element
-                    if (schema.getParent() != null)
-                        continue;
-                }
-                checkApproximatelyEquals(prev, current);
-            }
-            is.close();
-        } catch (IOException e) {
-            System.out.println(" *Failed to parse KML for testcase: " + testcase.getName());
-            //String msg = e.getMessage();
-            //if (msg == null || !msg.contains("Message: Invalid byte 1 of 1-byte UTF-8 sequence"))
-            throw e;
-            // otherwise we wrote a KML source with wrong XML encoding
-            // this is an error in the tester not the giscore framework
-        } catch (AssertionError e) {
-            System.out.println(" *Failed in testcase: " + testcase.getName());
-            // System.out.println(" *temp=" + temp);
-            /*
-                for(Object o : elements) {
-                    System.out.println(" >" + o.getClass().getName());
-                }
-                System.out.println();
-                for(Object o : elements2) {
-                    System.out.println(" <" + o.getClass().getName());
-                }
-                System.out.println("\nelts1=" + elements);
-                System.out.println("\nelts2=" + elements2);
-                System.out.println();
-                */
-            throw e;
-        } finally {
-            IOUtils.closeQuietly(fs);
+			// Test for equivalence
+			fs = new FileInputStream(temp);
+			IGISInputStream is = GISFactory.getInputStream(DocumentType.KML, fs);
+			int index = 0;
+			while ((current = is.read()) != null) {
+				//elements2.add(current);
+				if (index >= elements.size()) {
+					fail("Found at least one extra element " + current);
+				}
+				IGISObject prev = elements.get(index++);
+				if (prev instanceof Schema) {
+					Schema schema = (Schema) prev;
+					// if schema aliasing is used by presence of parent element or attribute
+					// (old-style KML schema feature) then skip approx test for this element
+					if (schema.getParent() != null)
+						continue;
+				}
+				checkApproximatelyEquals(prev, current);
+			}
+			is.close();
+		} catch (IOException e) {
+			System.out.println(" *Failed to parse KML for testcase: " + testcase.getName());
+			//String msg = e.getMessage();
+			//if (msg == null || !msg.contains("Message: Invalid byte 1 of 1-byte UTF-8 sequence"))
+			throw e;
+			// otherwise we wrote a KML source with wrong XML encoding
+			// this is an error in the tester not the giscore framework
+		} catch (AssertionError e) {
+			System.out.println(" *Failed in testcase: " + testcase.getName());
+			// System.out.println(" *temp=" + temp);
+			/*
+							for(Object o : elements) {
+								System.out.println(" >" + o.getClass().getName());
+							}
+							System.out.println();
+							for(Object o : elements2) {
+								System.out.println(" <" + o.getClass().getName());
+							}
+							System.out.println("\nelts1=" + elements);
+							System.out.println("\nelts2=" + elements2);
+							System.out.println();
+							*/
+			throw e;
+		} finally {
+			IOUtils.closeQuietly(fs);
 			if (autoDelete && temp != null && temp.exists()) {
-                temp.delete();
-            }
-        }
+				temp.delete();
+			}
+		}
 	}
 
-    @Test public void testStyleUrl()  {
-        Feature f = new Feature();
-        f.setStyleUrl("myStyle");
-        // test auto anchor prefix '#' prepend to feature style url
-        assertEquals("#myStyle", f.getStyleUrl());
+	@Test
+	public void testStyleUrl() {
+		Feature f = new Feature();
+		f.setStyleUrl("myStyle");
+		// test auto anchor prefix '#' prepend to feature style url
+		assertEquals("#myStyle", f.getStyleUrl());
 
-        f.setStyleUrl("#my_Style123");
-        assertEquals("#my_Style123", f.getStyleUrl());
-    }
+		f.setStyleUrl("#my_Style123");
+		assertEquals("#my_Style123", f.getStyleUrl());
+	}
 
-    @Test public void testStyleMapUrl()  {
-        StyleMap sm = new StyleMap("myStyle");
-        sm.put(StyleMap.NORMAL, "sn_myStyle");
-        sm.put(StyleMap.HIGHLIGHT, "sh_myStyle");
-        // test auto anchor prefix '#' prepend to styleUrls
-        assertEquals("#sn_myStyle", sm.get(StyleMap.NORMAL));
-        assertEquals("#sh_myStyle", sm.get(StyleMap.HIGHLIGHT));
-    }
+	@Test
+	public void testStyleMapUrl() {
+		StyleMap sm = new StyleMap("myStyle");
+		sm.put(StyleMap.NORMAL, "sn_myStyle");
+		sm.put(StyleMap.HIGHLIGHT, "sh_myStyle");
+		// test auto anchor prefix '#' prepend to styleUrls
+		assertEquals("#sn_myStyle", sm.get(StyleMap.NORMAL));
+		assertEquals("#sh_myStyle", sm.get(StyleMap.HIGHLIGHT));
+	}
 
 	@Test
 	public void test_Style() throws XMLStreamException, IOException {
-        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		KmlOutputStream kos = new KmlOutputStream(bos);
 
 		ContainerStart cs = new ContainerStart(IKml.DOCUMENT);
@@ -298,7 +367,7 @@ public class TestKmlSupport extends TestGISBase {
 		int count = 0;
 		for (IGISObject o; (o = kis.read()) != null; ) {
 			if (o instanceof Feature) {
-				Feature f2 = (Feature)o;
+				Feature f2 = (Feature) o;
 				assertEquals("#myStyle", f2.getStyleUrl());
 			} else if (o instanceof ContainerStart) {
 				final List<StyleSelector> styles = ((ContainerStart) o).getStyles();
@@ -310,7 +379,7 @@ public class TestKmlSupport extends TestGISBase {
 		}
 		assertEquals(4, count);
 		kis.close();
-    }
+	}
 
 	@Test
 	public void testContainerStyle() {
@@ -333,30 +402,30 @@ public class TestKmlSupport extends TestGISBase {
 	}
 
 	/**
-	 * For most objects they need to be exactly the same, but for some we can 
+	 * For most objects they need to be exactly the same, but for some we can
 	 * approximate equality
-	 * 
+	 *
 	 * @param source
 	 * @param test
 	 */
 	private void checkApproximatelyEquals(IGISObject source, IGISObject test) {
-		if (Feature.class.isAssignableFrom(source.getClass()) && 
+		if (Feature.class.isAssignableFrom(source.getClass()) &&
 				Feature.class.isAssignableFrom(test.getClass())) {
 			Feature sf = (Feature) source;
 			Feature tf = (Feature) test;
 
-            if (!sf.approximatelyEquals(tf)) {
-                System.out.format(" *Failed approximatelyEquals\n\tsrc=%s\n\ttest=%s%n",
-                  sf.getClass().getName(), tf.getClass().getName());
+			if (!sf.approximatelyEquals(tf)) {
+				System.out.format(" *Failed approximatelyEquals\n\tsrc=%s\n\ttest=%s%n",
+						sf.getClass().getName(), tf.getClass().getName());
 				/*
                 System.out.println(" source=" + sf);
                 System.out.println("--");
                 System.out.println(" test=" + tf);
                 System.out.println("--");
                 */
-                fail("approximatelyEquals");
-            }
-        } else {
+				fail("approximatelyEquals");
+			}
+		} else {
 			/*
 			if (!source.equals(test)) {
 				System.out.println("expected: <" +
