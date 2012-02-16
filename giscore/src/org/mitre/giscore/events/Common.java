@@ -226,15 +226,23 @@ public abstract class Common extends Row {
 
 	/**
 	 * Set Region on feature.
+	 * <p/>
 	 * Caller should set  <em<>minLodPixels</em> on the region TaggedMap instance after
 	 * calling this method since this is not defined here and it is a required field.
+	 * As defined in KML 2.2 OGC 07-147r2: if <em>minAltitude</em> and <em>maxAltitude</em> are both present,
+	 * <em>altitudeMode</em> shall <B>not</B> have a value of <tt>clampToGround</tt> so in this case <tt>absolute</tt>
+	 * is assumed if the altitudeMode property is not already set. Caller should therefore explicitly set
+	 * <em>altitudeMode</em> if altitude will be included in the region.
 	 *
-	 * @param bbox Bounding box from which to set the region. If bbox is a <em>Geodetic3DBounds</em>
-	 *             instance then minAltitude and maxAltitude will be set accordingly if the
-	 *             <tt>allowAltitude</tt> flag is <em>true</em> otherwise region will not include an altitude.
+	 * @param bbox		  Bounding box from which to set the region.
+	 * @param allowAltitude If set to <em>true</em> and bbox is a <em>Geodetic3DBounds</em>
+	 *                      instance then <em>minAltitude</em> and <em>maxAltitude</em> properties will be
+	 *                      set accordingly otherwise region will not include altitude.
 	 */
 	public void setRegion(Geodetic2DBounds bbox, boolean allowAltitude) {
 		if (bbox == null) {
+			// passing null clears the region: same as passing null to setRegion(TaggedMap)
+			region = null;
 			return;
 		}
 		if (region == null) {
@@ -282,6 +290,7 @@ public abstract class Common extends Row {
 			Geodetic3DBounds bounds = (Geodetic3DBounds) bbox;
 			double minElev = bounds.minElev;
 			double maxElev = bounds.maxElev;
+			// verify constraints minAltitude is less than or equal to maxAltitude
 			if (minElev > maxElev) {
 				double temp = minElev;
 				minElev = maxElev;
@@ -289,6 +298,12 @@ public abstract class Common extends Row {
 			}
 			region.put(IKml.MIN_ALTITUDE, String.valueOf(minElev));
 			region.put(IKml.MAX_ALTITUDE, String.valueOf(maxElev));
+			String altitudeMode = region.get(IKml.ALTITUDE_MODE);
+			if (StringUtils.isBlank(altitudeMode) || "clampToGround".equalsIgnoreCase(altitudeMode)) {
+				// KML 2.2 OGC 07-147r2: if kml:minAltitude and kml:maxAltitude are both present, kml:altitudeMode
+				// shall not have a value of clampToGround. Must have non-clampToGround value so assume it's absolute.
+				region.put(IKml.ALTITUDE_MODE, "absolute");
+			}
 		}
 	}
 
