@@ -65,19 +65,25 @@ import java.util.Queue;
  * The geometry visitors are invoked by the feature visitor via the Geometry
  * accept method.
  * <p/>
- * Following KML tags are supported: description, Document, ExtendedData,
- * Folder, Line, NetworkLink, Placemark, Point, Polygon, Schema, Snippet, etc.
- * <p/>
- * If description contains HTML markup or special characters (e.g. '&', '<', '>', etc.)
- * then a CDATA block will surround the unescaped text in generated KML output.
+ * Following KML tags are supported: address(<A href="#address">*</A>), description,
+ * Document, ExtendedData, Folder, Line, NetworkLink, phoneNumber(<A href="#address">*</A>),
+ * Placemark, Point, Polygon, Schema, snippet, etc.
  * <p/>
  * Elements such as atom:author, atom:link, xal:AddressDetails, and gx: extensions
  * must be added to the Feature object as {@link Element} objects.
+ * <p/>
+ * If description contains HTML markup or special characters (e.g. '&', '<', '>', etc.)
+ * then a CDATA block will surround the unescaped text in the generated KML output.
  *
  * <h4>Notes/Limitations:</h4>
  * <ul>
+ * <li><a name="address">Note phoneNumber and address fields do not explicitly exist on the Feature
+ * or Common object but are supported if added as an {@link Element} with the
+ * <code>http://www.opengis.net/kml/2.2</code> namespace. This is how the
+ * {@link KmlInputStream} stores these fields on a Feature object.
+ * </a>
  * <li> A few tags are not yet supported on features so are omitted from output:
- *  {@code address, Metadata, and phoneNumber}.
+ *  {@code Metadata}.
  * <li> Limited support for NetworkLinkControl.
  * <li> Partial support for PhotoOverlay. Omits ViewVolume, ImagePyramid, and shape properties.
  * <li> Warns if shared styles appear in Folders. According to OGC KML specification
@@ -216,10 +222,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 			for(Namespace ns : documentStart.getNamespaces()) {
                 String prefix = ns.getPrefix();
                 if (StringUtils.isNotBlank(prefix)) {
-                    writer.writeNamespace(prefix, ns.getURI());
+					final String nsURI = ns.getURI();
+					writer.writeNamespace(prefix, nsURI);
                     needNewline = true;
-                    namespaces.put(prefix, ns.getURI());
-                    if (gxNamespace == null && ns.getURI() != null && ns.getURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+                    namespaces.put(prefix, nsURI);
+                    if (gxNamespace == null && nsURI.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
                         gxNamespace = ns;
                     }
                 }
@@ -257,9 +264,16 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             String tag = containerStart.getType();
             if (!IKml.DOCUMENT.equals(tag) && !IKml.FOLDER.equals(tag)) {
                 // Folder has more restrictions than Document in KML (e.g. shared styles cannot appear in Folders)
-                // so if container is unknown then use Document type.
+                // so if container is unknown then use Document type by default.
                 tag = IKml.FOLDER.equalsIgnoreCase(tag) ? IKml.FOLDER : IKml.DOCUMENT;
             }
+			/*
+			if (IKml.FOLDER.equals(tag) && !containerStart.getStyles().isEmpty()) {
+				// TODO: if Folder has shared styles then must write out Document element instead
+				log.debug("Shared styles cannot appear in Folders. Convert Folder to Document element"); // ATC 7: OGC-07-147r2: cl. 6.4
+				tag = IKml.DOCUMENT;
+			}
+			*/
             writer.writeStartElement(tag);			
             List<Element> elements = handleAttributes(containerStart, tag);
 
@@ -441,7 +455,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * and other features like Placemarks and Overlays.
      *
      * @param feature Common feature object for whom attributes will be written
-     * @param containerType type of Container were visiting if (Feature is a Document or Folder) otherwise null
+     * @param containerType type of Container were visiting if Feature is a Document or Folder otherwise null
      * @return list of elements initialized with getElement() and removed those elements that were processed, empty list
      *          if no non-kml elements left.
      */
@@ -467,6 +481,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             Element link = null;
             Element addressDetails = null;
 			Element balloonVisibility = null;
+			String address = null;
+			String phoneNumber = null;
             for(Iterator<Element>it = elements.iterator(); it.hasNext(); ) {
                 Element el = it.next();
                 // remove atom:attributes in post-xml element dump
@@ -478,7 +494,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                         link = el;
                         it.remove(); // remove from list - marked as processed
                     }
-                } else if (NS_OASIS_XAL.equals(el.getNamespaceURI()) &&
+				} else if (KML_NS.equals(el.getNamespaceURI())) {
+					if (ADDRESS.equals(el.getName())) {
+						address = el.getText();
+						it.remove(); // remove from list - marked as processed
+					} else if (PHONE_NUMBER.equals(el.getName())) {
+						phoneNumber = el.getText();
+						it.remove(); // remove from list - marked as processed
+					}
+				} else if (NS_OASIS_XAL.equals(el.getNamespaceURI()) &&
                         ADDRESS_DETAILS.equals(el.getName())) {
                     addressDetails = el;
                     it.remove(); // remove from list - marked as processed
@@ -490,9 +514,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
             if (author != null) handleXmlElement(author);
             if (link != null) handleXmlElement(link);
-            // todo: handle kml:address
+			if (address != null) handleNonEmptySimpleElement(ADDRESS, address);
+			if (phoneNumber != null) handleNonEmptySimpleElement(PHONE_NUMBER, phoneNumber);
             if (addressDetails != null) handleXmlElement(addressDetails);
-			// Use snippet. Snippet is deprecated.
+			// Use snippet (lower-case 's'). Snippet deprecated in 2.2 (see OGC kml22.xsd)
 			handleNonEmptySimpleElement(SNIPPET, feature.getSnippet());
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
             handleAbstractView(feature.getViewGroup()); // LookAt or Camera AbstractViewGroup

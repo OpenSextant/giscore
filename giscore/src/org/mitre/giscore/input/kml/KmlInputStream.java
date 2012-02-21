@@ -19,7 +19,7 @@ package org.mitre.giscore.input.kml;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.lang.StringUtils;
-import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.*;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.*;
 import org.mitre.giscore.geometry.Point;
@@ -38,6 +38,7 @@ import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.*;
+import javax.xml.stream.events.Namespace;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,8 +77,8 @@ import java.util.*;
  * <p>
  * Geometry support includes: Point, LineString, LinearRing, Polygon, MultiGeometry, and Model(<A href="#Model">*</A>).
  * <p>
- * Supported KML properties include: name, description, open, visibility,
- * Camera/LookAt, atom:author, atom:link, xal:AddressDetails, styleUrl,
+ * Supported KML properties include: name, address, description, open, visibility,
+ * Camera/LookAt, atom:author, atom:link, xal:AddressDetails, phoneNumber, styleUrl,
  * inline/shared Styles, Region, Snippet, snippet, ExtendedData(<A href="#ExtendedData">*</A>),
  * Schema, TimeStamp/TimeSpan elements in addition to the geometry are parsed
  * and set on the Feature object.
@@ -115,9 +116,7 @@ import java.util.*;
  * will be associated only with the last {@code Schema} referenced.
  * </a>
  * <p>
- * Unsupported tags include the following:
- *  {@code address, Metadata, phoneNumber}.
- * These tags are consumed but discarded.
+ * Unsupported tags include: {@code Metadata}, which is consumed but discarded.
  * <p>
  * Some support for gx KML extensions (e.g. Track, MultiTrack, Tour, etc.). Also {@code gx:altitudeMode}
  * is handle specially and stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry,
@@ -157,10 +156,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
     	ms_kml_ns.add("http://www.opengis.net/kml/2.3");
     	ms_kml_ns.add("http://www.opengis.net/kml/3.0");
     }
-	private static final Set<String> ms_features = new HashSet<String>();
-	private static final Set<String> ms_containers = new HashSet<String>();
-	private static final Set<String> ms_attributes = new HashSet<String>();
-	private static final Set<String> ms_geometries = new HashSet<String>();
+	private static final Set<String> ms_features = new HashSet<String>(5);
+	private static final Set<String> ms_containers = new HashSet<String>(2);
+	private static final Set<String> ms_attributes = new HashSet<String>(2);
+	private static final Set<String> ms_geometries = new HashSet<String>(6);
 
 	private static final List<SimpleDateFormat> ms_dateFormats = new ArrayList<SimpleDateFormat>(6);
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
@@ -186,9 +185,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 		// basic tags in Feature that are skipped but consumed
 		ms_attributes.add(OPEN); // note special handling for Folders, Documents or NetworkLinks
-		ms_attributes.add(ADDRESS);
-		ms_attributes.add(PHONE_NUMBER);
-		ms_attributes.add(METADATA);
+		ms_attributes.add(METADATA); // deprecated
 
 		// all possible elements that extend kml:AbstractGeometryType base type in KML Schema
 		ms_geometries.add(POINT);
@@ -470,6 +467,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				// http://code.google.com/apis/kml/documentation/kmlreference.html#snippet
 				feature.setSnippet(getElementText(name));
                 return true;
+			} else if (localname.equals(ADDRESS) || localname.equals(PHONE_NUMBER)) { // kml:address | kml:phoneNumber
+				String value = getElementText(name); // non-empty or null value
+				if (value != null) {
+					// add value as KML element to be handled later
+					Element e = new Element(org.mitre.giscore.Namespace.getNamespace(KML_NS), localname);
+					e.setText(value);
+					feature.getElements().add(e);
+				}
             } else {
 				//StartElement sl = ee.asStartElement();
 				//QName name = sl.getName();
@@ -1663,6 +1668,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
 						// geometry: Point, LineString, LinearRing, Polygon, MultiGeometry, Model
+						// does not include gx:Track or gx:MultiTrack
                         try {
                             Geometry geo = handleGeometry(sl);
                             if (geo != null) {
@@ -2007,6 +2013,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					StartElement el = (StartElement) event;
 					String tag = el.getName().getLocalPart();
 					// tag must match: Point, LineString, LinearRing, Polygon, MultiGeometry, or Model
+					// does not include gx:Track or gx:MultiTrack
 					if (ms_geometries.contains(tag)) {
 						try {
 							Geometry geom = handleGeometry(el);
