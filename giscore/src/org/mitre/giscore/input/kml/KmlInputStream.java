@@ -52,7 +52,7 @@ import java.util.*;
 /**
  * Read a Google Earth Keyhole Markup Language (KML) file in as an input stream
  * one event at a time.
- *
+ * <p/>
  * <P>Supports KML 2.0 through KML 2.2 data formats with allowance
  * for sloppy or lax KML files as would be allowed in Google Earth. Limited
  * support is provided for Google's KML Extensions with gx prefix and
@@ -61,7 +61,7 @@ import java.util.*;
  * is maintained in output in the associated {@link org.mitre.giscore.output.kml.KmlOutputStream}
  * class. In doing so some "legacy" KML 2.0 or KML 2.1 conventions may be
  * normalized into the equivalent 2.2 form or dropped if not supported.
- *
+ * <p/>
  * <P>Each time the read method is called,
  * the code tries to read a single event's worth of data. Generally that is one
  * of the following events:
@@ -70,24 +70,24 @@ import java.util.*;
  * <li>Exiting a container returning a <tt>ContainerEnd</tt> object
  * <li>A new feature returning a <tt>Feature</tt> object
  * </ul>
- * <p>
+ * <p/>
  * Supports KML Placemark, GroundOverlay, NetworkLink, Document, and Folder elements with
  * limited/partial support for the lesser used NetworkLinkControl(<A href="#NetworkLinkControl">*</A>),
  * ScreenOverlay, PhotoOverlay(<A href="#PhotoOverlay">*</A>) elements.
- * <p>
+ * <p/>
  * Geometry support includes: Point, LineString, LinearRing, Polygon, MultiGeometry, and Model(<A href="#Model">*</A>).
- * <p>
+ * <p/>
  * Supported KML properties include: name, address, description, open, visibility,
  * Camera/LookAt, atom:author, atom:link, xal:AddressDetails, phoneNumber, styleUrl,
  * inline/shared Styles, Region, Snippet, snippet, ExtendedData(<A href="#ExtendedData">*</A>),
  * Schema, TimeStamp/TimeSpan elements in addition to the geometry are parsed
  * and set on the Feature object.
- * <P>
+ * <p/>
  * Style and StyleMap supported on Features (Placemarks, Documents, Folders, etc.)
  * with IconStyle, PolyStyle, ListStyle, etc.
  * {@code StyleMaps} with inline Styles are supported.
  * StyleMaps must specify {@code styleUrl} and/or inline Style. Nested StyleMaps are not supported.
- * <p>
+ * <p/>
  * If elements (e.g. {@code Style} or {@code StyleMap}) are out of order on input
  * that same order is preserved in the order of elements returned in {@link #read()}.
  * For example, if Style/StyleMap elements appear incorrectly out of order such as
@@ -95,9 +95,9 @@ import java.util.*;
  * not be corrected by KmlWriter or KmlOutputStream, which assumes the caller writes
  * those elements in a valid order. It should still work with Google Earth but it
  * will not conform to the KML 2.2 spec.
- * <p>
+ * <p/>
  * <h4>Notes/Limitations:</h4>
- * <p>
+ * <p/>
  * The actual handling of containers and other features has some uniform
  * methods. Every feature in KML can have a set of common attributes and
  * additional elements.
@@ -106,7 +106,7 @@ import java.util.*;
  * consistent and is handled by {@link #parseCoordinates(QName)}. {@code Tessellate},
  * {@code extrude}, and {@code altitudeMode} properties are maintained on the
  * associated Geometry.
- * <p>
+ * <p/>
  * <a name="ExtendedData">
  * Handles ExtendedData with Data/Value or SchemaData/SimpleData elements but does not handle the non-KML namespace
  * form of extended data (see http://code.google.com/apis/kml/documentation/extendeddata.html#opaquedata).
@@ -115,26 +115,26 @@ import java.util.*;
  * Schemas. Features with mixed {@code Data} and/or multiple {@code SchemaData} elements
  * will be associated only with the last {@code Schema} referenced.
  * </a>
- * <p>
+ * <p/>
  * Unsupported tags include: {@code Metadata}, which is consumed but discarded.
- * <p>
+ * <p/>
  * Some support for gx KML extensions (e.g. Track, MultiTrack, Tour, etc.). Also {@code gx:altitudeMode}
  * is handle specially and stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry,
  * and GroundOverlay.
- * <p>
+ * <p/>
  * <a name="PhotoOverlay">
  * Limited support for {@code PhotoOverlay} which creates an basic overlay object
  * with Point and rotation without retaining other PhotoOverlay-specific properties
  * (ViewVolume, ImagePyramid, or shape).</a>
- * <p>
+ * <p/>
  * <a name="Model">
  * Limited support for {@code Model} geometry type. Keeps only location and altitude
  * properties.</a>
- * <p>
+ * <p/>
  * <a name="NetworkLinkControl">
  * Limited support for {@code NetworkLinkControl} which creates an object wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.</a>
- * <p>
+ * <p/>
  * Allows timestamps to omit seconds field as does Google Earth. Strict XML schema validation requires
  * seconds field in the dateTime ({@code YYYY-MM-DDThh:mm:ssZ}) format but Google Earth is lax in its rules.
  * Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC.
@@ -142,20 +142,21 @@ import java.util.*;
  * @author J.Mathews
  */
 public class KmlInputStream extends XmlInputStream implements IKml {
-    public static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
+	public static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
 
-    private static final Set<String> ms_kml_ns = new HashSet<String>(7);
+	private static final Set<String> ms_kml_ns = new HashSet<String>(7);
 
-    static {
-    	ms_kml_ns.add("http://earth.google.com/kml/2.1");
-    	ms_kml_ns.add("http://earth.google.com/kml/2.2");
-    	ms_kml_ns.add("http://earth.google.com/kml/2.3");
-    	ms_kml_ns.add("http://earth.google.com/kml/3.0");
+	static {
+		ms_kml_ns.add("http://earth.google.com/kml/2.1");
+		ms_kml_ns.add("http://earth.google.com/kml/2.2");
+		ms_kml_ns.add("http://earth.google.com/kml/2.3");
+		ms_kml_ns.add("http://earth.google.com/kml/3.0");
 
-    	ms_kml_ns.add("http://www.opengis.net/kml/2.2");
-    	ms_kml_ns.add("http://www.opengis.net/kml/2.3");
-    	ms_kml_ns.add("http://www.opengis.net/kml/3.0");
-    }
+		ms_kml_ns.add("http://www.opengis.net/kml/2.2");
+		ms_kml_ns.add("http://www.opengis.net/kml/2.3");
+		ms_kml_ns.add("http://www.opengis.net/kml/3.0");
+	}
+
 	private static final Set<String> ms_features = new HashSet<String>(5);
 	private static final Set<String> ms_containers = new HashSet<String>(2);
 	private static final Set<String> ms_attributes = new HashSet<String>(2);
@@ -195,18 +196,18 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		ms_geometries.add(MULTI_GEOMETRY);
 		ms_geometries.add(MODEL);
 
-        // Reference states: dateTime (YYYY-MM-DDThh:mm:ssZ) in KML states that T is the separator
-        // between the calendar and the hourly notation of time, and Z indicates UTC. (Seconds are required.)
-        // however, we will also check time w/o seconds since it is accepted by Google Earth.
-        // Thus allowing the form: YYYY-MM-DDThh:mm[:ss][Z]
-        // http://code.google.com/apis/kml/documentation/kmlreference.html#timestamp
+		// Reference states: dateTime (YYYY-MM-DDThh:mm:ssZ) in KML states that T is the separator
+		// between the calendar and the hourly notation of time, and Z indicates UTC. (Seconds are required.)
+		// however, we will also check time w/o seconds since it is accepted by Google Earth.
+		// Thus allowing the form: YYYY-MM-DDThh:mm[:ss][Z]
+		// http://code.google.com/apis/kml/documentation/kmlreference.html#timestamp
 
 		ms_dateFormats.add(new SimpleDateFormat(ISO_DATE_FMT)); // default: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"));
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")); // dateTime format w/o seconds
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd")); // date (YYYY-MM-DD)
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));    // gYearMonth (YYYY-MM)
-		ms_dateFormats.add(new SimpleDateFormat("yyyy"));       // gYear (YYYY)
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));	// gYearMonth (YYYY-MM)
+		ms_dateFormats.add(new SimpleDateFormat("yyyy"));	   // gYear (YYYY)
 		for (DateFormat fmt : ms_dateFormats) {
 			fmt.setTimeZone(UTC);
 		}
@@ -217,9 +218,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * and saves its argument, the input stream
 	 * <code>input</code>, for later use.
 	 *
-	 * @param input
-	 *            input stream for the kml file, never <code>null</code>
-	 * @throws IOException if an I/O or parsing error occurs
+	 * @param input input stream for the kml file, never <code>null</code>
+	 * @throws IOException			  if an I/O or parsing error occurs
 	 * @throws IllegalArgumentException if input is null
 	 */
 	public KmlInputStream(InputStream input) throws IOException {
@@ -228,57 +228,57 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		addLast(ds);
 		try {
 			XMLEvent ev = stream.peek();
-            // Find first StartElement in stream
-			while (ev != null && ! ev.isStartElement()) {
+			// Find first StartElement in stream
+			while (ev != null && !ev.isStartElement()) {
 				ev = stream.nextEvent(); // Actually advance
-                if (ev != null) {
-                     if (ev.isStartDocument()) {
-                        // first element will be the XML header as StartDocument whether explicit or not
-                        StartDocument doc = (StartDocument)ev;
-                        if (doc.encodingSet())
-                            setEncoding(doc.getCharacterEncodingScheme()); // default UTF-8
-                    }
-                    ev = stream.peek();
-                }
+				if (ev != null) {
+					if (ev.isStartDocument()) {
+						// first element will be the XML header as StartDocument whether explicit or not
+						StartDocument doc = (StartDocument) ev;
+						if (doc.encodingSet())
+							setEncoding(doc.getCharacterEncodingScheme()); // default UTF-8
+					}
+					ev = stream.peek();
+				}
 			}
-            if (ev == null) return;
+			if (ev == null) return;
 			// The first start element may be a KML element, which isn't
 			// handled by the rest of the code. We'll handle it here to obtain the
 			// namespaces
 			StartElement first = ev.asStartElement();
 			QName qname = first.getName();
 			String nstr = qname.getNamespaceURI();
-            final String localPart = qname.getLocalPart();
-            if ("kml".equals(localPart)) {
-                if (StringUtils.isNotBlank(nstr) && !ms_kml_ns.contains(nstr)) {
-                    // KML namespace not registered
-                    log.info("Registering unrecognized KML namespace: " + nstr);
-                    ms_kml_ns.add(nstr);
-                }
+			final String localPart = qname.getLocalPart();
+			if ("kml".equals(localPart)) {
+				if (StringUtils.isNotBlank(nstr) && !ms_kml_ns.contains(nstr)) {
+					// KML namespace not registered
+					log.info("Registering unrecognized KML namespace: " + nstr);
+					ms_kml_ns.add(nstr);
+				}
 				stream.nextEvent(); // Consume event
 			} else if (StringUtils.isNotBlank(nstr) && !ms_kml_ns.contains(nstr)
-                    && (ms_features.contains(localPart) || ms_containers.contains(localPart))) {
-                // root element non-kml (e.g. GroundOverlay) and namespace is not registered.
-                // Add it otherwise will be parsed as foreign elements
-                log.info("Registering unrecognized KML namespace: " + nstr);
-                ms_kml_ns.add(nstr);
-            }
+					&& (ms_features.contains(localPart) || ms_containers.contains(localPart))) {
+				// root element non-kml (e.g. GroundOverlay) and namespace is not registered.
+				// Add it otherwise will be parsed as foreign elements
+				log.info("Registering unrecognized KML namespace: " + nstr);
+				ms_kml_ns.add(nstr);
+			}
 			@SuppressWarnings("unchecked")
 			Iterator<Namespace> niter = first.getNamespaces();
-			while(niter.hasNext()) {
+			while (niter.hasNext()) {
 				Namespace ns = niter.next();
-                String prefix = ns.getPrefix();
-                if (StringUtils.isBlank(prefix)) continue;
-                // assuming that namespace prefixes are unique in the source KML document since it would violate
-                // the XML unique attribute constraint and not even load in Google Earth.
-                try {
-                    org.mitre.giscore.Namespace gnamespace =
-                        org.mitre.giscore.Namespace.getNamespace(prefix, ns.getNamespaceURI());
-                    ds.getNamespaces().add(gnamespace);
-                } catch (IllegalArgumentException e) {
-                    // ignore invalid namespaces since often namespaces may not even be used in the document itself
-                    log.warn("ignore invalid namespace " + prefix + "=" + ns.getNamespaceURI());
-                }
+				String prefix = ns.getPrefix();
+				if (StringUtils.isBlank(prefix)) continue;
+				// assuming that namespace prefixes are unique in the source KML document since it would violate
+				// the XML unique attribute constraint and not even load in Google Earth.
+				try {
+					org.mitre.giscore.Namespace gnamespace =
+							org.mitre.giscore.Namespace.getNamespace(prefix, ns.getNamespaceURI());
+					ds.getNamespaces().add(gnamespace);
+				} catch (IllegalArgumentException e) {
+					// ignore invalid namespaces since often namespaces may not even be used in the document itself
+					log.warn("ignore invalid namespace " + prefix + "=" + ns.getNamespaceURI());
+				}
 			}
 		} catch (XMLStreamException e) {
 			throw new IOException(e);
@@ -289,11 +289,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * Reads the next <code>IGISObject</code> from the InputStream.
 	 *
 	 * @return next <code>IGISObject</code>,
-     *           or <code>null</code> if the end of the stream is reached.
+	 *         or <code>null</code> if the end of the stream is reached.
 	 * @throws IOException if an I/O error occurs or if there
-	 * 			is a fatal error with the underlying XML
+	 *                     is a fatal error with the underlying XML
 	 */
-    @CheckForNull
+	@CheckForNull
 	public IGISObject read() throws IOException {
 		if (hasSaved()) {
 			return readSaved();
@@ -305,20 +305,20 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						return null;
 					}
 					int type = e.getEventType();
-                    if (XMLStreamReader.START_ELEMENT == type) {
+					if (XMLStreamReader.START_ELEMENT == type) {
 						IGISObject se = handleStartElement(e);
 						if (se == NullObject.getInstance())
 							continue;
 						return se; // start element is GISObject or null (indicating EOF)
-                    } else if (XMLStreamReader.END_ELEMENT == type) {
+					} else if (XMLStreamReader.END_ELEMENT == type) {
 						IGISObject rval = handleEndElement(e);
 						if (rval != null)
 							return rval;
-                    }
-                    /*
-                    // saving comments messes up the junit tests so comment out for now
-                    } else if (XMLStreamReader.COMMENT == type) {
-                        IGISObject comment = handleComment(e);
+					}
+					/*
+					// saving comments messes up the junit tests so comment out for now
+					} else if (XMLStreamReader.COMMENT == type) {
+						IGISObject comment = handleComment(e);
 						if (comment != null)
 							return comment;
 					*/
@@ -335,18 +335,18 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		}
 	}
 
-    /*
-    private IGISObject handleComment(XMLEvent e) throws XMLStreamException {
-        if (e instanceof javax.xml.stream.events.Comment) {
-            String text = ((javax.xml.stream.events.Comment)e).getText();
-            if (StringUtils.isNotBlank(text))
-                return new Comment(text);
-        }
-        return null;
-    }
-    */
+	/*
+		private IGISObject handleComment(XMLEvent e) throws XMLStreamException {
+			if (e instanceof javax.xml.stream.events.Comment) {
+				String text = ((javax.xml.stream.events.Comment)e).getText();
+				if (StringUtils.isNotBlank(text))
+					return new Comment(text);
+			}
+			return null;
+		}
+		*/
 
-    /**
+	/**
 	 * Read elements until we find a feature or a schema element. Use the name
 	 * and description data to set the equivalent data on the container start.
 	 *
@@ -402,7 +402,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					// Ignore other container elements
 					log.debug("ignore " + qname);
 				}
-            }
+			}
 		}
 
 		return readSaved();
@@ -413,60 +413,60 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 *
 	 * @param feature
 	 * @param ee
-	 * @param name  the qualified name of this event
+	 * @param name	the qualified name of this event
 	 * @return <code>true</code> if the event has been handled
 	 */
 	private boolean handleProperties(Common feature, XMLEvent ee,
-			QName name) {
+									 QName name) {
 		String localname = name.getLocalPart(); // never null
-        try {
-            if (localname.equals(NAME)) {
+		try {
+			if (localname.equals(NAME)) {
 				// sometimes markup found in names (e.g. <name><B>place name</B></name>)
 				// where is should be in the description and/or BalloonStyle
-                feature.setName(getElementText(name)); // non-empty or null value
-                return true;
-            } else if (localname.equals(DESCRIPTION)) {
-                // description content with markup not enclosed in CDATA is invalid and cannot be parsed
-                feature.setDescription(getElementText(name));
+				feature.setName(getElementText(name)); // non-empty or null value
 				return true;
-            } else if (localname.equals(VISIBILITY)) {
+			} else if (localname.equals(DESCRIPTION)) {
+				// description content with markup not enclosed in CDATA is invalid and cannot be parsed
+				feature.setDescription(getElementText(name));
+				return true;
+			} else if (localname.equals(VISIBILITY)) {
 				if (isTrue(stream.getElementText()))
-                	feature.setVisibility(Boolean.TRUE);
-                return true;
-            } else if (localname.equals(STYLE)) {
-                handleStyle(feature, ee, name);
-                return true;
-            } else if (ms_attributes.contains(localname)) {
+					feature.setVisibility(Boolean.TRUE);
+				return true;
+			} else if (localname.equals(STYLE)) {
+				handleStyle(feature, ee, name);
+				return true;
+			} else if (ms_attributes.contains(localname)) {
 				// basic tags in Feature that are skipped but consumed
 				// e.g. open, address, phoneNumber, Metadata
-                // Skip, but consumed
+				// Skip, but consumed
 				skipNextElement(stream, name);
-                return true;
+				return true;
 			} else if (localname.equals(STYLE_URL)) {
-                feature.setStyleUrl(stream.getElementText()); // value trimmed to null
-                return true;
-            } else if (localname.equals(TIME_SPAN) || localname.equals(TIME_STAMP)) {
-                handleTimePrimitive(feature, ee);
-                return true;
+				feature.setStyleUrl(stream.getElementText()); // value trimmed to null
+				return true;
+			} else if (localname.equals(TIME_SPAN) || localname.equals(TIME_STAMP)) {
+				handleTimePrimitive(feature, ee);
+				return true;
 			} else if (localname.equals(REGION)) {
-                handleRegion(feature, name);
-                return true;
-            } else if (localname.equals(STYLE_MAP)) {
-                handleStyleMap(feature, ee, name);
-                return true;
+				handleRegion(feature, name);
+				return true;
+			} else if (localname.equals(STYLE_MAP)) {
+				handleStyleMap(feature, ee, name);
+				return true;
 			} else if (localname.equals(LOOK_AT) || localname.equals(CAMERA)) {
-                handleAbstractView(feature, name);
-                return true;
+				handleAbstractView(feature, name);
+				return true;
 			} else if (localname.equals(EXTENDED_DATA)) {
-                handleExtendedData(feature, name);
-                return true;
+				handleExtendedData(feature, name);
+				return true;
 			} else if (localname.equals("Snippet")) { // kml:Snippet (deprecated)
 				feature.setSnippet(getElementText(name));
-                return true;
+				return true;
 			} else if (localname.equals("snippet")) { // kml:snippet
 				// http://code.google.com/apis/kml/documentation/kmlreference.html#snippet
 				feature.setSnippet(getElementText(name));
-                return true;
+				return true;
 			} else if (localname.equals(ADDRESS) || localname.equals(PHONE_NUMBER)) { // kml:address | kml:phoneNumber
 				String value = getElementText(name); // non-empty or null value
 				if (value != null) {
@@ -475,41 +475,41 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					e.setText(value);
 					feature.getElements().add(e);
 				}
-            } else {
+			} else {
 				//StartElement sl = ee.asStartElement();
 				//QName name = sl.getName();
 				// handle atom:link and atom:author elements (e.g. http://www.w3.org/2005/Atom)
-                // and google earth extensions as ForeignElements
+				// and google earth extensions as ForeignElements
 				// skip other non-KML namespace elements.
 				String ns = name.getNamespaceURI();
-                if (StringUtils.isNotEmpty(ns) && !ms_kml_ns.contains(ns)) {
-                    if (localname.equals(ADDRESS_DETAILS) || ns.startsWith("http://www.w3.org/")
-                            || ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
-                        try {
-                            Element el = (Element) getForeignElement(ee.asStartElement());
-                            feature.getElements().add(el);
-                        } catch (Exception e) {
-                            log.error("Problem getting element", e);
-                        }
-                    } else {
-                        // TODO: should we add all-non KML elements as-is or only expected ones ??
-                        log.debug("Skip unknown namespace " + name);
-                        skipNextElement(stream, name);
-                    }
-                    return true;
-                }
-            }
+				if (StringUtils.isNotEmpty(ns) && !ms_kml_ns.contains(ns)) {
+					if (localname.equals(ADDRESS_DETAILS) || ns.startsWith("http://www.w3.org/")
+							|| ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+						try {
+							Element el = (Element) getForeignElement(ee.asStartElement());
+							feature.getElements().add(el);
+						} catch (Exception e) {
+							log.error("Problem getting element", e);
+						}
+					} else {
+						// TODO: should we add all-non KML elements as-is or only expected ones ??
+						log.debug("Skip unknown namespace " + name);
+						skipNextElement(stream, name);
+					}
+					return true;
+				}
+			}
 		} catch (XMLStreamException e) {
-            log.error("Failed to handle: " + localname, e);
-            // TODO: do we have any situation where need to skip over failed localname element??
-            // skipNextElement(stream, localname);
-        }
-        return false;
+			log.error("Failed to handle: " + localname, e);
+			// TODO: do we have any situation where need to skip over failed localname element??
+			// skipNextElement(stream, localname);
+		}
+		return false;
 	}
 
-    /**
+	/**
 	 * @param cs
-	 * @param name  the qualified name of this event
+	 * @param name the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleExtendedData(Common cs, QName name)
@@ -540,14 +540,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						</ExtendedData>
 					 */
 					log.debug("skip " + qname);
-                	skipNextElement(stream, qname);
+					skipNextElement(stream, qname);
 				} else if (tag.equals(DATA)) {
 					Attribute nameAttr = se.getAttributeByName(new QName(NAME));
 					if (nameAttr != null) {
 						String value = parseValue(qname);
-                        if (value != null)
-    						cs.putData(new SimpleField(nameAttr.getValue()), value);
-                        // NOTE: if feature has mixed Data and SchemaData then Data fields will be associated with last SchemaData schema processed
+						if (value != null)
+							cs.putData(new SimpleField(nameAttr.getValue()), value);
+						// NOTE: if feature has mixed Data and SchemaData then Data fields will be associated with last SchemaData schema processed
 					} else {
 						// no name skip any value element
 						// TODO: if Data has id attr but no name can we use still the value ??
@@ -557,14 +557,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				} else if (tag.equals(SCHEMA_DATA)) {
 					Attribute url = se.getAttributeByName(new QName(SCHEMA_URL));
 					if (url != null) {
-                        // NOTE: reference and schema id must be handled exactly the same. See handleSchema()
-                        String uri = UrlRef.escapeUri(url.getValue());
+						// NOTE: reference and schema id must be handled exactly the same. See handleSchema()
+						String uri = UrlRef.escapeUri(url.getValue());
 						handleSchemaData(uri, cs, qname);
 						try {
 							cs.setSchema(new URI(uri));
 						} catch (URISyntaxException e) {
-                            // is URI properly encoded??
-							log.error("Failed to handle SchemaData schemaUrl=" + uri , e);
+							// is URI properly encoded??
+							log.error("Failed to handle SchemaData schemaUrl=" + uri, e);
 						}
 					} else {
 						// no schemaUrl skip SchemaData element
@@ -572,18 +572,18 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						log.debug("No schemaUrl attribute for Data. Skip element");
 						skipNextElement(stream, qname);
 					}
-                } else {
-                    log.debug("ignore " + qname);
-                	skipNextElement(stream, qname);
-                }
+				} else {
+					log.debug("ignore " + qname);
+					skipNextElement(stream, qname);
+				}
 			}
 		}
 	}
 
 	/**
-	 * @param uri a reference to a schema, if local then use that schema's
-	 * simple field objects instead of creating ones on the fly
-	 * @param cs Feature/Container for ExtendedData tag
+	 * @param uri   a reference to a schema, if local then use that schema's
+	 *              simple field objects instead of creating ones on the fly
+	 * @param cs	Feature/Container for ExtendedData tag
 	 * @param qname the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
@@ -612,7 +612,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 							// Either we don't know the schema or it isn't local
 							field = new SimpleField(name.getValue());
 						}
-                        // NOTE: if feature has multiple SchemaData elements (multi-schemas) then fields will be associated with last SchemaData schema processed
+						// NOTE: if feature has multiple SchemaData elements (multi-schemas) then fields will be associated with last SchemaData schema processed
 						cs.putData(field, value);
 					}
 				}
@@ -621,7 +621,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
 	/**
-	 * @param name  the qualified name of this event
+	 * @param name the qualified name of this event
 	 * @return the value associated with the element
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
@@ -645,8 +645,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Handle AbstractView (Camera or LookAt) element
+	 *
 	 * @param feature
-	 * @param name the qualified name of this event
+	 * @param name	the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleAbstractView(Common feature, QName name)
@@ -657,8 +658,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Handle KML Region
+	 *
 	 * @param feature
-	 * @param name the qualified name of this event
+	 * @param name	the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleRegion(Common feature, QName name)
@@ -697,10 +699,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		if (cs != null) {
 			if (cs instanceof Feature) {
 				// inline StyleMap for Placemark, NetworkLink, GroundOverlay, etc.
-				((Feature)cs).setStyle(sm);
+				((Feature) cs).setStyle(sm);
 			} else if (cs instanceof ContainerStart) {
 				// add style to container
-				((ContainerStart)cs).addStyle(sm);
+				((ContainerStart) cs).addStyle(sm);
 			} else addLast(sm);
 		}
 		// otherwise out of order StyleMap
@@ -741,16 +743,16 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			if (ce.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = ce.asStartElement();
 				if (foundStartTag(se, KEY)) {
-                    // key: type="kml:styleStateEnumType" default="normal"/>
-                    // styleStateEnumType: [normal] or highlight
+					// key: type="kml:styleStateEnumType" default="normal"/>
+					// styleStateEnumType: [normal] or highlight
 					key = getNonEmptyElementText();
 				} else if (foundStartTag(se, STYLE_URL)) {
-                    value = getNonEmptyElementText(); // type=anyURI
+					value = getNonEmptyElementText(); // type=anyURI
 				} else if (foundStartTag(se, STYLE)) {
-                    style = handleStyle(null, se, se.getName());
+					style = handleStyle(null, se, se.getName());
 					// inline Styles within StyleMap
 				} else if (foundStartTag(se, STYLE_MAP)) {
-					 // nested StyleMaps are not supported nor does it even make sense
+					// nested StyleMaps are not supported nor does it even make sense
 					log.debug("skip nested StyleMap");
 					skipNextElement(stream, se.getName());
 				}
@@ -758,14 +760,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			XMLEvent ne = stream.peek();
 			if (foundEndTag(ne, name)) {
 				if (key != null || value != null || style != null) {
-                    if (key == null) {
-                        key = StyleMap.NORMAL; // default
-                    } else if (key.equalsIgnoreCase(StyleMap.NORMAL))
-                        key = StyleMap.NORMAL;
-                    else if (key.equalsIgnoreCase(StyleMap.HIGHLIGHT))
-                        key = StyleMap.HIGHLIGHT;
-                    else
-                        log.warn("Unknown StyleMap key: " + key);
+					if (key == null) {
+						key = StyleMap.NORMAL; // default
+					} else if (key.equalsIgnoreCase(StyleMap.NORMAL))
+						key = StyleMap.NORMAL;
+					else if (key.equalsIgnoreCase(StyleMap.HIGHLIGHT))
+						key = StyleMap.HIGHLIGHT;
+					else
+						log.warn("Unknown StyleMap key: " + key);
 
 					if (sm.containsKey(key)) {
 						if (value != null) {
@@ -786,7 +788,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
 	/**
-     * Handle timePrimitives (TimeStamp or timeSpan elements)
+	 * Handle timePrimitives (TimeStamp or timeSpan elements)
+	 *
 	 * @param cs feature to set with time
 	 * @param ee
 	 * @throws XMLStreamException if there is an error with the underlying XML.
@@ -803,44 +806,44 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
 				StartElement se = next.asStartElement();
 				String time = null;
-                try {
-                    if (foundStartTag(se, WHEN)) {
-                        time = getNonEmptyElementText();
-                        if (time != null) {
-                            Date date = parseDate(time);
-                            cs.setStartTime(date);
-                            cs.setEndTime(date);
-                        }
-                    } else if (foundStartTag(se, BEGIN)) {
-                        time = getNonEmptyElementText();
-                        cs.setStartTime(parseDate(time));
-                    } else if (foundStartTag(se, END)) {
-                        time = getNonEmptyElementText();
-                        cs.setEndTime(parseDate(time));
-                    }
-                } catch (IllegalArgumentException e) {
-                    log.warn("Ignoring bad time: " + time + ": " + e);
-                } catch (ParseException e) {
-                    log.warn("Ignoring bad time: " + time + ": " + e);
-                }
-            }
-            if (foundEndTag(next, tag)) {
-                return;
-            }
-        }
+				try {
+					if (foundStartTag(se, WHEN)) {
+						time = getNonEmptyElementText();
+						if (time != null) {
+							Date date = parseDate(time);
+							cs.setStartTime(date);
+							cs.setEndTime(date);
+						}
+					} else if (foundStartTag(se, BEGIN)) {
+						time = getNonEmptyElementText();
+						cs.setStartTime(parseDate(time));
+					} else if (foundStartTag(se, END)) {
+						time = getNonEmptyElementText();
+						cs.setEndTime(parseDate(time));
+					}
+				} catch (IllegalArgumentException e) {
+					log.warn("Ignoring bad time: " + time + ": " + e);
+				} catch (ParseException e) {
+					log.warn("Ignoring bad time: " + time + ": " + e);
+				}
+			}
+			if (foundEndTag(next, tag)) {
+				return;
+			}
+		}
 	}
 
 	/**
 	 * Parse kml:dateTimeType XML date/time field and convert to Date object.
 	 *
-	 * @param datestr  Lexical representation for one of XML Schema date/time datatypes.
-	 *                  Must be non-null and non-blank string.
+	 * @param datestr Lexical representation for one of XML Schema date/time datatypes.
+	 *                Must be non-null and non-blank string.
 	 * @return <code>Date</code> created from the <code>lexicalRepresentation</code>, never null.
 	 * @throws ParseException If the <code>lexicalRepresentation</code> is not a valid <code>Date</code>.
 	 */
-    @NonNull
+	@NonNull
 	public static Date parseDate(String datestr) throws ParseException {
-        if (StringUtils.isBlank(datestr)) throw new ParseException("Empty or null date string", 0);
+		if (StringUtils.isBlank(datestr)) throw new ParseException("Empty or null date string", 0);
 		try {
 			if (fact == null) fact = DatatypeFactory.newInstance();
 			XMLGregorianCalendar o = fact.newXMLGregorianCalendar(datestr);
@@ -854,9 +857,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				// Set timezone to UTC if other than dateTime formats with explicit timezones
 				int ind = datestr.lastIndexOf('T') + 1; // index should never be -1 if type is dateTime
 				if (ind > 0 && (datestr.indexOf('+', ind) > 0 || datestr.indexOf('-', ind) > 0)) {
-                    // e.g. 2009-03-14T18:10:46+03:00 or 2009-03-14T18:10:46-05:00
+					// e.g. 2009-03-14T18:10:46+03:00 or 2009-03-14T18:10:46-05:00
 					useUTC = false;
-                }
+				}
 				// if timeZone is missing (e.g. 2009-03-14T21:10:50) then 'Z' is assumed and UTC is used
 			}
 			if (useUTC) cal.setTimeZone(UTC);
@@ -878,9 +881,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			}
 			return cal.getTime();
 		} catch (IllegalArgumentException iae) {
-            // try individual date formats
-            int ind = datestr.indexOf('T');
-            int i;
+			// try individual date formats
+			int ind = datestr.indexOf('T');
+			int i;
 			/*
 				date formats:
 				0: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
@@ -890,41 +893,41 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				4: yyyy-MM  (gYearMonth)
 				5: yyyy		(gYear)
 			*/
-            if (ind == -1) {
-                i = 3; // if no 'T' in date then skip to date (YYYY-MM-DD) format @ index=3
-            } else {
-                i = 0;
-                // Sloppy KML might drop the 'Z' suffix or for dates. Google Earth defaults to UTC.
-                // Likewise KML might drop the seconds field in timestamp.
-                // Note these forms are not valid with respect to KML Schema and kml:dateTimeType
-                // definition but Google Earth has lax parsing for such cases so we attempt
-                // to parse as such.
-                // This will NOT handle alternate time zones format with missing second field: e.g. 2009-03-14T16:10-05:00
-                if (!datestr.endsWith("Z") && datestr.indexOf(':', ind + 1) > 0
-                        && datestr.indexOf('-', ind + 1) == -1
-                        && datestr.indexOf('+', ind + 1) == -1) {
-                    log.debug("Append Z suffix to date");
-                    datestr += 'Z'; // append 'Z' to date
-                }
-            }
-            while (i < ms_dateFormats.size()) {
-                SimpleDateFormat fmt = ms_dateFormats.get(i++);
-				try {
-                    Date date = fmt.parse(datestr);
-                    if (log.isDebugEnabled())
-                        log.debug(String.format("Failed to parse date %s with DatatypeFactory. Parsed using dateFormat: %s",
-                                datestr, fmt.toPattern()));
-					return date;
-				} catch (ParseException pe) {
-                    // ignore
+			if (ind == -1) {
+				i = 3; // if no 'T' in date then skip to date (YYYY-MM-DD) format @ index=3
+			} else {
+				i = 0;
+				// Sloppy KML might drop the 'Z' suffix or for dates. Google Earth defaults to UTC.
+				// Likewise KML might drop the seconds field in timestamp.
+				// Note these forms are not valid with respect to KML Schema and kml:dateTimeType
+				// definition but Google Earth has lax parsing for such cases so we attempt
+				// to parse as such.
+				// This will NOT handle alternate time zones format with missing second field: e.g. 2009-03-14T16:10-05:00
+				if (!datestr.endsWith("Z") && datestr.indexOf(':', ind + 1) > 0
+						&& datestr.indexOf('-', ind + 1) == -1
+						&& datestr.indexOf('+', ind + 1) == -1) {
+					log.debug("Append Z suffix to date");
+					datestr += 'Z'; // append 'Z' to date
 				}
 			}
-            // give up
+			while (i < ms_dateFormats.size()) {
+				SimpleDateFormat fmt = ms_dateFormats.get(i++);
+				try {
+					Date date = fmt.parse(datestr);
+					if (log.isDebugEnabled())
+						log.debug(String.format("Failed to parse date %s with DatatypeFactory. Parsed using dateFormat: %s",
+								datestr, fmt.toPattern()));
+					return date;
+				} catch (ParseException pe) {
+					// ignore
+				}
+			}
+			// give up
 			final ParseException e2 = new ParseException(iae.getMessage(), 0);
 			e2.initCause(iae);
 			throw e2;
 		} catch (DatatypeConfigurationException ce) {
-            // NOTE: maybe JODA time would be be better generic time parser but would be a new dependency
+			// NOTE: maybe JODA time would be be better generic time parser but would be a new dependency
 			// if unable to create factory then try brute force
 			log.error("Failed to get DatatypeFactory", ce);
 			// note: this does not correctly handle dateTime (YYYY-MM-DDThh:mm:sszzzzzz) format
@@ -947,8 +950,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param cs
 	 * @param ee
 	 * @param name the qualified name of this event
-	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 * @return
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private Style handleStyle(Common cs, XMLEvent ee, QName name)
 			throws XMLStreamException {
@@ -958,17 +961,17 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		StartElement sse = ee.asStartElement();
 		Attribute id = sse.getAttributeByName(ID_ATTR);
 		if (id != null) {
-            // escape invalid characters in id field?
-            // if so must be consistent in feature.setStyleUrl() and handleStyleMapPair(), etc.
+			// escape invalid characters in id field?
+			// if so must be consistent in feature.setStyleUrl() and handleStyleMapPair(), etc.
 			style.setId(id.getValue());
 		}
 		if (cs != null) {
 			if (cs instanceof Feature) {
 				// inline Style for Placemark, NetworkLink, GroundOverlay, etc.
-				((Feature)cs).setStyle(style);
+				((Feature) cs).setStyle(style);
 			} else if (cs instanceof ContainerStart) {
 				// add style to container
-				((ContainerStart)cs).addStyle(style);
+				((ContainerStart) cs).addStyle(style);
 			} else addLast(style);
 		}
 		// otherwise out of order style or inline style in StyleMap
@@ -992,16 +995,16 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					handleLabelStyle(style, qname);
 				} else if (localPart.equals(POLY_STYLE)) {
 					handlePolyStyle(style, qname);
-                } else if (localPart.equals(LIST_STYLE)) {
+				} else if (localPart.equals(LIST_STYLE)) {
 					handleListStyle(style, qname);
 				}
 			}
 		}
 	}
 
-    private void handleListStyle(Style style, QName qname) throws XMLStreamException {
-        Color bgColor = null; // default color="ffffffff" (white)
-        Style.ListItemType listItemType = null;
+	private void handleListStyle(Style style, QName qname) throws XMLStreamException {
+		Color bgColor = null; // default color="ffffffff" (white)
+		Style.ListItemType listItemType = null;
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (foundEndTag(e, qname)) {
@@ -1012,20 +1015,21 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				StartElement se = e.asStartElement();
 				String localPart = se.getName().getLocalPart();
 				if (localPart.equals(LIST_ITEM_TYPE)) {
-                    String text = stream.getElementText();
-                    try {
-                        listItemType = Style.ListItemType.valueOf(text);
-                    } catch (IllegalArgumentException e2) {
-                        log.warn("Invalid ListItemType value: " + text);
-                    }
+					String text = getNonEmptyElementText();
+					if (text != null)
+						try {
+							listItemType = Style.ListItemType.valueOf(text);
+						} catch (IllegalArgumentException e2) {
+							log.warn("Invalid ListItemType value: " + text);
+						}
 				} else if (localPart.equals(BG_COLOR)) {
 					bgColor = parseColor(stream.getElementText());
 				}
 			}
 		}
-    }
+	}
 
-    /**
+	/**
 	 * @param style
 	 * @param qname the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
@@ -1057,8 +1061,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * Determine if an element value is true or false
 	 *
-	 * @param val
-	 *            the value, may be <code>null</code>
+	 * @param val the value, may be <code>null</code>
 	 * @return <code>true</code> if the value is the single character "1" or "true".
 	 */
 	private boolean isTrue(String val) {
@@ -1090,13 +1093,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(SCALE)) {
-                    String value = getNonEmptyElementText();
-                    if (value != null)
-                        try {
-                            scale = Double.parseDouble(value);
-                        } catch (NumberFormatException nfe) {
-                            log.warn("Invalid scale value: " + value);
-                        }
+					String value = getNonEmptyElementText();
+					if (value != null)
+						try {
+							scale = Double.parseDouble(value);
+						} catch (NumberFormatException nfe) {
+							log.warn("Invalid scale value: " + value);
+						}
 				} else if (name.equals(COLOR)) {
 					color = parseColor(stream.getElementText());
 				}
@@ -1123,12 +1126,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				String name = se.getName().getLocalPart();
 				if (name.equals(WIDTH)) {
 					String value = getNonEmptyElementText();
-                    if (value != null)
-                        try {
-                            width = Double.parseDouble(value);
-                        } catch (NumberFormatException nfe) {
-                            log.warn("Invalid width value: " + value);
-                        }
+					if (value != null)
+						try {
+							width = Double.parseDouble(value);
+						} catch (NumberFormatException nfe) {
+							log.warn("Invalid width value: " + value);
+						}
 				} else if (name.equals(COLOR)) {
 					String value = stream.getElementText();
 					color = parseColor(value);
@@ -1148,8 +1151,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	private void handleBalloonStyle(Style style, QName qname) throws XMLStreamException {
 		String text = null;
-		Color color = null;        // default 0xffffffff
-		Color textColor = null;    // default 0xff000000
+		Color color = null;		// default 0xffffffff
+		Color textColor = null;	// default 0xff000000
 		String displayMode = null; // [default] | hide
 		while (true) {
 			XMLEvent e = stream.nextEvent();
@@ -1161,11 +1164,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				StartElement se = e.asStartElement();
 				String name = se.getName().getLocalPart();
 				if (name.equals(TEXT)) {
-                    // Note: Google Earth 6.0.3 treats blank/empty text same as if missing.
-                    // It's suggested that an earlier version handled blank string differently
-                    // according to comments in some KML samples so we're preserving empty strings
-                    // to force a BalloonStyle to be retained.
-                    text = StringUtils.trim(stream.getElementText()); // allow empty string
+					// Note: Google Earth 6.0.3 treats blank/empty text same as if missing.
+					// It's suggested that an earlier version handled blank string differently
+					// according to comments in some KML samples so we're preserving empty strings
+					// to force a BalloonStyle to be retained.
+					text = StringUtils.trim(stream.getElementText()); // allow empty string
 				} else if (name.equals(BG_COLOR)) {
 					color = parseColor(stream.getElementText());
 				} else if (name.equals(DISPLAY_MODE)) {
@@ -1181,7 +1184,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		}
 	}
 
-    /**
+	/**
 	 * Get the href property from the Icon element.
 	 *
 	 * @param qname the qualified name of this event
@@ -1208,37 +1211,36 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * Parse the color from a kml file, in {@code AABBGGRR} order.
 	 *
-	 * @param cstr
-	 *            a hex encoded string, must be exactly 8 characters long.
+	 * @param cstr a hex encoded string, must be exactly 8 characters long.
 	 * @return the color value, null if value is null, empty or invalid
 	 */
 	private Color parseColor(String cstr) {
 		if (cstr == null) return null;
-        cstr = cstr.trim();
+		cstr = cstr.trim();
 		if (cstr.startsWith("#")) {
 			// skip over '#' prefix used for HTML color codes allowed by Google Earth
 			// but invalid wrt KML XML Schema.
 			log.debug("Skip '#' in color code: " + cstr);
 			cstr = cstr.substring(1);
 		}
-        if (cstr.length() == 8)
-            try {
-                int alpha = Integer.parseInt(cstr.substring(0, 2), 16);
-                int blue = Integer.parseInt(cstr.substring(2, 4), 16);
-                int green = Integer.parseInt(cstr.substring(4, 6), 16);
-                int red = Integer.parseInt(cstr.substring(6, 8), 16);
-                return new Color(red, green, blue, alpha);
-            } catch (IllegalArgumentException ex) {
-                // fall through and log bad value
-            }
+		if (cstr.length() == 8)
+			try {
+				int alpha = Integer.parseInt(cstr.substring(0, 2), 16);
+				int blue = Integer.parseInt(cstr.substring(2, 4), 16);
+				int green = Integer.parseInt(cstr.substring(4, 6), 16);
+				int red = Integer.parseInt(cstr.substring(6, 8), 16);
+				return new Color(red, green, blue, alpha);
+			} catch (IllegalArgumentException ex) {
+				// fall through and log bad value
+			}
 
-        log.warn("Invalid color value: " + cstr);
-        return null;
+		log.warn("Invalid color value: " + cstr);
+		return null;
 	}
 
-    /**
+	/**
 	 * @param style
-	 * @param name the qualified name of this event
+	 * @param name  the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleIconStyle(Style style, QName name) throws XMLStreamException {
@@ -1280,17 +1282,17 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					String value = stream.getElementText();
 					color = parseColor(value);
 					//if (color == null) {
-						//log.warn("Invalid IconStyle color: " + value);
-						//color = Color.white; // use default="ffffffff"
+					//log.warn("Invalid IconStyle color: " + value);
+					//color = Color.white; // use default="ffffffff"
 					//}
 				} else if (localPart.equals(ICON)) {
-                    // IconStyle/Icon is kml:BasicLinkType with only href property
+					// IconStyle/Icon is kml:BasicLinkType with only href property
 					url = parseIconHref(qname);
-                    // if have Icon element but no href then use empty string to indicate that Icon
-                    // was present but don't have an associated href as handled in KmlOutputStream.
-                    // Having empty Icon element is handled the same as having an empty href
-                    // element in Google Earth.
-                    if (url == null) url = "";
+					// if have Icon element but no href then use empty string to indicate that Icon
+					// was present but don't have an associated href as handled in KmlOutputStream.
+					// Having empty Icon element is handled the same as having an empty href
+					// element in Google Earth.
+					if (url == null) url = "";
 				}
 			}
 		}
@@ -1299,23 +1301,23 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * @param e current XML element
 	 * @return IGISObject representing current element,
-	 * 			NullObject if failed to parse and unable to skip to end tag for that element
+	 *         NullObject if failed to parse and unable to skip to end tag for that element
 	 * @throws XMLStreamException if there is an error with the underlying XML.
-	 * @throws IOException if encountered NetworkLinkControl or out of order Style element
-	 * 			and failed to skip to end tag for that element.
+	 * @throws IOException		if encountered NetworkLinkControl or out of order Style element
+	 *                            and failed to skip to end tag for that element.
 	 */
 	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException, IOException {
 		StartElement se = e.asStartElement();
 		QName name = se.getName();
 		String ns = name.getNamespaceURI();
 
-        // handle non-kml namespace elements as foreign elements
-        // review: should we check instead if namespace doesn't equal our root document namespace...
+		// handle non-kml namespace elements as foreign elements
+		// review: should we check instead if namespace doesn't equal our root document namespace...
 		// if namespace empty string then probably old-style "kml" root element without explicit namespace
 		if (StringUtils.isNotEmpty(ns) && !ms_kml_ns.contains(ns)) {
-            // //ns.startsWith("http://www.google.com/kml/ext/")) { ...
-            // handle extension namespace
-            // http://code.google.com/apis/kml/documentation/kmlreference.html#kmlextensions
+			// //ns.startsWith("http://www.google.com/kml/ext/")) { ...
+			// handle extension namespace
+			// http://code.google.com/apis/kml/documentation/kmlreference.html#kmlextensions
 			log.debug("XXX: handle as foreign element: " + name);
 			return getForeignElement(se);
 		}
@@ -1453,8 +1455,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Return Schema object populated with SimpleFields as defined
+	 *
 	 * @param element
-     * @param qname  the qualified name of this event
+	 * @param qname   the qualified name of this event
 	 * @return
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
@@ -1476,23 +1479,23 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		attr = element.getAttributeByName(new QName(PARENT));
 		String parent = getNonEmptyAttrValue(attr);
 		Attribute id = element.getAttributeByName(ID_ATTR);
-        /*
-         * The ·value space· of ID is the set of all strings that ·match· the NCName production in [Namespaces in XML]:
-         *  NCName ::=  (Letter | '_') (NCNameChar)*  -- An XML Name, minus the ":"
-         *  NCNameChar ::=  Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender
-         */
+		/*
+				 * The ·value space· of ID is the set of all strings that ·match· the NCName production in [Namespaces in XML]:
+				 *  NCName ::=  (Letter | '_') (NCNameChar)*  -- An XML Name, minus the ":"
+				 *  NCNameChar ::=  Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender
+				 */
 		if (id != null) {
-            // NOTE: reference and schema id must be handled exactly the same. See handleExtendedData().
-            // Schema id is not really a URI but will be treated as such for validation for now.
-            // NCName is subset of possible URI values.
-            // Following characters cause fail URI creation: 0x20 ":<>[\]^`{|} so escape them
+			// NOTE: reference and schema id must be handled exactly the same. See handleExtendedData().
+			// Schema id is not really a URI but will be treated as such for validation for now.
+			// NCName is subset of possible URI values.
+			// Following characters cause fail URI creation: 0x20 ":<>[\]^`{|} so escape them
 			String uri = UrlRef.escapeUri(id.getValue());
 			// remember the schema for later references
 			schemata.put(uri, s);
 			try {
 				s.setId(new URI(uri));
 			} catch (URISyntaxException e) {
-                // is URI properly encoded??
+				// is URI properly encoded??
 				log.warn("Invalid schema id " + uri, e);
 			}
 		}
@@ -1528,7 +1531,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						log.warn("Invalid schema field " + fieldname + ": " + e.getMessage());
 					}
 				} else if (foundStartTag(se, PARENT)) {
-					 // parent should only appear as Schema child element in KML 2.0 or 2.1
+					// parent should only appear as Schema child element in KML 2.0 or 2.1
 /*
         <Schema>
             <name>S_FOBS_USA_ISAF_NATO_DSSSSSSDDDD</name>
@@ -1541,7 +1544,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					String parentVal = getNonEmptyElementText();
 					if (parentVal != null) parent = parentVal;
 				} else if (foundStartTag(se, NAME)) {
-					 // name should only appear as Schema child element in KML 2.0 or 2.1
+					// name should only appear as Schema child element in KML 2.0 or 2.1
 					String nameVal = getNonEmptyElementText();
 					if (nameVal != null) name = nameVal;
 				}
@@ -1566,10 +1569,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Returns non-empty text value from attribute. Functionally
-     * same as calling <tt>StringUtils.trimToNull(attr.getValue())</tt>.
+	 * same as calling <tt>StringUtils.trimToNull(attr.getValue())</tt>.
+	 *
 	 * @param attr Attribute
 	 * @return non-empty text value trimmed from attribute,
-	 * 			null if empty
+	 *         null if empty
 	 */
 	private static String getNonEmptyAttrValue(Attribute attr) {
 		if (attr != null) {
@@ -1660,28 +1664,27 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				String localname = qName.getLocalPart();
 				// Note: if element is aliased Placemark then metadata fields won't be saved
 				// could treat as ExtendedData if want to preserve this data.
-                if (network && OPEN.equals(localname)) {
-                    if (isTrue(getElementText(qName)))
-						((NetworkLink)fs).setOpen(true);
-                }
-				else if (!handleProperties(fs, ee, qName)) {
+				if (network && OPEN.equals(localname)) {
+					if (isTrue(getElementText(qName)))
+						((NetworkLink) fs).setOpen(true);
+				} else if (!handleProperties(fs, ee, qName)) {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
 						// geometry: Point, LineString, LinearRing, Polygon, MultiGeometry, Model
 						// does not include gx:Track or gx:MultiTrack
-                        try {
-                            Geometry geo = handleGeometry(sl);
-                            if (geo != null) {
-                                fs.setGeometry(geo);
-                            }
+						try {
+							Geometry geo = handleGeometry(sl);
+							if (geo != null) {
+								fs.setGeometry(geo);
+							}
 						} catch (XMLStreamException xe) {
 							log.warn("Failed XML parsing: skip geometry " + localname);
 							log.debug("", xe);
 							skipNextElement(stream, qName);
-                        } catch (RuntimeException rte) {
-                            // IllegalStateException or IllegalArgumentException
-                            log.warn("Failed geometry: " + fs, rte);
-                        }
+						} catch (RuntimeException rte) {
+							// IllegalStateException or IllegalArgumentException
+							log.warn("Failed geometry: " + fs, rte);
+						}
 					} else if (isOverlay) {
 						if (COLOR.equals(localname)) {
 							((Overlay) fs).setColor(parseColor(stream
@@ -1704,7 +1707,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 							} else if (ALTITUDE_MODE.equals(localname)) {
 								// TODO: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
 								((GroundOverlay) fs).setAltitudeMode(
-                                        getNonEmptyElementText());
+										getNonEmptyElementText());
 							}
 						} else if (screen) {
 							if (OVERLAY_XY.equals(localname)) {
@@ -1721,34 +1724,34 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 								((ScreenOverlay) fs).setSize(val);
 							} else if (ROTATION.equals(localname)) {
 								String val = getNonEmptyElementText();
-                                if (val != null)
-                                    try {
-                                        double rot = Double.parseDouble(val);
-                                        if (Math.abs(rot) <= 180)
-                                            ((ScreenOverlay) fs).setRotationAngle(rot);
-                                        else
-                                            log.warn("Invalid ScreenOverlay rotation value " + val);
-                                    } catch (IllegalArgumentException nfe) {
-                                        log.warn("Invalid ScreenOverlay rotation " + val + ": " + nfe);
-                                    }
+								if (val != null)
+									try {
+										double rot = Double.parseDouble(val);
+										if (Math.abs(rot) <= 180)
+											((ScreenOverlay) fs).setRotationAngle(rot);
+										else
+											log.warn("Invalid ScreenOverlay rotation value " + val);
+									} catch (IllegalArgumentException nfe) {
+										log.warn("Invalid ScreenOverlay rotation " + val + ": " + nfe);
+									}
 							}
 						} else if (photo) {
-                            if (ROTATION.equals(localname)) {
+							if (ROTATION.equals(localname)) {
 								String val = getNonEmptyElementText();
-                                if (val != null)
-                                    try {
-                                        double rot = Double.parseDouble(val);
-                                        if (Math.abs(rot) <= 180)
-                                            ((PhotoOverlay) fs).setRotation(rot);
-                                        else
-                                            log.warn("Invalid PhotoOverlay rotation value " + val);
-                                    } catch (IllegalArgumentException nfe) {
-                                        log.warn("Invalid PhotoOverlay rotation " + val + ": " + nfe);
-                                    }
-                            }
-                            // TODO: fill in other properties (ViewVolume, ImagePyramid, shape)
-                            // Note Point is populated above using setGeometry()
-                        }
+								if (val != null)
+									try {
+										double rot = Double.parseDouble(val);
+										if (Math.abs(rot) <= 180)
+											((PhotoOverlay) fs).setRotation(rot);
+										else
+											log.warn("Invalid PhotoOverlay rotation value " + val);
+									} catch (IllegalArgumentException nfe) {
+										log.warn("Invalid PhotoOverlay rotation " + val + ": " + nfe);
+									}
+							}
+							// TODO: fill in other properties (ViewVolume, ImagePyramid, shape)
+							// Note Point is populated above using setGeometry()
+						}
 					} else if (network) {
 						if (REFRESH_VISIBILITY.equals(localname)) {
 							((NetworkLink) fs).setRefreshVisibility(isTrue(stream
@@ -1771,47 +1774,44 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * Process the attributes from the start element to create a screen location
 	 *
-	 * @param sl
-	 *            the start element
+	 * @param sl the start element
 	 * @return the location, never <code>null</code>.
 	 */
 	private ScreenLocation handleScreenLocation(StartElement sl) {
-        try {
-            ScreenLocation loc = new ScreenLocation();
-            Attribute x = sl.getAttributeByName(new QName("x"));
-            Attribute y = sl.getAttributeByName(new QName("y"));
-            Attribute xunits = sl.getAttributeByName(new QName("xunits"));
-            Attribute yunits = sl.getAttributeByName(new QName("yunits"));
-            if (x != null) {
-                loc.x = new Double(x.getValue());
-            }
-            if (y != null) {
-                loc.y = new Double(y.getValue());
-            }
-            if (xunits != null) {
-                String val = xunits.getValue();
-                loc.xunit = ScreenLocation.UNIT.valueOf(val.toUpperCase());
-            }
-            if (yunits != null) {
-                String val = yunits.getValue();
-                loc.yunit = ScreenLocation.UNIT.valueOf(val.toUpperCase());
-            }
-            return loc;
-        } catch (IllegalArgumentException iae) {
-            log.error("Invalid screenLocation", iae);
-            return null;
-        }
-    }
+		try {
+			ScreenLocation loc = new ScreenLocation();
+			Attribute x = sl.getAttributeByName(new QName("x"));
+			Attribute y = sl.getAttributeByName(new QName("y"));
+			Attribute xunits = sl.getAttributeByName(new QName("xunits"));
+			Attribute yunits = sl.getAttributeByName(new QName("yunits"));
+			if (x != null) {
+				loc.x = new Double(x.getValue());
+			}
+			if (y != null) {
+				loc.y = new Double(y.getValue());
+			}
+			if (xunits != null) {
+				String val = xunits.getValue();
+				loc.xunit = ScreenLocation.UNIT.valueOf(val.toUpperCase());
+			}
+			if (yunits != null) {
+				String val = yunits.getValue();
+				loc.yunit = ScreenLocation.UNIT.valueOf(val.toUpperCase());
+			}
+			return loc;
+		} catch (IllegalArgumentException iae) {
+			log.error("Invalid screenLocation", iae);
+			return null;
+		}
+	}
 
 	/**
 	 * Handle a set of elements with character values. The block has been found
 	 * that starts with a &lt;localname&gt; tag, and it will end with a matching
 	 * tag. All other elements found will be added to a created map object.
 	 *
-	 * @param name
-	 *            the QName, assumed not <code>null</code>.
-	 * @param map
-	 *            TaggedMap to provide, never null
+	 * @param name the QName, assumed not <code>null</code>.
+	 * @param map  TaggedMap to provide, never null
 	 * @return the map, null if no non-empty values are found
 	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
@@ -1833,114 +1833,114 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					// e.g. http://www.google.com/kml/ext/2.2
 					// only add those element that are part of the KML namespace which we expect
 					String ns = qname.getNamespaceURI();
-                    if (ns != null && !rootNs.equals(ns)) {
-                        if (!handleExtension(map, se, qname)) {
-                            log.debug("Skip " + qname.getPrefix() + ":" + sename);
-                        }
-                        continue;
-                    }
-                }
-                String value;
-                // ignore empty elements; e.g. <Icon><href /></Icon>
-                // except viewFormat tag in Link which is allowed to have empty string value
-                if (VIEW_FORMAT.equals(sename)) {
-                    value = StringUtils.trim(stream.getElementText()); // allow empty string
-                } else {
-                    value = getNonEmptyElementText();
-                }
-                if (value != null)
-                    map.put(sename, value);
+					if (ns != null && !rootNs.equals(ns)) {
+						if (!handleExtension(map, se, qname)) {
+							log.debug("Skip " + qname.getPrefix() + ":" + sename);
+						}
+						continue;
+					}
+				}
+				String value;
+				// ignore empty elements; e.g. <Icon><href /></Icon>
+				// except viewFormat tag in Link which is allowed to have empty string value
+				if (VIEW_FORMAT.equals(sename)) {
+					value = StringUtils.trim(stream.getElementText()); // allow empty string
+				} else {
+					value = getNonEmptyElementText();
+				}
+				if (value != null)
+					map.put(sename, value);
 			}
 		}
 		return map.isEmpty() ? null : map;
 	}
 
-    private TaggedMap handleTaggedData(QName name) throws XMLStreamException {
+	private TaggedMap handleTaggedData(QName name) throws XMLStreamException {
 		// handle Camera, LookAt, Icon, Link, and Url elements
 		return handleTaggedData(name, new TaggedMap(name.getLocalPart()));
 	}
 
-    private boolean handleExtension(TaggedMap map, StartElement se, QName qname) throws XMLStreamException {
-        String ns = qname.getNamespaceURI();
+	private boolean handleExtension(TaggedMap map, StartElement se, QName qname) throws XMLStreamException {
+		String ns = qname.getNamespaceURI();
 		// tagged data used to store child text-content elements for following elements:
 		// Camera, LookAt, LatLonAltBox, Lod, Icon, Link, and Url
-        // TODO: allow other extensions for TaggedMaps besides gx namespace ?
-        if (ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+		// TODO: allow other extensions for TaggedMaps besides gx namespace ?
+		if (ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
 			return handleElementExtension(map, (Element) getForeignElement(se), null);
-        } else {
+		} else {
 			skipNextElement(stream, qname);
 			return false;
-        }
-    }
+		}
+	}
 
-    private boolean handleElementExtension(TaggedMap map, Element el, String namePrefix) {
-        /*
-         LookAt/Camera elements can include gx:TimeSpan or gx:TimeStamp child elements:
+	private boolean handleElementExtension(TaggedMap map, Element el, String namePrefix) {
+		/*
+				 LookAt/Camera elements can include gx:TimeSpan or gx:TimeStamp child elements:
 
-         <gx:TimeSpan>
-           <begin>2010-05-28T02:02:09Z</begin>
-           <end>2010-05-28T02:02:56Z</end>
-         </gx:TimeSpan>
-        */
-        String prefix = el.getPrefix();
-        String ns = el.getNamespaceURI();
-        // use "gx" handle regardless of what KML uses for gx namespace
-        if (ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) prefix = "gx";
+				 <gx:TimeSpan>
+				   <begin>2010-05-28T02:02:09Z</begin>
+				   <end>2010-05-28T02:02:56Z</end>
+				 </gx:TimeSpan>
+				*/
+		String prefix = el.getPrefix();
+		String ns = el.getNamespaceURI();
+		// use "gx" handle regardless of what KML uses for gx namespace
+		if (ns.startsWith(NS_GOOGLE_KML_EXT_PREFIX)) prefix = "gx";
 
-        if (!el.getChildren().isEmpty()) {
-            boolean found = false;
-            String eltname = el.getName();
-            if (StringUtils.isNotBlank(prefix)) {
-                eltname = prefix + ":" + eltname;
-            }
-            if (namePrefix == null) namePrefix = eltname;
-            else namePrefix += "/" + eltname;
-            for (Element child : el.getChildren()) {
-                if (handleElementExtension(map, child, namePrefix))
-                    found = true; // got match
-            }
-            return found;
-        }
+		if (!el.getChildren().isEmpty()) {
+			boolean found = false;
+			String eltname = el.getName();
+			if (StringUtils.isNotBlank(prefix)) {
+				eltname = prefix + ":" + eltname;
+			}
+			if (namePrefix == null) namePrefix = eltname;
+			else namePrefix += "/" + eltname;
+			for (Element child : el.getChildren()) {
+				if (handleElementExtension(map, child, namePrefix))
+					found = true; // got match
+			}
+			return found;
+		}
 
-        // if not Node then look for simple TextElement
-        String text = el.getText();
-        if (StringUtils.isBlank(text)) {
-            return false;
-        }
+		// if not Node then look for simple TextElement
+		String text = el.getText();
+		if (StringUtils.isBlank(text)) {
+			return false;
+		}
 
-        String eltname = el.getName();
-        if (StringUtils.isNotBlank(prefix)) {
-            if (ALTITUDE_MODE.equals(eltname)) {
-                // handle altitudeMode as special case. store w/o prefix since handled as a single attribute
-                // if have gx:altitudeMode and altitudeMode then altitudeMode overrides gx:altitudeMode
+		String eltname = el.getName();
+		if (StringUtils.isNotBlank(prefix)) {
+			if (ALTITUDE_MODE.equals(eltname)) {
+				// handle altitudeMode as special case. store w/o prefix since handled as a single attribute
+				// if have gx:altitudeMode and altitudeMode then altitudeMode overrides gx:altitudeMode
 				// Note Google Earth deliberately generates Placemarks with both gx:altitudeMode and altitudeMode
 				// for backward compatibility breaking strict conformance to the official OGC KML 2.2 Schema !!!
 				// see http://code.google.com/p/earth-issues/issues/detail?id=1182
-                if (map.containsKey(ALTITUDE_MODE)) {
+				if (map.containsKey(ALTITUDE_MODE)) {
 					if (!dupAltitudeModeWarn) {
 						// Google Earth-generated output may have this on every placemark
-                    	log.debug("Element has duplicate altitudeMode defined"); // ignore but return as element processed
+						log.debug("Element has duplicate altitudeMode defined"); // ignore but return as element processed
 						dupAltitudeModeWarn = true;
 					}
-                    return true;
-                }
-            } else {
-                eltname = prefix + ":" + eltname; // prefix name with namespace prefix
-            }
-            log.debug("Handle tag data " + prefix + ":" + el.getName());
-        } // else log.debug("non-prefix ns=" + el.getNamespace());
-        if (namePrefix == null) namePrefix = eltname;
-        else namePrefix += "/" + eltname;
-        map.put(namePrefix, text);
-        return true;
-    }
+					return true;
+				}
+			} else {
+				eltname = prefix + ":" + eltname; // prefix name with namespace prefix
+			}
+			log.debug("Handle tag data " + prefix + ":" + el.getName());
+		} // else log.debug("non-prefix ns=" + el.getNamespace());
+		if (namePrefix == null) namePrefix = eltname;
+		else namePrefix += "/" + eltname;
+		map.put(namePrefix, text);
+		return true;
+	}
 
 	/**
 	 * Handle a LatLonBox element with north, south, east and west elements.
 	 *
 	 * @param overlay
-	 * @param name  the qualified name of this event
-     * @throws XMLStreamException if there is an error with the underlying XML
+	 * @param name	the qualified name of this event
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void handleLatLonBox(GroundOverlay overlay, QName name)
 			throws XMLStreamException {
@@ -1954,15 +1954,15 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				String sename = se.getName().getLocalPart();
 				String value = getNonEmptyElementText();
 				if (value != null) {
-                    try {
-                        Double angle = Double.valueOf(value);
-                        if (NORTH.equals(sename)) {
-                            overlay.setNorth(angle);
-                        } else if (SOUTH.equals(sename)) {
-                            overlay.setSouth(angle);
-                        } else if (EAST.equals(sename)) {
-                            overlay.setEast(angle);
-                        } else if (WEST.equals(sename)) {
+					try {
+						Double angle = Double.valueOf(value);
+						if (NORTH.equals(sename)) {
+							overlay.setNorth(angle);
+						} else if (SOUTH.equals(sename)) {
+							overlay.setSouth(angle);
+						} else if (EAST.equals(sename)) {
+							overlay.setEast(angle);
+						} else if (WEST.equals(sename)) {
 							// normalize west: value < -180 and add 360.
 							// reverse hack/fix in KmlOutputStream for bug in Google Earth crossing IDL
 							// must be consistent with handling in KmlOutputStream.handleOverlay()
@@ -1970,16 +1970,16 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 								log.debug("Normalized GroundOverlay west value");
 								angle += 360;
 							}
-                            overlay.setWest(angle);
-                        } else if (ROTATION.equals(sename)) {
-                            overlay.setRotation(angle);
-                        }
-                    } catch (NumberFormatException nfe) {
-                        log.error("Invalid GroundOverlay angle " + value + " in " + sename);
-                    } catch (IllegalArgumentException nfe) {
-                        log.error("Invalid GroundOverlay value in " + sename + ": " + nfe);
-                    }
-                }
+							overlay.setWest(angle);
+						} else if (ROTATION.equals(sename)) {
+							overlay.setRotation(angle);
+						}
+					} catch (NumberFormatException nfe) {
+						log.error("Invalid GroundOverlay angle " + value + " in " + sename);
+					} catch (IllegalArgumentException nfe) {
+						log.error("Invalid GroundOverlay value in " + sename + ": " + nfe);
+					}
+				}
 			}
 		}
 	}
@@ -1988,11 +1988,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * Parse and process the geometry for the feature and store in the feature
 	 *
 	 * @param sl StartElement
-     * @return Geometry associated with this element
-     *          otherwise null if no valid Geometry can be constructed
-     * @throws XMLStreamException if there is an error with the underlying XML
-     * @throws IllegalStateException if geometry is invalid
-     * @throws IllegalArgumentException if geometry is invalid (e.g. invalid Lon/Lat, Line has < 2 points, etc.)
+	 * @return Geometry associated with this element
+	 *         otherwise null if no valid Geometry can be constructed
+	 * @throws XMLStreamException	   if there is an error with the underlying XML
+	 * @throws IllegalStateException	if geometry is invalid
+	 * @throws IllegalArgumentException if geometry is invalid (e.g. invalid Lon/Lat, Line has < 2 points, etc.)
 	 */
 	@SuppressWarnings("unchecked")
 	private Geometry handleGeometry(StartElement sl) throws XMLStreamException {
@@ -2025,19 +2025,19 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					}
 				}
 			}
-            // if no valid geometries then return null
-            if (geometries.isEmpty()) {
-                log.debug("No valid geometries in MultiGeometry");
-                return null;
-            }
-            // if only one valid geometry then drop collection and use single geometry
-            if (geometries.size() == 1) {
-                log.debug("Convert MultiGeometry to single geometry");
+			// if no valid geometries then return null
+			if (geometries.isEmpty()) {
+				log.debug("No valid geometries in MultiGeometry");
+				return null;
+			}
+			// if only one valid geometry then drop collection and use single geometry
+			if (geometries.size() == 1) {
+				log.debug("Convert MultiGeometry to single geometry");
 				// tesselate/extrude properties are preserved on target geometry
-                return geometries.get(0);
-            }
+				return geometries.get(0);
+			}
 			boolean allpoints = true;
-			for(Geometry geo : geometries) {
+			for (Geometry geo : geometries) {
 				if (geo != null && geo.getClass() != Point.class) {
 					allpoints = false;
 					break;
@@ -2050,8 +2050,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			}
 		} else if (localname.equals(MODEL)) {
 			// we don't really have a way to represent this yet
-            Model model = new Model();
-            while (true) {
+			Model model = new Model();
+			while (true) {
 				XMLEvent event = stream.nextEvent();
 				if (foundEndTag(event, name)) {
 					break;
@@ -2061,18 +2061,18 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					QName qname = se.getName();
 					String localPart = qname.getLocalPart();
 					if (localPart.equals(LOCATION)) {
-                        // Location specifies the exact coordinates of the Model's origin in latitude, longitude, and altitude.
-                        Geodetic2DPoint point = parseLocation(qname);
-                        if (point != null)
-                            model.setLocation(point);
-                    } else if (localPart.equals(ALTITUDE_MODE)) {
+						// Location specifies the exact coordinates of the Model's origin in latitude, longitude, and altitude.
+						Geodetic2DPoint point = parseLocation(qname);
+						if (point != null)
+							model.setLocation(point);
+					} else if (localPart.equals(ALTITUDE_MODE)) {
 						// TODO: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
-                        model.setAltitudeMode(getNonEmptyElementText());
-                    }
+						model.setAltitudeMode(getNonEmptyElementText());
+					}
 					// todo: Orientation, Scale, Link, ResourceMap
 				}
-            }
-            return model;
+			}
+			return model;
 		} else {
 			// otherwise try LineString, LinearRing, Polygon
 			return getGeometryBase(name, localname);
@@ -2081,12 +2081,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Construct Geometry from the KML
-	 * @param name  the qualified name of this event
+	 *
+	 * @param name	  the qualified name of this event
 	 * @param localname local part of this <code>QName</code>
 	 * @return geometry
-	 * @throws XMLStreamException if there is an error with the underlying XML.
-	 * @exception IllegalArgumentException if geometry is invalid (e.g. no valid coordinates)
-	 * @throws IllegalStateException if Bad poly found (e.g. no outer ring)
+	 * @throws XMLStreamException	   if there is an error with the underlying XML.
+	 * @throws IllegalArgumentException if geometry is invalid (e.g. no valid coordinates)
+	 * @throws IllegalStateException	if Bad poly found (e.g. no outer ring)
 	 */
 	private GeometryBase getGeometryBase(QName name, String localname) throws XMLStreamException {
 		if (localname.equals(LINE_STRING)) {
@@ -2170,8 +2171,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	/**
 	 * Map properties of GeometryGroup onto the created <code>GeometryBase</code>
+	 *
 	 * @param group
-	 * @param geom GeometryBase, never null
+	 * @param geom  GeometryBase, never null
 	 * @return filled in GeometryBase object
 	 */
 	private static GeometryBase getGeometry(GeometryGroup group, GeometryBase geom) {
@@ -2187,51 +2189,51 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
 	private Geodetic2DPoint parseLocation(QName qname) throws XMLStreamException {
-        Latitude latitude = null;
-        Longitude longitude = null;
-        Double altitude = null;
-        while (true) {
-            XMLEvent event = stream.nextEvent();
+		Latitude latitude = null;
+		Longitude longitude = null;
+		Double altitude = null;
+		while (true) {
+			XMLEvent event = stream.nextEvent();
 			if (foundEndTag(event, qname)) {
-                break;
+				break;
 			}
-            if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
-                StartElement se = event.asStartElement();
-                String name = se.getName().getLocalPart();
-                if (name.equals(LATITUDE)) {
-                    String value = getNonEmptyElementText();
-                    if (value != null)
-                        try {
-                            latitude = new Latitude(Double.parseDouble(value), Angle.DEGREES);
-                        } catch (IllegalArgumentException nfe) {
-                            log.warn("Invalid latitude value: " + value);
-                        }
-                } else if (name.equals(LONGITUDE)) {
-                    String value = getNonEmptyElementText();
-                    if (value != null)
-                        try {
-                            longitude = new Longitude(Double.parseDouble(value), Angle.DEGREES);
-                        } catch (IllegalArgumentException nfe) {
-                            log.warn("Invalid longitude value: " + value);
-                        }
-                } else if (name.equals(ALTITUDE)) {
-                    String value = getNonEmptyElementText();
-                    if (value != null)
-                        try {
-                            altitude = Double.valueOf(value);
-                        } catch (NumberFormatException nfe) {
-                            log.warn("Invalid altitude value: " + value);
-                        }
-                }
-            }
-        }
+			if (event.getEventType() == XMLStreamReader.START_ELEMENT) {
+				StartElement se = event.asStartElement();
+				String name = se.getName().getLocalPart();
+				if (name.equals(LATITUDE)) {
+					String value = getNonEmptyElementText();
+					if (value != null)
+						try {
+							latitude = new Latitude(Double.parseDouble(value), Angle.DEGREES);
+						} catch (IllegalArgumentException nfe) {
+							log.warn("Invalid latitude value: " + value);
+						}
+				} else if (name.equals(LONGITUDE)) {
+					String value = getNonEmptyElementText();
+					if (value != null)
+						try {
+							longitude = new Longitude(Double.parseDouble(value), Angle.DEGREES);
+						} catch (IllegalArgumentException nfe) {
+							log.warn("Invalid longitude value: " + value);
+						}
+				} else if (name.equals(ALTITUDE)) {
+					String value = getNonEmptyElementText();
+					if (value != null)
+						try {
+							altitude = Double.valueOf(value);
+						} catch (NumberFormatException nfe) {
+							log.warn("Invalid altitude value: " + value);
+						}
+				}
+			}
+		}
 
-        if (longitude == null && latitude == null) return null;
-        if (longitude == null) longitude = new Longitude();
-        else if (latitude == null) latitude = new Latitude();
-        return altitude == null ? new Geodetic2DPoint(longitude, latitude)
-                : new Geodetic3DPoint(longitude, latitude, altitude);
-    }
+		if (longitude == null && latitude == null) return null;
+		if (longitude == null) longitude = new Longitude();
+		else if (latitude == null) latitude = new Latitude();
+		return altitude == null ? new Geodetic2DPoint(longitude, latitude)
+				: new Geodetic3DPoint(longitude, latitude, altitude);
+	}
 
 	/**
 	 * Find the coordinates element, extract the lat/lon/alt properties,
@@ -2239,9 +2241,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * is used to spot if we leave the "end" of the block. The stream
 	 * will be positioned after the element when this returns.
 	 *
-	 * @param qname  the qualified name of this event
-     * @param geom GeomBase, never null
-	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 * @param qname the qualified name of this event
+	 * @param geom  GeomBase, never null
+	 * @throws XMLStreamException	   if there is an error with the underlying XML.
 	 * @throws IllegalArgumentException error if lat/lon coordinate values are out of range
 	 */
 	private void parseCoordinates(QName qname, GeometryGroup geom) throws XMLStreamException {
@@ -2256,8 +2258,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				if (COORDINATES.equals(localPart)) {
 					String text = getNonEmptyElementText();
 					if (text != null) geom.points = parseCoord(text);
-				}
-				else if (ALTITUDE_MODE.equals(localPart)) {
+				} else if (ALTITUDE_MODE.equals(localPart)) {
 					// Note: handle kml:altitudeMode and gx:altitudeMode
 					// if have both forms then use one from KML namespace as done in handleElementExtension()
 					if (geom.altitudeMode == null || ms_kml_ns.contains(name.getNamespaceURI()))
@@ -2266,12 +2267,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						// e.g. qName = {http://www.google.com/kml/ext/2.2}altitudeMode
 						log.debug("Skip duplicate value for " + name);
 					}
-				}
-				else if (EXTRUDE.equals(localPart)) {
+				} else if (EXTRUDE.equals(localPart)) {
 					if (isTrue(stream.getElementText()))
 						geom.extrude = Boolean.TRUE;
-				}
-				else if (TESSELLATE.equals(localPart)) {
+				} else if (TESSELLATE.equals(localPart)) {
 					if (isTrue(stream.getElementText()))
 						geom.tessellate = Boolean.TRUE;
 				}
@@ -2280,15 +2279,15 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		if (geom.points == null) geom.points = Collections.emptyList();
 	}
 
-    /**
+	/**
 	 * Find/parse the coordinates element, extract the lat/lon/alt properties,
 	 * and return in a <tt>GeometryGroup</tt> object. The element name is used
 	 * to spot if we leave the "end" of the block. The stream will be positioned
 	 * after the element when this returns.
 	 *
-	 * @param qname  the qualified name of this event
+	 * @param qname the qualified name of this event
 	 * @return the list coordinates, empty list if no valid coordinates are found
-     * @throws XMLStreamException if there is an error with the underlying XML.
+	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private GeometryGroup parseCoordinates(QName qname) throws XMLStreamException {
 		GeometryGroup geom = new GeometryGroup();
@@ -2302,9 +2301,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * is used to spot if we leave the "end" of the block. The stream will
 	 * be positioned after the element when this returns.
 	 *
-	 * @param name  the qualified name of this event
+	 * @param name the qualified name of this event
 	 * @return the coordinate (first valid coordinate if found), null if not
-	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 * @throws XMLStreamException	   if there is an error with the underlying XML.
 	 * @throws IllegalArgumentException error if coordinates values are out of range
 	 */
 	private Point parseCoordinate(QName name) throws XMLStreamException {
@@ -2325,8 +2324,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					// lat and lon values; e.g. <coordinates>-121.9921875, 37.265625</coordinates>
 					// http://kml-samples.googlecode.com/svn/trunk/kml/ListStyle/radio-folder-vis.kml
 					if (text != null) rval = parsePointCoord(text);
-				}
-				else if (ALTITUDE_MODE.equals(localPart)) {
+				} else if (ALTITUDE_MODE.equals(localPart)) {
 					// Note: handle kml:altitudeMode and gx:altitudeMode
 					// if have both forms then use one from KML namespace as done in handleElementExtension()
 					if (altitudeMode == null || ms_kml_ns.contains(qName.getNamespaceURI()))
@@ -2336,8 +2334,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						log.debug("Skip duplicate value for " + qName);
 						dupAltitudeModeWarn = true;
 					}
-				}
-				else if (EXTRUDE.equals(localPart)) {
+				} else if (EXTRUDE.equals(localPart)) {
 					if (isTrue(stream.getElementText()))
 						extrude = Boolean.TRUE;
 				}
@@ -2352,7 +2349,6 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
 	/**
-	 *
 	 * @throws IllegalArgumentException error if coordinates values are out of range
 	 */
 	private static Point parsePointCoord(String coord) {
@@ -2364,11 +2360,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * Coordinate parser that matches the loose parsing of coordinates in Google Earth.
 	 * KML reference states "Do not include spaces within a [coordinate] tuple" yet
 	 * Google Earth allows whitespace to appear anywhere in the input or commas
-     * to appear between tuples (e.g., <tt>1,2,3,4,5,6 -> 1,2,3  4,5,6</tt>).
-	 *
+	 * to appear between tuples (e.g., <tt>1,2,3,4,5,6 -> 1,2,3  4,5,6</tt>).
+	 * <p/>
 	 * <ul>
 	 * <li> Simple state machine parsing keeps track of what part of the coordinate
-	 * 		had been found so far.
+	 * had been found so far.
 	 * <li> Extra whitespace is allowed anywhere in the string.
 	 * <li> Invalid text in input is ignored.
 	 * </ul>
@@ -2377,7 +2373,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return list of coordinates. Returns empty list if no coordinates are valid, never null
 	 * @throws IllegalArgumentException error if lat/lon coordinate values are out of range
 	 */
-    @NonNull
+	@NonNull
 	public static List<Point> parseCoord(String coord) {
 		List<Point> list = new ArrayList<Point>();
 		NumberStreamTokenizer st = new NumberStreamTokenizer(coord);
@@ -2387,7 +2383,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		double elev = 0;
 		Longitude lon = null;
 		Latitude lat = null;
-        // note the NumberStreamTokenizer may introduce some floating-error (e.g., 5.5 -> 5.499999999999999)
+		// note the NumberStreamTokenizer may introduce some floating-error (e.g., 5.5 -> 5.499999999999999)
 		try {
 			while (st.nextToken() != NumberStreamTokenizer.TT_EOF) {
 				switch (st.ttype) {
@@ -2400,18 +2396,18 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 					case NumberStreamTokenizer.TT_NUMBER:
 						try {
-                            if (numparts == 3) {
-                                if (seenComma) {
-                                    log.warn("comma found instead of whitespace between tuples before " + st.nval);
-                                    // handle commas appearing between tuples
-                                    // Google Earth interprets input with: "1,2,3,4,5,6" as two tuples: {1,2,3}  {4,5,6}.
-                                    seenComma = false;
-                                }
-                                // add last coord to list and reset counter
-                                if (lon != COORD_ERROR)
-                                    list.add(new Point(new Geodetic3DPoint(lon, lat, elev)));
-                                numparts = 0; // reset state for start of new tuple
-                            }
+							if (numparts == 3) {
+								if (seenComma) {
+									log.warn("comma found instead of whitespace between tuples before " + st.nval);
+									// handle commas appearing between tuples
+									// Google Earth interprets input with: "1,2,3,4,5,6" as two tuples: {1,2,3}  {4,5,6}.
+									seenComma = false;
+								}
+								// add last coord to list and reset counter
+								if (lon != COORD_ERROR)
+									list.add(new Point(new Geodetic3DPoint(lon, lat, elev)));
+								numparts = 0; // reset state for start of new tuple
+							}
 
 							switch (++numparts) {
 								case 1:
@@ -2423,7 +2419,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 									} else {
 										// starting new coordinate (numparts => 1)
 										lon = new Longitude(st.nval, Angle.DEGREES);
-										if (log.isDebugEnabled() && Math.abs(st.nval) > 180) log.debug("longitude out of range: " + st.nval);
+										if (log.isDebugEnabled() && Math.abs(st.nval) > 180)
+											log.debug("longitude out of range: " + st.nval);
 									}
 									break;
 
@@ -2438,7 +2435,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 										//else System.out.println("\tERROR: drop bad coord");
 										// start new tuple
 										lon = new Longitude(st.nval, Angle.DEGREES);
-										if (log.isDebugEnabled() && Math.abs(st.nval) > 180) log.debug("longitude out of range: " + st.nval);
+										if (log.isDebugEnabled() && Math.abs(st.nval) > 180)
+											log.debug("longitude out of range: " + st.nval);
 										numparts = 1;
 									}
 									break;
@@ -2452,7 +2450,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 										//else System.out.println("\tERROR: drop bad coord");
 										// start new tuple
 										lon = new Longitude(st.nval, Angle.DEGREES);
-										if (log.isDebugEnabled() && Math.abs(st.nval) > 180) log.debug("longitude out of range: " + st.nval);
+										if (log.isDebugEnabled() && Math.abs(st.nval) > 180)
+											log.debug("longitude out of range: " + st.nval);
 										numparts = 1;
 									}
 									break;
@@ -2487,18 +2486,18 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 									numparts = 1;
 								}
 							} else
-                                // seenComma -> true
-                                if (numparts == 1) {
-                                    //System.out.println("\tXXX: WARN: COMMA2: seenComma w/numparts=" + numparts);
-                                    lat = new Latitude();  // skipped Latitude (use 0 degrees)
-                                    numparts = 2;
-                                } else if (numparts == 0) {
-                                    // note this branch may never occur since seenComa=true implies numparts > 0
-                                    //System.out.println("\tXXX: WARN: COMMA1: seenComma w/numparts=" + numparts);
-                                    lon = new Longitude(); // skipped longitude (use 0 degrees)
-                                    numparts = 1;
-                                }
-                                //else System.out.println("\tXXX: ** ERROR: COMMA3: seenComma w/numparts=" + numparts);
+								// seenComma -> true
+								if (numparts == 1) {
+									//System.out.println("\tXXX: WARN: COMMA2: seenComma w/numparts=" + numparts);
+									lat = new Latitude();  // skipped Latitude (use 0 degrees)
+									numparts = 2;
+								} else if (numparts == 0) {
+									// note this branch may never occur since seenComa=true implies numparts > 0
+									//System.out.println("\tXXX: WARN: COMMA1: seenComma w/numparts=" + numparts);
+									lon = new Longitude(); // skipped longitude (use 0 degrees)
+									numparts = 1;
+								}
+							//else System.out.println("\tXXX: ** ERROR: COMMA3: seenComma w/numparts=" + numparts);
 						} else
 							log.warn("ignore invalid character in coordinate string: (" + (char) st.ttype + ")");
 						//s = "CHAR:" + String.valueOf((char) st.ttype);
@@ -2508,7 +2507,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		} catch (IOException e) {
 			// we're using StringReader. this should never happen
 			log.error("Failed to parse coord string: " + coord == null || coord.length() <= 20
-                    ? coord : coord.substring(0,20) + "...", e);
+					? coord : coord.substring(0, 20) + "...", e);
 		}
 
 		// add last coord if valid
@@ -2551,6 +2550,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		int size() {
 			return points == null ? 0 : points.size();
 		}
+
 		public String toString() {
 			return String.valueOf(points);
 		}
