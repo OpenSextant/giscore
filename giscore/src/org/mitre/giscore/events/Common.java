@@ -114,7 +114,7 @@ public abstract class Common extends Row {
 		// not containing '#' then prepend '#' to URL (e.g. blueIcon -> #blueIcon)
 		// REVIEW: this might not work with all relative URLs...
 		if (styleUrl != null && styleUrl.indexOf('#') == -1 && UrlRef.isIdentifier(styleUrl, true)) {
-			log.debug("fix StyleUrl identifier as local reference: " + styleUrl);
+			log.debug("fix StyleUrl identifier as local reference: {}", styleUrl);
 			styleUrl = "#" + styleUrl;
 		}
 		this.styleUrl = styleUrl;

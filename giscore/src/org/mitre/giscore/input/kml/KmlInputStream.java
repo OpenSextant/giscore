@@ -116,7 +116,7 @@ import java.util.*;
  * will be associated only with the last {@code Schema} referenced.
  * </a>
  * <p/>
- * Unsupported tags include: {@code Metadata}, which is consumed but discarded.
+ * Unsupported deprecated tags include: {@code Metadata}, which is consumed but ignored.
  * <p/>
  * Some support for gx KML extensions (e.g. Track, MultiTrack, Tour, etc.). Also {@code gx:altitudeMode}
  * is handle specially and stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry,
@@ -400,7 +400,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						cs.setOpen(true);
 				} else if (!handleProperties(cs, ee, qname)) {
 					// Ignore other container elements
-					log.debug("ignore " + qname);
+					log.debug("ignore {}", qname);
 				}
 			}
 		}
@@ -461,6 +461,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				handleExtendedData(feature, name);
 				return true;
 			} else if (localname.equals("Snippet")) { // kml:Snippet (deprecated)
+				// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#Snippet
 				feature.setSnippet(getElementText(name));
 				return true;
 			} else if (localname.equals("snippet")) { // kml:snippet
@@ -493,7 +494,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						}
 					} else {
 						// TODO: should we add all-non KML elements as-is or only expected ones ??
-						log.debug("Skip unknown namespace " + name);
+						log.debug("Skip unknown namespace {}", name);
 						skipNextElement(stream, name);
 					}
 					return true;
@@ -539,7 +540,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						  <camp:tentSites>4</camp:tentSites>
 						</ExtendedData>
 					 */
-					log.debug("skip " + qname);
+					log.debug("skip {}", qname);
 					skipNextElement(stream, qname);
 				} else if (tag.equals(DATA)) {
 					Attribute nameAttr = se.getAttributeByName(new QName(NAME));
@@ -573,7 +574,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						skipNextElement(stream, qname);
 					}
 				} else {
-					log.debug("ignore " + qname);
+					log.debug("ignore {}", qname);
 					skipNextElement(stream, qname);
 				}
 			}
@@ -1220,7 +1221,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		if (cstr.startsWith("#")) {
 			// skip over '#' prefix used for HTML color codes allowed by Google Earth
 			// but invalid wrt KML XML Schema.
-			log.debug("Skip '#' in color code: " + cstr);
+			log.debug("Skip '#' in color code: {}", cstr);
 			cstr = cstr.substring(1);
 		}
 		if (cstr.length() == 8)
@@ -1318,7 +1319,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			// //ns.startsWith("http://www.google.com/kml/ext/")) { ...
 			// handle extension namespace
 			// http://code.google.com/apis/kml/documentation/kmlreference.html#kmlextensions
-			log.debug("XXX: handle as foreign element: " + name);
+			log.debug("XXX: handle as foreign element: {}", name);
 			return getForeignElement(se);
 		}
 
@@ -1351,11 +1352,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			} else if (NETWORK_LINK_CONTROL.equals(localname)) {
 				return handleNetworkLinkControl(stream, name);
 			} else if (STYLE.equals(localname)) {
-				log.debug("Out of order element: " + localname);
+				log.debug("Out of order element: {}", localname);
 				// note this breaks the strict ordering required by KML 2.2
 				return handleStyle(null, se, name);
 			} else if (STYLE_MAP.equals(localname)) {
-				log.debug("Out of order element: " + localname);
+				log.debug("Out of order element: {}", localname);
 				// note this breaks the strict ordering required by KML 2.2
 				return handleStyleMap(null, se, name);
 			} else {
@@ -1367,7 +1368,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						return handleStartElement(next);
 					}
 				} else {
-					log.debug("XXX: handle startElement with foreign namespace: " + name);
+					log.debug("XXX: handle startElement with foreign namespace: {}", name);
 					return getForeignElement(se);
 				}
 			}
@@ -1762,6 +1763,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						} else if (LINK.equals(localname)) {
 							((NetworkLink) fs).setLink(handleTaggedData(qName)); // Link
 						} else if (URL.equals(localname)) {
+							// uses deprecated kml:Url element
+							// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#NetworkLink-Url
 							((NetworkLink) fs).setLink(handleTaggedData(qName)); // Url
 						}
 					}
@@ -2265,7 +2268,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						geom.altitudeMode = getNonEmptyElementText();
 					else {
 						// e.g. qName = {http://www.google.com/kml/ext/2.2}altitudeMode
-						log.debug("Skip duplicate value for " + name);
+						log.debug("Skip duplicate value for {}", name);
 					}
 				} else if (EXTRUDE.equals(localPart)) {
 					if (isTrue(stream.getElementText()))
@@ -2331,7 +2334,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						altitudeMode = getNonEmptyElementText();
 					else if (!dupAltitudeModeWarn) {
 						// e.g. qName = {http://www.google.com/kml/ext/2.2}altitudeMode
-						log.debug("Skip duplicate value for " + qName);
+						log.debug("Skip duplicate value for {}", qName);
 						dupAltitudeModeWarn = true;
 					}
 				} else if (EXTRUDE.equals(localPart)) {

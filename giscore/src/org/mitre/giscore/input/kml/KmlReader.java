@@ -336,7 +336,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
                     styleUrl = uri.toString();
                     // store rewritten relative URL back as absolute
                     f.setStyleUrl(styleUrl);
-                    log.debug("XXX: rewrite relative styleUrl: " + styleUrl);
+                    log.debug("XXX: rewrite relative styleUrl: {}", styleUrl);
                 }
             }
         }
@@ -366,7 +366,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
                         styleUrl = uri.toString();
                         // store rewritten relative URL back as absolute
                         pair.setStyleUrl(styleUrl);
-                        log.debug("XXX: rewrite relative StyleMap pair styleUrl: " + styleUrl);
+                        log.debug("XXX: rewrite relative StyleMap pair styleUrl: {}", styleUrl);
                     }
                 }
             }
@@ -470,7 +470,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
                     int oldSize = networkLinks.size();
                     int oldFeatSize = linkedFeatures.size();
                     KmlInputStream kis = new KmlInputStream(is);
-                    if (log.isDebugEnabled()) log.debug("Parse networkLink: " + ref);
+                    log.debug("Parse networkLink: {}", ref);
                     try {
                         IGISObject gisObj;
                         while ((gisObj = read(kis, ref, networkLinks)) != null) {

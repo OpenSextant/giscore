@@ -125,7 +125,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 
 	protected void setEncoding(String encoding) {
 		if (StringUtils.isNotBlank(encoding)) {
-			log.debug("set encoding=" + encoding);
+			log.debug("set encoding={}", encoding);
 			this.encoding = encoding;
 		} else {
 			// otherwise assume UTF-8

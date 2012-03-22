@@ -98,7 +98,7 @@ public class Pair implements IDataSerializable, Serializable {
 		// with '#' then prepend '#' to url
         if (styleUrl != null && !styleUrl.startsWith("#") && UrlRef.isIdentifier(styleUrl, true)) {
             styleUrl = "#" + styleUrl;
-            log.debug("fix styleUrl identifier as local reference: " + styleUrl);
+            log.debug("fix styleUrl identifier as local reference: {}", styleUrl);
         }
 		this.styleUrl = styleUrl;
 	}
