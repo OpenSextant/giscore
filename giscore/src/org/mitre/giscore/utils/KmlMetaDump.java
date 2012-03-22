@@ -106,7 +106,7 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
  * <li> ignore invalid string in coordinate (error)
  * <li> Invalid LookAt values (error)
  * <li> Invalid tilt value in LookAt [ATC 38.2] (error)
- * <li> Invalid time range: start > end (error)
+ * <li> Invalid time range: start > end [ATC 4] (error)
  * <li> Invalid TimeSpan if begin later than end value (warning)
  * <li> Invalid ViewGroup tag: XXX (warn)
  * <li> LatLonAltBox appears to be very small area (warning)
@@ -153,7 +153,7 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
  * <li> Inner rings in Polygon must not overlap with each other (warn)
  * <li> Line clipped at DateLine (info)
  * <li> [Line|Inner/Outer Ring|LinearRing] has duplicate consecutive points (warn)
- * <li> LinearRing cannot self-intersect (warn)
+ * <li> LinearRing cannot self-intersect (warn) [ATC 70: LinearRing - Simple]
  * <li> LinearRing must start and end with the same point (error)
  * <li> Nested MultiGeometries (info)
  * <li> Outer ring clipped at DateLine (info)
@@ -610,8 +610,10 @@ public class KmlMetaDump implements IKml {
 					if (endTime != null && startTime.compareTo(endTime) > 0) {
 						// assertion: the begin value is earlier than the end value.
 						// if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
-						addTag(":Invalid time range: start > end");
-						if (verbose) System.out.println(" Error: Invalid time range: start > end");
+						// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#TimeSpan
+						// http://www.opengis.net/kml/2.2/atc/level-1/TimeSpan
+						addTag(":Invalid time range: start > end"); // ERROR
+						if (verbose) System.out.println(" Error: Invalid time range: start > end [ATC 4]");
 					}
 					if (containerStartDate != null) {
 						if (verbose) System.out.println(" Overriding parent container start date");
@@ -1008,6 +1010,9 @@ public class KmlMetaDump implements IKml {
 			byte flags = 0;
 			for (int i = 0; i < n; i++) {
 				LinearRing inner = rings.get(i);
+				// ATC 70: LinearRing - Simple
+				// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#SimpleLinearRing
+				// Check that a kml:LinearRing is a simple ring (that is, it does not cross itself).
 				validateLinearRing("Inner ring", inner);
 				//if (inner.clockwise())
 				//addTag(":All inner rings in Polygon must be " +
@@ -1018,6 +1023,8 @@ public class KmlMetaDump implements IKml {
 					addTag(":Inner ring not contained within outer ring");
 				}
 				// Verify that inner rings don't overlap with each other
+				// ATC 69: Polygon - rings
+				// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#PolygonRings
 				if ((flags & 2) == 0 && i < n - 1)
 					for (int j = i + 1; j < n; j++) {
 						if (inner.overlaps(rings.get(j))) {
@@ -1116,6 +1123,9 @@ public class KmlMetaDump implements IKml {
 			}
 
 			// validate linear ring topology for self-intersection
+			// ATC 70: LinearRing - Simple
+			// Check that a kml:LinearRing is a simple ring (that is, it does not cross itself).
+			// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#SimpleLinearRing
 			new LinearRing(pts, true);
 			// error -> LinearRing cannot self-intersect
 		} catch (IllegalArgumentException e) {
@@ -1214,8 +1224,9 @@ public class KmlMetaDump implements IKml {
 				if (startTime != null && endTime != null && startTime.compareTo(endTime) > 0) {
 					// assertion: the begin value is earlier than the end value.
 					// if fails then fails OGC KML test suite: ATC 4: TimeSpan [OGC-07-147r2: cl. 15.2.2]
-					addTag(":Invalid time range: start > end");
-					if (verbose) System.out.println(" Error: Invalid time range: start > end\n");
+					// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#TimeSpan
+					addTag(":Invalid time range: start > end"); // ERROR
+					if (verbose) System.out.println(" Error: Invalid time range: start > end [ATC 4]");
 				}
 			}
 		} else if (containerStartDate != null || containerEndDate != null) {
