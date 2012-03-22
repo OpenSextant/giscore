@@ -20,14 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Stack;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -190,7 +183,7 @@ public class KmlMetaDump implements IKml {
 	private boolean autoGenerateUniqueNames;
 	private Date containerStartDate;
 	private Date containerEndDate;
-	private final Stack<ContainerStart> containers = new Stack<ContainerStart>();
+	private final LinkedList<ContainerStart> containers = new LinkedList<ContainerStart>();
 
 	private Set<String> simpleFieldSet;
 
@@ -584,8 +577,8 @@ public class KmlMetaDump implements IKml {
 			*/
 		} else if (cl == ContainerStart.class) {
 			ContainerStart cs = (ContainerStart) gisObj;
-			addTag(((ContainerStart) gisObj).getType()); // Document | Folder
-			containers.push(cs);
+			addTag(cs.getType()); // Document | Folder
+			containers.addFirst(cs); // add new container to front of list
 			for (StyleSelector s : cs.getStyles()) {
 				checkStyle(s, true, true);
 			}
@@ -648,8 +641,8 @@ public class KmlMetaDump implements IKml {
 			//     end folder3
 			//  end folder1
 			//
-			if (!containers.empty()) {
-				ContainerStart cs = containers.pop();
+			if (!containers.isEmpty()) {
+				ContainerStart cs = containers.removeFirst();
 				if (verbose) System.out.println(containers.size() + "-end container " + cs.getType());
 			} else {
 				addTag(":End container with no matching start container", true);
@@ -659,7 +652,11 @@ public class KmlMetaDump implements IKml {
 				inheritsTime = false;
 				containerStartDate = null;
 				containerEndDate = null;
-				// start at outer-most container and check if any container still defines time
+				/*
+				Inheritance of these time continues to any depth of nesting, but if overruled by a local declaration,
+				then new value is inherited by all its children in turn so start at the inner-most container and check
+				if any nested parent container still defines time from which is inheritable.
+				 */
 				for (ContainerStart cs : containers) {
 					Date startDate = cs.getStartTime();
 					Date endDate = cs.getEndTime();
@@ -667,14 +664,15 @@ public class KmlMetaDump implements IKml {
 						containerStartDate = startDate;
 						containerEndDate = endDate;
 						inheritsTime = true;
+						break; // stop searching
 					}
 				} // for each container
 				/*
-								if (containerStartDate != null || containerEndDate != null) {
-									// log.info("Container has inheritable time");
-									inheritsTime = true;
-								}
-								*/
+				if (containerStartDate != null || containerEndDate != null) {
+					// log.info("Container has inheritable time");
+					inheritsTime = true;
+				}
+				*/
 			}
 		} else if (gisObj instanceof StyleSelector) {
 			// these are out of order styles
@@ -1229,11 +1227,11 @@ public class KmlMetaDump implements IKml {
 					if (verbose) System.out.println(" Error: Invalid time range: start > end [ATC 4]");
 				}
 			}
-		} else if (containerStartDate != null || containerEndDate != null) {
+		} else if (inheritsTime) { // aka containerStartDate != null || containerEndDate != null
 			/*
-						  Features with no time properties inherit the time
-						  of its ancestors if they have time constraints.
-						*/
+			  Features with no time properties inherit the time
+			  of its ancestors if they have time constraints.
+			*/
 			addTag(":Feature inherits container time", true);
 		}
 		// otherwise feature doesn't have timeStamp or timeSpans
