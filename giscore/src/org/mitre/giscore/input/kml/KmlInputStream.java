@@ -915,9 +915,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				SimpleDateFormat fmt = ms_dateFormats.get(i++);
 				try {
 					Date date = fmt.parse(datestr);
-					if (log.isDebugEnabled())
-						log.debug(String.format("Failed to parse date %s with DatatypeFactory. Parsed using dateFormat: %s",
-								datestr, fmt.toPattern()));
+					log.debug("Failed to parse date {} with DatatypeFactory. Parsed using dateFormat: {}",
+							datestr, fmt.toPattern());
 					return date;
 				} catch (ParseException pe) {
 					// ignore
@@ -1641,7 +1640,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		} else {
 			String localname = se.getName().getLocalPart();
 			if (!localname.equals(type))
-				log.error(String.format("Found new unhandled feature type: %s [%s]", type, localname));
+				log.error("Found new unhandled feature type: {} [{}]", type, localname);
 			else
 				log.error("Found new unhandled feature type: " + type);
 			return NullObject.getInstance();
