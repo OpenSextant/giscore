@@ -615,14 +615,13 @@ public class KmlMetaDump implements IKml {
 					}
 					// log.debug("use container start date");
 				}
-				// override any previous start date
-				containerStartDate = startTime;
 				if (endTime != null && containerEndDate != null) {
 					if (verbose) System.out.println(" Overriding parent container end date");
 					if (endTime.compareTo(containerEndDate) > 0)
 						addTag(":Container end date is later than that of its ancestors", true);
 				}
-				// override any previous end date
+				// override any previous start and end date
+				containerStartDate = startTime;
 				containerEndDate = endTime;
 			}
 		} else if (cl == ContainerEnd.class) {
@@ -770,7 +769,7 @@ public class KmlMetaDump implements IKml {
 
 		if (checkSharedStyle) {
 			if (!containers.isEmpty()
-					&& IKml.FOLDER.equals(containers.peek().getType())) {
+					&& IKml.FOLDER.equals(containers.getFirst().getType())) {
 				/*
 				ATC 7: Shared style definition
 				'shared' style definition (any element that may substitute for kml:AbstractStyleSelectorGroup)
