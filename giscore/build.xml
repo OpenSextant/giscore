@@ -113,6 +113,24 @@
 
 	<target name="generate-eclipse-classpath" depends="generate-eclipse-classpath.clean, generate-eclipse-classpath.real" description="Generate the Eclipse classpath." />
 
+	<target name="generate-netbeans-classpath" depends="resolve" description="Generate the NetBeans classpath.">
+		<fail message="Could not find NetBeans project file.">
+			<condition>
+				<not>
+					<available file="nbproject/project.xml"/>
+				</not>
+			</condition>
+		</fail>
+		<mkdir dir="${basedir}/nbproject/private"/>
+		<pathconvert dirsep="/" pathsep=";" property="netbeans-classpath.src" refid="project.classpath" />
+		<pathconvert dirsep="/" pathsep=";" property="netbeans-classpath.test" refid="project.classpath" />
+                <!-- The goofy indentation is intentional because this being output to a file. -->
+		<echo file="${basedir}/nbproject/private/classpath.properties" append="false">src.classpath=${netbeans-classpath.src}
+test.classpath=${build.classes};${netbeans-classpath.test}
+		</echo>
+		<touch file="nbproject/project.xml" />
+	</target>
+
 	<target name="compile" depends="resolve">
 		<javac source="1.5" target="1.5" classpathref="project.classpath" srcdir="${src}"
 			destdir="${build.classes}"
