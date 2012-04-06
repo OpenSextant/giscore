@@ -18,6 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.output;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -28,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
@@ -48,6 +50,7 @@ import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.atom.IAtomConstants;
+import org.mitre.giscore.test.input.TestGeoAtomStream;
 
 import static org.junit.Assert.*;
 
@@ -117,6 +120,21 @@ public class TestGeoAtomOutputStream {
 			System.err.println("Compare #" + i);
 			compare(written.get(i), read.get(i));
 		}
+	}
+
+	@Test
+	public void testForeignElements() throws Exception {
+		File file = new File("data/atom/techalerts.xml");
+		IGISInputStream gis = GISFactory.getInputStream(DocumentType.GeoAtom, file);
+		final ByteArrayOutputStream bos = new ByteArrayOutputStream((int) (file.length() + 1000));
+		final IGISOutputStream gos = GISFactory.getOutputStream(DocumentType.GeoAtom, bos);
+		for(IGISObject obj = gis.read(); obj != null; obj = gis.read()) {
+			gos.write(obj);
+		}
+		gis.close();
+		gos.close();
+		gis = GISFactory.getInputStream(DocumentType.GeoAtom, new ByteArrayInputStream(bos.toByteArray()));
+		TestGeoAtomStream.checkTechAlerts(gis);
 	}
 
 	private void compare(IGISObject ob, IGISObject ob2) {

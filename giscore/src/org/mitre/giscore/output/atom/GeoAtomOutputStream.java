@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -213,7 +214,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 			updated = (Date) u;
 		}
 		Object title = row.getData(TITLE_ATTR);
-		outputRow(row, updated, title != null ? title.toString() : "", null, null);
+		outputRow(row, updated, title != null ? title.toString() : "", null, null, Collections.<Element>emptyList());
 	}
 
 	/*
@@ -230,7 +231,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 		if (updated == null && u != null && u instanceof Date) {
 			updated = (Date) u;
 		}
-		outputRow(feature, updated, feature.getName(), feature.getDescription(), feature.getGeometry());
+		outputRow(feature, updated, feature.getName(), feature.getDescription(), feature.getGeometry(), feature.getElements());
 	}
 
 	/**
@@ -243,7 +244,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	 * @param geo
 	 */
 	private void outputRow(Row row, Date updated, String title,
-			String description, Geometry geo) {
+			String description, Geometry geo, List<Element> extraElements) {
 		if (! headerwritten) {
 			throw new IllegalStateException("Must output atom header before any feature or row");
 		}
@@ -271,7 +272,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 		outputEntry(id, title,
 				description, updated,
 				link != null ? link.toString() : "", data,
-				geo, alist);
+				geo, alist, extraElements);
 	}
 
 	/**
@@ -332,6 +333,28 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	 */
 	public void outputEntry(String id, String title, String description,
 			Date updated, String link, Map<SimpleField, String> data, Geometry geo, List<String> alist) {
+		outputEntry(id, title, description, updated, link, data, geo, alist, Collections.<Element>emptyList());
+	}
+
+	/**
+	 * Output the data in an entry
+	 *
+	 * @param id
+	 *            the atom id for the entry
+	 * @param title
+	 * @param description
+	 * @param updated
+	 * @param link
+	 * @param data
+	 *            extended data for the entry, extracted, filtered and formatted
+	 *            from the original's extended data. The atom id does not have
+	 *            to be removed as it will be skipped.
+	 * @param geo
+	 * @param alist
+	 * @param children
+	 */
+	public void outputEntry(String id, String title, String description,
+			Date updated, String link, Map<SimpleField, String> data, Geometry geo, List<String> alist, List<Element> children) {
 		try {
 			writer.writeStartElement("entry");
 			for(String author : alist) {
@@ -358,6 +381,11 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 			}
 			if (geo != null) {
 				geo.accept(this);
+			}
+			if (children != null) {
+				for(Element el : children) {
+					visit(el);
+				}
 			}
 			writer.writeEndElement();
 		} catch (XMLStreamException e) {

@@ -1,0 +1,853 @@
+<?xml version="1.0" encoding="ascii"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:foo="urn:x:extension" xmlns:geo="http://www.georss.org/georss">
+  <title>US-CERT Alerts</title>
+  <id>http://www.us-cert.gov/</id>
+  <author>
+<name>US-CERT</name>
+<email>info@us-cert.gov</email>
+<uri>http://www.us-cert.gov</uri>
+</author>
+  <rights>Produced 2012 by US-CERT, a government organization.</rights>
+  <subtitle>US-CERT Alerts provide timely
+information about current security issues, vulnerabilities, and
+exploits.</subtitle>
+  <updated>2012-02-14T18:37:26Z</updated>
+  <link type="text/html" rel="alternate" href="http://www.us-cert.gov/cas" hreflang="en"/>
+  <link type="application/atom+xml" rel="self" href="http://www.us-cert.gov/cas/techalerts.atom" hreflang="en"/>
+
+  <foo:feedlevel>A simple element at the top level.</foo:feedlevel>
+  <entry>
+    <geo:point>-13.4 24.7</geo:point>
+    <title>TA12-045A: Microsoft Updates for Multiple Vulnerabilities</title>
+    <id>http://www.us-cert.gov/cas/techalerts/TA12-045A.html</id>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">Original release date: February 14, 2012<br/>
+Last revised: --<br/>
+Source: US-CERT<br/>
+<br/>
+<a name="affected"/>
+<h3>Systems Affected</h3>
+<ul><li>Microsoft Windows</li><li>Microsoft Internet Explorer</li><li>Microsoft
+.NET Framework</li><li>Microsoft Silverlight</li><li>Microsoft
+Office</li><li>Microsoft Server Software</li></ul>
+
+<br/>
+<a name="overview"/>
+<h2>Overview</h2>
+<p>There are multiple vulnerabilities in Microsoft Windows, Internet Explorer,
+Microsoft .NET Framework, Silverlight, Office, and Microsoft Server Software.
+Microsoft has released updates to address these vulnerabilities.</p>
+
+<br/>
+<a name="description"/>
+<h2>I. Description</h2>
+<p>The <a href="https://technet.microsoft.com/en-us/security/bulletin/ms12-feb">Microsoft
+Security Bulletin Summary for February 2012</a> describes multiple
+vulnerabilities in Microsoft Windows. Microsoft has released updates to address
+the vulnerabilities.</p>
+
+<br/>
+<a name="impact"/>
+<h2>II. Impact</h2>
+<p>A remote, unauthenticated attacker could execute arbitrary code, cause a
+denial of service, or gain unauthorized access to your files or system.</p>
+
+<br/>
+<a name="solution"/>
+<h2>III. Solution</h2>
+<p><strong>Apply updates</strong><br/><br/>Microsoft has provided updates for
+these vulnerabilities in the <a href="https://technet.microsoft.com/en-us/security/bulletin/ms12-feb">Microsoft
+Security Bulletin Summary for February 2012</a>, which describes any known
+issues related to the updates. Administrators are encouraged to note these
+issues and test for any potentially adverse effects. In addition, administrators
+should consider using an automated update distribution system such as <a href="http://technet.microsoft.com/en-us/wsus/default.aspx">Windows Server
+Update Services</a> (WSUS). Home users are encouraged to enable <a href="http://windows.microsoft.com/en-us/windows-vista/Turn-automatic-updating-on-or-off">automatic
+updates</a>.</p>
+
+<br/>
+<a name="references"/>
+<h2>IV. References</h2>
+<ul><li>Microsoft Security Bulletin Summary for February 2012 - &lt;<a href="https://technet.microsoft.com/en-us/security/bulletin/ms12-feb">https://technet.microsoft.com/en-us/security/bulletin/ms12-feb</a>&gt;</li><li>Microsoft
+Windows Server Update Services - &lt;<a href="http://technet.microsoft.com/en-us/wsus/default.aspx">http://technet.microsoft.com/en-us/wsus/default.aspx</a>&gt;</li><li>Microsoft
+Update - &lt;<a href="https://www.update.microsoft.com/">https://www.update.microsoft.com/</a>&gt;</li><li>Microsoft
+Update Overview - &lt;<a href="http://www.microsoft.com/security/updates/mu.aspx">http://www.microsoft.com/security/updates/mu.aspx</a>&gt;</li><li>Turn
+Automatic Updating On or Off - &lt;<a href="http://windows.microsoft.com/en-us/windows-vista/Turn-automatic-updating-on-or-off">http://windows.microsoft.com/en-us/windows-vista/Turn-automatic-updating-on-or-off</a>&gt;</li></ul>
+
+   
+
+<br/>
+<hr noshade="noshade"/>                               
+<p><a href="mailto:cert@cert.org?subject=TA12-045A%20Feedback%20VU%23752838">Feedback</a> can be directed to US-CERT.</p>
+<hr noshade="noshade"/>
+
+<p>Produced 2012 by US-CERT, a government organization. <a href="http://www.us-cert.gov/legal.html">Terms of use</a></p>
+<a name="revisions"/>
+<br/><b>Revision History</b>
+<p><small>February 14, 2012: Initial release<br/></small></p>                         
+</div>
+    </content>
+    <updated>2012-02-14T18:37:26Z</updated>
+    <published>2012-02-14T18:37:26Z</published>
+    <link type="text/html" rel="alternate" href="http://www.us-cert.gov/cas/techalerts/TA12-045A.html"/>
+    <foo:entrylevel description="A complex element at the top level."><foo:child/></foo:entrylevel>
+  </entry>
+  <entry>
+    <title>TA12-024A: "Anonymous" DDoS Activity</title>
+    <id>http://www.us-cert.gov/cas/techalerts/TA12-024A.html</id>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">Original release date: January 24, 2012<br/>
+Last revised: --<br/>
+Source: US-CERT<br/>
+
+<br/>
+<a name="overview"/>
+<h2>Overview</h2>
+<p>US-CERT has received information from multiple sources about coordinated
+distributed denial-of-service (DDoS) attacks with targets that?included
+U.S. government agency and entertainment industry websites. The loosely
+affiliated collective "Anonymous" allegedly promoted the attacks in
+response to the shutdown of the file hosting site MegaUpload and in protest of
+proposed U.S. legislation concerning online trafficking in copyrighted
+intellectual property and counterfeit goods (Stop Online Piracy Act, or SOPA,
+and?Preventing Real Online Threats to Economic Creativity and Theft of
+Intellectual Property Act, or PIPA).</p>
+
+<br/>
+<a name="description"/>
+<h2>I. Description</h2>
+<p>US-CERT has evidence of two types of DDoS attacks: One using HTTP GET
+requests and another using a simple UDP flood.</p><p>The Low Orbit Ion Cannon
+(LOIC) is a denial-of-service attack tool associated with previous Anonymous
+activity. US-CERT has reviewed at least two implementations of LOIC. One variant
+is written in JavaScript and is designed to be used from a web browser. An
+attacker can access this variant of LOIC on a website and select targets,
+specify an optional message, throttle attack traffic, and monitor attack
+progress. A binary variant of LOIC includes the ability to join a botnet to
+allow nodes to be controlled via IRC or RSS command channels (the
+"HiveMind" feature).</p><p>The following is a sample of LOIC traffic
+recorded in a web server log:</p><p style="margin-left: 40px"><samp>"GET
+/?id=1327014400570&amp;msg=We%20Are%20Legion! HTTP/1.1" 200 99406
+"hxxp://pastehtml.com/view/blafp1ly1.html" "Mozilla/5.0 (Windows
+NT 6.1; WOW64; rv:9.0.1) Gecko/20100101 Firefox/9.0.1"</samp></p><p>The
+following sites have been identified in HTTP referrer headers of suspected LOIC
+traffic. This list may not be complete. Please do not visit any of the links as
+they may still host functioning LOIC or other malicious code.</p><p style="margin-left: 40px"><code>"hxxp://3g.bamatea.com/loic.html"<br/>"hxxp://anonymouse.org/cgi-bin/anon-www.cgi/"</code><br/><code>"hxxp://chatimpacto.org/Loic/"<br/>"hxxp://cybercrime.hostzi.com/Ym90bmV0/loic/"<br/>"hxxp://event.seeho.co.kr/loic.html"<br/>"hxxp://pastehtml.com/view/bl3weewxq.html"<br/>"hxxp://pastehtml.com/view/bl7qhhp5c.html"<br/>"hxxp://pastehtml.com/view/blafp1ly1.html"<br/>"hxxp://pastehtml.com/view/blakyjwbi.html"<br/>"hxxp://pastehtml.com/view/blal5t64j.html"<br/>"hxxp://pastehtml.com/view/blaoyp0qs.html"<br/>"hxxp://www.lcnongjipeijian.com/loic.html"<br/>"hxxp://www.rotterproxy.info/browse.php/704521df/ccc21Oi8/vY3liZXJ/jcmltZS5/ob3N0emk/uY29tL1l/tOTBibVY/wL2xvaWM/v/b5/fnorefer"<br/>"hxxp://www.tandycollection.co.kr/loic.html"<br/>"hxxp://www.zgon.cn/loic.html"<br/>"hxxp://zgon.cn/loic.html"<br/>"hxxp://www.turbytoy.com.ar/admin/archivos/hive.html"</code></p><p>The
+following are the A records for the referrer sites as of January, 20,
+2012:</p><p style="margin-left: 40px"><code><samp>3g[.]bamatea[.]com???????????????
+A??? 218[.]5[.]113[.]218<br/>cybercrime[.]hostzi[.]com????????
+A??? 31[.]170[.]161[.]36<br/>event[.]seeho[.]co[.]kr??????????
+A??? 210[.]207[.]87[.]195<br/>chatimpacto[.]org????????????????
+A??? 66[.]96[.]160[.]151??<br/>anonymouse[.]org?????????????????
+A??? 193[.]200[.]150[.]125<br/>pastehtml[.]com??????????????????
+A??? 88[.]90[.]29[.]58<br/>lcnongjipeijian[.]com????????????
+A??? 49[.]247[.]252[.]105<br/>www[.]rotterproxy[.]info?????????
+A??? 208[.]94[.]245[.]131<br/>www[.]tandycollection[.]co[.]kr?? A???
+121[.]254[.]168[.]87<br/>www[.]zgon[.]cn??????????????????
+A??? 59[.]54[.]54[.]204<br/>www[.]turbytoy[.]com[.]ar????????
+A??? 190[.]228[.]29[.]84</samp></code></p><p>The HTTP requests
+contained an "id" value based on UNIX time and user-defined
+"msg" value, for example:</p><p style="margin-left: 40px"><code>GET
+/?id=1327014189930&amp;msg=%C2%A1%C2%A1NO%20NOS%20GUSTA%20LA%20</code></p><p>Other
+"msg" examples:</p><p style="margin-left: 40px"><code>msg=%C2%A1%C2%A1NO%20NOS%20GUSTA%20LA%20<br/>msg=:)<br/>msg=:D<br/>msg=Somos%20Legion!!!<br/>msg=Somos%20legi%C3%B3n!<br/>msg=Stop%20S.O.P.A%20:)%20%E2%99%AB%E2%99%AB HTTP/1.1" 200 99406
+"http://pastehtml.com/view/bl7qhhp5c.html"<br/>msg=We%20Are%20Legion!<br/>msg=gh<br/>msg=open%20megaupload<br/>msg=que%20sepan%20los%20nacidos%20y%20los%20que%20van%20a%20nacer%20que%20nacimos%20para%20vencer%20y%20no%20para%20ser%20vencidos<br/>msg=stop%20SOPA!!<br/>msg=We%20are%20Anonymous.%20We%20are%20Legion.%20We%20do%20not%20forgive.%20We%20do%20not%20forget.%20Expect%20us!</code></p><p>The
+"msg" field can be arbitrarily set by the attacker.</p><p>As of
+January 20, 20012, US-CERT has observed another attack that consists of UDP
+packets on ports 25 and 80. The packets contained a message followed by variable
+amounts of padding, for example:</p><p style="margin-left: 40px"><code>66:6c:6f:6f:64:00:00:00:00:00:00:00:00:00 |
+flood.........</code></p><p>Target selection, timing, and other attack activity
+is often coordinated through social media sites or online forums.</p><p>US-CERT
+is continuing research efforts and will provide additional data as it becomes
+available.</p>
+
+
+<br/>
+<a name="solution"/>
+<h2>III. Solution</h2>
+<p>There are a number of mitigation strategies available for dealing with DDoS
+attacks, depending on the type of attack as well as the target network
+infrastructure. In general, the best practice defense for mitigating DDoS
+attacks involves advanced preparation.</p><ul><li>Develop a checklist or
+Standard Operating Procedure (SOP) to follow in the event of a DDoS attack. One
+critical point in a checklist or SOP is to have contact information for your ISP
+and hosting providers. Identify who should be contacted during a DDoS, what
+processes should be followed, what information is needed, and what actions will
+be taken during the attack with each entity.</li><li>The ISP or hosting provider
+may provide DDoS mitigation services. Ensure your staff is aware of the
+provisions of your service level agreement (SLA).</li><li>Maintain contact
+information for firewall teams, IDS teams, network teams and ensure that it is
+current and readily available.</li><li>Identify critical services that must be
+maintained during an attack as well as their priority. Services should be
+prioritized beforehand to identify what resources can be turned off or blocked
+as needed to limit the effects of the attack. Also, ensure that critical systems
+have sufficient capacity to withstand a DDoS attack.</li><li>Have current
+network diagrams, IT infrastructure details, and asset inventories. This will
+assist in determining actions and priorities as the attack
+progresses.</li><li>Understand your current environment and have a baseline of
+daily network traffic volume, type, and performance. This will allow staff to
+better identify the type of attack, the point of attack, and the attack vector
+used. Also, identify any existing bottlenecks and remediation actions if
+required.</li><li>Harden the configuration settings of your network, operating
+systems, and applications by disabling services and applications not required
+for a system to perform its intended function.?</li><li>Implement a <a href="http://www.team-cymru.org/Services/Bogons/">bogon block list</a> at the
+network boundary.</li><li>Employ service screening on edge routers wherever
+possible in order to decrease the load on stateful security devices such as
+firewalls.</li><li>Separate or compartmentalize critical
+services:<ul><li>Separate public and private services</li><li>Separate intranet,
+extranet, and internet services</li><li>Create single purpose servers for each
+service such as HTTP, FTP, and DNS</li></ul></li><li>Review the US-CERT Cyber
+Security Tip <a href="http://www.us-cert.gov/cas/tips/ST04-015.html">Understanding
+Denial-of-Service Attacks</a>.</li></ul>
+
+<br/>
+<a name="references"/>
+<h2>IV. References</h2>
+<ul><li>Cyber Security Tip ST04-015 - &lt;<a href="http://www.us-cert.gov/cas/tips/ST04-015.html">http://www.us-cert.gov/cas/tips/ST04-015.html</a>&gt;</li><li>Anonymous's
+response to the seizure of MegaUpload according to CNN - &lt;<a href="http://money.cnn.com/2012/01/19/technology/megaupload_shutdown/index.htm">http://money.cnn.com/2012/01/19/technology/megaupload_shutdown/index.htm</a>&gt;</li><li>The
+Internet Strikes Back #OpMegaupload - &lt;<a href="http://anonops.blogspot.com/2012/01/internet-strikes-back-opmegaupload.html">http://anonops.blogspot.com/2012/01/internet-strikes-back-opmegaupload.html</a>&gt;</li><li>Twitter
+Post from the author of the JavaScript based LOIC code - &lt;<a href="http://www.twitter.com/#!/mendes_rs">http://www.twitter.com/#!/mendes_rs</a>&gt;</li><li>Anonymous
+Operations tweets on Twitter - &lt;<a href="http://twitter.com/#!/anonops">http://twitter.com/#!/anonops</a>&gt;</li><li>@Megaupload
+Tweets on Twitter - &lt;<a href="http://twitter.com/#!/search?q=%2523Megaupload">http://twitter.com/#!/search?q=%2523Megaupload</a>&gt;</li><li>LOIC
+DDoS Analysis and Detection - &lt;<a href="http://blog.spiderlabs.com/2011/01/loic-ddos-analysis-and-detection.html">http://blog.spiderlabs.com/2011/01/loic-ddos-analysis-and-detection.html</a>&gt;</li><li>Impact
+of Operation Payback according to CNN - &lt;<a href="http://money.cnn.com/2010/12/08/news/companies/mastercard_wiki/index.htm">http://money.cnn.com/2010/12/08/news/companies/mastercard_wiki/index.htm</a>&gt;</li><li>OperationPayback
+messages on YouTube - &lt;<a href="http://www.youtube.com/results?search_query=operationpayback">http://www.youtube.com/results?search_query=operationpayback</a>&gt;</li><li>The
+Bogon Reference - Team Cymru - &lt;<a href="http://www.team-cymru.org/Services/Bogons/">http://www.team-cymru.org/Services/Bogons/</a>&gt;</li></ul>
+
+   
+
+<br/>
+<hr noshade="noshade"/>                               
+<p><a href="mailto:cert@cert.org?subject=TA12-024A%20Feedback%20INFO%23919868">Feedback</a> can be directed to US-CERT.</p>
+<hr noshade="noshade"/>
+
+<p>Produced 2012 by US-CERT, a government organization. <a href="http://www.us-cert.gov/legal.html">Terms of use</a></p>
+<a name="revisions"/>
+<br/><b>Revision History</b>
+<p><small>January 24, 2012: Initial release<br/></small></p>                         
+</div>
+    </content>
+    <updated>2012-01-25T03:53:23Z</updated>
+    <published>2012-01-25T03:53:23Z</published>
+    <link type="text/html" rel="alternate" href="http://www.us-cert.gov/cas/techalerts/TA12-024A.html"/>
+  </entry>
+  <entry>
+    <title>TA12-010A: Microsoft Updates for Multiple Vulnerabilities</title>
+    <id>http://www.us-cert.gov/cas/techalerts/TA12-010A.html</id>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">Original release date: January 10, 2012<br/>
+Last revised: --<br/>
+Source: US-CERT<br/>
+<br/>
+<a name="affected"/>
+<h3>Systems Affected</h3>
+<ul><li>Microsoft Windows</li><li>Microsoft Developer Tools and
+Software</li></ul>
+
+<br/>
+<a name="overview"/>
+<h2>Overview</h2>
+<p>There are multiple vulnerabilities in Microsoft Windows and Microsoft
+Developer Tools and Software. Microsoft has released updates to address these
+vulnerabilities.</p>
+
+<br/>
+<a name="description"/>
+<h2>I. Description</h2>
+<p>The <a href="http://technet.microsoft.com/en-us/security/bulletin/ms12-jan">Microsoft
+Security Bulletin Summary for January 2012</a> describes multiple
+vulnerabilities in Microsoft Windows. Microsoft has released updates to address
+the vulnerabilities.</p>
+
+<br/>
+<a name="impact"/>
+<h2>II. Impact</h2>
+<p>A remote, unauthenticated attacker could execute arbitrary code, cause a
+denial of service, or gain unauthorized access to your files or system.</p>
+
+<br/>
+<a name="solution"/>
+<h2>III. Solution</h2>
+<p><strong>Apply updates</strong><br/><br/>Microsoft has provided updates for
+these vulnerabilities in the <a href="http://technet.microsoft.com/en-us/security/bulletin/ms12-jan">Microsoft
+Security Bulletin Summary for January 2012</a>. That bulletin describes any
+known issues related to the updates. Administrators are encouraged to note these
+issues and test for any potentially adverse effects. In addition, administrators
+should consider using an automated update distribution system such as <a href="http://technet.microsoft.com/en-us/wsus/default.aspx">Windows Server
+Update Services</a> (WSUS).</p>
+
+<br/>
+<a name="references"/>
+<h2>IV. References</h2>
+<ul><li>Microsoft Security Bulletin Summary for January 2012 - &lt;<a href="http://technet.microsoft.com/en-us/security/bulletin/ms12-jan">http://technet.microsoft.com/en-us/security/bulletin/ms12-jan</a>&gt;</li><li>Microsoft
+Windows Server Update Services - &lt;<a href="http://technet.microsoft.com/en-us/wsus/default.aspx">http://technet.microsoft.com/en-us/wsus/default.aspx</a>&gt;</li></ul>
+
+   
+
+<br/>
+<hr noshade="noshade"/>                               
+<p><a href="mailto:cert@cert.org?subject=TA12-010A%20Feedback%20VU%23806915">Feedback</a> can be directed to US-CERT.</p>
+<hr noshade="noshade"/>
+
+<p>Produced 2012 by US-CERT, a government organization. <a href="http://www.us-cert.gov/legal.html">Terms of use</a></p>
+<a name="revisions"/>
+<br/><b>Revision History</b>
+<p><small>January 10, 2012: Initial release<br/></small></p>                         
+</div>
+    </content>
+    <updated>2012-01-10T19:11:29Z</updated>
+    <published>2012-01-10T19:11:29Z</published>
+    <link type="text/html" rel="alternate" href="http://www.us-cert.gov/cas/techalerts/TA12-010A.html"/>
+  </entry>
+  <entry>
+    <title>TA12-006A: Wi-Fi Protected Setup (WPS) Vulnerable to Brute-Force Attack</title>
+    <id>http://www.us-cert.gov/cas/techalerts/TA12-006A.html</id>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">Original release date: January 06, 2012<br/>
+Last revised: --<br/>
+Source: US-CERT<br/>
+<br/>
+<a name="affected"/>
+<h3>Systems Affected</h3>
+<p>Most Wi-Fi access points that support Wi-Fi Protected Setup (WPS) are
+affected.</p>
+
+<br/>
+<a name="overview"/>
+<h2>Overview</h2>
+<p>Wi-Fi Protected Setup (WPS) provides simplified mechanisms to configure
+secure wireless networks. The external registrar PIN exchange mechanism is
+susceptible to brute force attacks that could allow an attacker to gain access
+to an encrypted Wi-Fi network.</p>
+
+<br/>
+<a name="description"/>
+<h2>I. Description</h2>
+<p>WPS uses a PIN as a shared secret to authenticate an access point and a
+client and provide connection information such as WEP and WPA passwords and
+keys. In the external registrar exchange method, a client needs to provide the
+correct PIN to the access point.</p><p>An attacking client can try to guess the
+correct PIN. A design vulnerability reduces the effective PIN space sufficiently
+to allow practical brute force attacks. Freely available attack tools can
+recover a WPS PIN in 4-10 hours.</p><p>For further details, please see
+Vulnerability Note <a href="http://www.kb.cert.org/vuls/id/723755">VU#723755</a>
+and further documentation by <a href="http://sviehb.wordpress.com/2011/12/27/wi-fi-protected-setup-pin-brute-force-vulnerability/">Stefan
+Viehbock</a> and <a href="http://www.tacnetsol.com/news/2011/12/28/cracking-wifi-protected-setup-with-reaver.html">Tactical
+Network Solutions</a>.</p>
+
+<br/>
+<a name="impact"/>
+<h2>II. Impact</h2>
+<p>An attacker within radio range can brute-force the WPS PIN for a vulnerable
+access point. The attacker can then obtain WEP or WPA passwords and likely gain
+access to the Wi-Fi network. Once on the network, the attacker can monitor
+traffic and mount further attacks.</p>
+
+<br/>
+<a name="solution"/>
+<h2>III. Solution</h2>
+<p><strong>Update Firmware</strong></p><p>Check your access point vendor's
+support website for updated firmware that addresses this vulnerability. Further
+information may be available in the <a href="http://www.kb.cert.org/vuls/id/723755#vendors">Vendor Information</a>
+section of VU#723755 and in a Google spreadsheet called <a href="https://docs.google.com/spreadsheet/ccc?key=0Ags-JmeLMFP2dFp2dkhJZGIxTTFkdFpEUDNSSHZEN3c">WPS
+Vulnerability Testing</a>.</p><p><strong>Disable WPS</strong></p><p>Depending on
+the access point, it may be possible to disable WPS. Note that some access
+points may not actually disable WPS when the web management interface indicates
+that WPS is disabled.</p>
+
+<br/>
+<a name="references"/>
+<h2>IV. References</h2>
+<ul><li>Vulnerability Note VU#723755 - &lt;<a href="http://www.kb.cert.org/vuls/id/723755">http://www.kb.cert.org/vuls/id/723755</a>&gt;</li><li>Wi-Fi
+Protected Setup PIN brute force vulnerability - &lt;<a href="http://sviehb.wordpress.com/2011/12/27/wi-fi-protected-setup-pin-brute-force-vulnerability/">http://sviehb.wordpress.com/2011/12/27/wi-fi-protected-setup-pin-brute-force-vulnerability/</a>&gt;</li><li>Cracking
+WiFi Protected Setup with Reaver - &lt;<a href="http://www.tacnetsol.com/news/2011/12/28/cracking-wifi-protected-setup-with-reaver.html">http://www.tacnetsol.com/news/2011/12/28/cracking-wifi-protected-setup-with-reaver.html</a>&gt;</li><li>WPS
+Vulnerability Testing - &lt;<a href="https://docs.google.com/spreadsheet/lv?key=0Ags-JmeLMFP2dFp2dkhJZGIxTTFkdFpEUDNSSHZEN3c">https://docs.google.com/spreadsheet/lv?key=0Ags-JmeLMFP2dFp2dkhJZGIxTTFkdFpEUDNSSHZEN3c</a>&gt;</li></ul>
+
+   
+
+<br/>
+<hr noshade="noshade"/>                               
+<p><a href="mailto:cert@cert.org?subject=TA12-006A%20Feedback%20VU%23723755">Feedback</a> can be directed to US-CERT.</p>
+<hr noshade="noshade"/>
+
+<p>Produced 2012 by US-CERT, a government organization. <a href="http://www.us-cert.gov/legal.html">Terms of use</a></p>
+<a name="revisions"/>
+<br/><b>Revision History</b>
+<p><small>January 06, 2012: Initial release<br/></small></p>                         
+</div>
+    </content>
+    <updated>2012-01-06T20:49:39Z</updated>
+    <published>2012-01-06T20:49:39Z</published>
+    <link type="text/html" rel="alternate" href="http://www.us-cert.gov/cas/techalerts/TA12-006A.html"/>
+  </entry>
+  <entry>
+    <title>TA11-350A: Adobe Updates for Multiple Vulnerabilities</title>
+    <id>http://www.us-cert.gov/cas/techalerts/TA11-350A.html</id>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">Original release date: December 16, 2011<br/>
+Last revised: --<br/>
+Source: US-CERT<br/>
+<br/>
+<a name="affected"/>
+<h3>Systems Affected</h3>
+<ul><li>Adobe Reader X (10.1.1) and earlier 10.x versions for Windows and
+Macintosh</li><li>Adobe Reader 9.4.6 and earlier 9.x versions for Windows,
+Macintosh, and UNIX</li><li>Adobe Acrobat X (10.1.1) and earlier 10.x versions
+for Windows and Macintosh</li><li>Adobe Acrobat 9.4.6 and earlier 9.x versions
+for Windows and Macintosh</li></ul>
+
+<br/>
+<a name="overview"/>
+<h2>Overview</h2>
+<p>Adobe has released Security Bulletin <a href="https://www.adobe.com/support/security/bulletins/apsb11-30.html">APSB11-30</a>,
+which describes multiple vulnerabilities affecting Adobe Reader and Acrobat.</p>
+
+<br/>
+<a name="description"/>
+<h2>I. Description</h2>
+<p>Adobe Security Bulletin <a href="https://www.adobe.com/support/security/bulletins/apsb11-30.html">APSB11-30</a>
+and Adobe Security Advisory <a href="https://www.adobe.com/support/security/advisories/apsa11-04.html">APSA11-04
+</a>describe a number of vulnerabilities affecting Adobe Reader and Acrobat.
+These vulnerabilities affect Reader and Acrobat 9.4.6 and earlier 9.x versions.
+These vulnerabilities also affect Reader X and Acrobat X 10.1.1 and earlier 10.x
+versions.</p><p>An attacker could exploit these vulnerabilities by convincing a
+user to open a specially crafted PDF file. The Adobe Reader browser plug-in,
+which can automatically open PDF documents hosted on a website, is available for
+multiple web browsers and operating systems.</p><p>Adobe Reader X and Adobe
+Acrobat X will be patched in the next quarterly update scheduled for January 10,
+2012.</p><p>Additional details for the U3D memory corruption vulnerability can
+be found in <a href="http://www.kb.cert.org/vuls/id/759307">US-CERT
+Vulnerability Note VU#759307</a>.</p>
+
+<br/>
+<a name="impact"/>
+<h2>II. Impact</h2>
+<p>These vulnerabilities could allow a remote attacker to execute arbitrary
+code, write arbitrary files or folders to the file system, escalate local
+privileges, or cause a denial of service on an affected system as the result of
+a user opening a malicious PDF file.</p>
+
+<br/>
+<a name="solution"/>
+<h2>III. Solution</h2>
+<p><strong>Update Reader</strong></p><p>Adobe has released updates to address
+this issue. Users are encouraged to read Adobe Security Bulletin?<a href="https://www.adobe.com/support/security/bulletins/apsb11-30.html">APSB11-30</a>
+and update vulnerable versions of Adobe Reader and Acrobat.</p><p><strong><em>In
+addition to updating, please consider the following
+mitigations.</em></strong></p><p><strong>Disable Flash in Adobe Reader and
+Acrobat</strong></p><p>Disabling Flash in Adobe Reader will mitigate attacks
+that rely on Flash content embedded in a PDF file. Disabling 3D &amp; Multimedia
+support does not directly address the vulnerability, but it does provide
+additional mitigation and results in a more user-friendly error message instead
+of a crash. To disable Flash and 3D &amp; Multimedia support in Adobe Reader 9,
+delete, rename, or remove access to these files:</p><p style="margin-left: 40px;">Microsoft Windows<br/><code>"%ProgramFiles%\Adobe\Reader
+9.0\Reader\authplay.dll"<br/>"%ProgramFiles%\Adobe\Reader
+9.0\Reader\rt3d.dll"</code></p><p style="margin-left: 40px;">Apple Mac OS
+X<br/><code>"/Applications/Adobe Reader 9/Adobe
+Reader.app/Contents/Frameworks/AuthPlayLib.bundle"<br/>"/Applications/Adobe Reader 9/Adobe
+Reader.app/Contents/Frameworks/Adobe3D.framework"</code></p><p style="margin-left: 40px;">GNU/Linux (locations may vary among distributions)<br/><code>"/opt/Adobe/Reader9/Reader/intellinux/lib/libauthplay.so"<br/>"/opt/Adobe/Reader9/Reader/intellinux/lib/librt3d.so"</code></p><p>File
+locations may be different for Adobe Acrobat or other Adobe products that
+include Flash and 3D &amp; Multimedia support. Disabling these plugins will
+reduce functionality and will not protect against Flash content that is hosted
+on websites. Depending on the update schedule for products other than Flash
+Player, consider leaving Flash and 3D &amp; Multimedia support disabled unless
+they are absolutely required.</p><p><b>Disable JavaScript in Adobe Reader and
+Acrobat</b></p><p>Disabling JavaScript may prevent some exploits from resulting
+in code execution. Acrobat JavaScript can be disabled using the Preferences menu
+(<tt>Edit</tt> -&gt; <tt>Preferences</tt> -&gt; <tt>JavaScript;</tt> uncheck
+<tt>Enable Acrobat JavaScript</tt>).</p><p>Adobe provides a framework to <a href="http://kb2.adobe.com/cps/504/cpsid_50431.html">blacklist specific
+JavaScipt APIs</a>. If JavaScript must be enabled, this framework may be useful
+when specific APIs are known to be vulnerable or used in attacks.<br/><br/><b>Prevent Internet Explorer from automatically opening PDF files</b><br/><br/>The installer for Adobe Reader and Acrobat configures Internet Explorer to
+automatically open PDF files without any user interaction. This behavior can be
+reverted to a safer option that prompts the user by importing the following as a
+.REG file:</p><p style="margin-left: 40px;"><tt>Windows Registry Editor Version
+5.00<br/><br/>[HKEY_CLASSES_ROOT\AcroExch.Document.7]<br/>"EditFlags"=hex:00,00,00,00</tt></p><p><b>Disable the display of PDF
+files in the web browser</b><br/><br/>Preventing PDF files from opening inside
+a web browser will partially mitigate this vulnerability. If this workaround is
+applied, it may also mitigate future vulnerabilities.<br/><br/>To prevent PDF
+files from automatically being opened in a web browser, do the following:<br/><br/>1. Open Adobe Acrobat Reader.<br/>2. Open the <tt>Edit</tt> menu.<br/>3. Choose the <tt>Preferences</tt> option.<br/>4. Choose the
+<tt>Internet</tt> section.<br/>5. Uncheck the "<tt>Display PDF in
+browser</tt>" checkbox.</p><p><strong>Remove or restrict access to
+3difr.x3d</strong></p><p>By removing or restricting access to the 3difr.x3d
+file, Adobe Reader and Acrobat will fail to render U3D content, which helps to
+mitigate this vulnerability. PDF documents that use the PRC format for 3D
+content will continue to function on Windows and Linux platforms.</p><p>To
+disable U3D support in Adobe Reader 9 on Microsoft Windows, delete or rename
+this file:</p><p>??? <code>"%ProgramFiles%\Adobe\Reader
+9.0\Reader\plug_ins3d\3difr.x3d"</code></p><p>For Apple Mac OS X, delete or
+rename this directory:</p><p>???<code> "/Applications/Adobe
+Reader 9/Adobe
+Reader.app/Contents/Frameworks/Adobe3D.framework"</code></p><p>For
+GNU/Linux, delete or rename this file (locations may vary among
+distributions):</p><p>???
+<code>"/opt/Adobe/Reader9/Reader/intellinux/plug_ins3d/3difr.x3d"</code></p><p>File
+locations may be different for Adobe Acrobat or other Adobe products or
+versions.</p><p><b>Do not access PDF files from untrusted sources</b><br/><br/>Do not open unfamiliar or unexpected PDF files, particularly those hosted on
+websites or delivered as email attachments. Please see Cyber Security Tip <a href="http://www.us-cert.gov/cas/tips/ST04-010.html">ST04-010</a>.</p>
+
+<br/>
+<a name="references"/>
+<h2>IV. References</h2>
+<ul><li>Security update available for Adobe Reader and Acrobat - &lt;<a href="https://www.adobe.com/support/security/bulletins/apsb11-30.html">https://www.adobe.com/support/security/bulletins/apsb11-30.html</a>&gt;</li><li>Adobe
+Reader and Acrobat JavaScript Blacklist Framework - &lt;<a href="http://kb2.adobe.com/cps/504/cpsid_50431.html">http://kb2.adobe.com/cps/504/cpsid_50431.html</a>&gt;</li><li>Adobe
+Acrobat and Reader U3D memory corruption vulnerability - &lt;<a href="http://www.kb.cert.org/vuls/id/759307">http://www.kb.cert.org/vuls/id/759307</a>&gt;</li><li>Security
+Advisory for Adobe Reader and Acrobat - &lt;<a href="https://www.adobe.com/support/security/advisories/apsa11-04.html">https://www.adobe.com/support/security/advisories/apsa11-04.html</a>&gt;</li></ul>
+
+   
+
+<br/>
+<hr noshade="noshade"/>                               
+<p><a href="mailto:cert@cert.org?subject=TA11-350A%20Feedback%20VU%23759307">Feedback</a> can be directed to US-CERT.</p>
+<hr noshade="noshade"/>
+
+<p>Produced 2011 by US-CERT, a government organization. <a href="http://www.us-cert.gov/legal.html">Terms of use</a></p>
+<a name="revisions"/>
+<br/><b>Revision History</b>
+<p><small>December 16, 2011: Initial release<br/></small></p>                         
+</div>
+    </content>
+    <updated>2011-12-16T19:19:11Z</updated>
+    <published>2011-12-16T19:19:11Z</published>
+    <link type="text/html" rel="alternate" href="http://www.us-cert.gov/cas/techalerts/TA11-350A.html"/>
+  </entry>
+  <entry>
+    <title>TA11-347A: Microsoft Updates for Multiple Vulnerabilities</title>
+    <id>http://www.us-cert.gov/cas/techalerts/TA11-347A.html</id>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">Original release date: December 13, 2011<br/>
+Last revised: --<br/>
+Source: US-CERT<br/>
+<br/>
+<a name="affected"/>
+<h3>Systems Affected</h3>
+<ul><li>Microsoft Windows</li><li>Microsoft Office</li><li>Internet
+Explorer</li></ul>
+
+<br/>
+<a name="overview"/>
+<h2>Overview</h2>
+<p>There are multiple vulnerabilities in Microsoft Windows, Office, and Internet
+Explorer. Microsoft has released updates to address these vulnerabilities.</p>
+
+<br/>
+<a name="description"/>
+<h2>I. Description</h2>
+<p>The <a href="https://technet.microsoft.com/en-us/security/bulletin/ms11-dec">Microsoft
+Security Bulletin Summary for December 2011</a> describes multiple
+vulnerabilities in Microsoft Windows. Microsoft has released updates to address
+the vulnerabilities. Additional details for MS11-091 can be found in <a href="http://www.kb.cert.org/vuls/id/361441">US-CERT vulnerability note
+VU#361441</a>.</p>
+
+<br/>
+<a name="impact"/>
+<h2>II. Impact</h2>
+<p>A remote, unauthenticated attacker could execute arbitrary code, cause a
+denial of service, or gain unauthorized access to your files or system.</p>
+
+<br/>
+<a name="solution"/>
+<h2>III. Solution</h2>
+<p><strong>Apply updates</strong><br/><br/>Microsoft has provided updates for
+these vulnerabilities in the <a href="https://technet.microsoft.com/en-us/security/bulletin/ms11-dec">Microsoft
+Security Bulletin Summary for December 2011</a>. That bulletin describes any
+known issues related to the updates. Administrators are encouraged to note these
+issues and test for any potentially adverse effects. In addition, administrators
+should consider using an automated update distribution system such as <a href="http://technet.microsoft.com/en-us/wsus/default.aspx">Windows Server
+Update Services</a> (WSUS).</p>
+
+<br/>
+<a name="references"/>
+<h2>IV. References</h2>
+<ul><li>Microsoft Security Bulletin Summary for December 2011 - &lt;<a href="https://technet.microsoft.com/en-us/security/bulletin/ms11-dec">https://technet.microsoft.com/en-us/security/bulletin/ms11-dec</a>&gt;</li><li>Microsoft
+Windows Server Update Services - &lt;<a href="http://technet.microsoft.com/en-us/wsus/default.aspx">http://technet.microsoft.com/en-us/wsus/default.aspx</a>&gt;</li><li>US-CERT
+Vulnerability Note VU#361441 - &lt;<a href="http://www.kb.cert.org/vuls/id/361441 ">http://www.kb.cert.org/vuls/id/361441 </a>&gt;</li></ul>
+
+   
+
+<br/>
+<hr noshade="noshade"/>                               
+<p><a href="mailto:cert@cert.org?subject=TA11-347A%20Feedback%20VU%23828387">Feedback</a> can be directed to US-CERT.</p>
+<hr noshade="noshade"/>
+
+<p>Produced 2011 by US-CERT, a government organization. <a href="http://www.us-cert.gov/legal.html">Terms of use</a></p>
+<a name="revisions"/>
+<br/><b>Revision History</b>
+<p><small>December 13, 2011: Initial release<br/></small></p>                         
+</div>
+    </content>
+    <updated>2011-12-13T20:47:45Z</updated>
+    <published>2011-12-13T20:47:45Z</published>
+    <link type="text/html" rel="alternate" href="http://www.us-cert.gov/cas/techalerts/TA11-347A.html"/>
+  </entry>
+  <entry>
+    <title>TA11-312A: Microsoft Updates for Multiple Vulnerabilities</title>
+    <id>http://www.us-cert.gov/cas/techalerts/TA11-312A.html</id>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">Original release date: November 08, 2011<br/>
+Last revised: --<br/>
+Source: US-CERT<br/>
+<br/>
+<a name="affected"/>
+<h3>Systems Affected</h3>
+<ul><li>Microsoft Windows</li></ul>
+
+<br/>
+<a name="overview"/>
+<h2>Overview</h2>
+<p>There are multiple vulnerabilities in Microsoft Windows. Microsoft has
+released updates to address these vulnerabilities.</p>
+
+<br/>
+<a name="description"/>
+<h2>I. Description</h2>
+<p>The <a href="http://technet.microsoft.com/en-us/security/bulletin/ms11-nov">Microsoft
+Security Bulletin Summary for November 2011</a> describes multiple
+vulnerabilities in Microsoft Windows. Microsoft has released updates to address
+the vulnerabilities. Additional details for MS11-084 can be found in <a href="http://www.kb.cert.org/vuls/id/675073">US-CERT vulnerability note
+VU#675073</a>.</p>
+
+<br/>
+<a name="impact"/>
+<h2>II. Impact</h2>
+<p>A remote, unauthenticated attacker could execute arbitrary code, cause a
+denial of service, or gain unauthorized access to your files or system.</p>
+
+<br/>
+<a name="solution"/>
+<h2>III. Solution</h2>
+<p><strong>Apply updates</strong><br/><br/>Microsoft has provided updates for
+these vulnerabilities in the <a href="http://technet.microsoft.com/en-us/security/bulletin/ms11-nov">Microsoft
+Security Bulletin Summary for November 2011</a>. That bulletin describes any
+known issues related to the updates. Administrators are encouraged to note these
+issues and test for any potentially adverse effects. In addition, administrators
+should consider using an automated update distribution system such as <a href="http://technet.microsoft.com/en-us/wsus/default.aspx">Windows Server
+Update Services</a> (WSUS).</p>
+
+<br/>
+<a name="references"/>
+<h2>IV. References</h2>
+<ul><li>Microsoft Security Bulletin Summary for November 2011 - &lt;<a href="http://technet.microsoft.com/en-us/security/bulletin/ms11-nov">http://technet.microsoft.com/en-us/security/bulletin/ms11-nov</a>&gt;</li><li>Microsoft
+Windows Server Update Services - &lt;<a href="http://technet.microsoft.com/en-us/wsus/default.aspx">http://technet.microsoft.com/en-us/wsus/default.aspx</a>&gt;</li><li>US-CERT
+Vulnerability Note VU#675073 - &lt;<a href="http://www.kb.cert.org/vuls/id/675073">http://www.kb.cert.org/vuls/id/675073</a>&gt;</li></ul>
+
+   
+
+<br/>
+<hr noshade="noshade"/>                               
+<p><a href="mailto:cert@cert.org?subject=TA11-312A%20Feedback%20VU%23124254">Feedback</a> can be directed to US-CERT.</p>
+<hr noshade="noshade"/>
+
+<p>Produced 2011 by US-CERT, a government organization. <a href="http://www.us-cert.gov/legal.html">Terms of use</a></p>
+<a name="revisions"/>
+<br/><b>Revision History</b>
+<p><small>November 08, 2011: Initial release<br/></small></p>                         
+</div>
+    </content>
+    <updated>2011-11-08T20:32:21Z</updated>
+    <published>2011-11-08T20:32:21Z</published>
+    <link type="text/html" rel="alternate" href="http://www.us-cert.gov/cas/techalerts/TA11-312A.html"/>
+  </entry>
+  <entry>
+    <title>TA11-286A: Apple Updates for Multiple Vulnerabilities</title>
+    <id>http://www.us-cert.gov/cas/techalerts/TA11-286A.html</id>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">Original release date: October 13, 2011<br/>
+Last revised: --<br/>
+Source: US-CERT<br/>
+<br/>
+<a name="affected"/>
+<h3>Systems Affected</h3>
+<ul><li>Mac OS X 10.6.8</li><li>Mac OS X Server 10.6.8</li><li>Mac OS X 10.7,
+10.7.1</li><li>Mac OS X Server 10.7, 10.7.1</li></ul>
+
+<br/>
+<a name="overview"/>
+<h2>Overview</h2>
+<p>There are multiple vulnerabilities in Mac OS X 10.6.8, 10.7, and 10.7.1 and
+Mac OS X Server 10.6.8, 10.7, and 10.7.1. Apple has released updates to address
+these vulnerabilities.</p>
+
+<br/>
+<a name="description"/>
+<h2>I. Description</h2>
+<p>The <a href="http://support.apple.com/kb/HT5002">Apple Security Advisory for
+OS X Lion v10.7.2 and Security Update 2011-006</a> describes multiple
+vulnerabilities in Mac OS X and Mac OS X Server. Apple has released updates to
+address these vulnerabilities.</p>
+
+<br/>
+<a name="impact"/>
+<h2>II. Impact</h2>
+<p>A remote, unauthenticated attacker could execute arbitrary code, cause a
+denial of service, or gain unauthorized access to your files or system.</p>
+
+<br/>
+<a name="solution"/>
+<h2>III. Solution</h2>
+<p>Apple has provided updates for these vulnerabilities in the <a href="http://support.apple.com/kb/HT5002">Apple Security Advisory for OS X Lion
+v10.7.2 and Security Update 2011-006</a>. This advisory describes any known
+issues related to the updates and the specific impacts for each vulnerability.
+Administrators are encouraged to note these issues and impacts and test for any
+potentially adverse effects before wide-scale deployment.?</p>
+
+<br/>
+<a name="references"/>
+<h2>IV. References</h2>
+<ul><li>OS X Lion v10.7.2 and Security Update 2011-006 - &lt;<a href="http://support.apple.com/kb/HT5002">http://support.apple.com/kb/HT5002</a>&gt;</li><li>Mac
+OS X: Updating your software - &lt;<a href="http://support.apple.com/kb/HT1338">http://support.apple.com/kb/HT1338</a>&gt;</li></ul>
+
+   
+
+<br/>
+<hr noshade="noshade"/>                               
+<p><a href="mailto:cert@cert.org?subject=TA11-286A%20Feedback%20VU%23421739">Feedback</a> can be directed to US-CERT.</p>
+<hr noshade="noshade"/>
+
+<p>Produced 2011 by US-CERT, a government organization. <a href="http://www.us-cert.gov/legal.html">Terms of use</a></p>
+<a name="revisions"/>
+<br/><b>Revision History</b>
+<p><small>October 13, 2011: Initial release<br/></small></p>                         
+</div>
+    </content>
+    <updated>2011-10-13T14:59:40Z</updated>
+    <published>2011-10-13T14:59:40Z</published>
+    <link type="text/html" rel="alternate" href="http://www.us-cert.gov/cas/techalerts/TA11-286A.html"/>
+  </entry>
+  <entry>
+    <title>TA11-284A: Microsoft Updates for Multiple Vulnerabilities</title>
+    <id>http://www.us-cert.gov/cas/techalerts/TA11-284A.html</id>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">Original release date: October 11, 2011<br/>
+Last revised: --<br/>
+Source: US-CERT<br/>
+<br/>
+<a name="affected"/>
+<h3>Systems Affected</h3>
+<ul><li>Microsoft Windows</li><li>Microsoft .NET Framework</li><li>Microsoft
+Silverlight</li><li>Internet Explorer</li><li>Microsoft Forefront Unified Access
+Gateway</li><li>Microsoft Host Integration Server</li></ul>
+
+<br/>
+<a name="overview"/>
+<h2>Overview</h2>
+<p>There are multiple vulnerabilities in Microsoft Windows, .NET Framework,
+Silverlight, Internet Explorer, Forefront Unified Access Gateway, and Host
+Integration Server.? Microsoft has released updates to address these
+vulnerabilities.</p>
+
+<br/>
+<a name="description"/>
+<h2>I. Description</h2>
+<p>The <a href="http://technet.microsoft.com/en-us/security/bulletin/ms11-oct">Microsoft
+Security Bulletin Summary for October 2011</a> describes multiple
+vulnerabilities in Microsoft Windows, .NET Framework, Silverlight, Internet
+Explorer, Forefront Unified Access Gateway, and Host Integration Server.
+Microsoft has released updates to address the vulnerabilities.</p>
+
+<br/>
+<a name="impact"/>
+<h2>II. Impact</h2>
+<p>A remote, unauthenticated attacker could execute arbitrary code, cause a
+denial of service, or gain unauthorized access to your files or system.</p>
+
+<br/>
+<a name="solution"/>
+<h2>III. Solution</h2>
+<p><strong>Apply updates</strong><br/><br/>Microsoft has provided updates for
+these vulnerabilities in the <a href="http://technet.microsoft.com/en-us/security/bulletin/ms11-oct">Microsoft
+Security Bulletin Summary for October 2011</a>. That bulletin describes any
+known issues related to the updates. Administrators are encouraged to note these
+issues and test for any potentially adverse effects. In addition, administrators
+should consider using an automated update distribution system such as <a href="http://technet.microsoft.com/en-us/wsus/default.aspx">Windows Server
+Update Services</a> (WSUS).</p>
+
+<br/>
+<a name="references"/>
+<h2>IV. References</h2>
+<ul><li>Microsoft Security Bulletin Summary for October 2011 - &lt;<a href="http://technet.microsoft.com/en-us/security/bulletin/ms11-oct">http://technet.microsoft.com/en-us/security/bulletin/ms11-oct</a>&gt;</li><li>Microsoft
+Windows Server Update Services - &lt;<a href="http://technet.microsoft.com/en-us/wsus/default.aspx">http://technet.microsoft.com/en-us/wsus/default.aspx</a>&gt;</li></ul>
+
+   
+
+<br/>
+<hr noshade="noshade"/>                               
+<p><a href="mailto:cert@cert.org?subject=TA11-284A%20Feedback%20VU%23127203">Feedback</a> can be directed to US-CERT.</p>
+<hr noshade="noshade"/>
+
+<p>Produced 2011 by US-CERT, a government organization. <a href="http://www.us-cert.gov/legal.html">Terms of use</a></p>
+<a name="revisions"/>
+<br/><b>Revision History</b>
+<p><small>October 11, 2011: Initial release<br/></small></p>                         
+</div>
+    </content>
+    <updated>2011-10-11T18:35:59Z</updated>
+    <published>2011-10-11T18:35:59Z</published>
+    <link type="text/html" rel="alternate" href="http://www.us-cert.gov/cas/techalerts/TA11-284A.html"/>
+  </entry>
+  <entry>
+    <title>TA11-256A: Microsoft Updates for Multiple Vulnerabilities</title>
+    <id>http://www.us-cert.gov/cas/techalerts/TA11-256A.html</id>
+    <content type="xhtml">
+      <div xmlns="http://www.w3.org/1999/xhtml">Original release date: September 13, 2011<br/>
+Last revised: --<br/>
+Source: US-CERT<br/>
+<br/>
+<a name="affected"/>
+<h3>Systems Affected</h3>
+<ul><li>Microsoft Windows</li><li>Microsoft Office</li><li>Microsoft Server
+Software</li></ul>
+
+<br/>
+<a name="overview"/>
+<h2>Overview</h2>
+<p>There are multiple vulnerabilities in Microsoft Windows, Microsoft Server
+Software, and Microsoft Office. Microsoft has released updates to address these
+vulnerabilities.</p>
+
+<br/>
+<a name="description"/>
+<h2>I. Description</h2>
+<p>The <a href="http://technet.microsoft.com/en-us/security/bulletin/ms11-sep">Microsoft
+Security Bulletin Summary for September 2011</a> describes multiple
+vulnerabilities in Microsoft Windows, Microsoft Server Software, and Microsoft
+Office. Microsoft has released updates to address the vulnerabilities.</p>
+
+<br/>
+<a name="impact"/>
+<h2>II. Impact</h2>
+<p>A remote, unauthenticated attacker could execute arbitrary code, cause a
+denial of service, or gain unauthorized access to your files or system.</p>
+
+<br/>
+<a name="solution"/>
+<h2>III. Solution</h2>
+<p><strong>Apply updates</strong><br/><br/>Microsoft has provided updates for
+these vulnerabilities in the <a href="http://technet.microsoft.com/en-us/security/bulletin/ms11-sep">Microsoft
+Security Bulletin Summary for September 2011</a>. That bulletin describes any
+known issues related to the updates. Administrators are encouraged to note these
+issues and test for any potentially adverse effects. In addition, administrators
+should consider using an automated update distribution system such as <a href="http://technet.microsoft.com/en-us/wsus/default.aspx">Windows Server
+Update Services</a> (WSUS).</p>
+
+<br/>
+<a name="references"/>
+<h2>IV. References</h2>
+<ul><li>Microsoft Security Bulletin Summary for September 2011 - &lt;<a href="http://technet.microsoft.com/en-us/security/bulletin/ms11-sep">http://technet.microsoft.com/en-us/security/bulletin/ms11-sep</a>&gt;</li><li>Microsoft
+Windows Server Update Services - &lt;<a href="http://technet.microsoft.com/en-us/wsus/default.aspx">http://technet.microsoft.com/en-us/wsus/default.aspx</a>&gt;</li></ul>
+
+   
+
+<br/>
+<hr noshade="noshade"/>                               
+<p><a href="mailto:cert@cert.org?subject=TA11-256A%20Feedback%20VU#392435">Feedback</a> can be directed to US-CERT.</p>
+<hr noshade="noshade"/>
+
+<p>Produced 2011 by US-CERT, a government organization. <a href="http://www.us-cert.gov/legal.html">Terms of use</a></p>
+<a name="revisions"/>
+<br/><b>Revision History</b>
+<p><small>September 13, 2011: Initial release<br/></small></p>                         
+</div>
+    </content>
+    <updated>2011-09-13T18:54:07Z</updated>
+    <published>2011-09-13T18:54:07Z</published>
+    <link type="text/html" rel="alternate" href="http://www.us-cert.gov/cas/techalerts/TA11-256A.html"/>
+  </entry>
+</feed>

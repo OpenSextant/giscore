@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -33,8 +34,12 @@ import java.util.List;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.Namespace;
 import org.mitre.giscore.events.AtomHeader;
 import org.mitre.giscore.events.AtomLink;
+import org.mitre.giscore.events.DocumentStart;
+import org.mitre.giscore.events.Element;
+import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.utils.IDataSerializable;
@@ -117,5 +122,39 @@ public class TestGeoAtomStream {
 		assertFalse(header1.equals(header2));
 		AtomLink link3 = new AtomLink(url, "other");
 		assertFalse(link1.equals(link3));
+	}
+
+	@Test
+	public void testForeignElements() throws Exception {
+		File file = new File("data/atom/techalerts.xml");
+		checkTechAlerts(GISFactory.getInputStream(DocumentType.GeoAtom, file));
+	}
+	
+	public static void checkTechAlerts(final IGISInputStream gis) throws Exception {
+		try {
+			IGISObject feed = gis.read();
+			assertEquals(AtomHeader.class, feed.getClass());
+			final AtomHeader header = (AtomHeader) feed;
+			assertEquals(1, header.getElements().size());
+			Element elt = header.getElements().get(0);
+			assertEquals("urn:x:extension", elt.getNamespaceURI());
+			assertEquals("foo", elt.getNamespace().getPrefix());
+			assertEquals("A simple element at the top level.", elt.getText());
+			IGISObject next = gis.read();
+			assertTrue("Element wasn't a document start? " + next, next instanceof DocumentStart);
+			next = gis.read();
+			assertTrue("Element wasn't a feature? " + next, next instanceof Feature);
+			Feature feat = (Feature) next;
+			assertEquals(1, feat.getElements().size());
+			elt = feat.getElements().get(0);
+			assertEquals("urn:x:extension", elt.getNamespaceURI());
+			assertEquals("foo", elt.getNamespace().getPrefix());
+			assertEquals("A complex element at the top level.", elt.getAttributes().get("description"));
+			elt = elt.getChild("child", Namespace.getNamespace("foo", "urn:x:extension"));
+			assertNotNull("Child element wasn't found.", elt);
+			while(gis.read() != null);
+		} finally {
+			gis.close();
+		}
 	}
 }
