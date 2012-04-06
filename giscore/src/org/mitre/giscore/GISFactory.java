@@ -177,6 +177,16 @@ public class GISFactory {
 					arguments,
 					new boolean[] { false, false, false, false });
 			return new CsvInputStream(file, arguments);
+		} else if (DocumentType.GeoAtom.equals(type)) {
+			checkArguments(new Class[] { },
+					arguments,
+					new boolean[] {  });
+			return new GeoAtomInputStream(new FileInputStream(file), arguments);
+		} else if (DocumentType.WKT.equals(type)) {
+			checkArguments(new Class[] {},
+					arguments, 
+					new boolean[] {});
+			return new WKTInputStream(new FileInputStream(file), arguments);
 		} else {
 			throw new UnsupportedOperationException(
 					"Cannot create an input stream for type " + type);
