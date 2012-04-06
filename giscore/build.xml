@@ -152,8 +152,8 @@ test.classpath=${build.classes};${netbeans-classpath.test}
 	</target>
 	
 	<target name="jar" depends="compile">
-		<ivy:cachepath pathid="kf.path" organisation="org.knopflerfish" 
-			module="knopflerfish-ant" revision="2.1.0-mitre-8" 
+		<ivy:cachepath pathid="kf.path" organisation="org.knopflerfish"
+			module="knopflerfish-ant" revision="2.1.0-mitre-13"
 			conf="default" inline="true"/>
 
 		<!-- buildnumber isn't working correctly with artifactory -->
