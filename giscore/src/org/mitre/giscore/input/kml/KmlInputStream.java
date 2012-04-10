@@ -108,8 +108,8 @@ import java.util.*;
  * associated Geometry.
  * <p/>
  * <a name="ExtendedData">
- * Handles ExtendedData with Data/Value or SchemaData/SimpleData elements but does not handle the non-KML namespace
- * form of extended data (see http://code.google.com/apis/kml/documentation/extendeddata.html#opaquedata).
+ * Handles ExtendedData with Data/Value or SchemaData/SimpleData elements including the non-KML namespace
+ * form of extended data for arbitrary XML data (see http://code.google.com/apis/kml/documentation/extendeddata.html#opaquedata).
  * Only a single {@code Data/SchemaData/Schema ExtendedData} mapping is assumed
  * per Feature but note that although uncommon, KML allows features to define multiple
  * Schemas. Features with mixed {@code Data} and/or multiple {@code SchemaData} elements
@@ -252,7 +252,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			if ("kml".equals(localPart)) {
 				if (StringUtils.isNotBlank(nstr) && !ms_kml_ns.contains(nstr)) {
 					// KML namespace not registered
-					log.info("Registering unrecognized KML namespace: " + nstr);
+					log.info("Registering unrecognized KML namespace: {}", nstr);
 					ms_kml_ns.add(nstr);
 				}
 				stream.nextEvent(); // Consume event
@@ -260,7 +260,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					&& (ms_features.contains(localPart) || ms_containers.contains(localPart))) {
 				// root element non-kml (e.g. GroundOverlay) and namespace is not registered.
 				// Add it otherwise will be parsed as foreign elements
-				log.info("Registering unrecognized KML namespace: " + nstr);
+				log.info("Registering unrecognized KML namespace: {}", nstr);
 				ms_kml_ns.add(nstr);
 			}
 			@SuppressWarnings("unchecked")
@@ -489,7 +489,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						try {
 							Element el = (Element) getForeignElement(ee.asStartElement());
 							feature.getElements().add(el);
-						} catch (Exception e) {
+						} catch (XMLStreamException e) {
 							log.error("Problem getting element", e);
 						}
 					} else {
@@ -503,7 +503,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		} catch (XMLStreamException e) {
 			log.error("Failed to handle: " + localname, e);
 			// TODO: do we have any situation where need to skip over failed localname element??
-			// skipNextElement(stream, localname);
+			// skipNextElement(stream, name);
 		}
 		return false;
 	}
@@ -526,22 +526,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				StartElement se = next.asStartElement();
 				QName qname = se.getName();
 				String tag = qname.getLocalPart();
+				boolean handleAsForeignElement = false;
 				/*
 				 * xmlns:prefix handling. skips namespaces other than parent namespace (e.g. http://www.opengis.net/kml/2.2)
 				 */
 				if (rootNS != null && !rootNS.equals(qname.getNamespaceURI())) {
-					// ignore extended data elements other namespace other than root namespace
-					// external namespace contents in ExtendedData not supported
-					// http://code.google.com/apis/kml/documentation/extendeddata.html##opaquedata
-					/*
-						<ExtendedData xmlns:camp="http://campsites.com">
-						  <camp:number>14</camp:number>
-						  <camp:parkingSpaces>2</camp:parkingSpaces>
-						  <camp:tentSites>4</camp:tentSites>
-						</ExtendedData>
-					 */
-					log.debug("skip {}", qname);
-					skipNextElement(stream, qname);
+					handleAsForeignElement = true;
+					// handle extended data elements other namespace other than the root (KML) namespace
 				} else if (tag.equals(DATA)) {
 					Attribute nameAttr = se.getAttributeByName(new QName(NAME));
 					if (nameAttr != null) {
@@ -574,8 +565,28 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						skipNextElement(stream, qname);
 					}
 				} else {
-					log.debug("ignore {}", qname);
-					skipNextElement(stream, qname);
+					handleAsForeignElement = true;
+				}
+
+				if (handleAsForeignElement) {
+					// handle extended data elements (i.e., arbitrary XML data) with
+					// namespace other than the root (KML) namespace.
+					// http://code.google.com/apis/kml/documentation/extendeddata.html#opaquedata
+					/*
+						<ExtendedData xmlns:camp="http://campsites.com">
+						  <camp:number>14</camp:number>
+						  <camp:parkingSpaces>2</camp:parkingSpaces>
+						  <camp:tentSites>4</camp:tentSites>
+						</ExtendedData>
+					 */
+					try {
+						log.debug("ExtendedData other {}", qname);
+						Element el = (Element) getForeignElement(se.asStartElement());
+						cs.getExtendedElements().add(el);
+					} catch (XMLStreamException e) {
+						log.error("Problem getting other namespace element", e);
+						skipNextElement(stream, qname); // is this XML exception recoverable ??
+					}
 				}
 			}
 		}
@@ -2064,11 +2075,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					String localPart = qname.getLocalPart();
 					if (localPart.equals(LOCATION)) {
 						// Location specifies the exact coordinates of the Model's origin in latitude, longitude, and altitude.
+						// Latitude and longitude measurements are standard lat-lon projection with WGS84 datum.
+						// Altitude is distance above the earth's surface, in meters, and is interpreted according to <altitudeMode>.
 						Geodetic2DPoint point = parseLocation(qname);
 						if (point != null)
 							model.setLocation(point);
 					} else if (localPart.equals(ALTITUDE_MODE)) {
-						// TODO: doesn't differentiate btwn kml:altitudeMode and gx:altitudeMode
+						// TODO: doesn't differentiate between kml:altitudeMode and gx:altitudeMode and situation of having duplicates
 						model.setAltitudeMode(getNonEmptyElementText());
 					}
 					// todo: Orientation, Scale, Link, ResourceMap
@@ -2096,7 +2109,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			GeometryGroup geom = parseCoordinates(name);
 			if (geom.size() == 1) {
 				Point pt = geom.points.get(0);
-				log.info("line with single coordinate converted to point: " + pt);
+				log.info("line with single coordinate converted to point: {}", pt);
 				return getGeometry(geom, pt);
 			} else {
 				// if geom.size() == 0 throws IllegalArgumentException
