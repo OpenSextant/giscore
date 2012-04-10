@@ -42,6 +42,9 @@ public class Model extends Geometry {
 
     /**
      * Get the exact coordinates of the Model's origin in latitude, longitude, and altitude.
+	 * Latitude and longitude measurements are standard lat-lon projection with WGS84 datum.
+	 * Altitude is distance above the earth's surface, in meters, and is interpreted according to
+	 * the <tt>altitudeMode</tt>.
      * @return location, <tt>null</tt> if not defined
      */
     @CheckForNull
