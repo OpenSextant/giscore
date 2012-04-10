@@ -32,8 +32,10 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,6 +49,13 @@ public class Row extends AbstractObject implements IDataSerializable {
     
 	protected URI schema;
 	protected final Map<SimpleField, Object> extendedData = new LinkedHashMap<SimpleField, Object>();
+
+	/**
+	 * Store non-Data and non-SimpleData extended data elements.
+	 * These are arbitrary XML elements of a non-KML namespace.
+	 */
+	@NonNull
+	private List<Element> extendedElements = new ArrayList<Element>();
 
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.VisitableGeometry#accept(org.mitre.giscore.output.StreamVisitorBase)
@@ -75,6 +84,8 @@ public class Row extends AbstractObject implements IDataSerializable {
 			Object val = in.readScalar();
 			extendedData.put(field, val);
 		}
+		extendedElements.clear();
+		extendedElements = in.readNonNullObjectCollection();
 	}
 
 	/* (non-Javadoc)
@@ -89,6 +100,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 			out.writeObject(entry.getKey());
 			out.writeScalar(entry.getValue());
 		}
+		out.writeObjectCollection(extendedElements);
 	}
 
 	/**
@@ -115,6 +127,8 @@ public class Row extends AbstractObject implements IDataSerializable {
 	 *            the key, never <code>null</code>
 	 * @param value
 	 *            the value, never <code>null</code>
+	 *
+	 * @throws IllegalArgumentException if key is null
 	 */
 	public void putData(SimpleField key, Object value) {
 		if (key == null) {
@@ -149,10 +163,29 @@ public class Row extends AbstractObject implements IDataSerializable {
 	}
 
 	/**
-	 * @return true of Row has ExtendedData, false otherwise.
+	 * Number of extended data SimpleData elements
+	 * @return size of the fields
+	 */
+	public int getFieldSize() {
+		return extendedData.size();
+	}
+
+	@NonNull
+	public List<Element> getExtendedElements() {
+		return extendedElements;
+	}
+
+	public void setExtendedElements(List<Element> extendedElements) {
+		this.extendedElements = extendedElements == null ? new ArrayList<Element>() : extendedElements;
+	}
+
+	/**
+	 * True if this element has extended data (Data/SimpleDate fields
+	 * and/or extended elements)
+	 * @return true if Row has ExtendedData, false otherwise.
 	 */
 	public boolean hasExtendedData() {
-		return !extendedData.isEmpty();
+		return !extendedData.isEmpty() || !extendedElements.isEmpty();
 	}
 
 	/**
@@ -162,6 +195,8 @@ public class Row extends AbstractObject implements IDataSerializable {
 	 *            the fieldname, never @{code null} or empty.
 	 * 
 	 * @return the value of the field, value can be @{code null} if defined as such.
+	 *
+	 * @throws IllegalArgumentException if field is null
 	 */
     @CheckForNull
 	public Object getData(SimpleField field) {
@@ -179,6 +214,8 @@ public class Row extends AbstractObject implements IDataSerializable {
      * @param field field whose mapping is to be removed from the extended data collection
      * @return the previous value associated with <tt>field</tt>, or
      *         <tt>null</tt> if there was no mapping for <tt>field</tt>.
+	 *
+	 * @throws IllegalArgumentException if field is null
      */
     @Nullable
     public Object removeData(SimpleField field) {
