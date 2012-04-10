@@ -1,0 +1,6 @@
+#Tue Apr 10 10:52:37 PDT 2012
+eclipse.preferences.version=1
+org.eclipse.jdt.ui.ignorelowercasenames=true
+org.eclipse.jdt.ui.importorder=com;edu;java;javax;org;\#;
+org.eclipse.jdt.ui.ondemandthreshold=99
+org.eclipse.jdt.ui.staticondemandthreshold=99
