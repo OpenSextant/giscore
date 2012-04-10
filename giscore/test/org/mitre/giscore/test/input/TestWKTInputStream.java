@@ -18,11 +18,8 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.input;
 
-import static org.junit.Assert.*;
-
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
@@ -42,15 +39,14 @@ import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
 
+import static org.junit.Assert.*;
+
 public class TestWKTInputStream {
 	public final static String base_path = "data/wkt";
 	
 	@Test
 	public void testWKTInputBasic() throws IOException {
-		File basic = new File(base_path, "basic.wkt");
-		InputStream is = new FileInputStream(basic);
-		
-		IGISInputStream gis = GISFactory.getInputStream(DocumentType.WKT, is);
+		IGISInputStream gis = GISFactory.getInputStream(DocumentType.WKT, new File(base_path, "basic.wkt"));
 		
 		IGISObject ob = gis.read();
 		assertNotNull(ob);
@@ -118,5 +114,18 @@ public class TestWKTInputStream {
 		assertTrue(gb.getPart(1) instanceof Line);
 		assertTrue(gb.getPart(2) instanceof Polygon);
 		assertTrue(gb.getPart(3) instanceof Polygon);
+	}
+
+	@Test
+	@SuppressWarnings("empty-statement")
+	public void testEndOfStream() throws IOException {		
+		InputStream is = new ByteArrayInputStream("POLYGON((112.1 33, 112.1 44, -10 44, -10 33, 112.1 33))".getBytes());
+		IGISInputStream gis = GISFactory.getInputStream(DocumentType.WKT, is);
+		for (IGISObject obj = gis.read(); obj != null; obj = gis.read());
+		gis.close();
+		is = new ByteArrayInputStream("   ".getBytes());
+		gis = GISFactory.getInputStream(DocumentType.WKT, is);
+		for (IGISObject obj = gis.read(); obj != null; obj = gis.read());
+		gis.close();
 	}
 }

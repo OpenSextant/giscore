@@ -18,6 +18,8 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.wkt;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,15 +41,12 @@ import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.MultiPolygons;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
-import org.mitre.giscore.input.GISInputStreamBase;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.itf.geodesy.Angle;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
 import org.mitre.itf.geodesy.Geodetic3DPoint;
 import org.mitre.itf.geodesy.Latitude;
 import org.mitre.itf.geodesy.Longitude;
-
-import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Reads geometries from an OGC Well-known text (WKT) formatted file. Geometries are formatted
@@ -101,7 +100,9 @@ public class WKTInputStream implements IGISInputStream {
 	@Override
 	public IGISObject read() throws IOException {
 		currentop = lexer.nextToken();
-		if (! currentop.getType().equals(WKTToken.TokenType.ID)) {
+		if(currentop == null) {
+			return null;
+		} else if (! currentop.getType().equals(WKTToken.TokenType.ID)) {
 			throw new RuntimeException("Expected an identifier but found the token type " + currentop.getType() + " instead");
 		}
 		
