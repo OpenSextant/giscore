@@ -6,7 +6,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -247,7 +247,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
      * @throws XMLStreamException if there is an error with the underlying XML
      */
     protected void handleXmlElement(Element el) throws XMLStreamException {
-        handleXmlElement(el, namespaces);
+        handleXmlElement(el, namespaces, true);
     }
 	
     /**
@@ -256,7 +256,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
      * @param parentNamespaces declared namespaces from which to resolve local namespace prefixes
      * @throws XMLStreamException if there is an error with the underlying XML
      */
-    private void handleXmlElement(Element el, Map<String, String> parentNamespaces) throws XMLStreamException {
+    private void handleXmlElement(Element el, Map<String, String> parentNamespaces, boolean writeNamespace) throws XMLStreamException {
         Map<String,String> namespaces = new HashMap<String, String>(parentNamespaces);
         String nsPrefix = el.getPrefix();
         if (StringUtils.isNotBlank(nsPrefix)) {
@@ -267,7 +267,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
                 nsURI = el.getNamespaceURI();
                 if (StringUtils.isNotBlank(nsURI)) {
                     // namespace not defined in parent/root document
-                     // add namespace to local namespace scope for children of this element to resolve
+                    // add namespace to local namespace scope for children of this element to resolve
                     namespaces.put(nsPrefix, nsURI);
                     writer.writeStartElement(nsPrefix, el.getName(), nsURI);
                     writer.writeNamespace(nsPrefix, nsURI);
@@ -277,7 +277,12 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
                 }
     		}
     	} else {
-    		writer.writeStartElement(el.getName());
+			String nsUri = el.getNamespaceURI();
+			if (writeNamespace && StringUtils.isNotBlank(nsUri)) {
+				writer.writeStartElement(el.getName());
+				writer.writeDefaultNamespace(nsUri);
+			} else
+    			writer.writeStartElement(el.getName());
     	}
     	for(Map.Entry<String, String> attr : el.getAttributes().entrySet()) {
     		String key = attr.getKey();
@@ -295,7 +300,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     		}
     	}
     	for(Element child : el.getChildren()) {
-    		handleXmlElement(child, namespaces);
+    		handleXmlElement(child, namespaces, false);
     	}
     	if (StringUtils.isNotBlank(el.getText())) {
     		writer.writeCharacters(el.getText());
