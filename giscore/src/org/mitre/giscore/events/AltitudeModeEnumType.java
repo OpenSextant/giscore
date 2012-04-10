@@ -19,8 +19,8 @@ public enum AltitudeModeEnumType {
     clampToGround, // default
     relativeToGround,
     absolute,
-	clampToSeaFloor,
-	relativeToSeaFloor;
+	clampToSeaFloor, 	// gx extension
+	relativeToSeaFloor; // gx extension
 
     private static final Logger log = LoggerFactory.getLogger(AltitudeModeEnumType.class);
 
