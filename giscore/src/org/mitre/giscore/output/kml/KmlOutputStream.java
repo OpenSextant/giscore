@@ -88,7 +88,7 @@ import java.util.Queue;
  * <li> Partial support for PhotoOverlay. Omits ViewVolume, ImagePyramid, and shape properties.
  * <li> Warns if shared styles appear in Folders. According to OGC KML specification
  *  shared styles shall only appear within a Document [OGC 07-147r2 section 6.4].
- *  </ul>
+ * </ul>
  *
  * @author J.Mathews
  * @author DRAND
@@ -591,9 +591,23 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	}
 
 	private void handleExtendedData(Row feature) throws XMLStreamException {
+		/*
+		  <element name="ExtendedData" type="kml:ExtendedDataType"/>
+			  <complexType name="ExtendedDataType" final="#all">
+				<sequence>
+				  <element ref="kml:Data" minOccurs="0" maxOccurs="unbounded"/>
+				  <element ref="kml:SchemaData" minOccurs="0" maxOccurs="unbounded"/>
+				  <any namespace="##other" processContents="lax" minOccurs="0"
+					maxOccurs="unbounded"/>
+				</sequence>
+			  </complexType>
+		 */
         if (feature.hasExtendedData()) {
             URI schema = feature.getSchema();
             writer.writeStartElement(EXTENDED_DATA);
+			// TODO: ExtendedData can contain unbounded # of Data, SchemaData, and non-KML namespace children
+			// For now only supporting either a single set of Data or SchemaData elements followed
+			// by any number of/ extended arbitrary extended elements.
             if (schema == null) {
                 for (SimpleField field : feature.getFields()) {
                     Object value = feature.getData(field);
@@ -620,6 +634,17 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 }
                 writer.writeEndElement();
             }
+			// handle arbitrary XML non-KML namespace elements
+			for (Element e: feature.getExtendedElements()) {
+				final Namespace namespace = e.getNamespace();
+				final String namespaceURI = namespace.getURI();
+				if (namespaceURI.isEmpty() || KML_NS.equals(namespaceURI)) {
+					log.warn("ExtendedData must have explicit non-kml namespace: " + namespace);
+					writeAsComment(e);
+				} else {
+					handleXmlElement(e);
+				}
+			}
             writer.writeEndElement();
         }
     }
@@ -902,7 +927,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 						// example: http://www.gigapan.org/get_ge_tile/46074/$[level]/$[y]/$[x]
 						// gets escaped as such: http://www.gigapan.org/get_ge_tile/46074/$%5Blevel%5D/$%5By%5D/$%5Bx%5D
 						try {
-							val = URLDecoder.decode(val, "UTF-8");
+							val = URLDecoder.decode(val, "UTF-8").replace(" ", "%20");
 						} catch (IllegalArgumentException e) {
 							log.warn("Failed to decode Icon URL", e);
 						} catch (UnsupportedEncodingException e) {
