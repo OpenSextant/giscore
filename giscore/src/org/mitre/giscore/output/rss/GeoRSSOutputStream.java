@@ -598,7 +598,7 @@ public class GeoRSSOutputStream extends XmlOutputStreamBase implements IRss {
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
             // use feature startTime or endTime as pubDate ??
             // for now requires explicit pubDate extended data field
-            if (feature.hasExtendedData()) {
+            if (feature.getFieldSize() != 0) {
 				for (Map.Entry<SimpleField, Object> entry : feature.getEntrySet()) {
 					Object value = entry.getValue();
 					if (value != null && !ObjectUtils.NULL.equals(value)) {
