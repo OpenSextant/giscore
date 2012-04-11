@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <!-- http://code.google.com/apis/kml/documentation/extendeddata.html -->
+    <Document>
+        <name>ExtendedData Test with DDMS resource record</name>
+        <Placemark>
+            <name>Test data</name>
+            <ExtendedData xmlns:ddms="http://metadata.dod.mil/mdr/ns/DDMS/1.4/">
+                <ddms:Resource xmlns:ICISM="urn:us:gov:ic:ism:v2">
+                    <ddms:identifier ddms:qualifier="URL" ddms:value="http://picard.mitre.org:8090/archives/analysis-cell-list/2007-05-13/0000000001.html"/>
+                    <ddms:title ICISM:classification="U" ICISM:ownerProducer="USA">Sample Title</ddms:title>
+                    <ddms:description ICISM:classification="U" ICISM:ownerProducer="USA">This is the description</ddms:description>
+                    <ddms:dates ddms:posted="2008-04-14T14:57:55.93Z"/>
+                    <ddms:creator ICISM:classification="U" ICISM:ownerProducer="USA">
+                        <ddms:Organization>
+                            <ddms:name>Reuters News Service</ddms:name>
+                        </ddms:Organization>
+                    </ddms:creator>
+                    <ddms:format>
+                        <ddms:Media>
+                            <ddms:mimeType>text/html</ddms:mimeType>
+                            <ddms:extent ddms:qualifier="sizeBytes" ddms:value="2048"/>
+                            <ddms:medium>digital</ddms:medium>
+                        </ddms:Media>
+                    </ddms:format>
+                    <ddms:subjectCoverage>
+                        <ddms:Subject>
+                            <ddms:category ddms:label="SIGACT"/>
+                        </ddms:Subject>
+                    </ddms:subjectCoverage>
+                    <ddms:temporalCoverage>
+                        <ddms:TimePeriod>
+                            <ddms:start>2005-01-01T11:45:00.0Z</ddms:start>
+                            <ddms:end>2007-12-31T00:00:00.0Z</ddms:end>
+                        </ddms:TimePeriod>
+                    </ddms:temporalCoverage>
+                    <ddms:geospatialCoverage>
+                        <ddms:GeospatialExtent>
+                            <ddms:boundingBox>
+                                <ddms:WestBL>-71.75711385319534</ddms:WestBL>
+                                <ddms:EastBL>-71.75710200987464</ddms:EastBL>
+                                <ddms:SouthBL>42.9530964932303</ddms:SouthBL>
+                                <ddms:NorthBL>42.95310578311102</ddms:NorthBL>
+                            </ddms:boundingBox>
+                        </ddms:GeospatialExtent>
+                    </ddms:geospatialCoverage>
+                    <ddms:security ICISM:classification="U" ICISM:ownerProducer="USA"/>
+                </ddms:Resource>
+            </ExtendedData>
+            <Point>
+                <coordinates>-71.7571,42.953</coordinates>
+            </Point>
+        </Placemark>
+    </Document>
+</kml>
