@@ -271,7 +271,8 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
         Map<String,String> namespaces = new HashMap<String, String>(parentNamespaces);
 		final Namespace namespace = el.getNamespace();
 		final String nsPrefix = namespace.getPrefix();
-        if (StringUtils.isNotBlank(nsPrefix)) {
+		boolean writeNamespaces = true;
+		if (StringUtils.isNotBlank(nsPrefix)) {
     		String nsURI = namespaces.get(nsPrefix);
     		if (StringUtils.isNotBlank(nsURI)) {
     			writer.writeStartElement(nsURI, el.getName());
@@ -285,7 +286,8 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
                     writer.writeNamespace(nsPrefix, nsURI);
                 } else {
                     log.warn("Unknown namespace prefix found " + nsPrefix);
-                    writeAsComment(el);                    
+                    writeAsComment(el);
+					writeNamespaces = false;
                 }
     		}
     	} else {
@@ -297,6 +299,16 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 				// nsUri has non-blank value not equal to parent element's namespace
 				writer.writeStartElement(el.getName());
 				writer.writeDefaultNamespace(nsUri);
+			}
+		}
+		if (writeNamespaces) {
+			for(Namespace ns : el.getNamespaces()) {
+				if (!namespace.equals(ns)) {
+					final String nsPrefix1 = ns.getPrefix();
+					writer.writeNamespace(nsPrefix1, ns.getURI());
+					if (!namespaces.containsKey(nsPrefix1))
+						namespaces.put(nsPrefix1, ns.getURI());
+				}
 			}
 		}
     	for(Map.Entry<String, String> attr : el.getAttributes().entrySet()) {

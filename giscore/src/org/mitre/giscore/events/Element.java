@@ -20,6 +20,7 @@ package org.mitre.giscore.events;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.Namespace;
 import org.mitre.giscore.utils.IDataSerializable;
@@ -29,6 +30,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +48,9 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 
 	@NonNull
     private transient Namespace namespace;
+
+	@CheckForNull
+	private List<Namespace> namespaces;
 
 	/**
 	 * The name of the element
@@ -171,6 +176,41 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
     @NonNull
 	public Map<String, String> getAttributes() {
 		return attributes;
+	}
+
+	/**
+	 * @return the namespaces
+	 */
+	@NonNull
+	public List<Namespace> getNamespaces() {
+		return namespaces == null ? Collections.<Namespace>emptyList() : namespaces;
+	}
+
+	/**
+	 * Add namespace. Verifies namespace prefix is unique in the list
+	 * as required in a XML context with the XML unique attribute constraint.
+	 * Duplicate prefixes are discarded and not added to the list.
+	 * URIs may be duplicates in the list but its prefix must be different.
+	 * @param aNamespace Namespace to add, never <tt>null</tt>
+	 * @return true if namespace was added or if already existed in the list,
+	 * otherwise <tt>false</tt> if not added because either argument was
+	 * <tt>null</tt> or its prefix conflicted with one having another URI.
+	 */
+	public boolean addNamespace(Namespace aNamespace) {
+		if (aNamespace == null) return false;
+		if (aNamespace.equals(namespace)) return true; // don't need to add the element's default namespace here
+		if (namespaces == null) {
+			namespaces = new ArrayList<Namespace>();
+		} else {
+			// check if namespace already present
+			final String targetPrefix = aNamespace.getPrefix();
+			for (Namespace ns : namespaces) {
+				if (targetPrefix.equals(ns.getPrefix()))
+					return aNamespace.equals(ns);
+			}
+		}
+		namespaces.add(aNamespace);
+		return true;
 	}
 
 	/**
@@ -309,15 +349,30 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
         children.clear();
         if (collection != null && !collection.isEmpty())
             children.addAll(collection);
+
+		count = in.readInt();
+		if (namespaces != null) namespaces.clear();
+		if (count == 0) namespaces = null;
+		else {
+			if (namespaces == null)
+				namespaces = new ArrayList<Namespace>(count);
+			for(int i = 0; i < count; i++) {
+				String prefix1 = in.readString();
+				String uri = in.readString();
+				if (StringUtils.isNotBlank(prefix1) && StringUtils.isNotBlank(uri)) {
+					namespaces.add(Namespace.getNamespace(prefix1, uri));
+				}
+			}
+		}
 	}
 
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
-        if (namespace.getURI().length() == 0)
-            out.writeString(null);
-        else {
-		    out.writeString(namespace.getPrefix());
-            out.writeString(namespace.getURI());
-        }
+		if (namespace.getURI().length() == 0)
+			out.writeString(null);
+		else {
+			out.writeString(namespace.getPrefix());
+			out.writeString(namespace.getURI());
+		}
 		out.writeString(name);
 		out.writeString(text);
 		out.writeInt(attributes.size());
@@ -326,6 +381,15 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 			out.writeString(entry.getValue());
 		}
 		out.writeObjectCollection(children);
+		if (namespaces == null || namespaces.isEmpty())
+			out.writeInt(0);
+		else {
+			out.writeInt(namespaces.size());
+			for(Namespace ns : namespaces) {
+				out.writeString(ns.getPrefix());
+				out.writeString(ns.getURI());
+			}
+		}
 	}
 
 }

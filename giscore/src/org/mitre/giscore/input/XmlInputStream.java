@@ -213,14 +213,25 @@ public abstract class XmlInputStream extends GISInputStreamBase {
             }
         }
 		@SuppressWarnings("unchecked")
+		Iterator<javax.xml.stream.events.Namespace> nsiter = se.getNamespaces();
+		while (nsiter.hasNext()) {
+			// add prefixed namespaces to the document list if not defined
+			javax.xml.stream.events.Namespace ns = nsiter.next();
+			final String prefix = ns.getPrefix();
+			if (StringUtils.isNotBlank(prefix)) {
+				el.addNamespace(Namespace.getNamespace(prefix, ns.getNamespaceURI()));
+			}
+		}
+		@SuppressWarnings("unchecked")
 		Iterator<Attribute> aiter = se.getAttributes();
 		while (aiter.hasNext()) {
 			Attribute attr = aiter.next();
 			String aname;
-			if (StringUtils.isBlank(attr.getName().getPrefix())) {
+			final String prefix = attr.getName().getPrefix();
+			if (StringUtils.isBlank(prefix)) {
 				aname = attr.getName().getLocalPart();
 			} else {
-				aname = attr.getName().getPrefix() + ":"
+				aname = prefix + ":"
 						+ attr.getName().getLocalPart();
 			}
 			el.getAttributes().put(aname, attr.getValue());
