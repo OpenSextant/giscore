@@ -194,7 +194,8 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
      * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	protected void handleCharacters(String outputString)
-			throws XMLStreamException {
+			throws XMLStreamException
+	{
 		boolean foundSpecial = false;
 		for (int i = 0; i < outputString.length(); i++) {
 			char ch = outputString.charAt(i);
@@ -243,28 +244,37 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 
     /**
      * Write an element
-     * @param el
+	 *
+     * @param el the element
+	 * @param parentNamespace namespace of parent element, null if root element or unknown
+	 *
      * @throws XMLStreamException if there is an error with the underlying XML
      */
-    protected void handleXmlElement(Element el) throws XMLStreamException {
-        handleXmlElement(el, namespaces, true);
+    protected void handleXmlElement(Element el, Namespace parentNamespace) throws XMLStreamException {
+        handleXmlElement(el, namespaces, parentNamespace);
     }
 	
     /**
      * Write an element
-     * @param el
-     * @param parentNamespaces declared namespaces from which to resolve local namespace prefixes
-     * @throws XMLStreamException if there is an error with the underlying XML
+     *
+	 * @param el the element
+	 * @param parentNamespaces declared namespaces from which to resolve local namespace prefixes
+	 * @param parentNamespace namespace of parent element, null if root element or unknown
+	 *
+	 * @throws XMLStreamException if there is an error with the underlying XML
      */
-    private void handleXmlElement(Element el, Map<String, String> parentNamespaces, boolean writeNamespace) throws XMLStreamException {
+    private void handleXmlElement(Element el, Map<String, String> parentNamespaces, Namespace parentNamespace)
+			throws XMLStreamException
+	{
         Map<String,String> namespaces = new HashMap<String, String>(parentNamespaces);
-        String nsPrefix = el.getPrefix();
+		final Namespace namespace = el.getNamespace();
+		final String nsPrefix = namespace.getPrefix();
         if (StringUtils.isNotBlank(nsPrefix)) {
     		String nsURI = namespaces.get(nsPrefix);
     		if (StringUtils.isNotBlank(nsURI)) {
     			writer.writeStartElement(nsURI, el.getName());
     		} else {
-                nsURI = el.getNamespaceURI();
+                nsURI = namespace.getURI();
                 if (StringUtils.isNotBlank(nsURI)) {
                     // namespace not defined in parent/root document
                     // add namespace to local namespace scope for children of this element to resolve
@@ -277,13 +287,16 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
                 }
     		}
     	} else {
-			String nsUri = el.getNamespaceURI();
-			if (writeNamespace && StringUtils.isNotBlank(nsUri)) {
+			String nsUri = namespace.getURI();
+			if (StringUtils.isBlank(nsUri) || (parentNamespace != null && nsUri.equals(parentNamespace.getURI()))) {
+				writer.writeStartElement(el.getName());
+			} else {
+				// otherwise write element with explicit default XML namespace
+				// nsUri has non-blank value not equal to parent element's namespace
 				writer.writeStartElement(el.getName());
 				writer.writeDefaultNamespace(nsUri);
-			} else
-    			writer.writeStartElement(el.getName());
-    	}
+			}
+		}
     	for(Map.Entry<String, String> attr : el.getAttributes().entrySet()) {
     		String key = attr.getKey();
     		String val = attr.getValue();
@@ -300,10 +313,11 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     		}
     	}
     	for(Element child : el.getChildren()) {
-    		handleXmlElement(child, namespaces, false);
+			handleXmlElement(child, namespaces, namespace);
     	}
-    	if (StringUtils.isNotBlank(el.getText())) {
-    		writer.writeCharacters(el.getText());
+		final String text = el.getText();
+		if (StringUtils.isNotBlank(text)) {
+    		writer.writeCharacters(text);
     	}
     	writer.writeEndElement();
 	}
@@ -324,14 +338,14 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 
     private void writeAsComment(Element el, StringBuilder sb, int level) throws XMLStreamException {
         if (level == 0)
-            sb.append("\n");
+            sb.append('\n');
         else
             for (int i=0; i < level; i++) {
                 sb.append("  "); // indent 2-spaces for each depth level
             }
         sb.append('<');
         if (StringUtils.isNotBlank(el.getPrefix())) {
-            sb.append(el.getPrefix()).append(":");
+            sb.append(el.getPrefix()).append(':');
         }
         sb.append(el.getName());
         // if namespace not declared in root element then declare it

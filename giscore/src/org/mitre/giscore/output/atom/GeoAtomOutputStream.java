@@ -62,6 +62,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 		IAtomConstants {
 	private static final SafeDateFormat fmt = new SafeDateFormat(
 			IKml.ISO_DATE_FMT);
+	private static final Namespace ATOM_NS = Namespace.getNamespace(ATOM_URI_NS);
 	private final DecimalFormat dfmt;
 
 	private final static Set<SimpleField> ms_builtinFields = new HashSet<SimpleField>(4);
@@ -193,7 +194,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 	@Override
 	public void visit(Element element) {
 		try {
-			handleXmlElement(element);
+			handleXmlElement(element, ATOM_NS);
 		} catch (XMLStreamException e) {
 			throw new RuntimeException(e);
 		}

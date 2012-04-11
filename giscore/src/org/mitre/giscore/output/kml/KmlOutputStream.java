@@ -98,6 +98,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 	private static final Logger log = LoggerFactory.getLogger(KmlOutputStream.class);
 	private static final boolean debug = log.isDebugEnabled();
 
+	private static final Namespace KML_NAMESPACE = Namespace.getNamespace(KML_NS, "kml");
     private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'";
     private transient SafeDateFormat dateFormatter;
 
@@ -590,6 +591,15 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 		}
 	}
 
+	/**
+	 * Write an element
+	 * @param el
+	 * @throws XMLStreamException if there is an error with the underlying XML
+	 */
+	protected void handleXmlElement(Element el) throws XMLStreamException {
+		handleXmlElement(el, KML_NAMESPACE);
+	}
+
 	private void handleExtendedData(Row feature) throws XMLStreamException {
 		/*
 		  <element name="ExtendedData" type="kml:ExtendedDataType"/>
@@ -635,14 +645,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 writer.writeEndElement();
             }
 			// handle arbitrary XML non-KML namespace elements
-			for (Element e: feature.getExtendedElements()) {
+			for (Element e : feature.getExtendedElements()) {
 				final Namespace namespace = e.getNamespace();
 				final String namespaceURI = namespace.getURI();
 				if (namespaceURI.isEmpty() || KML_NS.equals(namespaceURI)) {
 					log.warn("ExtendedData must have explicit non-kml namespace: " + namespace);
 					writeAsComment(e);
 				} else {
-					handleXmlElement(e);
+					handleXmlElement(e, Namespace.getNamespace(KML_NS));
 				}
 			}
             writer.writeEndElement();
