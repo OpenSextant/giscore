@@ -593,7 +593,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
 	/**
 	 * Write an element
-	 * @param el
+	 * @param el the element, never null
 	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	protected void handleXmlElement(Element el) throws XMLStreamException {

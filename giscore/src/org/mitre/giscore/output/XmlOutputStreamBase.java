@@ -245,12 +245,14 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     /**
      * Write an element
 	 *
-     * @param el the element
+     * @param el the element, never null
 	 * @param parentNamespace namespace of parent element, null if root element or unknown
 	 *
      * @throws XMLStreamException if there is an error with the underlying XML
      */
-    protected void handleXmlElement(Element el, Namespace parentNamespace) throws XMLStreamException {
+    protected void handleXmlElement(Element el, Namespace parentNamespace)
+			throws XMLStreamException
+	{
         handleXmlElement(el, namespaces, parentNamespace);
     }
 	
