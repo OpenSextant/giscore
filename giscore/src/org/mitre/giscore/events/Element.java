@@ -197,15 +197,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		final String targetPrefix = aNamespace.getPrefix();
 		if (targetPrefix.isEmpty()) return false; // must have explicit prefix
 		if (aNamespace.equals(namespace)) return true; // don't need to add the element's default namespace here
-		if (namespaces == null) {
-			namespaces = new LinkedHashSet<Namespace>();
-		} else {
-			// check if namespace and/or its prefix is already present
-			for (Namespace ns : namespaces) {
-				if (targetPrefix.equals(ns.getPrefix()))
-					return aNamespace.equals(ns);
-			}
-		}
+		if (namespaces == null) namespaces = new NamespaceSet();
 		return namespaces.add(aNamespace);
 	}
 
@@ -352,7 +344,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		if (count == 0) namespaces = null;
 		else {
 			if (namespaces == null)
-				namespaces = new LinkedHashSet<Namespace>(count);
+				namespaces = new NamespaceSet(count);
 			for(int i = 0; i < count; i++) {
 				String prefix1 = in.readString();
 				String uri = in.readString();
@@ -364,7 +356,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	}
 
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
-		if (namespace.getURI().length() == 0)
+		if (namespace == Namespace.NO_NAMESPACE)
 			out.writeString(null);
 		else {
 			out.writeString(namespace.getPrefix());
@@ -386,6 +378,44 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 				out.writeString(ns.getPrefix());
 				out.writeString(ns.getURI());
 			}
+		}
+	}
+
+	private final static class NamespaceSet extends LinkedHashSet<Namespace> {
+
+		private static final long serialVersionUID = -1L;
+
+		/**
+		 * Constructs a new, empty set with the default initial capacity
+		 */
+		public NamespaceSet() {
+			// default constructor
+		}
+
+		public NamespaceSet(int initialCapacity) {
+			super(initialCapacity);
+		}
+
+		/**
+		 * Adds namespace to set. Enforces that only namespaces with non-empty
+		 * and unique prefixes are added. If attempt to add two namespaces with
+		 * different URIs but same prefix will ignore the second namespace.
+		 *
+		 * @param ns Namespace to add, ignored if null
+		 * @return <tt>true</tt> if this set did not already contain the specified
+		 * element
+		 */
+		public boolean add(Namespace ns) {
+			if (ns == null || ns.getPrefix().isEmpty()) return false;
+			final String targetPrefix = ns.getPrefix();
+			Iterator<Namespace> it = iterator();
+			while (it.hasNext()) {
+				// check if namespace and/or its prefix is already present
+				Namespace namespace = it.next();
+				if (targetPrefix.equals(namespace.getPrefix()))
+					return ns.equals(namespace);
+			}
+			return super.add(ns);
 		}
 	}
 
