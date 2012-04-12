@@ -160,6 +160,10 @@ public abstract class Overlay extends Feature {
 		Overlay other = (Overlay) tf;
 		EqualsBuilder eb = new EqualsBuilder();
 
+		// Note: icon.href may get normalized/escaped making it fail equality test
+		// (e.g. http://chart.google.com/chart?text=Hello%20Word) gets normalized
+		// differently in KmlOutputStream.handleLinkElement().
+
         return eb.append(color, other.color).append(drawOrder, other.drawOrder)
                 .append(icon, other.icon).isEquals();
 	}
