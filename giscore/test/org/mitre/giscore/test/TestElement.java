@@ -37,6 +37,8 @@ public class TestElement {
 		Element child2 = new Element();
 		child2.setName("c");
 		child2.setText("hello");
+		child2.getAttributes().put("name", "value");
+		child2.getAttributes().put("foo", "bar");
 		e.getChildren().add(child2);
 
 		Element e2 = new Element(Namespace.NO_NAMESPACE, "result");
@@ -54,8 +56,20 @@ public class TestElement {
 		Element e2 = new Element(atomNs, "link");
 		assertFalse(e1.equals(e2));
 		assertFalse(e2.equals(e1));
+
+		e1.setName("link");
+		assertEquals(e1, e2);
+		e1.getAttributes().put("name", "value");
+		assertFalse(e1.equals(e2));
+
 		assertFalse(e1.equals(""));
 		assertFalse(e1.equals(null));
+
+		e1 = new Element(atomNs, "author");
+		e1.setText("text1");
+		e2 = new Element(atomNs, "author");
+		e2.setText("text2");
+		assertFalse(e1.equals(e2));
 	}
 
 	@Test
