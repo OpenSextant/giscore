@@ -2,6 +2,7 @@ package org.mitre.giscore.test;
 
 import org.junit.Test;
 import org.mitre.giscore.Namespace;
+
 import org.mitre.giscore.events.Element;
 import org.mitre.giscore.output.atom.IAtomConstants;
 
@@ -14,15 +15,62 @@ import static org.junit.Assert.assertEquals;
  */
 public class TestElement {
 
+	final static Namespace atomNs = Namespace.getNamespace("atom", IAtomConstants.ATOM_URI_NS);
+
 	@Test
 	public void testElement() throws Exception {
-		Namespace atomNs = Namespace.getNamespace("atom", IAtomConstants.ATOM_URI_NS);
 		Element author = new Element(atomNs, "author");
 		assertEquals(atomNs, author.getNamespace());
 		Element name = new Element(atomNs, "name");
 		name.setText("the Author");
 		author.getChildren().add(name);
 		assertEquals(1, author.getChildren().size());
+	}
+
+	@Test
+	public void testEquals() {
+		Element e = new Element();
+		e.setName("result");
+		Element child = new Element();
+		child.setName("child");
+		e.getChildren().add(child);
+		Element child2 = new Element();
+		child2.setName("c");
+		child2.setText("hello");
+		e.getChildren().add(child2);
+
+		Element e2 = new Element(Namespace.NO_NAMESPACE, "result");
+		e2.getChildren().add(new Element(Namespace.NO_NAMESPACE, "child"));
+		assertFalse(e.equals(e2));
+		e2.getChildren().add(child2);
+
+		assertEquals(e, e2);
+		assertEquals(e.hashCode(), e2.hashCode());
+	}
+
+	@Test
+	public void testNotEquals() {
+		Element e1 = new Element(atomNs, "author");
+		Element e2 = new Element(atomNs, "link");
+		assertFalse(e1.equals(e2));
+		assertFalse(e2.equals(e1));
+		assertFalse(e1.equals(""));
+		assertFalse(e1.equals(null));
+	}
+
+	@Test
+	public void testGetChild() {
+		Element e = new Element();
+		e.setName("result");
+		Element child = new Element();
+		child.setName("child");
+		e.getChildren().add(child);
+
+		assertEquals(child, e.getChild("child"));
+		assertEquals(child, e.getChild("child", Namespace.NO_NAMESPACE));
+
+		assertNull(e.getChild(null));
+		assertNull(e.getChild("notfound"));
 	}
 
 	@Test
