@@ -21,7 +21,6 @@ package org.mitre.giscore.test.utils;
 import java.awt.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
@@ -169,8 +168,11 @@ public class TestObjectDataSerialization {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(256);
 		SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
 		Namespace atomNs = Namespace.getNamespace("atom", IAtomConstants.ATOM_URI_NS);
+		Namespace geoNs = Namespace.getNamespace("geo", "http://a9.com/-/opensearch/extensions/geo/1.0/");
 
 		Element author = new Element(atomNs, "author");
+		author.addNamespace(geoNs); // declare additional namespaces on the element
+		author.getAttributes().put("geo:point", "45.256 -71.92");
 		Element name = new Element(atomNs, "name");
 		name.setText("the Author");
 		author.getChildren().add(name);
@@ -187,6 +189,7 @@ public class TestObjectDataSerialization {
 		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
 		Element e2 = (Element) sois.readObject();
 		assertEquals(author, e2);
+		assertEquals(1, e2.getNamespaces().size());
 
 		e2 = (Element) sois.readObject();
 		assertEquals(link, e2);
