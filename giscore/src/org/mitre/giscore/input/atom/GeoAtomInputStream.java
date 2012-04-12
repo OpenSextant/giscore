@@ -106,6 +106,7 @@ public class GeoAtomInputStream extends XmlInputStream {
 					.getNamespaceURI())) {
 
 			}
+			@SuppressWarnings("unchecked")
 			Iterator<Namespace> niter = el.getNamespaces();
 			while (niter.hasNext()) {
 				Namespace n = niter.next();
