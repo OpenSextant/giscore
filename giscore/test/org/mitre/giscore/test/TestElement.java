@@ -34,7 +34,7 @@ public class TestElement {
 		Element el = new Element(ns, "results");
 		assertTrue(el.getNamespaces().isEmpty());
 
-		assertFalse(el.addNamespace(ns));
+		assertTrue(el.addNamespace(ns));
 		assertFalse(el.addNamespace(null));
 		assertFalse(el.addNamespace(Namespace.NO_NAMESPACE));
 		assertTrue(el.getNamespaces().isEmpty());
