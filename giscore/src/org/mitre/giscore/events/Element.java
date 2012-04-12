@@ -29,11 +29,7 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * An element represents an XML element found in an XML type document such
@@ -50,7 +46,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
     private transient Namespace namespace;
 
 	@CheckForNull
-	private List<Namespace> namespaces;
+	private Set<Namespace> namespaces;
 
 	/**
 	 * The name of the element
@@ -182,8 +178,8 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	 * @return the namespaces
 	 */
 	@NonNull
-	public List<Namespace> getNamespaces() {
-		return namespaces == null ? Collections.<Namespace>emptyList() : namespaces;
+	public Set<Namespace> getNamespaces() {
+		return namespaces == null ? Collections.<Namespace>emptySet() : namespaces;
 	}
 
 	/**
@@ -198,19 +194,19 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	 */
 	public boolean addNamespace(Namespace aNamespace) {
 		if (aNamespace == null) return false;
+		final String targetPrefix = aNamespace.getPrefix();
+		if (targetPrefix.isEmpty()) return false; // must have explicit prefix
 		if (aNamespace.equals(namespace)) return true; // don't need to add the element's default namespace here
 		if (namespaces == null) {
-			namespaces = new ArrayList<Namespace>();
+			namespaces = new LinkedHashSet<Namespace>();
 		} else {
-			// check if namespace already present
-			final String targetPrefix = aNamespace.getPrefix();
+			// check if namespace and/or its prefix is already present
 			for (Namespace ns : namespaces) {
 				if (targetPrefix.equals(ns.getPrefix()))
 					return aNamespace.equals(ns);
 			}
 		}
-		namespaces.add(aNamespace);
-		return true;
+		return namespaces.add(aNamespace);
 	}
 
 	/**
@@ -345,6 +341,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 			String val = in.readString();
 			attributes.put(attr, val);
 		}
+		@SuppressWarnings("unchecked")
         List<Element> collection = (List<Element>) in.readObjectCollection();
         children.clear();
         if (collection != null && !collection.isEmpty())
@@ -355,7 +352,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 		if (count == 0) namespaces = null;
 		else {
 			if (namespaces == null)
-				namespaces = new ArrayList<Namespace>(count);
+				namespaces = new LinkedHashSet<Namespace>(count);
 			for(int i = 0; i < count; i++) {
 				String prefix1 = in.readString();
 				String uri = in.readString();
