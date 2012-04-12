@@ -34,6 +34,11 @@ public class TestElement {
 		Element el = new Element(ns, "results");
 		assertTrue(el.getNamespaces().isEmpty());
 
+		assertFalse(el.addNamespace(ns));
+		assertFalse(el.addNamespace(null));
+		assertFalse(el.addNamespace(Namespace.NO_NAMESPACE));
+		assertTrue(el.getNamespaces().isEmpty());
+
 		// declare additional namespaces on the element
 		assertTrue(el.addNamespace(geoNs));
 		assertEquals(1, el.getNamespaces().size());
