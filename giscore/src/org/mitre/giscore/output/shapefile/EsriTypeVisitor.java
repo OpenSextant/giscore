@@ -30,6 +30,7 @@ import org.mitre.giscore.output.StreamVisitorBase;
 
 /**
  * Determine the type from the geometry. Ignore the non-geometry objects.
+ * See http://www.esri.com/library/whitepapers/pdfs/shapefile.pdf
  * 
  * @author DRAND
  */
@@ -45,41 +46,41 @@ public class EsriTypeVisitor extends StreamVisitorBase {
 
 	@Override
 	public void visit(Line line) {
-		type = line.is3D() ? 13 : 3; 
+		type = line.is3D() ? 13 : 3; // PolyLineZ, PolyLine
 	}
 
 	@Override
 	public void visit(LinearRing ring) {
-		type = ring.is3D() ? 15 : 5;
+		type = ring.is3D() ? 15 : 5; // PolygonZ, Polygon
 	}
 
 	@Override
 	public void visit(MultiLine multiLine) {
-		type = multiLine.is3D() ? 13 : 3;
+		type = multiLine.is3D() ? 13 : 3; // PolyLineZ, PolyLine
 	}
 
 	@Override
 	public void visit(MultiLinearRings rings) {
-		type = rings.is3D() ? 15 : 5;
+		type = rings.is3D() ? 15 : 5; // PolygonZ, Polygon
 	}
 
 	@Override
 	public void visit(MultiPoint multiPoint) {
-		type = multiPoint.is3D() ? 18 : 8;
+		type = multiPoint.is3D() ? 18 : 8; // MultiPointZ, MultiPoint
 	}
 
 	@Override
 	public void visit(MultiPolygons polygons) {
-		type = polygons.is3D() ? 15 : 5;
+		type = polygons.is3D() ? 15 : 5; // PolygonZ, Polygon
 	}
 
 	@Override
 	public void visit(Point point) {
-		type = point.is3D() ? 11 : 1; 
+		type = point.is3D() ? 11 : 1; // PointZ, Point
 	}
 
 	@Override
 	public void visit(Polygon polygon) {
-		type = polygon.is3D() ? 15 : 5;
+		type = polygon.is3D() ? 15 : 5; // PolygonZ, Polygon
 	}
 }
