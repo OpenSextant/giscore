@@ -49,9 +49,8 @@ import java.io.IOException;
  * <p/>
  * <h4>Notes/Limitations:</h4>
  * <p/>
- * TODO: {@code ListStyle} supported except for ItemIcon
- * <br>
- * Some less common tags (e.g. hotSpot in IconStyle) are not preserved.
+ * Some less common tags (e.g. hotSpot in IconStyle and
+ * ItemIcon in ListStyle) are not currently supported.
  *
  * @author DRAND
  * @author J.Mathews
@@ -110,6 +109,53 @@ public class Style extends StyleSelector {
 	 */
 	public Style(String id) {
 		setId(id);
+	}
+
+	/**
+	 * Copy constructor creates new style as a copy from another style.
+	 * If source style has a style id then you must explicitly assign a new
+	 * unique id to this style otherwise will have two styles with the same id.
+	 * @param aStyle Source style
+	 */
+	public Style(Style aStyle) {
+		if (aStyle != null) {
+			setId(aStyle.getId());
+			if (aStyle.hasIconStyle()) {
+				hasIconStyle = true;
+				iconColor = aStyle.iconColor;
+				iconScale = aStyle.iconScale;
+				iconHeading = aStyle.iconHeading;
+				iconUrl = aStyle.iconUrl;
+			}
+			if (aStyle.hasLineStyle()) {
+				hasLineStyle = true;
+				lineColor = aStyle.lineColor;
+				lineWidth = aStyle.lineWidth;
+			}
+			if (aStyle.hasListStyle()) {
+				hasListStyle = true;
+				listBgColor = aStyle.listBgColor;
+				listItemType = aStyle.listItemType;
+			}
+			if (aStyle.hasBalloonStyle()) {
+				hasBalloonStyle = true;
+				balloonBgColor = aStyle.balloonBgColor;
+				balloonTextColor = aStyle.balloonTextColor;
+				balloonText = aStyle.balloonText;
+				balloonDisplayMode = aStyle.balloonDisplayMode;
+			}
+			if (aStyle.hasLabelStyle()) {
+				hasLabelStyle = true;
+				labelColor = aStyle.labelColor;
+				labelScale = aStyle.labelScale;
+			}
+			if (aStyle.hasPolyStyle()) {
+				hasPolyStyle = true;
+				polyColor = aStyle.polyColor;
+				polyfill = aStyle.polyfill;
+				polyoutline = aStyle.polyoutline;
+			}
+		}
 	}
 
 	/**
