@@ -82,6 +82,9 @@ import org.slf4j.LoggerFactory;
  * <p>
  * The shapefile code is inspired by the old mediate code.
  * <code>ShpHandler</code>
+ * <P>
+ * Note does not support output of geometry bags to a shapefile in which case
+ * it will throw an <em>IllegalStateException</em>.
  *
  * @author DRAND
  * @author Paul Silvey for the original Mediate
@@ -417,7 +420,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
                         } else if (shape != shapeAll)
                             throw new IllegalArgumentException(
                                     "Feature list must contain"
-                                            + " geometry objects of same type");
+                                            + " geometry objects of same type: expected "
+											+ shapeAll + " but was " + shape);
                     }
                     if (bbox == null) {
                         bbox = geo.getBoundingBox(); // 3d or not depending on the
