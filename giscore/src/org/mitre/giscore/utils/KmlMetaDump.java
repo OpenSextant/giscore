@@ -1241,6 +1241,8 @@ public class KmlMetaDump implements IKml {
 				for (SimpleField sf : f.getFields()) {
 					simpleFieldSet.add(sf.getName());
 				}
+			// TODO: check external namespace elements?
+			// if (!f.getExtendedElements().isEmpty())...
 		}
 
 		TaggedMap viewGroup = f.getViewGroup();
@@ -1249,12 +1251,12 @@ public class KmlMetaDump implements IKml {
 			if (IKml.LOOK_AT.equals(tag)) {
 				addTag(tag); // LookAt
 				/*
-									ATC 38: LookAt
-									(1) if it is not a descendant of kml:Update, it contains all of the following child elements:
-										kml:longitude, kml:latitude, and kml:range;
-									(2) 0 <= kml:tilt <= 90;
-									(3) if kml:altitudeMode does not have the value "clampToGround", then the kml:altitude element is present
-								*/
+					ATC 38: LookAt
+					(1) if it is not a descendant of kml:Update, it contains all of the following child elements:
+						kml:longitude, kml:latitude, and kml:range;
+					(2) 0 <= kml:tilt <= 90;
+					(3) if kml:altitudeMode does not have the value "clampToGround", then the kml:altitude element is present
+				*/
 				try {
 					double tilt = handleTaggedElement(IKml.TILT, viewGroup, 0, 180);
 					if (tilt < 0 || tilt > 90) {
@@ -1275,13 +1277,13 @@ public class KmlMetaDump implements IKml {
 			} else if (IKml.CAMERA.equals(tag)) {
 				addTag(tag); // Camera
 				/*
-									ATC 54: Camera
-									(1) if it is not a descendant of kml:Update, then the following child elements are present:
-										kml:latitude, kml:longitude, and kml:altitude;
-									(2) the value of kml:altitudeMode is not "clampToGround".
+					ATC 54: Camera
+					(1) if it is not a descendant of kml:Update, then the following child elements are present:
+						kml:latitude, kml:longitude, and kml:altitude;
+					(2) the value of kml:altitudeMode is not "clampToGround".
 
-									Reference: OGC-07-147r2: cl. 14.2.2
-								*/
+					Reference: OGC-07-147r2: cl. 14.2.2
+				*/
 				if (CLAMP_TO_GROUND.equals(viewGroup.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND))) {
 					// (2) the value of kml:altitudeMode is not "clampToGround".
 					addTag(":Camera altitudeMode cannot be " + CLAMP_TO_GROUND + " [ATC 54.2]", true); // warning
