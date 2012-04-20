@@ -371,3 +371,42 @@ UrlRef
 
 ------------------------------------------------------------------------------
 
+Release 0.7.0
+
+This release adds support for a new data format: OGC Well-known text (WKT).
+Fixed minor bugs along with additional support and improvements to KML handling.
+Few minor API changes as cleanup.
+
+-Added new WKTInputStream and WKTOutputStream classes.
+
+-Added support for address and phoneNumber in KmlInputStream and KmlOutputStream
+
+-Added support for non-KML namespace elements in ExtendedData
+
+-Correctly handle namespace declarations in XML elements
+
+-Change XmlOutputStreamBase.formatDouble(double d) from static to instance method
+ change formatting from Double.toString() with DecimalFormater instance
+ as used by KmlOutputStream. Now rounds-off at 10 decimal places to eliminate
+ round-off errors.
+ 
+Common
+-added setRegion(Geodetic2DBounds bbox)
+
+KmlInputStream
+-Minor fix to allow whitespace before/after listItemType values
+
+KmlMetadataDump
+-change containers from Stack to LinkedList so can search from newest to oldest ancestor for inheritance
+
+KmlOutputStream
+-updated handleExtendedData() to handle arbitrary XML extended elements
+-fix handleLinkElement() to encode whitespace as %20 in URLs
+
+Style
+-Added copy constructor
+
+UrlRef
+-Updated getInputStream() to retry failed KMZ as KML in case content is mis-categorized
+
+------------------------------------------------------------------------------
