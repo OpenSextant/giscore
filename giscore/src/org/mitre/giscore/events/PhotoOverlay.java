@@ -69,7 +69,7 @@ public class PhotoOverlay extends Overlay {
 	/**
      * Adjusts how the photo is placed inside the field of view. This element
      * is useful if your photo has been rotated and deviates slightly from a
-     * desired horizontal view. Values can be ±180. The default is 0 (north).
+     * desired horizontal view. Values can be +/- 180. The default is 0 (north).
      *
      * @param rotationAngle angle of rotation
      * @throws IllegalArgumentException if rotation angle is out of range [-180,+180]
