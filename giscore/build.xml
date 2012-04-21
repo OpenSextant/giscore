@@ -6,7 +6,7 @@
 
 	<!-- Remove and reinstate ivy:buildnumber should that ever start working again -->
 	<property name="previous.revision" value="0.6.4" />
-	<property name="ivy.new.revision" value="0.6.5" />
+	<property name="ivy.new.revision" value="0.7.0" />
 	
 	<property name="proxy.host" value="gatekeeper.mitre.org" />
 	<property name="proxy.port" value="80" />
@@ -132,7 +132,7 @@ test.classpath=${build.classes};${netbeans-classpath.test}
 	</target>
 
 	<target name="compile" depends="resolve">
-		<javac source="1.5" target="1.5" classpathref="project.classpath" srcdir="${src}"
+		<javac source="1.6" target="1.6" classpathref="project.classpath" srcdir="${src}"
 			destdir="${build.classes}"
 			includeantruntime="false"
 			debug="true"/>
@@ -140,7 +140,7 @@ test.classpath=${build.classes};${netbeans-classpath.test}
 
 	<target name="compileTests" depends="compile">
 		<mkdir dir="${test.classes}" />
-		<javac source="1.5" target="1.5" srcdir="${basedir}/test"
+		<javac source="1.6" target="1.6" srcdir="${basedir}/test"
 			debug="true"
 			includeantruntime="false"
 			destdir="${test.classes}">
@@ -170,7 +170,7 @@ test.classpath=${build.classes};${netbeans-classpath.test}
 		        bundlesymbolicname="org.mitre.giscore"
 		        bundleVersion="${ivy.new.revision}"
 		        activator="none"
-		        standardJVMPackages="1.5"
+		        standardJVMPackages="1.6"
 		        bundleVendor="The MITRE Corp."
 		        contactAddress="202 Burlington Road, Bedford, MA 01730-1420"
 		        autoGenerateUses="true">
