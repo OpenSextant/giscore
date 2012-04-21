@@ -115,11 +115,19 @@ public class Style extends StyleSelector {
 	 * Copy constructor creates new style as a copy from another style.
 	 * If source style has a style id then you must explicitly assign a new
 	 * unique id to this style otherwise will have two styles with the same id.
+	 *
 	 * @param aStyle Source style
 	 */
 	public Style(Style aStyle) {
 		if (aStyle != null) {
 			setId(aStyle.getId());
+			if (aStyle.hasBalloonStyle()) {
+				hasBalloonStyle = true;
+				balloonBgColor = aStyle.balloonBgColor;
+				balloonTextColor = aStyle.balloonTextColor;
+				balloonText = aStyle.balloonText;
+				balloonDisplayMode = aStyle.balloonDisplayMode;
+			}
 			if (aStyle.hasIconStyle()) {
 				hasIconStyle = true;
 				iconColor = aStyle.iconColor;
@@ -137,13 +145,6 @@ public class Style extends StyleSelector {
 				listBgColor = aStyle.listBgColor;
 				listItemType = aStyle.listItemType;
 			}
-			if (aStyle.hasBalloonStyle()) {
-				hasBalloonStyle = true;
-				balloonBgColor = aStyle.balloonBgColor;
-				balloonTextColor = aStyle.balloonTextColor;
-				balloonText = aStyle.balloonText;
-				balloonDisplayMode = aStyle.balloonDisplayMode;
-			}
 			if (aStyle.hasLabelStyle()) {
 				hasLabelStyle = true;
 				labelColor = aStyle.labelColor;
@@ -154,6 +155,71 @@ public class Style extends StyleSelector {
 				polyColor = aStyle.polyColor;
 				polyfill = aStyle.polyfill;
 				polyoutline = aStyle.polyoutline;
+			}
+		}
+	}
+
+	/**
+	 * Merge style into this style. This copies all non-null properties
+	 * onto this style excluding its id. Null or empty properties in target
+	 * style will be ignored. This can for example merge an inline style
+	 * over a shared style.
+	 *
+	 * @param aStyle Source style
+	 */
+	public void merge(Style aStyle) {
+		if (aStyle != null) {
+			if (aStyle.hasBalloonStyle()) {
+				hasBalloonStyle = true;
+				if (aStyle.balloonBgColor != null)
+					balloonBgColor = aStyle.balloonBgColor;
+				if (aStyle.balloonTextColor != null)
+					balloonTextColor = aStyle.balloonTextColor;
+				if (aStyle.balloonText != null)
+					balloonText = aStyle.balloonText;
+				if (aStyle.balloonDisplayMode != null)
+					balloonDisplayMode = aStyle.balloonDisplayMode;
+			}
+			if (aStyle.hasIconStyle()) {
+				hasIconStyle = true;
+				if (aStyle.iconColor != null)
+					iconColor = aStyle.iconColor;
+				if (aStyle.iconScale != null)
+					iconScale = aStyle.iconScale;
+				if (aStyle.iconHeading != null)
+					iconHeading = aStyle.iconHeading;
+				if (aStyle.iconUrl != null)
+					iconUrl = aStyle.iconUrl;
+			}
+			if (aStyle.hasLabelStyle()) {
+				hasLabelStyle = true;
+				if (aStyle.labelColor != null)
+					labelColor = aStyle.labelColor;
+				if (aStyle.labelScale != null)
+					labelScale = aStyle.labelScale;
+			}
+			if (aStyle.hasLineStyle()) {
+				hasLineStyle = true;
+				if (aStyle.lineColor != null)
+					lineColor = aStyle.lineColor;
+				if (aStyle.lineWidth != null)
+					lineWidth = aStyle.lineWidth;
+			}
+			if (aStyle.hasListStyle()) {
+				hasListStyle = true;
+				if (aStyle.listBgColor != null)
+					listBgColor = aStyle.listBgColor;
+				if (aStyle.listItemType != null)
+					listItemType = aStyle.listItemType;
+			}
+			if (aStyle.hasPolyStyle()) {
+				hasPolyStyle = true;
+				if (aStyle.polyColor != null)
+					polyColor = aStyle.polyColor;
+				if (aStyle.polyfill != null)
+					polyfill = aStyle.polyfill;
+				if (aStyle.polyoutline != null)
+					polyoutline = aStyle.polyoutline;
 			}
 		}
 	}
@@ -236,7 +302,7 @@ public class Style extends StyleSelector {
 	 * @param scale   the scale of the icon, nullable (1.0=normal size of icon, 2.0=twice normal size, etc.)
 	 * @param heading heading (i.e. icon rotation) in degrees. Default=0 (North).
 	 *                Values range from 0 to 360 degrees, nullable.
-	 * @param url	 the url of the icon, nullable. If url is blank or empty string
+	 * @param url     the url of the icon, nullable. If url is blank or empty string
 	 *                then an empty <Icon/> element would appear in corresponding KML output.
 	 *                If {@code null} then no <Icon> will appear in IconStyle (using default icon).
 	 * @see org.mitre.giscore.output.kml.KmlOutputStream#handleIconStyleElement(Style)
@@ -300,18 +366,18 @@ public class Style extends StyleSelector {
 	 *         All 3 of these cases are handled the same in Google Earth which suppresses
 	 *         showing an icon.
 	 *         <pre>
-	 *         1. &lt;IconStyle&gt;
-	 *         &lt;Icon/&gt;
-	 *         &lt;/IconStyle&gt;
+	 *                 1. &lt;IconStyle&gt;
+	 *                 &lt;Icon/&gt;
+	 *                 &lt;/IconStyle&gt;
 	 *
-	 *         2. &lt;Icon&gt;
-	 *         &lt;href/&gt;
-	 *         &lt;/Icon&gt;
+	 *                 2. &lt;Icon&gt;
+	 *                 &lt;href/&gt;
+	 *                 &lt;/Icon&gt;
 	 *
-	 *         3. &lt;Icon&gt;
-	 *         &lt;href&gt;&lt;/href&gt;
-	 *         &lt;/Icon&gt;
-	 *              </pre>
+	 *                 3. &lt;Icon&gt;
+	 *                 &lt;href&gt;&lt;/href&gt;
+	 *                 &lt;/Icon&gt;
+	 *                      </pre>
 	 */
 	@CheckForNull
 	public String getIconUrl() {
@@ -373,9 +439,9 @@ public class Style extends StyleSelector {
 	/**
 	 * Set the balloon style
 	 *
-	 * @param bgColor	 the color for the balloon background, if <code>null</code>
+	 * @param bgColor     the color for the balloon background, if <code>null</code>
 	 *                    will use default color: opaque white (ffffffff).
-	 * @param text		the textual template for the balloon content
+	 * @param text        the textual template for the balloon content
 	 * @param textColor   the color for the text in the balloon.
 	 *                    The default is black (ff000000).
 	 * @param displayMode If <displayMode> is "default", Google Earth uses the information
@@ -489,7 +555,7 @@ public class Style extends StyleSelector {
 	 *
 	 * @param color   Polygon color
 	 *                the color for the Polygon, can be null if want to use default color.
-	 * @param fill	Specifies whether to fill the polygon
+	 * @param fill    Specifies whether to fill the polygon
 	 * @param outline Specifies whether to outline the polygon. Polygon outlines use the current LineStyle.
 	 */
 	public void setPolyStyle(Color color, Boolean fill, Boolean outline) {

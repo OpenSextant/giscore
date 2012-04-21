@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 
 /**
  * @author Jason Mathews, MITRE Corp.
- * Date: 4/18/12 3:15 PM
+ *         Date: 4/18/12 3:15 PM
  */
 public class TestStyle {
 
@@ -25,9 +25,9 @@ public class TestStyle {
 
 		assertNotNull(style.getId());
 		assertNotNull(style.getIconUrl());
+		assertTrue(style.hasBalloonStyle());
 		assertTrue(style.hasIconStyle());
 		assertTrue(style.hasListStyle());
-		assertTrue(style.hasBalloonStyle());
 		assertFalse(style.hasLineStyle());
 		assertFalse(style.hasPolyStyle());
 		assertFalse(style.hasLabelStyle());
@@ -54,5 +54,31 @@ public class TestStyle {
 		Style s3 = new Style();
 		Style s4 = new Style(s3);
 		assertEquals(s3, s4);
+	}
+
+	@Test
+	public void testMerge() {
+		Style style = new Style("123");
+		style.setIconStyle(Color.red, null);
+		style.setLineStyle(Color.YELLOW, 1.1);
+		assertNull(style.getIconScale());
+		assertNull(style.getIconUrl());
+
+		Style s2 = new Style("123");
+		s2.setBalloonStyle(Color.BLUE, "text $[description]", Color.BLACK, "default");
+		s2.setIconStyle(Color.red, 1.4, "http://maps.google.com/mapfiles/kml/shapes/airports.png");
+		s2.setLabelStyle(Color.BLUE, 1.1);
+		s2.setLineStyle(Color.BLUE, 0.0);
+		s2.setListStyle(Color.GREEN, Style.ListItemType.check);
+
+		style.merge(s2);
+		assertTrue(style.hasBalloonStyle());
+		assertTrue(style.hasIconStyle());
+		assertTrue(style.hasListStyle());
+		assertTrue(style.hasLineStyle());
+		assertFalse(style.hasPolyStyle());
+		assertTrue(style.hasLabelStyle());
+		assertNotNull(style.getIconScale());
+		assertNotNull(style.getIconUrl());
 	}
 }
