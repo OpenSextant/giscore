@@ -85,11 +85,11 @@ import com.esri.arcgis.system.PropertySet;
  * Opens the GDB or shapefile to return the contained information. The
  * information returned will be the schema and the features from each schema.
  * The output ordering is schema(name) followed by feature(name).
- * <p>
+ * <p/>
  * The features will be ordered by any passed fields that were specified as part
  * of the ctor, filtered by those actually present in the schema. Only ascending
  * order is supported.
- * 
+ *
  * @author DRAND
  */
 public class GdbInputStream extends GISInputStreamBase {
@@ -97,11 +97,11 @@ public class GdbInputStream extends GISInputStreamBase {
 			.getLogger(GdbInputStream.class);
 
 	private static final String ms_tempDir = System.getProperty("java.io.tmpdir");
-	
+
 	private static final AtomicInteger ms_tempDirCounter = new AtomicInteger();
-	
+
 	static {
-		if(!ESRIInitializer.initialize(false, true)) {
+		if (!ESRIInitializer.initialize(false, true)) {
 			throw new UnsatisfiedLinkError("Could not initialize ESRI environment.");
 		}
 	}
@@ -146,7 +146,7 @@ public class GdbInputStream extends GISInputStreamBase {
 	 * The accepter, may be null, used to determine if a given schema is wanted
 	 */
 	private IAcceptSchema accepter;
-	
+
 	/**
 	 * Temporary directory to hold shapefile or gdb data until close is called.
 	 */
@@ -154,14 +154,11 @@ public class GdbInputStream extends GISInputStreamBase {
 
 	/**
 	 * Ctor
-	 * 
-	 * @param type
-	 *            the type used
-	 * @param stream
-	 *            the stream containing a zip archive of the file gdb
-	 * @param accepter
-	 * 				a function that determines if a schema should be used, may be <code>null</code>
-	 * @throws IOException 
+	 *
+	 * @param type     the type used
+	 * @param stream   the stream containing a zip archive of the file gdb
+	 * @param accepter a function that determines if a schema should be used, may be <code>null</code>
+	 * @throws IOException
 	 */
 	public GdbInputStream(DocumentType type, InputStream stream, IAcceptSchema accepter) throws IOException {
 		if (type == null) {
@@ -172,21 +169,21 @@ public class GdbInputStream extends GISInputStreamBase {
 			throw new IllegalArgumentException(
 					"stream should never be null");
 		}
-		
+
 		// The stream better point to zip data
 		ZipInputStream zipstream = null;
-		if (! (stream instanceof ZipInputStream)) {
+		if (!(stream instanceof ZipInputStream)) {
 			zipstream = new ZipInputStream(stream);
 		} else {
 			zipstream = (ZipInputStream) stream;
 		}
-		
-		tempDir = new File(ms_tempDir, 
-				"temp" + ms_tempDirCounter.incrementAndGet() + 
-				(DocumentType.FileGDB.equals(type) ? ".gdb" : ""));
+
+		tempDir = new File(ms_tempDir,
+				"temp" + ms_tempDirCounter.incrementAndGet() +
+						(DocumentType.FileGDB.equals(type) ? ".gdb" : ""));
 		tempDir.mkdirs();
 		ZipEntry entry = zipstream.getNextEntry();
-		while(entry != null) {
+		while (entry != null) {
 			String name = entry.getName().replace('\\', '/');
 			String parts[] = name.split("/");
 			File file = new File(tempDir, parts[parts.length - 1]);
@@ -200,14 +197,11 @@ public class GdbInputStream extends GISInputStreamBase {
 
 	/**
 	 * Ctor
-	 * 
-	 * @param type
-	 *            the type used
-	 * @param file
-	 *            the location of the file GDB or of the shapefile
-	 * @param accepter
-	 * 				a function that determines if a schema should be used,
-	 * may be <code>null</code>
+	 *
+	 * @param type     the type used
+	 * @param file     the location of the file GDB or of the shapefile
+	 * @param accepter a function that determines if a schema should be used,
+	 *                 may be <code>null</code>
 	 * @throws IOException
 	 * @throws UnknownHostException
 	 */
@@ -223,42 +217,43 @@ public class GdbInputStream extends GISInputStreamBase {
 		}
 		initialize(type, file, accepter);
 	}
-	
+
 	/**
 	 * Ctor
-	 * 
+	 * <p/>
 	 * <blockquote> <em>From the ESRI javadoc</em>
-	 * <p>
+	 * <p/>
 	 * List of acceptable connection property names and a brief description of
 	 * each:
 	 * <ul>
-	 * <li>"SERVER" – SDE server name you are connecting to.
-	 * <li>"INSTANCE" – Instance you are connection to.
-	 * <li>"DATABASE" – Database connected to.
-	 * <li>"USER" – Connected user.
-	 * <li>"PASSWORD" – Connected password.
-	 * <li>"AUTHENTICATION_MODE" – Credential authentication mode of the
+	 * <li>"SERVER" - SDE server name you are connecting to.
+	 * <li>"INSTANCE" - Instance you are connection to.
+	 * <li>"DATABASE" - Database connected to.
+	 * <li>"USER" - Connected user.
+	 * <li>"PASSWORD" - Connected password.
+	 * <li>"AUTHENTICATION_MODE" - Credential authentication mode of the
 	 * connection. Acceptable values are "OSA" and "DBMS".
-	 * <li>"VERSION" – Transactional version to connect to. Acceptable value is
+	 * <li>"VERSION" - Transactional version to connect to. Acceptable value is
 	 * a string that represents a transaction version name.
-	 * <li>"HISTORICAL_NAME" – Historical version to connect to. Acceptable
+	 * <li>"HISTORICAL_NAME" - Historical version to connect to. Acceptable
 	 * value is a string type that represents a historical marker name.
-	 * <li>"HISTORICAL_TIMESTAMP" – Moment in history to establish an historical
+	 * <li>"HISTORICAL_TIMESTAMP" - Moment in history to establish an historical
 	 * version connection. Acceptable value is a date time that represents a
 	 * moment timestamp.
 	 * </ul>
 	 * Notes:
-	 * <p>
+	 * <p/>
 	 * The "DATABASE" property is optional and is required for ArcSDE instances
 	 * that manage multiple databases (for example, SQL Server).
-	 * <p>
-	 * If “AUTHENTICATION_MODE” is “OSA” then “USER” and “PASSWORD” are not
-	 * required. “OSA” represents operating system authentication and uses the
+	 * <p/>
+	 * If AUTHENTICATION_MODE is OSA then USER and PASSWORD are not
+	 * required. OSA represents operating system authentication and uses the
 	 * operating system credentials to establish a connection with the database.
-	 * <p>
+	 * <p/>
 	 * Since the workspace connection can only represent one version only 1 of
-	 * the 3 version properties (“VERSION” or “HISTORICAL_NAME” or
-	 * “HISTORICAL_TIMESTAMP”) should be used. </blockquote>
+	 * the 3 version properties (VERSION or HISTORICAL_NAME or
+	 * HISTORICAL_TIMESTAMP) should be used. </blockquote>
+	 *
 	 * @param properties
 	 * @param accepter
 	 * @throws IOException
@@ -269,15 +264,15 @@ public class GdbInputStream extends GISInputStreamBase {
 					"properties should never be null");
 		}
 		factory = new SdeWorkspaceFactory();
-		
+
 		this.accepter = accepter;
 
 		PropertySet pset = new PropertySet();
-		for(Object key : properties.keySet()) {
+		for (Object key : properties.keySet()) {
 			String keystr = (String) key;
 			pset.setProperty(keystr, properties.getProperty(keystr));
 		}
-		
+
 		workspace = factory.open(pset, 0);
 
 		datasetenum = workspace.getDatasets(esriDatasetType.esriDTFeatureClass);
@@ -285,6 +280,7 @@ public class GdbInputStream extends GISInputStreamBase {
 
 	/**
 	 * Initialize the input stream
+	 *
 	 * @param type
 	 * @param file
 	 * @param accepter
@@ -303,7 +299,7 @@ public class GdbInputStream extends GISInputStreamBase {
 		} else {
 			throw new IllegalArgumentException("Unhandled format " + type);
 		}
-		
+
 		this.accepter = accepter;
 
 		workspace = factory.openFromFile(file.getAbsolutePath(), 0);
@@ -378,7 +374,7 @@ public class GdbInputStream extends GISInputStreamBase {
 		final IEnumDataset dsenum = workspace.getDatasets(esriDatasetType.esriDTFeatureClass);
 		return new Iterator<Schema>() {
 			private IDataset current = null;
-			
+
 			@Override
 			public boolean hasNext() {
 				if (current == null) {
@@ -454,40 +450,39 @@ public class GdbInputStream extends GISInputStreamBase {
 		List<Point> points = null;
 		IPoint point = null;
 		switch (gtype) {
-		case esriGeometryType.esriGeometryPoint:
-			return makePoint((IPoint) geo);
-		case esriGeometryType.esriGeometryPolyline:
-			Polyline line = (Polyline) geo;
-			points = new ArrayList<Point>();
-			for (int i = 0; i < line.getPointCount(); i++) {
-				point = line.getPoint(i);
-				points.add(makePoint(point));
-			}
-			return new Line(points);
-		case esriGeometryType.esriGeometryRing:
-			return makeRing((Ring) geo);
-		case esriGeometryType.esriGeometryPolygon:
-			return makePolygon((com.esri.arcgis.geometry.Polygon) geo);
-		case esriGeometryType.esriGeometryBag:
-			return makeGeometryBag((com.esri.arcgis.geometry.GeometryBag) geo);
-		case esriGeometryType.esriGeometryMultipoint:
-			Multipoint mp = (Multipoint) geo;
-			List<Point> pts = new ArrayList<Point>();
-			for (int i = 0; i < mp.getGeometryCount(); i++) {
-				pts.add(makePoint((IPoint) mp.getGeometry(i)));
-			}
-			return new MultiPoint(pts);
-		default:
-			throw new UnsupportedOperationException("Geometry type " + gtype
-					+ " unknown");
+			case esriGeometryType.esriGeometryPoint:
+				return makePoint((IPoint) geo);
+			case esriGeometryType.esriGeometryPolyline:
+				Polyline line = (Polyline) geo;
+				points = new ArrayList<Point>();
+				for (int i = 0; i < line.getPointCount(); i++) {
+					point = line.getPoint(i);
+					points.add(makePoint(point));
+				}
+				return new Line(points);
+			case esriGeometryType.esriGeometryRing:
+				return makeRing((Ring) geo);
+			case esriGeometryType.esriGeometryPolygon:
+				return makePolygon((com.esri.arcgis.geometry.Polygon) geo);
+			case esriGeometryType.esriGeometryBag:
+				return makeGeometryBag((com.esri.arcgis.geometry.GeometryBag) geo);
+			case esriGeometryType.esriGeometryMultipoint:
+				Multipoint mp = (Multipoint) geo;
+				List<Point> pts = new ArrayList<Point>();
+				for (int i = 0; i < mp.getGeometryCount(); i++) {
+					pts.add(makePoint((IPoint) mp.getGeometry(i)));
+				}
+				return new MultiPoint(pts);
+			default:
+				throw new UnsupportedOperationException("Geometry type " + gtype
+						+ " unknown");
 		}
 	}
 
 	/**
 	 * Make a geometry bag from the esri geometry bag
-	 * 
-	 * @param geo
-	 *            the esri bag, assumed not <code>null</code>
+	 *
+	 * @param geo the esri bag, assumed not <code>null</code>
 	 * @return a giscore geometry bag, never <code>null</code>
 	 * @throws IOException
 	 * @throws AutomationException
@@ -504,9 +499,8 @@ public class GdbInputStream extends GISInputStreamBase {
 
 	/**
 	 * Make a point from a point geometry object
-	 * 
-	 * @param point
-	 *            the point, assumed not <code>null</code>
+	 *
+	 * @param point the point, assumed not <code>null</code>
 	 * @return a giscore point object, never <code>null</code>
 	 * @throws IOException
 	 * @throws AutomationException
@@ -518,9 +512,8 @@ public class GdbInputStream extends GISInputStreamBase {
 
 	/**
 	 * Make a simple ring from an esri ring
-	 * 
-	 * @param ring
-	 *            the esri ring, assumed not <code>null</code>
+	 *
+	 * @param ring the esri ring, assumed not <code>null</code>
 	 * @return a giscore ring, never <code>null</code>
 	 * @throws IOException
 	 * @throws AutomationException
@@ -539,7 +532,7 @@ public class GdbInputStream extends GISInputStreamBase {
 	/**
 	 * Make a complete poly. Each poly may have multiple outer rings, and each
 	 * of those may have multiple inner rings
-	 * 
+	 *
 	 * @param poly
 	 * @return
 	 * @throws IOException
@@ -549,9 +542,9 @@ public class GdbInputStream extends GISInputStreamBase {
 			throws IOException, AutomationException {
 		List<Polygon> polyList = new ArrayList<Polygon>();
 		if (poly.getExteriorRingCount() > 0) {
-			com.esri.arcgis.geometry.GeometryBag bag = 
-				(com.esri.arcgis.geometry.GeometryBag) poly.getExteriorRingBag();
-			for(int i = 0; i < bag.getGeometryCount(); i++) {
+			com.esri.arcgis.geometry.GeometryBag bag =
+					(com.esri.arcgis.geometry.GeometryBag) poly.getExteriorRingBag();
+			for (int i = 0; i < bag.getGeometryCount(); i++) {
 				Ring gouter = (Ring) bag.getGeometry(i);
 				List<LinearRing> inners = null;
 				com.esri.arcgis.geometry.GeometryBag ibag = (com.esri.arcgis.geometry.GeometryBag) poly
@@ -570,17 +563,17 @@ public class GdbInputStream extends GISInputStreamBase {
 				polyList.add(p);
 			}
 		} else if (poly.getGeometryCount() > 0) {
-			for(int i = 0; i < poly.getGeometryCount(); i++) {
+			for (int i = 0; i < poly.getGeometryCount(); i++) {
 				IGeometry geo = poly.getGeometry(i);
 				if (geo instanceof Ring) {
 					polyList.add(new Polygon(makeRing((Ring) geo)));
 				} else {
-					logger.error("Found an unexpected geometry type: " + 
+					logger.error("Found an unexpected geometry type: " +
 							geo.getGeometryType() + " skipping...");
 				}
 			}
 		}
-		
+
 		if (polyList.size() == 0) {
 			return null;
 		} else if (polyList.size() == 1) {
@@ -595,10 +588,10 @@ public class GdbInputStream extends GISInputStreamBase {
 	 * to capture all the relevant information about the feature class. Some
 	 * information, such as the OID and Shape fields are captured implicitly in
 	 * the typing of the schema's simple field objects.
-	 * <p>
+	 * <p/>
 	 * If a feature class field has an unknown type it will be omitted from the
 	 * schema
-	 * 
+	 *
 	 * @return a schema object, never <code>null</code>
 	 * @throws IOException
 	 * @throws URISyntaxException
@@ -634,31 +627,30 @@ public class GdbInputStream extends GISInputStreamBase {
 
 	/**
 	 * Map the numeric esri type back to the type enum in simple field.
-	 * 
-	 * @param type
-	 *            the type
+	 *
+	 * @param type the type
 	 * @return the simple field type or <code>null</code> if no type matches
 	 */
 	private Type decodeType(int type) {
 		switch (type) {
-		case esriFieldType.esriFieldTypeSingle:
-			return Type.FLOAT;
-		case esriFieldType.esriFieldTypeDate:
-			return Type.DATE;
-		case esriFieldType.esriFieldTypeDouble:
-			return Type.DOUBLE;
-		case esriFieldType.esriFieldTypeGeometry:
-			return Type.GEOMETRY;
-		case esriFieldType.esriFieldTypeInteger:
-			return Type.INT;
-		case esriFieldType.esriFieldTypeOID:
-			return Type.OID;
-		case esriFieldType.esriFieldTypeSmallInteger:
-			return Type.SHORT;
-		case esriFieldType.esriFieldTypeString:
-			return Type.STRING;
-		default:
-			return null;
+			case esriFieldType.esriFieldTypeSingle:
+				return Type.FLOAT;
+			case esriFieldType.esriFieldTypeDate:
+				return Type.DATE;
+			case esriFieldType.esriFieldTypeDouble:
+				return Type.DOUBLE;
+			case esriFieldType.esriFieldTypeGeometry:
+				return Type.GEOMETRY;
+			case esriFieldType.esriFieldTypeInteger:
+				return Type.INT;
+			case esriFieldType.esriFieldTypeOID:
+				return Type.OID;
+			case esriFieldType.esriFieldTypeSmallInteger:
+				return Type.SHORT;
+			case esriFieldType.esriFieldTypeString:
+				return Type.STRING;
+			default:
+				return null;
 		}
 	}
 }

@@ -206,8 +206,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"));
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")); // dateTime format w/o seconds
 		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd")); // date (YYYY-MM-DD)
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));	// gYearMonth (YYYY-MM)
-		ms_dateFormats.add(new SimpleDateFormat("yyyy"));	   // gYear (YYYY)
+		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));    // gYearMonth (YYYY-MM)
+		ms_dateFormats.add(new SimpleDateFormat("yyyy"));       // gYear (YYYY)
 		for (DateFormat fmt : ms_dateFormats) {
 			fmt.setTimeZone(UTC);
 		}
@@ -219,7 +219,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * <code>input</code>, for later use.
 	 *
 	 * @param input input stream for the kml file, never <code>null</code>
-	 * @throws IOException			  if an I/O or parsing error occurs
+	 * @throws IOException              if an I/O or parsing error occurs
 	 * @throws IllegalArgumentException if input is null
 	 */
 	public KmlInputStream(InputStream input) throws IOException {
@@ -413,7 +413,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 *
 	 * @param feature
 	 * @param ee
-	 * @param name	the qualified name of this event
+	 * @param name    the qualified name of this event
 	 * @return <code>true</code> if the event has been handled
 	 */
 	private boolean handleProperties(Common feature, XMLEvent ee,
@@ -595,7 +595,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * @param uri   a reference to a schema, if local then use that schema's
 	 *              simple field objects instead of creating ones on the fly
-	 * @param cs	Feature/Container for ExtendedData tag
+	 * @param cs    Feature/Container for ExtendedData tag
 	 * @param qname the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
@@ -659,7 +659,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * Handle AbstractView (Camera or LookAt) element
 	 *
 	 * @param feature
-	 * @param name	the qualified name of this event
+	 * @param name    the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleAbstractView(Common feature, QName name)
@@ -672,7 +672,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * Handle KML Region
 	 *
 	 * @param feature
-	 * @param name	the qualified name of this event
+	 * @param name    the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
 	private void handleRegion(Common feature, QName name)
@@ -1048,7 +1048,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private void handlePolyStyle(Style style, QName qname) throws XMLStreamException {
 		Color color = null; // default color="ffffffff" (white)
 		Boolean fill = null; // default = true
-		Boolean outline = null;	// default = true
+		Boolean outline = null;    // default = true
 		while (true) {
 			XMLEvent e = stream.nextEvent();
 			if (foundEndTag(e, qname)) {
@@ -1076,7 +1076,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return <code>true</code> if the value is the single character "1" or "true".
 	 */
 	private boolean isTrue(String val) {
-		// xsd:boolean· can have the following legal literals {true, false, 1, 0}.
+		// xsd:boolean can have the following legal literals {true, false, 1, 0}.
 		if (val != null) {
 			val = val.trim();
 			//if ("1".equals(val)) return true;
@@ -1162,8 +1162,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	private void handleBalloonStyle(Style style, QName qname) throws XMLStreamException {
 		String text = null;
-		Color color = null;		// default 0xffffffff
-		Color textColor = null;	// default 0xff000000
+		Color color = null;        // default 0xffffffff
+		Color textColor = null;    // default 0xff000000
 		String displayMode = null; // [default] | hide
 		while (true) {
 			XMLEvent e = stream.nextEvent();
@@ -1314,7 +1314,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return IGISObject representing current element,
 	 *         NullObject if failed to parse and unable to skip to end tag for that element
 	 * @throws XMLStreamException if there is an error with the underlying XML.
-	 * @throws IOException		if encountered NetworkLinkControl or out of order Style element
+	 * @throws IOException        if encountered NetworkLinkControl or out of order Style element
 	 *                            and failed to skip to end tag for that element.
 	 */
 	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException, IOException {
@@ -1491,7 +1491,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		String parent = getNonEmptyAttrValue(attr);
 		Attribute id = element.getAttributeByName(ID_ATTR);
 		/*
-				 * The ·value space· of ID is the set of all strings that ·match· the NCName production in [Namespaces in XML]:
+				 * The 'value space' of ID is the set of all strings that match the NCName production in [Namespaces in XML]:
 				 *  NCName ::=  (Letter | '_') (NCNameChar)*  -- An XML Name, minus the ":"
 				 *  NCNameChar ::=  Letter | Digit | '.' | '-' | '_' | CombiningChar | Extender
 				 */
@@ -1952,7 +1952,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * Handle a LatLonBox element with north, south, east and west elements.
 	 *
 	 * @param overlay
-	 * @param name	the qualified name of this event
+	 * @param name    the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	private void handleLatLonBox(GroundOverlay overlay, QName name)
@@ -2003,8 +2003,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param sl StartElement
 	 * @return Geometry associated with this element
 	 *         otherwise null if no valid Geometry can be constructed
-	 * @throws XMLStreamException	   if there is an error with the underlying XML
-	 * @throws IllegalStateException	if geometry is invalid
+	 * @throws XMLStreamException       if there is an error with the underlying XML
+	 * @throws IllegalStateException    if geometry is invalid
 	 * @throws IllegalArgumentException if geometry is invalid (e.g. invalid Lon/Lat, Line has < 2 points, etc.)
 	 */
 	@SuppressWarnings("unchecked")
@@ -2097,12 +2097,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * Construct Geometry from the KML
 	 *
-	 * @param name	  the qualified name of this event
+	 * @param name      the qualified name of this event
 	 * @param localname local part of this <code>QName</code>
 	 * @return geometry
-	 * @throws XMLStreamException	   if there is an error with the underlying XML.
+	 * @throws XMLStreamException       if there is an error with the underlying XML.
 	 * @throws IllegalArgumentException if geometry is invalid (e.g. no valid coordinates)
-	 * @throws IllegalStateException	if Bad poly found (e.g. no outer ring)
+	 * @throws IllegalStateException    if Bad poly found (e.g. no outer ring)
 	 */
 	private GeometryBase getGeometryBase(QName name, String localname) throws XMLStreamException {
 		if (localname.equals(LINE_STRING)) {
@@ -2258,7 +2258,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 *
 	 * @param qname the qualified name of this event
 	 * @param geom  GeomBase, never null
-	 * @throws XMLStreamException	   if there is an error with the underlying XML.
+	 * @throws XMLStreamException       if there is an error with the underlying XML.
 	 * @throws IllegalArgumentException error if lat/lon coordinate values are out of range
 	 */
 	private void parseCoordinates(QName qname, GeometryGroup geom) throws XMLStreamException {
@@ -2318,7 +2318,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 *
 	 * @param name the qualified name of this event
 	 * @return the coordinate (first valid coordinate if found), null if not
-	 * @throws XMLStreamException	   if there is an error with the underlying XML.
+	 * @throws XMLStreamException       if there is an error with the underlying XML.
 	 * @throws IllegalArgumentException error if coordinates values are out of range
 	 */
 	private Point parseCoordinate(QName name) throws XMLStreamException {
