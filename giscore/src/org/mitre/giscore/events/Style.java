@@ -112,15 +112,14 @@ public class Style extends StyleSelector {
 	}
 
 	/**
-	 * Copy constructor creates new style as a copy from another style.
-	 * If source style has a style id then you must explicitly assign a new
-	 * unique id to this style otherwise will have two styles with the same id.
+	 * Copy constructor creates new style as a copy from another style
+	 * excluding its id. Caller must explicitly set the unique id on the
+	 * target style.
 	 *
 	 * @param aStyle Source style
 	 */
 	public Style(Style aStyle) {
 		if (aStyle != null) {
-			setId(aStyle.getId());
 			if (aStyle.hasBalloonStyle()) {
 				hasBalloonStyle = true;
 				balloonBgColor = aStyle.balloonBgColor;
@@ -366,18 +365,18 @@ public class Style extends StyleSelector {
 	 *         All 3 of these cases are handled the same in Google Earth which suppresses
 	 *         showing an icon.
 	 *         <pre>
-	 *                 1. &lt;IconStyle&gt;
-	 *                 &lt;Icon/&gt;
-	 *                 &lt;/IconStyle&gt;
+	 *                         1. &lt;IconStyle&gt;
+	 *                         &lt;Icon/&gt;
+	 *                         &lt;/IconStyle&gt;
 	 *
-	 *                 2. &lt;Icon&gt;
-	 *                 &lt;href/&gt;
-	 *                 &lt;/Icon&gt;
+	 *                         2. &lt;Icon&gt;
+	 *                         &lt;href/&gt;
+	 *                         &lt;/Icon&gt;
 	 *
-	 *                 3. &lt;Icon&gt;
-	 *                 &lt;href&gt;&lt;/href&gt;
-	 *                 &lt;/Icon&gt;
-	 *                      </pre>
+	 *                         3. &lt;Icon&gt;
+	 *                         &lt;href&gt;&lt;/href&gt;
+	 *                         &lt;/Icon&gt;
+	 *                              </pre>
 	 */
 	@CheckForNull
 	public String getIconUrl() {

@@ -44,6 +44,8 @@ public class TestStyle {
 		s1.setListStyle(Color.GREEN, Style.ListItemType.check);
 
 		Style s2 = new Style(s1);
+		assertNull(s2.getId());
+		s2.setId("123"); // must explicitly set id
 		assertEquals(s1, s2);
 		assertEquals(s1.hashCode(), s2.hashCode());
 
