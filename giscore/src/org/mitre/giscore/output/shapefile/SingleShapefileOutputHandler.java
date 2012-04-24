@@ -924,6 +924,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		case 5: // Polygon
 		case 25: // PolygonM
 			nPoints = getPolyPntCount(geom);
+			// fall through to Polyline case
 		case 3: // Polyline
 		case 23: // PolyLineM
 			base = 44;
