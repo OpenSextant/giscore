@@ -196,6 +196,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 * @param se
 	 *            the start tag, never <code>null</code>
 	 * @return the element, never <code>null</code>
+	 *
 	 * @throws XMLStreamException
 	 *             if there is an error with the underlying XML.
 	 */
@@ -215,7 +216,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 		@SuppressWarnings("unchecked")
 		Iterator<javax.xml.stream.events.Namespace> nsiter = se.getNamespaces();
 		while (nsiter.hasNext()) {
-			// add prefixed namespaces to the document list if not defined
+			// add prefixed namespaces to the list if not defined
 			javax.xml.stream.events.Namespace ns = nsiter.next();
 			final String prefix = ns.getPrefix();
 			if (StringUtils.isNotBlank(prefix)) {
@@ -240,8 +241,12 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 		while (true) {
 			if (nextel instanceof Characters) {
 				Characters text = (Characters) nextel;
-				String existing = el.getText() != null ? el.getText() : "";
-				el.setText(existing + text.getData());
+				final String oldText = el.getText();
+				if (oldText != null) {
+					// append to existing text
+					el.setText(oldText + text.getData());
+				} else
+					el.setText(text.getData());
 			} else if (nextel.isStartElement()) {
 				el.getChildren().add(
 						(Element) getForeignElement(nextel.asStartElement()));
