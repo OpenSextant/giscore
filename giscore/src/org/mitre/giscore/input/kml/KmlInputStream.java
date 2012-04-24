@@ -516,6 +516,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private void handleExtendedData(Common cs, QName name)
 			throws XMLStreamException {
 		XMLEvent next;
+		// namespace of the ExtendedData element
+		// should never be null => empty string if no namespace
 		String rootNS = name.getNamespaceURI();
 		while (true) {
 			next = stream.nextEvent();
@@ -530,7 +532,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				/*
 				 * xmlns:prefix handling. skips namespaces other than parent namespace (e.g. http://www.opengis.net/kml/2.2)
 				 */
-				if (rootNS != null && !rootNS.equals(qname.getNamespaceURI())) {
+				if (!StringUtils.equals(rootNS, qname.getNamespaceURI())) {
 					handleAsForeignElement = true;
 					// handle extended data elements other namespace other than the root (KML) namespace
 				} else if (tag.equals(DATA)) {
