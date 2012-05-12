@@ -140,59 +140,59 @@ public class TestKmlOutputStream extends TestGISBase {
         //Assert.assertTrue(kml.contains(IKml.NS_GOOGLE_KML_EXT));
     }
 
-	@Test
-	public void testUndeclaredAttribute() throws Exception {
-		Namespace atomNs = Namespace.getNamespace("atom", IAtomConstants.ATOM_URI_NS);
+    @Test
+    public void testUndeclaredAttribute() throws Exception {
+        Namespace atomNs = Namespace.getNamespace("atom", IAtomConstants.ATOM_URI_NS);
 
-		Element author = new Element(atomNs, "author");
-		// add attribute with unknown namespace prefix
-		author.getAttributes().put("geo:point", "60,-89.91");
-		Element name = new Element(atomNs, "name");
-		name.setText("the Author");
-		author.getChildren().add(name);
+        Element author = new Element(atomNs, "author");
+        // add attribute with unknown namespace prefix
+        author.getAttributes().put("geo:point", "60,-89.91");
+        Element name = new Element(atomNs, "name");
+        name.setText("the Author");
+        author.getChildren().add(name);
 
-		Namespace gxNs = Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT);
-		Element gxElt = new Element(gxNs, "timestamp");
-		gxElt.getAttributes().put("gx:type", "simple");
-		// attributes with undeclared namespaces will be discarded on output
-		gxElt.getAttributes().put("geo:point", "60,-89.91");
+        Namespace gxNs = Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT);
+        Element gxElt = new Element(gxNs, "timestamp");
+        gxElt.getAttributes().put("gx:type", "simple");
+        // attributes with undeclared namespaces will be discarded on output
+        gxElt.getAttributes().put("geo:point", "60,-89.91");
 
-		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		KmlOutputStream kos = new KmlOutputStream(bos);
-		DocumentStart ds = new DocumentStart(DocumentType.KML);
-		ds.addNamespace(atomNs);
-		kos.write(ds);
-		// this will be written out as a comment but skipped on input
-		kos.write(author);
-		kos.write(gxElt);
-		kos.close();
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        KmlOutputStream kos = new KmlOutputStream(bos);
+        DocumentStart ds = new DocumentStart(DocumentType.KML);
+        ds.addNamespace(atomNs);
+        kos.write(ds);
+        // this will be written out as a comment but skipped on input
+        kos.write(author);
+        kos.write(gxElt);
+        kos.close();
 
-		/*
-		this creates KML like this:
+        /*
+          this creates KML like this:
 
-		<?xml version="1.0" encoding="UTF-8"?>
-		<kml xmlns="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
-			<!--
-				<atom:author geo:point="60,-89.91">
-				  <atom:name>the Author</name>
-				</author>
-			-->
-			<gx:timestamp gx:type="simple" xmlns:gx="http://www.google.com/kml/ext/2.2"/>
-		</kml>
-		 */
+          <?xml version="1.0" encoding="UTF-8"?>
+          <kml xmlns="http://www.opengis.net/kml/2.2" xmlns:atom="http://www.w3.org/2005/Atom">
+              <!--
+                  <atom:author geo:point="60,-89.91">
+                    <atom:name>the Author</name>
+                  </author>
+              -->
+              <gx:timestamp gx:type="simple" xmlns:gx="http://www.google.com/kml/ext/2.2"/>
+          </kml>
+           */
 
-		// KML output should contain a comment for arbitrary non-KML elements
-		assertTrue(bos.toString().contains("<!--"));
-		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
-		IGISObject o = kis.read();
-		assertTrue(o instanceof DocumentStart);
-		o = kis.read();
-		assertTrue(o instanceof Element);
-		Element elt = (Element)o;
-		assertEquals(gxNs, elt.getNamespace());
+        // KML output should contain a comment for arbitrary non-KML elements
+        assertTrue(bos.toString().contains("<!--"));
+        KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+        IGISObject o = kis.read();
+        assertTrue(o instanceof DocumentStart);
+        o = kis.read();
+        assertTrue(o instanceof Element);
+        Element elt = (Element) o;
+        assertEquals(gxNs, elt.getNamespace());
 
-		assertNull(kis.read());
-	}
+        assertNull(kis.read());
+    }
 
     @Test
     public void testGxElementNsDeclared() throws IOException, XMLStreamException {
@@ -229,14 +229,31 @@ public class TestKmlOutputStream extends TestGISBase {
         cp.setAltitudeMode(AltitudeModeEnumType.clampToSeaFloor);
         f.setGeometry(cp);
         kos.write(f);
+
+        Feature lineFeature = new Feature();
+        List<Point> pts = new ArrayList<Point>(10);
+        for (int i = 0; i < 10; i++) {
+            pts.add(new Point(i * .01, i * .01));
+        }
+        Line line = new Line(pts);
+        line.setDrawOrder(3);
+        line.setTessellate(true);
+        line.setExtrude(true);
+        lineFeature.setGeometry(line);
+        kos.write(lineFeature);
+
         kos.close();
         KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
         try {
             assertNotNull(kis.read()); // skip DocumentStart
             IGISObject obj = kis.read(); // Placemark
+            IGISObject obj2 = kis.read(); // Placemark
             kis.close();
-            assert (obj instanceof Feature);
+            assertTrue(obj instanceof Feature);
             checkApproximatelyEquals(f, obj);
+            assertTrue(obj2 instanceof Feature);
+            checkApproximatelyEquals(lineFeature, obj2);
+            assertEquals(lineFeature.getGeometry(), ((Feature) obj2).getGeometry());
             System.out.println(bos.toString("UTF-8")); // debug
         } catch (AssertionError ae) {
             System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
@@ -302,7 +319,7 @@ public class TestKmlOutputStream extends TestGISBase {
                 cs.setName(Integer.toString(i));
                 os.write(cs);
                 //if (firstFeature == null) firstFeature = f;
-                List<Point> pts = new ArrayList<Point>();
+                List<Point> pts = new ArrayList<Point>(6);
                 pts.add(getRingPoint(cp, 4, 5, .3, .4));
                 pts.add(getRingPoint(cp, 3, 5, .3, .4));
                 pts.add(getRingPoint(cp, 2, 5, .3, .4));
@@ -363,15 +380,15 @@ public class TestKmlOutputStream extends TestGISBase {
                 f.putData(id, "id " + i);
                 f.putData(date, new Date().toString());
                 f.setSchema(schema.getId());
-                List<Point> pts = new ArrayList<Point>();
+                List<Point> pts = new ArrayList<Point>(6);
                 for (int k = 0; k < 5; k++) {
                     pts.add(getRingPoint(cp, k, 5, 1.0, 2.0));
                 }
                 pts.add(pts.get(0)); // should start and end with the same point
                 LinearRing outerRing = new LinearRing(pts);
-                List<LinearRing> innerRings = new ArrayList<LinearRing>();
+                List<LinearRing> innerRings = new ArrayList<LinearRing>(4);
                 for (int j = 0; j < 4; j++) {
-                    pts = new ArrayList<Point>();
+                    pts = new ArrayList<Point>(6);
                     Point ircp = getRingPoint(cp, j, 4, .5, 1.0);
                     for (int k = 0; k < 5; k++) {
                         pts.add(getRingPoint(ircp, k, 5, .24, .2));
@@ -713,213 +730,213 @@ public class TestKmlOutputStream extends TestGISBase {
         assertTrue(content.contains("<!-- [WrappedObject: "));
     }
 
-	/*
-	@Test
-    public void testClippedAtDateLine() throws Exception {
-        // create outline of Fiji islands which wrap international date line
-		List<Point> pts = new ArrayList<Point>();
-        final Point firstPt = new Point(-16.68226928264316, 179.900033693558);
-        pts.add(firstPt);
-		pts.add(new Point(-16.68226928264316, -179.65));
-		pts.add(new Point(-17.01144405215603, -180));
-		pts.add(new Point(-17.01144405215603, 179.900033693558));
-		pts.add(firstPt);
+    /*
+     @Test
+     public void testClippedAtDateLine() throws Exception {
+         // create outline of Fiji islands which wrap international date line
+         List<Point> pts = new ArrayList<Point>();
+         final Point firstPt = new Point(-16.68226928264316, 179.900033693558);
+         pts.add(firstPt);
+         pts.add(new Point(-16.68226928264316, -179.65));
+         pts.add(new Point(-17.01144405215603, -180));
+         pts.add(new Point(-17.01144405215603, 179.900033693558));
+         pts.add(firstPt);
 
-        Line line = new Line(pts);
+         Line line = new Line(pts);
 
-        KmlOutputStream kos = new KmlOutputStream(new FileOutputStream("out.kml"));
-		Feature f = new Feature();
-		f.setGeometry(new Point(line.getCenter()));
-		kos.write(f);
-		kos.close();
-        // final String content = bos.toString();
-		// System.out.println
+         KmlOutputStream kos = new KmlOutputStream(new FileOutputStream("out.kml"));
+         Feature f = new Feature();
+         f.setGeometry(new Point(line.getCenter()));
+         kos.write(f);
+         kos.close();
+         // final String content = bos.toString();
+         // System.out.println
 
-        LinearRing ring = new LinearRing(pts, true);
-        assertTrue(ring.clippedAtDateLine());
-	}
-
-	@Test
-	public void testWrapDateLine() throws Exception {
-        // create outline of Fiji islands which wrap international date line
-		List<Point> pts = new ArrayList<Point>();
-		final Point firstPt = new Point(-16.68226928264316, 179.900033693558);
-        pts.add(firstPt);
-        pts.add(new Point(-16.68226928264316, -179.65));
-		pts.add(new Point(-17.01144405215603, -180));
-		pts.add(new Point(-17.01144405215603, 179.900033693558));
-		pts.add(firstPt);
-        Line line = new Line(pts);
-        assertTrue(line.clippedAtDateLine());
-
-		// (179° 52' 30" W, 16° 50' 49" S)
-		// Geodetic2DPoint cp = line.getCenter();
-
-        KmlOutputStream kos = new KmlOutputStream(new FileOutputStream("out.kml"));
-		Feature f = new Feature();
-		f.setGeometry(line); // new Point(line.getCenter()));
-		kos.write(f);
-		kos.close();
+         LinearRing ring = new LinearRing(pts, true);
+         assertTrue(ring.clippedAtDateLine());
      }
 
-	@Test
-	public void testAtPoles() throws Exception {
-		// create outline of antarctica
-		List<Point> pts = new ArrayList<Point>();
-		// bounds inside antarctica continent
-		final Point firstPt = new Point(-64.2378603202, -57.1573913081);
-		pts.add(firstPt);
-        pts.add(new Point(-70.2956070281, 26.0747738693));
-		pts.add(new Point(-66.346745474, 129.2349114494));
-		pts.add(new Point(-72.8459462179, -125.7310989568));
+     @Test
+     public void testWrapDateLine() throws Exception {
+         // create outline of Fiji islands which wrap international date line
+         List<Point> pts = new ArrayList<Point>();
+         final Point firstPt = new Point(-16.68226928264316, 179.900033693558);
+         pts.add(firstPt);
+         pts.add(new Point(-16.68226928264316, -179.65));
+         pts.add(new Point(-17.01144405215603, -180));
+         pts.add(new Point(-17.01144405215603, 179.900033693558));
+         pts.add(firstPt);
+         Line line = new Line(pts);
+         assertTrue(line.clippedAtDateLine());
 
-		// region larger than the antarctica bounds
-		//final Point firstPt = new Point(-53.7060839150483,-56.70426734285595);
-		//pts.add(firstPt);
-		//pts.add(new Point(-56.89265096502702,35.93083180403215));
-		//pts.add(new Point(-36.63475488023045,122.7617316232436));
-		//pts.add(new Point(-51.44838835062461,-135.9100978589071));
+         // (179° 52' 30" W, 16° 50' 49" S)
+         // Geodetic2DPoint cp = line.getCenter();
 
-		pts.add(firstPt);
+         KmlOutputStream kos = new KmlOutputStream(new FileOutputStream("out.kml"));
+         Feature f = new Feature();
+         f.setGeometry(line); // new Point(line.getCenter()));
+         kos.write(f);
+         kos.close();
+      }
 
-		Line line = new Line(pts);
+     @Test
+     public void testAtPoles() throws Exception {
+         // create outline of antarctica
+         List<Point> pts = new ArrayList<Point>();
+         // bounds inside antarctica continent
+         final Point firstPt = new Point(-64.2378603202, -57.1573913081);
+         pts.add(firstPt);
+         pts.add(new Point(-70.2956070281, 26.0747738693));
+         pts.add(new Point(-66.346745474, 129.2349114494));
+         pts.add(new Point(-72.8459462179, -125.7310989568));
 
-		Geodetic2DPoint cp = line.getCenter();
+         // region larger than the antarctica bounds
+         //final Point firstPt = new Point(-53.7060839150483,-56.70426734285595);
+         //pts.add(firstPt);
+         //pts.add(new Point(-56.89265096502702,35.93083180403215));
+         //pts.add(new Point(-36.63475488023045,122.7617316232436));
+         //pts.add(new Point(-51.44838835062461,-135.9100978589071));
 
-		// Fctr=(1° 45' 7" E, 68° 32' 31" S) -68.54190326905 1.7519062462999895
-		System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
+         pts.add(firstPt);
 
-		final Geodetic2DBounds bbox = line.getBoundingBox();
-		assertTrue(bbox != null && bbox.contains(cp));
-		// south=-72.8459462179 north=-64.2378603202
-		// if (bbox.getSouthLat().inDegrees() > bbox.getNorthLat().inDegrees()) System.out.println("XXX: lat sign flipped"); // debug
-		// System.out.println("south=" + bbox.getSouthLat().inDegrees() + " north=" + bbox.getNorthLat().inDegrees());
+         Line line = new Line(pts);
 
-		KmlOutputStream kos = new KmlOutputStream(new FileOutputStream("out.kml"));
-		kos.write(new ContainerStart());
-		Feature f = new Feature();
-		line.setTessellate(true);
-		f.setGeometry(line);
-		kos.write(f);
+         Geodetic2DPoint cp = line.getCenter();
 
-		f.setGeometry(new Point(cp));
-		kos.write(f);
+         // Fctr=(1° 45' 7" E, 68° 32' 31" S) -68.54190326905 1.7519062462999895
+         System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
 
-		f = new Feature();
-		// bbox=(westLon=125° 43' 52" W, southLat=72° 50' 45" S) .. (129° 14' 6" E, northLat=64° 14' 16" S)
-		// System.out.println("bbox=" + bbox);
-		line = new Line(bbox);
+         final Geodetic2DBounds bbox = line.getBoundingBox();
+         assertTrue(bbox != null && bbox.contains(cp));
+         // south=-72.8459462179 north=-64.2378603202
+         // if (bbox.getSouthLat().inDegrees() > bbox.getNorthLat().inDegrees()) System.out.println("XXX: lat sign flipped"); // debug
+         // System.out.println("south=" + bbox.getSouthLat().inDegrees() + " north=" + bbox.getNorthLat().inDegrees());
 
-		line.setTessellate(true);
-		f.setGeometry(line);
-		kos.write(f);
+         KmlOutputStream kos = new KmlOutputStream(new FileOutputStream("out.kml"));
+         kos.write(new ContainerStart());
+         Feature f = new Feature();
+         line.setTessellate(true);
+         f.setGeometry(line);
+         kos.write(f);
 
-		kos.write(new ContainerEnd());
-		kos.close();
+         f.setGeometry(new Point(cp));
+         kos.write(f);
 
-		// LinearRing ring = new LinearRing(pts, true); // -> Error: LinearRing cannot self-intersect
-		// assertEquals(cp, ring.getCenter());
-	}
-	*/
+         f = new Feature();
+         // bbox=(westLon=125° 43' 52" W, southLat=72° 50' 45" S) .. (129° 14' 6" E, northLat=64° 14' 16" S)
+         // System.out.println("bbox=" + bbox);
+         line = new Line(bbox);
 
-	@Test
-	public void testRegionAtPole() throws Exception {
-		List<Point> pts = new ArrayList<Point>(5);
-		// 3km box that closely matches google earth lat/lon grids lines
-		// ctr=(65° 0' 0" E, 89° 54' 18" S) -89.905 65.0
-		// bbox=(60° 0' 0" E, 89° 54' 36" S) .. (70° 0' 0" E, 89° 54' 0" S)
-		final Point firstPt = new Point(-89.90,70.0);
-		pts.add(firstPt);
-		pts.add(new Point(-89.90,60.0));
-		pts.add(new Point(-89.91,60.0));
-		pts.add(new Point(-89.91,70.0));
-		pts.add(firstPt);
+         line.setTessellate(true);
+         f.setGeometry(line);
+         kos.write(f);
 
-		// 68km box at poles wrap IDT
-		// Fctr=(143° 7' 27" E, 89° 35' 49" S) -89.59704336185 143.12414264670002
-		// bbox westLon/southLat = (11° 14' 23" E, 89° 38' 21" S) .. (84° 59' 29" W, 89° 33' 17" S)
-		//final Point firstPt = new Point(-89.6392352247,94.8251951251);
-		//pts.add(firstPt);
+         kos.write(new ContainerEnd());
+         kos.close();
+
+         // LinearRing ring = new LinearRing(pts, true); // -> Error: LinearRing cannot self-intersect
+         // assertEquals(cp, ring.getCenter());
+     }
+     */
+
+    @Test
+    public void testRegionAtPole() throws Exception {
+        List<Point> pts = new ArrayList<Point>(5);
+        // 3km box that closely matches google earth lat/lon grids lines
+        // ctr=(65° 0' 0" E, 89° 54' 18" S) -89.905 65.0
+        // bbox=(60° 0' 0" E, 89° 54' 36" S) .. (70° 0' 0" E, 89° 54' 0" S)
+        final Point firstPt = new Point(-89.90, 70.0);
+        pts.add(firstPt);
+        pts.add(new Point(-89.90, 60.0));
+        pts.add(new Point(-89.91, 60.0));
+        pts.add(new Point(-89.91, 70.0));
+        pts.add(firstPt);
+
+        // 68km box at poles wrap IDT
+        // Fctr=(143° 7' 27" E, 89° 35' 49" S) -89.59704336185 143.12414264670002
+        // bbox westLon/southLat = (11° 14' 23" E, 89° 38' 21" S) .. (84° 59' 29" W, 89° 33' 17" S)
+        //final Point firstPt = new Point(-89.6392352247,94.8251951251);
+        //pts.add(firstPt);
         //pts.add(new Point(-89.56,-156.6102625609));
-		//pts.add(new Point(-89.56,-84.9913917659));
-		//pts.add(new Point(-89.6060326809, 11.2396770593));
+        //pts.add(new Point(-89.56,-84.9913917659));
+        //pts.add(new Point(-89.6060326809, 11.2396770593));
 
-		// ~500 km box
-		// Fctr=(2° 19' 3" E, 87° 10' 35" S) -87.17634638613053 2.317439417192705
-		// bbox=(westLon/southLat = 124° 21' 52" W, 87° 21' 40" S) .. (128° 59' 57" E, 86° 59' 30" S)
-		//final Point firstPt = new Point(-87.2332504991516, -51.52016400098244);
-		//pts.add(firstPt);
+        // ~500 km box
+        // Fctr=(2° 19' 3" E, 87° 10' 35" S) -87.17634638613053 2.317439417192705
+        // bbox=(westLon/southLat = 124° 21' 52" W, 87° 21' 40" S) .. (128° 59' 57" E, 86° 59' 30" S)
+        //final Point firstPt = new Point(-87.2332504991516, -51.52016400098244);
+        //pts.add(firstPt);
         //pts.add(new Point(-86.99157891594791, 54.83615976433807));
-		//pts.add(new Point(-87.31129990631749, 128.9992986082008));
-		//pts.add(new Point(-87.36111385631315, -124.3644197738154));
+        //pts.add(new Point(-87.31129990631749, 128.9992986082008));
+        //pts.add(new Point(-87.36111385631315, -124.3644197738154));
 
-		Line line = new Line(pts);
-		line.setTessellate(true);
-		Geodetic2DPoint cp = line.getCenter();
+        Line line = new Line(pts);
+        line.setTessellate(true);
+        Geodetic2DPoint cp = line.getCenter();
 
-		System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
+        System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
 
-		final Geodetic2DBounds bbox = line.getBoundingBox();
-		assertTrue(bbox != null && bbox.contains(cp));
+        final Geodetic2DBounds bbox = line.getBoundingBox();
+        assertTrue(bbox != null && bbox.contains(cp));
 
-		System.out.println("bbox=" + bbox);
-		assertTrue(bbox.getNorthLat().inDegrees() > bbox.getSouthLat().inDegrees());
-		System.out.println("north=" + bbox.getNorthLat().inDegrees() + " south=" + bbox.getSouthLat().inDegrees());
-		// north=-89.90 south=-89.91
-		 //west=60.0 east=70.03
+        System.out.println("bbox=" + bbox);
+        assertTrue(bbox.getNorthLat().inDegrees() > bbox.getSouthLat().inDegrees());
+        System.out.println("north=" + bbox.getNorthLat().inDegrees() + " south=" + bbox.getSouthLat().inDegrees());
+        // north=-89.90 south=-89.91
+        //west=60.0 east=70.03
 
-		System.out.println(bbox.getWestLon().inDegrees() + " " + bbox.getEastLon().inDegrees()); // west=60.0 east=70.0 degs
-		System.out.println(bbox.getWestLon().inRadians() + " " + bbox.getEastLon().inRadians()); // west=1.0 1.2
-		// assertTrue(bbox.getEastLon().inDegrees() > bbox.getWestLon().inDegrees()); // fails with 68 km box
+        System.out.println(bbox.getWestLon().inDegrees() + " " + bbox.getEastLon().inDegrees()); // west=60.0 east=70.0 degs
+        System.out.println(bbox.getWestLon().inRadians() + " " + bbox.getEastLon().inRadians()); // west=1.0 1.2
+        // assertTrue(bbox.getEastLon().inDegrees() > bbox.getWestLon().inDegrees()); // fails with 68 km box
 
-		Geodetic2DBounds bounds = new Geodetic2DBounds(bbox);
-		bounds.grow(100); // grow 100 meters larger
-		assertTrue(bounds.contains(bbox));
-		for(Point pt : pts) {
-			assertTrue(bounds.contains(pt.asGeodetic2DPoint()));
-		}
+        Geodetic2DBounds bounds = new Geodetic2DBounds(bbox);
+        bounds.grow(100); // grow 100 meters larger
+        assertTrue(bounds.contains(bbox));
+        for (Point pt : pts) {
+            assertTrue(bounds.contains(pt.asGeodetic2DPoint()));
+        }
 
-		// if (bbox.getSouthLat().inDegrees() > bbox.getNorthLat().inDegrees()) System.out.println("XXX: lat sign flipped"); // debug
-		// System.out.println("south=" + bbox.getSouthLat().inDegrees() + " north=" + bbox.getNorthLat().inDegrees());
+        // if (bbox.getSouthLat().inDegrees() > bbox.getNorthLat().inDegrees()) System.out.println("XXX: lat sign flipped"); // debug
+        // System.out.println("south=" + bbox.getSouthLat().inDegrees() + " north=" + bbox.getNorthLat().inDegrees());
 
-		KmlOutputStream kos = new KmlOutputStream(new FileOutputStream("out.kml"));
-		kos.write(new ContainerStart());
-		Feature f = new Feature();
-		line.setTessellate(true);
-		f.setGeometry(line);
-		kos.write(f);
+        KmlOutputStream kos = new KmlOutputStream(new FileOutputStream("out.kml"));
+        kos.write(new ContainerStart());
+        Feature f = new Feature();
+        line.setTessellate(true);
+        f.setGeometry(line);
+        kos.write(f);
 
-		f.setGeometry(new Point(cp));
-		kos.write(f);
+        f.setGeometry(new Point(cp));
+        kos.write(f);
 
-		f = new Feature();
-		// System.out.println("bbox=" + bbox);
-		// bbox <coordinates>:
-		//60,-89.91
-		//60,-89.90
-		//70,-89.90
-		//70,-89.91
-		//60,-89.91
-		//</coordinates>
-		line = new Line(bbox);
+        f = new Feature();
+        // System.out.println("bbox=" + bbox);
+        // bbox <coordinates>:
+        //60,-89.91
+        //60,-89.90
+        //70,-89.90
+        //70,-89.91
+        //60,-89.91
+        //</coordinates>
+        line = new Line(bbox);
 
-		line.setTessellate(true);
-		f.setGeometry(line);
-		kos.write(f);
+        line.setTessellate(true);
+        f.setGeometry(line);
+        kos.write(f);
 
-		MGRS mgrs = new MGRS(new MGRS(cp).toString(2)); // BAN0904
-		System.out.println(mgrs);
-		bounds = mgrs.getBoundingBox();
-		line = new Line(bounds);
-		assertTrue(bounds.intersects(bbox));
-		assertTrue(bbox.intersects(bounds));
-		line.setTessellate(true);
-		f.setName("mgrs bbox");
-		f.setGeometry(line);
-		kos.write(f);
+        MGRS mgrs = new MGRS(new MGRS(cp).toString(2)); // BAN0904
+        System.out.println(mgrs);
+        bounds = mgrs.getBoundingBox();
+        line = new Line(bounds);
+        assertTrue(bounds.intersects(bbox));
+        assertTrue(bbox.intersects(bounds));
+        line.setTessellate(true);
+        f.setName("mgrs bbox");
+        f.setGeometry(line);
+        kos.write(f);
 
-		kos.write(new ContainerEnd());
-		kos.close();
-	}
+        kos.write(new ContainerEnd());
+        kos.close();
+    }
 
 }
