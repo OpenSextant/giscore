@@ -103,7 +103,7 @@ public class TestDbfOutputStream {
 		SimpleField ui = new SimpleField("ui", Type.UINT);
         ui.setLength(9);
 		SimpleField us = new SimpleField("us", Type.USHORT);
-        us.setLength(5);
+        us.setLength(4);
         SimpleField oid = new SimpleField("oid", Type.OID);
 		
 		s.put(b);
@@ -130,7 +130,7 @@ public class TestDbfOutputStream {
             r.putData(it, RandomUtils.nextInt(10000000));
 			r.putData(sh, (short) RandomUtils.nextInt(10000));
 			r.putData(ui, Math.abs(RandomUtils.nextInt(10000000)));
-			r.putData(us, (short) Math.abs(RandomUtils.nextInt(10000)));
+			r.putData(us, (short) Math.abs(RandomUtils.nextInt(2000)));
 			r.putData(oid, Math.abs(RandomUtils.nextInt(10000000)));
 			data.add(r);
 			dbfos.write(r);
