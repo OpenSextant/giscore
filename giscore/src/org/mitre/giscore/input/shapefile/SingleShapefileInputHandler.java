@@ -45,13 +45,13 @@ import java.util.List;
 /**
  * Read a single shapefile (.prj, .shp, .dbf, etc) to an object buffer for later
  * processing.
- * 
+ *
  * @author DRAND
  */
 public class SingleShapefileInputHandler extends GISInputStreamBase implements
-		IGISInputStream {
-	private static final Logger logger = LoggerFactory.getLogger(SingleShapefileInputHandler.class);
-	
+        IGISInputStream {
+    private static final Logger logger = LoggerFactory.getLogger(SingleShapefileInputHandler.class);
+
     // Constants
     protected static final int SIGNATURE = 9994;
     protected static final int VERSION = 1000;
@@ -62,207 +62,211 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     protected static final int MULTILINE_TYPE = 3;         // 3 is MultiLine  13 is MultiLineZ
     protected static final int MULTINESTEDRINGS_TYPE = 5;  // 5 is Polygon    15 is PolygonZ
     protected static final int MULTIPOINT_TYPE = 8;        // 8 is MultiPoint 18 is MultiPointZ
-    
-	/*
-	 * Schema, derived from the read dbf file
-	 */
-	// private Schema schema;
 
-	/*
-	 * Style derived from the shm file if present
-	 */
-	//private Style style;
+    /*
+      * Schema, derived from the read dbf file
+      */
+    // private Schema schema;
 
-	/*
-	 * Files that hold the essential information for the shapefile.
-	 */
-	//private final File dbfFile;
-	//private final File shpFile;
-	//private final File prjFile;
+    /*
+      * Style derived from the shm file if present
+      */
+    //private Style style;
 
-	/**
-	 * Generates to be returned features, which are decorated with the geo data
-	 * from the shp file and returned.
-	 */
-	private DbfInputStream dbf;
+    /*
+      * Files that hold the essential information for the shapefile.
+      */
+    //private final File dbfFile;
+    //private final File shpFile;
+    //private final File prjFile;
 
-	/**
-	 * Open shp file as a binary input stream
-	 */
-	private FileChannel channel;
-	
-	/**
-	 * Geometry type for this shapefile
-	 */
-	private int shpType;
-	
-	/**
-	 * Where we are in the shpFile currently
-	 */
-	private int fileOffset = 0;
-	
-	/**
-	 * The total length of the file, used to know if we are at the end of the
-	 * shp, in particular when we don't have an associated dbf but always useful
-	 * in case of some sort of error.
-	 */
-	private int fileLength = 0;
-	
-	/*
-	 * Holds the current record length, used to figure out if a geometry read
-	 * is overrunning the current written record for error detection purposes 
-	 */
-	// private int recLen;
+    /**
+     * Generates to be returned features, which are decorated with the geo data
+     * from the shp file and returned.
+     */
+    private DbfInputStream dbf;
+
+    /**
+     * Open shp file as a binary input stream
+     */
+    private FileChannel channel;
+
+    /**
+     * Geometry type for this shapefile
+     */
+    private int shpType;
+
+    /**
+     * Where we are in the shpFile currently
+     */
+    private int fileOffset = 0;
+
+    /**
+     * The total length of the file, used to know if we are at the end of the
+     * shp, in particular when we don't have an associated dbf but always useful
+     * in case of some sort of error.
+     */
+    private int fileLength = 0;
+
+    /*
+      * Holds the current record length, used to figure out if a geometry read
+      * is overrunning the current written record for error detection purposes
+      */
+    // private int recLen;
 
     /**
      * Create <tt>SingleShapefileInputHandler</tt> for single shapefile given
      * input directory and base filename (not including .shp extension) as
-     * base name for .shp, .dbf, and .prj files. 
+     * base name for .shp, .dbf, and .prj files.
+     *
      * @param inputDirectory input directory, must exist
-     * @param shapefilename base shape file name (never null or blank string)
-	 * 				without the .shp extension
+     * @param shapefilename  base shape file name (never null or blank string)
+     *                       without the .shp extension
      * @throws IllegalArgumentException if Input directory is null or does not exist
-     *              or if shapefilename is null or blank string.
-     * @throws IOException if an I/O error occurs
+     *                                  or if shapefilename is null or blank string.
+     * @throws IOException              if an I/O error occurs
      */
-	public SingleShapefileInputHandler(File inputDirectory, String shapefilename)
-			throws IOException {
-		if (inputDirectory == null || !inputDirectory.exists()) {
-			throw new IllegalArgumentException(
-					"Input directory must exist and be non-null");
-		}
-		if (StringUtils.isBlank(shapefilename)) {
-			throw new IllegalArgumentException(
-					"shapefilename should never be null or blank");
-		}
-		//URI uri = new URI("urn:org:mitre:giscore:schema:"
-				//+ UUID.randomUUID().toString());
-		File dbfFile = new File(inputDirectory, shapefilename + ".dbf");
-		File shpFile = new File(inputDirectory, shapefilename + ".shp");
-		File prjFile = new File(inputDirectory, shapefilename + ".prj");
+    public SingleShapefileInputHandler(File inputDirectory, String shapefilename)
+            throws IOException {
+        if (inputDirectory == null || !inputDirectory.exists()) {
+            throw new IllegalArgumentException(
+                    "Input directory must exist and be non-null");
+        }
+        if (StringUtils.isBlank(shapefilename)) {
+            throw new IllegalArgumentException(
+                    "shapefilename should never be null or blank");
+        }
+        //URI uri = new URI("urn:org:mitre:giscore:schema:"
+        //+ UUID.randomUUID().toString());
+        File dbfFile = new File(inputDirectory, shapefilename + ".dbf");
+        File shpFile = new File(inputDirectory, shapefilename + ".shp");
+        File prjFile = new File(inputDirectory, shapefilename + ".prj");
 
-		if (!shpFile.exists()) {
-			throw new IllegalArgumentException(
-					"SHP file missing for shapefile " + shapefilename);
-		}
-		if (prjFile.exists()) {
-			checkPrj(prjFile);
-		}
+        if (!shpFile.exists()) {
+            throw new IllegalArgumentException(
+                    "SHP file missing for shapefile " + shapefilename);
+        }
+        if (prjFile.exists()) {
+            checkPrj(prjFile);
+        }
 
-		if (dbfFile.exists()) {
-			dbf = new DbfInputStream(dbfFile, null);
-			dbf.setRowClass(Feature.class);
-	
-			// First thing in the dbf should be a schema
-			IGISObject ob = dbf.read();
-			if (ob instanceof Schema) {
-				Schema schema = (Schema) ob;
+        if (dbfFile.exists()) {
+            dbf = new DbfInputStream(dbfFile, null);
+            dbf.setRowClass(Feature.class);
+
+            // First thing in the dbf should be a schema
+            IGISObject ob = dbf.read();
+            if (ob instanceof Schema) {
+                Schema schema = (Schema) ob;
                 schema.setName(shapefilename);
-				addFirst(schema);
-			} else {
-				throw new IllegalStateException(
-						"Schema not the first thing returned from dbf");
-			}
-		}
-		
-		FileInputStream fis = new FileInputStream(shpFile);
-		channel = fis.getChannel();
-		readHeader();
-		fileOffset = 100; 
-	}
+                addFirst(schema);
+            } else {
+                throw new IllegalStateException(
+                        "Schema not the first thing returned from dbf");
+            }
+        }
 
-	/**
-	 * Check contents of the prj file to
-	 * 
-	 * @param prjFile
-	 * @throws IOException if an I/O error occurs 
-	 * @throws UnsupportedEncodingException 
-	 */
-	private void checkPrj(File prjFile) throws IOException {
-		FileInputStream fis = new FileInputStream(prjFile);
-		
-		try {
-			Reader reader = new InputStreamReader(fis, "UTF8");
-			StringWriter writer = new StringWriter();
-			IOUtils.copy(reader, writer);
-			PrjReader wkt = new PrjReader(writer.toString());
-			PrjReader.Entry geogcs = wkt.getEntry("GEOGCS");
-			if (geogcs != null && geogcs.getValues().size() > 0) {
-				Object v1 = geogcs.getValues().get(0);
-				if (v1 instanceof String) {
-					String datum = (String) v1;
-					if (! "GCS_WGS_1984".equals(datum)) {
-						logger.warn("Shapefile is not a WGS 84 datum: " + datum);
-					}
-				}
-			}
-		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException(e);
-		} finally {
-			IOUtils.closeQuietly(fis);
-		}
-	}
+        FileInputStream fis = new FileInputStream(shpFile);
+        channel = fis.getChannel();
+        readHeader();
+        fileOffset = 100;
+    }
 
-	/**
-	 * Closes this input stream and releases any system resources 
+    /**
+     * Check contents of the prj file to
+     *
+     * @param prjFile
+     * @throws IOException                  if an I/O error occurs
+     * @throws UnsupportedEncodingException
+     */
+    private void checkPrj(File prjFile) throws IOException {
+        FileInputStream fis = new FileInputStream(prjFile);
+
+        try {
+            Reader reader = new InputStreamReader(fis, "UTF8");
+            StringWriter writer = new StringWriter();
+            IOUtils.copy(reader, writer);
+            PrjReader wkt = new PrjReader(writer.toString());
+            PrjReader.Entry geogcs = wkt.getEntry("GEOGCS");
+            if (geogcs != null && geogcs.getValues().size() > 0) {
+                Object v1 = geogcs.getValues().get(0);
+                if (v1 instanceof String) {
+                    String datum = (String) v1;
+                    if (!"GCS_WGS_1984".equals(datum)) {
+                        logger.warn("Shapefile is not a WGS 84 datum: " + datum);
+                    }
+                }
+            }
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(e);
+        } finally {
+            IOUtils.closeQuietly(fis);
+        }
+    }
+
+    /**
+     * Closes this input stream and releases any system resources
      * associated with the stream.
-	 * @throws RuntimeException if an I/O error occurs closing shp stream  
-	 */
-	public void close() {
+     *
+     * @throws RuntimeException if an I/O error occurs closing shp stream
+     */
+    public void close() {
         RuntimeException channelCloseException = null;
-		if (channel != null) {
-			try {
-				channel.close();
-			} catch (IOException e) {
+        if (channel != null) {
+            try {
+                channel.close();
+            } catch (IOException e) {
                 channelCloseException = new RuntimeException("Problem closing shp stream", e);
-			}
-			channel = null;
-		}
-		if (dbf != null) {
-			dbf.close();
-			dbf = null;
-		}
+            }
+            channel = null;
+        }
+        if (dbf != null) {
+            dbf.close();
+            dbf = null;
+        }
         // if failed closing channel then throw exception now
         if (channelCloseException != null) throw channelCloseException;
-	}
+    }
 
-	public IGISObject read() throws IOException {
-		if (hasSaved()) {
-			return readSaved();
-		} else {
-			return readNext();
-		}
-	}
-	
-	/**
-	 * Read the next feature from the shapefile. A shapefile will contain a 
-	 * uniform set of geometry features. 
-	 * @return the next feature or <code>null</code> if we are done.
-	 * @throws IOException if an I/O error occurs 
-	 */
+    public IGISObject read() throws IOException {
+        if (hasSaved()) {
+            return readSaved();
+        } else {
+            return readNext();
+        }
+    }
+
+    /**
+     * Read the next feature from the shapefile. A shapefile will contain a
+     * uniform set of geometry features.
+     *
+     * @return the next feature or <code>null</code> if we are done.
+     * @throws IOException              if an I/O error occurs
+     * @throws IllegalArgumentException if unable to read a valid geometry
+     */
     private IGISObject readNext() throws IOException {
-    	if (fileOffset >= (2 * fileLength)) return null;
-    	
-    	Feature f = null;
-    	if (dbf != null) {
-    		f = (Feature) dbf.read();
-    	} else {
-    		f = new Feature();
-    	}
-    	boolean is3D = is3D(shpType);
-    	boolean includeM = isM(shpType);
-    	if (f != null) {
-    		Geometry geo = getGeometry(is3D, includeM);
-    		f.setGeometry(geo);
-    	}
-		return f;
-	}
-    
+        if (fileOffset >= (2 * fileLength)) return null;
+
+        Feature f;
+        if (dbf != null) {
+            f = (Feature) dbf.read();
+        } else {
+            f = new Feature();
+        }
+        boolean is3D = is3D(shpType);
+        boolean includeM = isM(shpType);
+        if (f != null) {
+            Geometry geo = getGeometry(is3D, includeM);
+            f.setGeometry(geo);
+        }
+        return f;
+    }
+
     // Read the next Geometry Object and validate type. Return null at valid EOF.
     private Geometry getGeometry(boolean is3D, boolean includeM)
             throws IOException, IllegalArgumentException {
         // EOF is OK if it occurs here, otherwise we'll throw the exception to caller
-    	ByteBuffer buffer = channel.map(MapMode.READ_ONLY, fileOffset, 8);
+        ByteBuffer buffer = channel.map(MapMode.READ_ONLY, fileOffset, 8);
         int num = readInt(buffer, ByteOrder.BIG_ENDIAN);
         int contentLen = readInt(buffer, ByteOrder.BIG_ENDIAN); // In 16 bit words
         int nextFilePos = 2 * (contentLen + 4) + fileOffset;
@@ -286,46 +290,47 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
                 else if (st == MULTINESTEDRINGS_TYPE) geomObj = getPolygon(buffer, is3D, includeM);
                 else if (st == MULTIPOINT_TYPE) geomObj = getMultipoint(buffer, is3D, includeM);
                 else throw new IOException("Shapefile contains shape type (" +
-                        shpType + ") that is currently unsupported");
+                            shpType + ") that is currently unsupported");
             }
         }
         fileOffset = nextFilePos; // Reposition for next call
         return geomObj;
     }
 
-	/**
+    /**
      * Utility method to test for 3D geometry based on shapeType code
-     * 
+     *
      * @param shapeType
      * @return
      */
     protected boolean is3D(int shapeType) {
         return (shapeType > 10);
     }
-    
+
     /**
      * Utility method to test for geometry that include M values. We ignore M
      * values in these methods but must account for them in the data
-     * 
+     *
      * @param shapeType
      * @return
      */
     protected boolean isM(int shapeType) {
-    	return (shapeType > 20);
+        return (shapeType > 20);
     }
 
-	/**
-	 * Read the header from the stream
-	 * @throws IOException if an error occurs
-	 * @throws IllegalArgumentException 
-	 */
-	private void readHeader() throws IllegalArgumentException, IOException {
-    	ByteBuffer buffer = channel.map(MapMode.READ_ONLY, 0, 100);
-		shpType = getShapeTypeFromHeader(buffer);
-		getBoundingBoxFromHeader(buffer, is3D(shpType));
-	}
-	
-	// Read first part of shapefile header and get shapeType if possible
+    /**
+     * Read the header from the stream
+     *
+     * @throws IOException              if an error occurs
+     * @throws IllegalArgumentException
+     */
+    private void readHeader() throws IllegalArgumentException, IOException {
+        ByteBuffer buffer = channel.map(MapMode.READ_ONLY, 0, 100);
+        shpType = getShapeTypeFromHeader(buffer);
+        getBoundingBoxFromHeader(buffer, is3D(shpType));
+    }
+
+    // Read first part of shapefile header and get shapeType if possible
     private int getShapeTypeFromHeader(ByteBuffer buffer)
             throws IOException, IllegalArgumentException {
         // Read and validate the shapefile signature (should be 9994)
@@ -344,7 +349,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         return readInt(buffer, ByteOrder.LITTLE_ENDIAN);
     }
 
-	// Read the remainder of shapefile header and get bounding box if possible
+    // Read the remainder of shapefile header and get bounding box if possible
     private Geodetic2DBounds getBoundingBoxFromHeader(ByteBuffer buffer, boolean is3D)
             throws IOException {
         // Read Bounding Box coordinates (assume WGS-84 decimal degrees, elevation in meters)
@@ -403,7 +408,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         for (int i = 0; i < nParts; i++) parts[i] = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
         return parts;
     }
-    
+
     // Read PolyLine and Polygon point values and return Geodetic point array
     private Geodetic2DPoint[] getPolyPoints(ByteBuffer buffer, int nPoints, boolean is3D, boolean includeM)
             throws IOException {
@@ -421,11 +426,11 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
             readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip Zmax
             double[] z = new double[nPoints];
             try {
-	            for (int i = 0; i < nPoints; i++) {
-	                z[i] = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
-	            }
-            } catch(BufferUnderflowException bfe) {
-            	logger.warn("Found too few z-values, the rest will be taken as 0.0");
+                for (int i = 0; i < nPoints; i++) {
+                    z[i] = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
+                }
+            } catch (BufferUnderflowException bfe) {
+                logger.warn("Found too few z-values, the rest will be taken as 0.0");
             }
             // Convert x, y, and z values into Geodetic points, ignoring the m values
             pts = new Geodetic3DPoint[nPoints];
@@ -442,19 +447,19 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         // Do the following just to get the spanning right, we ignore the m 
         // values
         if (includeM) {
-        	try {
-	            readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip Mmin
-	            readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip Mmax
-	            for (int i = 0; i < nPoints; i++) {
-	                readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip measured vals
-	            }
-        	} catch(BufferUnderflowException bfe) {
-        		logger.warn("Found too few m-values, but they were being ignored anyway");
-        	}
+            try {
+                readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip Mmin
+                readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip Mmax
+                for (int i = 0; i < nPoints; i++) {
+                    readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // skip measured vals
+                }
+            } catch (BufferUnderflowException bfe) {
+                logger.warn("Found too few m-values, but they were being ignored anyway");
+            }
         }
         return pts;
     }
-    
+
     // Read next MultiLine (ESRI Polyline or PolylineZ) record
     // Take flattened file structure and construct the part hierarchy
     private Geometry getPolyLine(ByteBuffer buffer, boolean is3D, boolean includeM)
@@ -473,25 +478,25 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
             lnList.add(new Line(ptList));
         }
         if (lnList.size() == 1)
-        	return lnList.get(0);
-        else 
-        	return new MultiLine(lnList);
+            return lnList.get(0);
+        else
+            return new MultiLine(lnList);
     }
-    
 
-	/**
-	 * Get the polygon(s) from the information present. We take the points in the
-	 * poly and turn them into rings. Then the rings are sorted into outer rings,
-	 * which are distinguished by being clockwise rings, and inner rings, which
-	 * are sorted by containment. 
-	 * 
-	 * @param is3D the shapefile type indicated that this shape has z data
-	 * @param includeM the shapefile type indicated that this shape has m or 
-	 * measured data
-	 * @return a geometry 
-	 * @throws IOException
-	 * @throws IllegalArgumentException
-	 */
+
+    /**
+     * Get the polygon(s) from the information present. We take the points in the
+     * poly and turn them into rings. Then the rings are sorted into outer rings,
+     * which are distinguished by being clockwise rings, and inner rings, which
+     * are sorted by containment.
+     *
+     * @param is3D     the shapefile type indicated that this shape has z data
+     * @param includeM the shapefile type indicated that this shape has m or
+     *                 measured data
+     * @return a geometry
+     * @throws IOException
+     * @throws IllegalArgumentException
+     */
     private Geometry getPolygon(ByteBuffer buffer, boolean is3D, boolean includeM)
             throws IOException, IllegalArgumentException {
         int nParts = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
@@ -510,73 +515,73 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
             for (int i = 0; i < n; i++) ptList.add(new Point(pts[k++]));
             LinearRing r = new LinearRing(ptList);
             if (r.clockwise()) {
-            	PolyHolder newPoly = new PolyHolder();
-            	newPoly.setOuterRing(r);
-            	polyholders.add(newPoly);
+                PolyHolder newPoly = new PolyHolder();
+                newPoly.setOuterRing(r);
+                polyholders.add(newPoly);
             } else {
-            	// Find a holder that has the given inner in its bounds
-            	boolean found = false;
-            	for(PolyHolder holder : polyholders) {
-            		LinearRing outer = holder.getOuterRing();
-            		if (outer.contains(r)) {
-            			holder.addInnerRing(r);
-            			found = true;
-            			break;
-            		}
-            	}
-            	if (found == false) {
-            		savedRings.add(r);
-            	}
+                // Find a holder that has the given inner in its bounds
+                boolean found = false;
+                for (PolyHolder holder : polyholders) {
+                    LinearRing outer = holder.getOuterRing();
+                    if (outer.contains(r)) {
+                        holder.addInnerRing(r);
+                        found = true;
+                        break;
+                    }
+                }
+                if (found == false) {
+                    savedRings.add(r);
+                }
             }
         }
         ArrayList<Polygon> polyList = new ArrayList<Polygon>();
         // Address all the saved rings
-        for(LinearRing saved : savedRings) {
-        	// Find a holder that has the given inner in its bounds
-        	boolean found = false;
-        	for(PolyHolder holder : polyholders) {
-        		LinearRing outer = holder.getOuterRing();
-        		if (outer.contains(saved)) {
-        			holder.addInnerRing(saved);
-        			found = true;
-        			break;
-        		}
-        	}
-        	if (!found) {
-        		// If we don't find something then we'll treat the ring as a 
-        		// poly itself
-        		List<Point> rpts = new ArrayList<Point>();
-        		rpts.addAll(saved.getPoints());
-        		Collections.reverse(rpts);
-        		Polygon poly = new Polygon(new LinearRing(rpts));
-        		polyList.add(poly);
-        	}
+        for (LinearRing saved : savedRings) {
+            // Find a holder that has the given inner in its bounds
+            boolean found = false;
+            for (PolyHolder holder : polyholders) {
+                LinearRing outer = holder.getOuterRing();
+                if (outer.contains(saved)) {
+                    holder.addInnerRing(saved);
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                // If we don't find something then we'll treat the ring as a
+                // poly itself
+                List<Point> rpts = new ArrayList<Point>();
+                rpts.addAll(saved.getPoints());
+                Collections.reverse(rpts);
+                Polygon poly = new Polygon(new LinearRing(rpts));
+                polyList.add(poly);
+            }
         }
         // Decide what to do. If we have one object we should return a single
         // polygon or ring. Otherwise we return a multipolygons
         if ((polyholders.size() + polyList.size()) > 1) {
-	        // Make polygons from holders and create
-	        for(PolyHolder holder : polyholders) {
-	        	polyList.add(holder.toPolygon());
-	        }
-	        return new MultiPolygons(polyList);
+            // Make polygons from holders and create
+            for (PolyHolder holder : polyholders) {
+                polyList.add(holder.toPolygon());
+            }
+            return new MultiPolygons(polyList);
         } else if ((polyholders.size() + polyList.size()) == 1) {
-        	Polygon poly;
-        	if (polyholders.size() > 0) {
-        		poly = polyholders.get(0).toPolygon();
-        	} else {
-        		poly = polyList.get(0);
-        	}
-        	// If this has only an outer ring then return just that
-        	if (poly.getLinearRings().isEmpty()) 
-        		return poly.getOuterRing();
-        	else
-        		return poly;
+            Polygon poly;
+            if (polyholders.size() > 0) {
+                poly = polyholders.get(0).toPolygon();
+            } else {
+                poly = polyList.get(0);
+            }
+            // If this has only an outer ring then return just that
+            if (poly.getLinearRings().isEmpty())
+                return poly.getOuterRing();
+            else
+                return poly;
         } else {
-        	throw new IllegalStateException("Where's the geometry?");
+            throw new IllegalStateException("Where's the geometry?");
         }
     }
-    
+
     // Read next MultiPoint (ESRI MultiPoint or MultiPointZ) record
     private Geometry getMultipoint(ByteBuffer buffer, boolean is3D, boolean includeM)
             throws IOException {
@@ -585,30 +590,32 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         ArrayList<Point> ptList = new ArrayList<Point>();
         for (int i = 0; i < nPoints; i++) ptList.add(new Point(pts[i]));
         if (ptList.size() == 1)
-        	return ptList.get(0);
+            return ptList.get(0);
         else
-        	return new MultiPoint(ptList);
+            return new MultiPoint(ptList);
     }
-    
+
     /**
      * Set the order and read the next integer from the buffer
+     *
      * @param buffer
      * @param order
      * @return
      */
     private int readInt(ByteBuffer buffer, ByteOrder order) {
-		buffer.order(order);
-		return buffer.getInt();
-	}
-    
+        buffer.order(order);
+        return buffer.getInt();
+    }
+
     /**
      * Set the order and read the next double from the buffer
+     *
      * @param buffer
      * @param order
-     * @return  The double value at the buffer's current position
+     * @return The double value at the buffer's current position
      */
     private double readDouble(ByteBuffer buffer, ByteOrder order) {
-    	buffer.order(order);
-    	return buffer.getDouble();
-	}
+        buffer.order(order);
+        return buffer.getDouble();
+    }
 }
