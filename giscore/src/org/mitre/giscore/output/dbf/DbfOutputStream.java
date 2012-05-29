@@ -278,11 +278,10 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 					else
 						writeField(stream, decimalFormat.format(data
 								.doubleValue()), 34);
-				} else if (Type.INT.equals(ft) || Type.UINT.equals(ft)
-						|| Type.OID.equals(ft)) {
+				} else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
 					Number data = getNumber(row.getData(field));
 					if (data != null) {
-						int val = (int) data.longValue();
+						int val = data.intValue();
 						writeField(stream, Integer.toString(val), 10);
 					} else {
 						writeField(stream, "", 10);
@@ -290,18 +289,17 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 				} else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
 					Number data = getNumber(row.getData(field));
 					if (data != null) {
-						short val = (short) data.longValue();
+						short val = data.shortValue();
 						writeField(stream, Short.toString(val), 6);
 					} else {
 						writeField(stream, "", 6);
 					}
-                } else if (Type.LONG.equals(ft)) {
+                } else if (Type.LONG.equals(ft) || Type.OID.equals(ft)) {
                     Number data = getNumber(row.getData(field));
                     if (data == null)
                         writeField(stream, "", length);
                     else {
-                        String value = Long.toString(data.longValue());
-                        writeField(stream, value, length);
+                        writeField(stream, Long.toString(data.longValue()), length);
                     }
 				} else if (Type.DATE.equals(ft)) {
 					Date data = getDate(row.getData(field));
@@ -406,11 +404,15 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			return (Number) data;
 		} else {
 			String str = data.toString();
-			if (str.contains(".")) {
-				return new Double(str);
-			} else {
-				return new Long(str);
+            // max possible Long value has 20 characters
+			if (str.length() <= 20 && str.indexOf('.') == -1) {
+                try {
+                    return Long.valueOf(str);
+                } catch(NumberFormatException nfe) {
+                    // ignore and try as Double
+                }
 			}
+            return new Double(str);
 		}
 	}
 
