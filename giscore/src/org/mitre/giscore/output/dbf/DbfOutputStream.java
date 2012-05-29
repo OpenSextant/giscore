@@ -51,249 +51,246 @@ import java.util.TimeZone;
 
 /**
  * Output a DBF file using the gisoutputstream interface.
- * 
+ *
  * @author DRAND
  */
 public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
     private static final Logger log = LoggerFactory.getLogger(DbfOutputStream.class);
 
     private static final String US_ASCII = "US-ASCII";
-	private static final byte[] blankpad = new byte[255];
-	private final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-	private final DateFormat inputDateFormats[] = new DateFormat[] {
-			new SimpleDateFormat(IKml.ISO_DATE_FMT),
-			new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
-			new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
-			new SimpleDateFormat("MM/dd/yyyy hh:mm"),
-			new SimpleDateFormat("MM/dd/yyyy"),
-			new SimpleDateFormat("dd-MMM-yyyy"), dateFormat };
-	private final DecimalFormat decimalFormat = new DecimalFormat(
-			"+###############0.################;-###############0.################");
-	private final SafeDateFormat isoDateFormat = new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    private static final byte[] blankpad = new byte[255];
+    private final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
+    private final DateFormat inputDateFormats[] = new DateFormat[]{
+            new SimpleDateFormat(IKml.ISO_DATE_FMT),
+            new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
+            new SimpleDateFormat("MM/dd/yyyy hh:mm"),
+            new SimpleDateFormat("MM/dd/yyyy"),
+            new SimpleDateFormat("dd-MMM-yyyy"), dateFormat};
+    private final DecimalFormat decimalFormat = new DecimalFormat(
+            "+###############0.################;-###############0.################");
+    private final SafeDateFormat isoDateFormat = new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
-	{
-		// instance initialization
-		TimeZone tz = TimeZone.getTimeZone("UTC");
-		for (DateFormat sf : inputDateFormats) {
-			sf.setTimeZone(tz);
-		}
-		dateFormat.setTimeZone(tz);
-	}
-	
-	static {
-		for(int i = 0; i < blankpad.length; i++) {
-			blankpad[i] = ' ';
-		}
-	}
+    {
+        // instance initialization
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        for (DateFormat sf : inputDateFormats) {
+            sf.setTimeZone(tz);
+        }
+        dateFormat.setTimeZone(tz);
+    }
 
-	/**
-	 * Output stream, set in ctor.
-	 */
-	private BinaryOutputStream stream;
+    static {
+        for (int i = 0; i < blankpad.length; i++) {
+            blankpad[i] = ' ';
+        }
+    }
 
-	/**
-	 * A data holder for the rows being written.
-	 */
-	private final ObjectBuffer buffer;
+    /**
+     * Output stream, set in ctor.
+     */
+    private BinaryOutputStream stream;
 
-	/**
-	 * The schema. The first object handled must be the schema. This value
-	 * should never be <code>null</code> after that. If a second schema arrives
-	 * an illegal state exception is thrown.
-	 */
-	private Schema schema;
+    /**
+     * A data holder for the rows being written.
+     */
+    private final ObjectBuffer buffer;
 
-	/**
-	 * Track the number of records to save in the header
-	 */
-	private int numRecords = 0;
+    /**
+     * The schema. The first object handled must be the schema. This value
+     * should never be <code>null</code> after that. If a second schema arrives
+     * an illegal state exception is thrown.
+     */
+    private Schema schema;
 
-	/**
-	 * Ctor
-	 * 
-	 * @param outputStream
-	 *            the output stream
-	 * @param arguments
-	 *            the optional arguments, none are defined for this stream
-	 * @throws IOException if an error occurs
-	 */
-	public DbfOutputStream(OutputStream outputStream, Object[] arguments)
-			throws IOException {
-		if (outputStream == null) {
-			throw new IllegalArgumentException(
-					"outputStream should never be null");
-		}
-		stream = new BinaryOutputStream(outputStream);
-		this.buffer = new FieldCachingObjectBuffer();
+    /**
+     * Track the number of records to save in the header
+     */
+    private int numRecords = 0;
 
-		// Write the xBaseFile signature (should be 0x03 for dBase III)
-		stream.writeByte(SIGNATURE);
-	}
+    /**
+     * Ctor
+     *
+     * @param outputStream the output stream
+     * @param arguments    the optional arguments, none are defined for this stream
+     * @throws IOException if an error occurs
+     */
+    public DbfOutputStream(OutputStream outputStream, Object[] arguments)
+            throws IOException {
+        if (outputStream == null) {
+            throw new IllegalArgumentException(
+                    "outputStream should never be null");
+        }
+        stream = new BinaryOutputStream(outputStream);
+        this.buffer = new FieldCachingObjectBuffer();
 
-	public DbfOutputStream(OutputStream outputStream, Schema schema,
-			ObjectBuffer buffer) throws IOException {
-		if (outputStream == null) {
-			throw new IllegalArgumentException("outputStream should never be null");
-		}
-		this.schema = schema;
-		this.buffer = buffer;
-		stream = new BinaryOutputStream(outputStream);
-		numRecords = (int) buffer.count();
-		
-		// Write the xBaseFile signature (should be 0x03 for dBase III)
-		stream.writeByte(SIGNATURE);
-	}
+        // Write the xBaseFile signature (should be 0x03 for dBase III)
+        stream.writeByte(SIGNATURE);
+    }
 
-	public void write(IGISObject object) {
-		if (object instanceof Schema) {
-			if (schema == null) {
-				schema = (Schema) object;
-			} else {
-				throw new IllegalStateException(
-						"Dbf can only handle one set of column definitions");
-			}
-		} else if (object instanceof Row) {
-			try {
-				writeRow((Row) object);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		}
-	}
+    public DbfOutputStream(OutputStream outputStream, Schema schema,
+                           ObjectBuffer buffer) throws IOException {
+        if (outputStream == null) {
+            throw new IllegalArgumentException("outputStream should never be null");
+        }
+        this.schema = schema;
+        this.buffer = buffer;
+        stream = new BinaryOutputStream(outputStream);
+        numRecords = (int) buffer.count();
 
-	private void writeRow(Row object) throws IOException {
-		numRecords++;
-		buffer.write(object);
-	}
+        // Write the xBaseFile signature (should be 0x03 for dBase III)
+        stream.writeByte(SIGNATURE);
+    }
 
-	public void close() throws IOException {
-		if (stream != null) {
-			try {
-			if (buffer.count() > Integer.MAX_VALUE) {
-				throw new IllegalStateException(
-						"Trying to persist too many elements to DBF file, only 2^32 - 1 are allowed");
-			}
+    public void write(IGISObject object) {
+        if (object instanceof Schema) {
+            if (schema == null) {
+                schema = (Schema) object;
+            } else {
+                throw new IllegalStateException(
+                        "Dbf can only handle one set of column definitions");
+            }
+        } else if (object instanceof Row) {
+            try {
+                writeRow((Row) object);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
-			// Write today's date as the date of last update (3 byte binary YY
-			// MM DD
-			// format)
-			String today = dateFormat.format(new Date(System
-					.currentTimeMillis()));
-			// 2 digit year is written with Y2K +1900 assumption so add 100
-			// since
-			// we're past 2000
-			stream.write(100 + Byte.parseByte(today.substring(2, 4)));
-			for (int i = 4; i <= 6; i += 2)
-				stream.write(Byte.parseByte(today.substring(i, i + 2)));
+    private void writeRow(Row object) throws IOException {
+        numRecords++;
+        buffer.write(object);
+    }
 
-			// Write record count (offset 0x4), header length (based on number of fields),
-			// and
-			// record length
-			stream.writeInt((int) buffer.count(), ByteOrder.LITTLE_ENDIAN);
-			stream.writeShort((short) ((schema.getKeys().size() * 32) + 33),
-					ByteOrder.LITTLE_ENDIAN);
-			stream.writeShort( getRecordLength(), ByteOrder.LITTLE_ENDIAN);
+    public void close() throws IOException {
+        if (stream != null) {
+            try {
+                if (buffer.count() > Integer.MAX_VALUE) {
+                    throw new IllegalStateException(
+                            "Trying to persist too many elements to DBF file, only 2^32 - 1 are allowed");
+                }
 
-			// Fill in reserved and unused header fields we don't care about
-			// with
-			// zeros
-			for (int k = 0; k < 20; k++)
-				stream.writeByte(NUL);
+                // Write today's date as the date of last update (3 byte binary YY
+                // MM DD
+                // format)
+                String today = dateFormat.format(new Date(System
+                        .currentTimeMillis()));
+                // 2 digit year is written with Y2K +1900 assumption so add 100
+                // since
+                // we're past 2000
+                stream.write(100 + Byte.parseByte(today.substring(2, 4)));
+                for (int i = 4; i <= 6; i += 2)
+                    stream.write(Byte.parseByte(today.substring(i, i + 2)));
 
-			byte len[] = outputHeader();
-			
-			try {
-				outputRows(len);
-			} catch (ClassNotFoundException e) {
-				throw new RuntimeException(e);
-			} catch (InstantiationException e) {
-				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException(e);
-			}
-		} finally {
-			IOUtils.closeQuietly(stream);
-			stream = null;
-		}
-		}
-	}
+                // Write record count (offset 0x4), header length (based on number of fields),
+                // and
+                // record length
+                stream.writeInt((int) buffer.count(), ByteOrder.LITTLE_ENDIAN);
+                stream.writeShort((short) ((schema.getKeys().size() * 32) + 33),
+                        ByteOrder.LITTLE_ENDIAN);
+                stream.writeShort(getRecordLength(), ByteOrder.LITTLE_ENDIAN);
 
-	private short getRecordLength() {
-		short rval = 1; // Marker byte for deleted records
-		for (String fieldname : schema.getKeys()) {
-			SimpleField field = schema.get(fieldname);
-			rval += getFieldLength(field);
-		}
-		return rval;
-	}
+                // Fill in reserved and unused header fields we don't care about
+                // with
+                // zeros
+                for (int k = 0; k < 20; k++)
+                    stream.writeByte(NUL);
 
-	private int getFieldLength(SimpleField field) {
-		Type ft = field.getType();
-		int fieldlen = field.getLength();
-		if (Type.STRING.equals(field.getType())) {
-			if (fieldlen > MAX_CHARLEN)
-				fieldlen = MAX_CHARLEN;
-		} else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
-			fieldlen = 34;
-		} else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
-			fieldlen = 10;
-		} else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
-			fieldlen = 6;
+                byte len[] = outputHeader();
+
+                try {
+                    outputRows(len);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                } catch (InstantiationException e) {
+                    throw new RuntimeException(e);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            } finally {
+                IOUtils.closeQuietly(stream);
+                stream = null;
+            }
+        }
+    }
+
+    private short getRecordLength() {
+        short rval = 1; // Marker byte for deleted records
+        for (String fieldname : schema.getKeys()) {
+            SimpleField field = schema.get(fieldname);
+            rval += getFieldLength(field);
+        }
+        return rval;
+    }
+
+    private int getFieldLength(SimpleField field) {
+        Type ft = field.getType();
+        int fieldlen = field.getLength();
+        if (Type.STRING.equals(field.getType())) {
+            if (fieldlen > MAX_CHARLEN)
+                fieldlen = MAX_CHARLEN;
+        } else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
+            fieldlen = 34;
+        } else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
+            fieldlen = 10;
+        } else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
+            fieldlen = 6;
         } else if (Type.LONG.equals(ft)) {
             if (fieldlen < 15) fieldlen = 15; // set minlength = 15
             else if (fieldlen > 20) {
                 // max formatting of Long value (Long.MIN_VALUE) is -9223372036854775808 or 20 characters
                 fieldlen = 20;
             }
-		} else if (Type.OID.equals(ft)) {
-			fieldlen = 10;
-		} else if (Type.DATE.equals(ft)) {
-			fieldlen = 8;
-		} else if (Type.BOOL.equals(ft)) {
-			fieldlen = 1;
-		} else {
-			fieldlen = 32;
-		}
-		return fieldlen;
-	}
-	
-	private void outputRows(byte len[]) throws ClassNotFoundException,
-			IOException, InstantiationException, IllegalAccessException {
-		Row row = (Row) buffer.read();
+        } else if (Type.OID.equals(ft)) {
+            fieldlen = 10;
+        } else if (Type.DATE.equals(ft)) {
+            fieldlen = 8;
+        } else if (Type.BOOL.equals(ft)) {
+            fieldlen = 1;
+        } else {
+            fieldlen = 32;
+        }
+        return fieldlen;
+    }
 
-		while (row != null) {
-			stream.writeByte(' ');
-			int i = 0;
-			for (SimpleField field : schema.getFields()) {
-				short length = (short) len[i++];
-				if (length < 0) length += 256;
-				Type ft = field.getType();
-				if (Type.STRING.equals(field.getType())) {
-					String data = getString(row.getData(field));
-					writeField(stream, data, length);
-				} else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
-					Number data = getNumber(row.getData(field));
-					if (data == null)
-						writeField(stream, "", length);
-					else
-						writeField(stream, decimalFormat.format(data
-								.doubleValue()), 34);
-				} else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
-					Number data = getNumber(row.getData(field));
-					if (data != null) {
-						int val = data.intValue();
-						writeField(stream, Integer.toString(val), 10);
-					} else {
-						writeField(stream, "", 10);
-					}
-				} else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
-					Number data = getNumber(row.getData(field));
-					if (data != null) {
-						short val = data.shortValue();
-						writeField(stream, Short.toString(val), 6);
-					} else {
-						writeField(stream, "", 6);
-					}
+    private void outputRows(byte len[]) throws ClassNotFoundException,
+            IOException, InstantiationException, IllegalAccessException {
+        Row row = (Row) buffer.read();
+
+        while (row != null) {
+            stream.writeByte(' ');
+            int i = 0;
+            for (SimpleField field : schema.getFields()) {
+                short length = (short) len[i++];
+                if (length < 0) length += 256;
+                Type ft = field.getType();
+                if (Type.STRING.equals(field.getType())) {
+                    String data = getString(row.getData(field));
+                    writeField(stream, data, length);
+                } else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
+                    Number data = getNumber(row.getData(field));
+                    if (data == null)
+                        writeField(stream, "", length);
+                    else
+                        writeField(stream, decimalFormat.format(data
+                                .doubleValue()), 34);
+                } else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
+                    Number data = getNumber(row.getData(field));
+                    if (data != null) {
+                        int val = data.intValue();
+                        writeField(stream, Integer.toString(val), 10);
+                    } else {
+                        writeField(stream, "", 10);
+                    }
+                } else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
+                    Number data = getNumber(row.getData(field));
+                    if (data != null) {
+                        short val = data.shortValue();
+                        writeField(stream, Short.toString(val), 6);
+                    } else {
+                        writeField(stream, "", 6);
+                    }
                 } else if (Type.LONG.equals(ft) || Type.OID.equals(ft)) {
                     Number data = getNumber(row.getData(field));
                     if (data == null)
@@ -301,196 +298,194 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
                     else {
                         writeField(stream, Long.toString(data.longValue()), length);
                     }
-				} else if (Type.DATE.equals(ft)) {
-					Date data = getDate(row.getData(field));
-					if (data != null) {
-						writeField(stream, dateFormat.format(data), 8);
-					} else {
-						writeField(stream, "", 8);
-					}
-				} else if (Type.BOOL.equals(ft)) {
-					Boolean bool = getBoolean(row.getData(field));
-					if (bool == null)
-						writeField(stream, "?", 1);
-					else if (bool)
-						writeField(stream, "t", 1);
-					else
-						writeField(stream, "f", 1);
-				} else {
-					String data = getString(row.getData(field));
+                } else if (Type.DATE.equals(ft)) {
+                    Date data = getDate(row.getData(field));
+                    if (data != null) {
+                        writeField(stream, dateFormat.format(data), 8);
+                    } else {
+                        log.error("XXX: null date");
+                        writeField(stream, "", 8);
+                    }
+                } else if (Type.BOOL.equals(ft)) {
+                    Boolean bool = getBoolean(row.getData(field));
+                    if (bool == null)
+                        writeField(stream, "?", 1);
+                    else if (bool)
+                        writeField(stream, "t", 1);
+                    else
+                        writeField(stream, "f", 1);
+                } else {
+                    String data = getString(row.getData(field));
                     writeField(stream, data, 32);
-				}
-			}
-			row = (Row) buffer.read();
-		}
-	}
+                }
+            }
+            row = (Row) buffer.read();
+        }
+    }
 
-	/**
-	 * Write the field data, truncating at the field length
-	 * 
-	 * @param stream
-	 *            the stream
-	 * @param data
-	 *            the string to write, may be more or less than the field
-	 *            length. This will be converted to ascii
-	 * @param length
-	 *            the field length
-	 * @throws IOException if an error occurs
-	 */
-	private void writeField(BinaryOutputStream stream, String data, int length)
-			throws IOException {
-		byte str[] = data.getBytes(US_ASCII);
-		if (str.length < length) {
-			stream.write(str, 0, str.length);
-			stream.write(blankpad, 0, length - str.length);
-		} else {
+    /**
+     * Write the field data, truncating at the field length
+     *
+     * @param stream the stream
+     * @param data   the string to write, may be more or less than the field
+     *               length. This will be converted to ascii
+     * @param length the field length
+     * @throws IOException if an error occurs
+     */
+    private void writeField(BinaryOutputStream stream, String data, int length)
+            throws IOException {
+        byte str[] = data.getBytes(US_ASCII);
+        if (str.length < length) {
+            stream.write(str, 0, str.length);
+            stream.write(blankpad, 0, length - str.length);
+        } else {
             if (str.length > length) {
                 log.trace("Value truncated - value too large for field: {} maxlen={}", data, length);
             }
-			stream.write(str, 0, length);
-		}
-	}
+            stream.write(str, 0, length);
+        }
+    }
 
     @Nullable
-	private Boolean getBoolean(Object data) {
-		if (data instanceof Boolean) {
-			return (Boolean) data;
-		} else if (data instanceof String) {
-			String val = (String) data;
-			val = val.toLowerCase();
-			if (val.equals("?"))
-				return null;
-			return val.startsWith("t") || val.startsWith("y")
-					|| "1".equals(val);
-		} else {
-			return false;
-		}
-	}
+    private Boolean getBoolean(Object data) {
+        if (data instanceof Boolean) {
+            return (Boolean) data;
+        } else if (data instanceof String) {
+            String val = (String) data;
+            val = val.toLowerCase();
+            if (val.equals("?"))
+                return null;
+            return val.startsWith("t") || val.startsWith("y")
+                    || "1".equals(val);
+        } else {
+            return false;
+        }
+    }
 
     @NonNull
-	private String getString(Object data) {
-		if (data == null) {
-			return "";
-		} else if (data instanceof Date) {
-			return isoDateFormat.format((Date) data);
-		} else {
-			return data.toString();
-		}
-	}
+    private String getString(Object data) {
+        if (data == null) {
+            return "";
+        } else if (data instanceof Date) {
+            return isoDateFormat.format((Date) data);
+        } else {
+            return data.toString();
+        }
+    }
 
-	private Date getDate(Object data) {
-		if (data == null) {
-			return null;
-		} else if (data instanceof Date) {
-			return (Date) data;
-		} else {
-			String dstr = data.toString();
-			for (DateFormat inputDateFormat : inputDateFormats) {
-				try {
-					return inputDateFormat.parse(dstr);
-				} catch (ParseException pe) {
-					// Continue
-				}
-			}
-			return null;
-		}
-	}
+    private Date getDate(Object data) {
+        if (data == null) {
+            return null;
+        } else if (data instanceof Date) {
+            return (Date) data;
+        } else {
+            String dstr = data.toString();
+            for (DateFormat inputDateFormat : inputDateFormats) {
+                try {
+                    return inputDateFormat.parse(dstr);
+                } catch (ParseException pe) {
+                    // Continue
+                }
+            }
+            return null;
+        }
+    }
 
     @Nullable
-	private Number getNumber(Object data) {
-		if (data == null) {
-			return null;
-		} else if (data instanceof Number) {
-			return (Number) data;
-		} else {
-			String str = data.toString();
+    private Number getNumber(Object data) {
+        if (data == null) {
+            return null;
+        } else if (data instanceof Number) {
+            return (Number) data;
+        } else {
+            String str = data.toString();
             // max possible Long value has 20 characters
-			if (str.length() <= 20 && str.indexOf('.') == -1) {
+            if (str.length() <= 20 && str.indexOf('.') == -1) {
                 try {
                     return Long.valueOf(str);
-                } catch(NumberFormatException nfe) {
+                } catch (NumberFormatException nfe) {
                     // ignore and try as Double
                 }
-			}
+            }
             return new Double(str);
-		}
-	}
+        }
+    }
 
-	private byte[] outputHeader() throws IOException {
-		if (schema == null) {
-			throw new IllegalStateException(
-					"May not write dbf without a schema");
-		}
-		byte len[] = new byte[schema.getKeys().size()];
-		int i = 0;
-		Collection<String> attrNames = new ArrayList<String>();
-		for (SimpleField field : schema.getFields()) {
-			// Write the field name, padded with null bytes
-			String fieldname = field.getName();
-			byte name[] = new byte[11];
-			byte fn[] = StringHelper.esriFieldName(fieldname, attrNames);
-			// 11-byte field for attribute. last byte expected to be 0
-			for(int k = 0; k < 11; k++) {
-				if (k < fn.length) {
-					name[k] = fn[k];
-				} else {
-					name[k] = 0;
-				}
-			}
-			stream.write(name); // 0 -> 10
-			byte type;
-			int fieldlen = getFieldLength(field);
-			int fielddec = 0;
-			Type ft = field.getType();
-			if (Type.STRING.equals(ft)) {
-				type = 'C';
-			} else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
-				type = 'F';
-				fielddec = 16;
+    private byte[] outputHeader() throws IOException {
+        if (schema == null) {
+            throw new IllegalStateException(
+                    "May not write dbf without a schema");
+        }
+        byte len[] = new byte[schema.getKeys().size()];
+        int i = 0;
+        Collection<String> attrNames = new ArrayList<String>();
+        for (SimpleField field : schema.getFields()) {
+            // Write the field name, padded with null bytes
+            String fieldname = field.getName();
+            byte name[] = new byte[11];
+            byte fn[] = StringHelper.esriFieldName(fieldname, attrNames);
+            // 11-byte field for attribute. last byte expected to be 0
+            for (int k = 0; k < 11; k++) {
+                if (k < fn.length) {
+                    name[k] = fn[k];
+                } else {
+                    name[k] = 0;
+                }
+            }
+            stream.write(name); // 0 -> 10
+            byte type;
+            int fieldlen = getFieldLength(field);
+            int fielddec = 0;
+            Type ft = field.getType();
+            if (Type.STRING.equals(ft)) {
+                type = 'C';
+            } else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
+                type = 'F';
+                fielddec = 16;
             } else if (Type.LONG.equals(ft)) {
                 type = 'N';
                 // N (Numeric) type -> Integer or Long or Double (depends on field's decimal count and fieldLength)
                 // decimal count = 0 (Integer (w/fieldLength < 10) or Long) decimal Count > 0 => Double
-			} else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
-				type = 'N';
-			} else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
-				type = 'N';
-			} else if (Type.OID.equals(ft)) {
-				type = 'N';
-			} else if (Type.DATE.equals(ft)) {
-				type = 'D';
-			} else if (Type.BOOL.equals(ft)) {
-				type = 'L';
-			} else {
-				type = 'C';
-			}
-			len[i++] = (byte) fieldlen;
-			stream.writeByte(type); // 11
-			stream.writeByte(NUL); // 12
-			stream.writeByte(NUL); // 13
-			stream.writeByte(NUL); // 14
-			stream.writeByte(NUL); // 15
-			stream.writeByte(fieldlen); // 16 Field length, max 254
-			stream.writeByte(fielddec); // 17 Decimal count
-			stream.writeByte(NUL); // 18 Reserved
-			stream.writeByte(NUL); // 19 Reserved
-			stream.writeByte(1); // 20 Work area id, 01h for dbase III
-			stream.writeByte(NUL); // 21 Reserved
-			stream.writeByte(NUL); // 22 Reserved
-			stream.writeByte(NUL); // 23 Flag for set fields
-			stream.writeByte(NUL); // 24 Reserved
-			stream.writeByte(NUL); // 25 Reserved
-			stream.writeByte(NUL); // 26 Reserved
-			stream.writeByte(NUL); // 27 Reserved
-			stream.writeByte(NUL); // 28 Reserved
-			stream.writeByte(NUL); // 29 Reserved
-			stream.writeByte(NUL); // 30 Reserved
-			stream.writeByte(Type.OID.equals(ft) ? 1 : 0); // 31 Index field
-			// marker
-		}
+            } else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
+                type = 'N';
+            } else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
+                type = 'N';
+            } else if (Type.OID.equals(ft)) {
+                type = 'N';
+            } else if (Type.DATE.equals(ft)) {
+                type = 'D';
+            } else if (Type.BOOL.equals(ft)) {
+                type = 'L';
+            } else {
+                type = 'C';
+            }
+            len[i++] = (byte) fieldlen;
+            stream.writeByte(type); // 11
+            stream.writeByte(NUL); // 12
+            stream.writeByte(NUL); // 13
+            stream.writeByte(NUL); // 14
+            stream.writeByte(NUL); // 15
+            stream.writeByte(fieldlen); // 16 Field length, max 254
+            stream.writeByte(fielddec); // 17 Decimal count
+            stream.writeByte(NUL); // 18 Reserved
+            stream.writeByte(NUL); // 19 Reserved
+            stream.writeByte(1); // 20 Work area id, 01h for dbase III
+            stream.writeByte(NUL); // 21 Reserved
+            stream.writeByte(NUL); // 22 Reserved
+            stream.writeByte(NUL); // 23 Flag for set fields
+            stream.writeByte(NUL); // 24 Reserved
+            stream.writeByte(NUL); // 25 Reserved
+            stream.writeByte(NUL); // 26 Reserved
+            stream.writeByte(NUL); // 27 Reserved
+            stream.writeByte(NUL); // 28 Reserved
+            stream.writeByte(NUL); // 29 Reserved
+            stream.writeByte(NUL); // 30 Reserved
+            stream.writeByte(Type.OID.equals(ft) ? 1 : 0); // 31 Index field
+            // marker
+        }
 
-		// Write end-of-header (EOH) carriage-return character (hex 0x0d)
-		stream.writeByte(EOH);
-		return len;
-	}
+        // Write end-of-header (EOH) carriage-return character (hex 0x0d)
+        stream.writeByte(EOH);
+        return len;
+    }
 }
