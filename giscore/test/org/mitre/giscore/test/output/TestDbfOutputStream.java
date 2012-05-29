@@ -21,13 +21,7 @@ package org.mitre.giscore.test.output;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Random;
-import java.util.TimeZone;
+import java.util.*;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
@@ -101,8 +95,8 @@ public class TestDbfOutputStream {
         Row readrow = (Row) dbfis.read();
         assertNotNull(readrow);
         assertEquals(5, StringUtils.length((String)readrow.getData(s1)));
-        assertEquals(10, StringUtils.length((String)readrow.getData(s2)));
-        assertEquals(253, StringUtils.length((String)readrow.getData(s3)));
+        assertEquals(10, StringUtils.length((String) readrow.getData(s2)));
+        assertEquals(253, StringUtils.length((String) readrow.getData(s3)));
 	}
 	
 	@Test public void testDbfOutputStreamNumeric() throws Exception {
@@ -191,7 +185,11 @@ public class TestDbfOutputStream {
 
         Row readrow = (Row) dbfis.read();
         assertNotNull(readrow);
-        System.out.println(readrow);
+        assertTrue(readrow.hasExtendedData());
+        assertFalse((Boolean) readrow.getData(b));
+        for(Map.Entry<SimpleField,Object> e: readrow.getEntrySet()) {
+            assertNotNull(e.getValue());
+        }
 	}
 	
 	@Test public void testDbfOutputStreamDate() throws Exception {
