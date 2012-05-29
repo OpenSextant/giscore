@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.TimeZone;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -71,8 +72,17 @@ public class TestDbfOutputStream {
 			data.add(r);
 			dbfos.write(r);
 		}
-		dbfos.close();
-		os.close();
+
+        // generate large string that will be truncated in output
+        Row r = new Row();
+        String largeString = randomString(s1, 256);
+        r.putData(s1, largeString);
+        r.putData(s2, largeString);
+        r.putData(s3, largeString);
+        dbfos.write(r);
+
+        dbfos.close();
+        os.close();
 		
 		FileInputStream is = new FileInputStream(temp);
 		DbfInputStream dbfis = new DbfInputStream(is, null);
@@ -87,6 +97,12 @@ public class TestDbfOutputStream {
 			Row origrow = data.get(i);
 			compare(s, readschema, origrow, readrow);
 		}
+
+        Row readrow = (Row) dbfis.read();
+        assertNotNull(readrow);
+        assertEquals(5, StringUtils.length((String)readrow.getData(s1)));
+        assertEquals(10, StringUtils.length((String)readrow.getData(s2)));
+        assertEquals(253, StringUtils.length((String)readrow.getData(s3)));
 	}
 	
 	@Test public void testDbfOutputStreamNumeric() throws Exception {
@@ -101,7 +117,7 @@ public class TestDbfOutputStream {
 		SimpleField sh = new SimpleField("sh", Type.SHORT);
         it.setLength(5);
 		SimpleField ui = new SimpleField("ui", Type.UINT);
-        ui.setLength(9);
+        ui.setLength(8);
 		SimpleField us = new SimpleField("us", Type.USHORT);
         us.setLength(4);
         SimpleField oid = new SimpleField("oid", Type.OID);
@@ -135,6 +151,20 @@ public class TestDbfOutputStream {
 			data.add(r);
 			dbfos.write(r);
 		}
+
+        // create values larger than most field lengths
+        Row r = new Row();
+        r.putData(b, 1); // Integer as boolean
+        r.putData(f, Float.MAX_VALUE);
+        r.putData(db, Double.MAX_VALUE);
+        r.putData(li, Long.MIN_VALUE);
+        r.putData(it, Integer.MIN_VALUE);
+        r.putData(sh, Short.MIN_VALUE);
+        r.putData(ui, Integer.MAX_VALUE);
+        r.putData(us, Short.MAX_VALUE);
+        r.putData(oid, Long.MAX_VALUE);
+        dbfos.write(r);
+
 		dbfos.close();
 		os.close();
 		
@@ -158,6 +188,10 @@ public class TestDbfOutputStream {
 			Row origrow = data.get(i);
 			compare(s, readschema, origrow, readrow);
 		}
+
+        Row readrow = (Row) dbfis.read();
+        assertNotNull(readrow);
+        System.out.println(readrow);
 	}
 	
 	@Test public void testDbfOutputStreamDate() throws Exception {
@@ -237,21 +271,25 @@ public class TestDbfOutputStream {
 		}
 	}
 
-	private String randomString(SimpleField s1) {
-		int len = s1.getLength();
-		if (rand.nextFloat() < .3) {
-			len -= rand.nextInt(len / 2);
-		}
-		StringBuilder b = new StringBuilder(len);
-		for(int i = 0; i < len; i++) {
-			int ch;
-			int m = i % 10;
-			if (m == 0) 
-				ch = 'A' + (i / 10);
-			else
-				ch = '0' + m;
-			b.append((char) ch);
-		}
-		return b.toString();
+	private String randomString(SimpleField s) {
+		int len = s.getLength();
+        if (rand.nextFloat() < .3) {
+            len -= rand.nextInt(len / 2);
+        }
+        return randomString(s, len);
 	}
+
+    private String randomString(SimpleField s, int len) {
+        StringBuilder b = new StringBuilder(len);
+        for(int i = 0; i < len; i++) {
+            int ch;
+            int m = i % 10;
+            if (m == 0)
+                ch = 'A' + (i / 10);
+            else
+                ch = '0' + m;
+            b.append((char) ch);
+        }
+        return b.toString();
+    }
 }
