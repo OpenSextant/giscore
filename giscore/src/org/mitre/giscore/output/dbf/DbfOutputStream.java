@@ -303,7 +303,6 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
                     if (data != null) {
                         writeField(stream, dateFormat.format(data), 8);
                     } else {
-                        log.error("XXX: null date");
                         writeField(stream, "", 8);
                     }
                 } else if (Type.BOOL.equals(ft)) {
