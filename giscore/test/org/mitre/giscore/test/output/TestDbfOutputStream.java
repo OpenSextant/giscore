@@ -95,11 +95,16 @@ public class TestDbfOutputStream {
 		SimpleField f = new SimpleField("f", Type.FLOAT);
 		SimpleField db = new SimpleField("db", Type.DOUBLE);
         SimpleField li = new SimpleField("li", Type.LONG);
-		SimpleField it = new SimpleField("it", Type.INT);
+        li.setLength(10);
+        SimpleField it = new SimpleField("it", Type.INT);
+        it.setLength(9);
 		SimpleField sh = new SimpleField("sh", Type.SHORT);
+        it.setLength(5);
 		SimpleField ui = new SimpleField("ui", Type.UINT);
+        ui.setLength(9);
 		SimpleField us = new SimpleField("us", Type.USHORT);
-		SimpleField oid = new SimpleField("oid", Type.OID);
+        us.setLength(5);
+        SimpleField oid = new SimpleField("oid", Type.OID);
 		
 		s.put(b);
 		s.put(f);
