@@ -92,7 +92,9 @@ public class DbfInputStream extends GISInputStreamBase implements
 	/**
 	 * @param file
 	 * @param arguments
-	 * @throws IOException
+     * @throws IOException error if problem occurs reading data
+     * @throws IllegalArgumentException if <code>is</code> is null
+     * @throws IllegalStateException if invalid field type is encountered
 	 */
 	public DbfInputStream(File file, Object[] arguments) throws IOException {
 		if (file == null) {
@@ -106,9 +108,11 @@ public class DbfInputStream extends GISInputStreamBase implements
 	}
 
 	/**
-	 * @param is
+	 * @param is InputStream, never null
 	 * @param arguments
-	 * @throws IOException
+     * @throws IOException error if problem occurs reading data
+     * @throws IllegalArgumentException if <code>is</code> is null
+     * @throws IllegalStateException if invalid field type is encountered
 	 */
 	public DbfInputStream(InputStream is, Object[] arguments)
 			throws IOException {
@@ -122,11 +126,15 @@ public class DbfInputStream extends GISInputStreamBase implements
 	 * Do initial reading of the DBF file header. Verify that the signature is
 	 * of a version that this code supports and read in the column definitions.
 	 * 
-	 * @param is
+	 * @param is InputStream
 	 * @param arguments
-	 * @throws IOException
+     * @throws  EOFException  if this input stream reaches the end before
+     *             reading all the bytes.
+     * @throws IOException error if problem occurs reading data
+     * @throws IllegalStateException if invalid field type is encountered
 	 */
-	private void init(InputStream is, Object[] arguments) throws IOException {
+    @SuppressWarnings("fallthrough")
+    private void init(InputStream is, Object[] arguments) throws IOException {
 		stream = new BinaryInputStream(is);
 
 		byte[] headBuffer = new byte[20];
@@ -166,24 +174,7 @@ public class DbfInputStream extends GISInputStreamBase implements
 			SimpleField field = new SimpleField(new String(headBuffer, 0, j,
 					"US-ASCII"));
 			char typeChar = (char) stream.readByte();
-			switch (typeChar) {
-			case 'C':
-				field.setType(Type.STRING);
-				break;
-			case 'N':
-			case 'F':
-				field.setType(Type.DOUBLE);
-				break;
-			case 'D':
-				field.setType(Type.DATE);
-				break;
-			case 'L':
-				field.setType(Type.BOOL);
-				break;
-			default:
-				throw new IllegalStateException("Found unknown type "
-						+ typeChar);
-			}
+
 			// Skip over bytes we don't care about (field displacement in
 			// memory)
 			if (stream.read(headBuffer, 0, 4) != 4)
@@ -193,9 +184,38 @@ public class DbfInputStream extends GISInputStreamBase implements
 			if (len < 0)
 				len += 256;
 			field.setLength(len);
-			// Consume and skip over fieldDecimalPlaces, since we don't use it
-			// in parsing
-			stream.readByte();
+
+            // read the field decimal count in bytes
+            int decimalCount = stream.readByte();
+            switch (typeChar) {
+                case 'C':
+                    field.setType(Type.STRING);
+                    break;
+                case 'N':
+                    // Integer or Long or Double (depends on field's decimal count and fieldLength)
+                    if (decimalCount == 0) {
+                        if (len < 5) field.setType(Type.SHORT);
+                        else if (len < 10) field.setType(Type.INT);
+                        else if (len < 19) field.setType(Type.LONG);
+                        else field.setType(Type.DOUBLE);
+                        break;
+                    }
+                    // fall through
+                case 'F': // Floating point/Double
+                    field.setType(Type.DOUBLE);
+                    field.setScale(decimalCount);
+                    break;
+                case 'D':
+                    field.setType(Type.DATE);
+                    break;
+                case 'L': // Logical
+                    field.setType(Type.BOOL);
+                    break;
+                default:
+                    throw new IllegalStateException("Found unknown type "
+                            + typeChar);
+            }
+
 			// Skip over bytes we don't care about
 			if (stream.read(headBuffer, 0, 14) != 14)
 				throw new EOFException();
@@ -310,36 +330,75 @@ public class DbfInputStream extends GISInputStreamBase implements
 	 * @throws ParseException
 	 *             error if value can not be parsed or type is unrecognized
 	 */
+    @SuppressWarnings("fallthrough")
 	private Object parseValStr(Type type, String valStr) throws ParseException {
-		Object val;
 		valStr = valStr.trim();
-		if (valStr.length() == 0) {
+		if (valStr.isEmpty()) {
 			// null values represented as all spaces
-			val = null;
-		} else if (Type.STRING.equals(type)) {
-			val = valStr;
-		} else if (Type.DOUBLE.equals(type)) {
-			try {
-				val = (valStr.contains("+") || valStr.contains(".")) ? new Double(valStr) : new Long(
-						valStr);
-			} catch (NumberFormatException e) {
-				final ParseException e2 = new ParseException(
-						"Could not parse numeric value " + valStr, 0);
-				e2.initCause(e);
-				throw e2;
-			}
-		} else if (Type.DATE.equals(type)) {
-			val = getDateFormatter().parse(valStr);
-		} else if (Type.BOOL.equals(type)) {
-			final char c = valStr.charAt(0);
-			// null value for boolean represented as '?'
-			val = (c == '?') ? null : (c == 'Y') || (c == 'y') || (c == 'T')
-					|| (c == 't');
-		} else {
-			throw new ParseException("type '" + type
-					+ "' not supported or recognized.", 0);
+			return null;
 		}
-		return val;
+        // allow SHORT/INT/LONG pre-check for DOUBLE
+        boolean typeCheck = true;
+        switch (type) {
+            case STRING:
+                return valStr;
+
+            case SHORT:
+                try {
+                    return Short.valueOf(valStr);
+                } catch (NumberFormatException e) {
+                    // fall through and try as INT
+                }
+
+            case INT:
+                try {
+                    return Integer.valueOf(valStr);
+                } catch (NumberFormatException e) {
+                    // fall through and try as LONG
+                }
+
+            case LONG:
+                try {
+                    return Long.valueOf(valStr);
+                } catch (NumberFormatException e) {
+                    typeCheck = false; // skip SHORT/INT/LONG pre-check
+                    // fall through and try as DOUBLE
+                }
+
+            case DOUBLE:
+                if (typeCheck &&
+                        valStr.indexOf('.') == -1 && valStr.indexOf('+') == -1) {
+                    try {
+                        int len = valStr.length();
+                        if (len < 5) return Short.valueOf(valStr);
+                        if (len < 10) return Integer.valueOf(valStr);
+                        return Long.valueOf(valStr);
+                    } catch (NumberFormatException e) {
+                        // try as Double
+                    }
+                }
+                try {
+                    return new Double(valStr);
+                } catch (NumberFormatException e) {
+                    final ParseException e2 = new ParseException(
+                            "Could not parse numeric value " + valStr, 0);
+                    e2.initCause(e);
+                    throw e2;
+                }
+
+            case DATE:
+                return getDateFormatter().parse(valStr);
+
+            case BOOL:
+                final char c = valStr.charAt(0);
+                // null value for boolean represented as '?'
+                return (c == '?') ? null : (c == 'Y') || (c == 'y') || (c == 'T')
+                        || (c == 't');
+
+            default:
+                throw new ParseException("type '" + type
+                        + "' not supported or recognized.", 0);
+        }
 	}
 
 	public Class<? extends Row> getRowClass() {

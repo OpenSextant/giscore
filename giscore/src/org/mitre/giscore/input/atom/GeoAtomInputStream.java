@@ -439,17 +439,19 @@ public class GeoAtomInputStream extends XmlInputStream {
 	private Object readValue(Type type, String val) throws ParseException {
 		switch(type) {
 		case DOUBLE:
-			return Double.parseDouble(val);
+			return Double.valueOf(val);
 		case FLOAT:
-			return Float.parseFloat(val);
+			return Float.valueOf(val);
+        case LONG:
+            return Long.valueOf(val);
 		case INT:
 		case UINT:
-			return Integer.parseInt(val);
+			return Integer.valueOf(val);
 		case SHORT:
 		case USHORT:
-			return Short.parseShort(val);
+			return Short.valueOf(val);
 		case BOOL:
-			return Boolean.getBoolean(val);
+			return Boolean.valueOf(val);
 		case DATE:
 			return fmt.parse(val);
 		default:

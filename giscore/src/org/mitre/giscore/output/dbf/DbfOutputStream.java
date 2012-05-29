@@ -34,6 +34,8 @@ import org.mitre.giscore.utils.FieldCachingObjectBuffer;
 import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.utils.SafeDateFormat;
 import org.mitre.giscore.utils.StringHelper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -53,7 +55,9 @@ import java.util.TimeZone;
  * @author DRAND
  */
 public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
-	private static final String US_ASCII = "US-ASCII";
+    private static final Logger log = LoggerFactory.getLogger(DbfOutputStream.class);
+
+    private static final String US_ASCII = "US-ASCII";
 	private static final byte[] blankpad = new byte[255];
 	private final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 	private final DateFormat inputDateFormats[] = new DateFormat[] {
@@ -235,6 +239,12 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			fieldlen = 10;
 		} else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
 			fieldlen = 6;
+        } else if (Type.LONG.equals(ft)) {
+            if (fieldlen < 15) fieldlen = 15; // set minlength = 15
+            else if (fieldlen > 20) {
+                // max formatting of Long value (Long.MIN_VALUE) is -9223372036854775808 or 20 characters
+                fieldlen = 20;
+            }
 		} else if (Type.OID.equals(ft)) {
 			fieldlen = 10;
 		} else if (Type.DATE.equals(ft)) {
@@ -285,6 +295,14 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 					} else {
 						writeField(stream, "", 6);
 					}
+                } else if (Type.LONG.equals(ft)) {
+                    Number data = getNumber(row.getData(field));
+                    if (data == null)
+                        writeField(stream, "", length);
+                    else {
+                        String value = Long.toString(data.longValue());
+                        writeField(stream, value, length);
+                    }
 				} else if (Type.DATE.equals(ft)) {
 					Date data = getDate(row.getData(field));
 					if (data != null) {
@@ -307,7 +325,6 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			}
 			row = (Row) buffer.read();
 		}
-
 	}
 
 	/**
@@ -329,6 +346,9 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			stream.write(str, 0, str.length);
 			stream.write(blankpad, 0, length - str.length);
 		} else {
+            if (str.length > length) {
+                log.trace("Value truncated - value too large for field: {} maxlen={}", data, length);
+            }
 			stream.write(str, 0, length);
 		}
 	}
@@ -425,12 +445,16 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
 			} else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
 				type = 'F';
 				fielddec = 16;
+            } else if (Type.LONG.equals(ft)) {
+                type = 'N';
+                // N (Numeric) type -> Integer or Long or Double (depends on field's decimal count and fieldLength)
+                // decimal count = 0 (Integer (w/fieldLength < 10) or Long) decimal Count > 0 => Double
 			} else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
-				type = 'F';
+				type = 'N';
 			} else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
-				type = 'F';
+				type = 'N';
 			} else if (Type.OID.equals(ft)) {
-				type = 'F';
+				type = 'N';
 			} else if (Type.DATE.equals(ft)) {
 				type = 'D';
 			} else if (Type.BOOL.equals(ft)) {

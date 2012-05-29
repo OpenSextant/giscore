@@ -906,6 +906,8 @@ public class GdbOutputStream extends StreamVisitorBase implements
 			return esriFieldType.esriFieldTypeInteger;
 		} else if (Type.USHORT.equals(type)) {
 			return esriFieldType.esriFieldTypeSmallInteger;
+        } else if (Type.LONG.equals(type)) {
+            return esriFieldType.esriFieldTypeInteger;
 		} else {
 			throw new IllegalArgumentException("Found unknown type " + type);
 		}

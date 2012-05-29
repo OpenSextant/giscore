@@ -717,7 +717,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 throw new IllegalArgumentException("Data that cannot be coerced to float: " + data);
             }
         } else if (Type.INT.equals(type) || Type.SHORT.equals(type)
-                || Type.UINT.equals(type) || Type.USHORT.equals(type)) {
+                || Type.UINT.equals(type) || Type.USHORT.equals(type) || Type.LONG.equals(type)) {
             if (data instanceof String) {
                 return (String) data;
             }
@@ -1377,7 +1377,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                     continue; // Skip geometry elements, no equivalent in Kml
                 }
                 writer.writeStartElement(SIMPLE_FIELD);
-                if (field.getType().isKmlCompatible())
+                if (field.getType() == Type.LONG)
+                    writer.writeAttribute(TYPE, "double");
+                else if (field.getType().isKmlCompatible())
                     writer.writeAttribute(TYPE, field.getType().toString()
                             .toLowerCase());
                 else
