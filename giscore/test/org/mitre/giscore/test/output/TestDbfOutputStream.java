@@ -62,7 +62,7 @@ public class TestDbfOutputStream {
 		FileOutputStream os = new FileOutputStream(temp);
 		DbfOutputStream dbfos = new DbfOutputStream(os, null);
 		dbfos.write(s);
-		List<Row> data = new ArrayList<Row>();
+		List<Row> data = new ArrayList<Row>(50);
 		for(int i = 0; i < 50; i++) {
 			Row r = new Row();
 			r.putData(s1, randomString(s1));
@@ -93,7 +93,8 @@ public class TestDbfOutputStream {
 		Schema s = new Schema();
 		SimpleField b = new SimpleField("b", Type.BOOL);
 		SimpleField f = new SimpleField("f", Type.FLOAT);
-		SimpleField db = new SimpleField("db", Type.DOUBLE); 
+		SimpleField db = new SimpleField("db", Type.DOUBLE);
+        SimpleField li = new SimpleField("li", Type.LONG);
 		SimpleField it = new SimpleField("it", Type.INT);
 		SimpleField sh = new SimpleField("sh", Type.SHORT);
 		SimpleField ui = new SimpleField("ui", Type.UINT);
@@ -103,6 +104,7 @@ public class TestDbfOutputStream {
 		s.put(b);
 		s.put(f);
 		s.put(db);
+        s.put(li);
 		s.put(it);
 		s.put(sh);
 		s.put(ui);
@@ -113,13 +115,14 @@ public class TestDbfOutputStream {
 		FileOutputStream os = new FileOutputStream(temp);
 		DbfOutputStream dbfos = new DbfOutputStream(os, null);
 		dbfos.write(s);
-		List<Row> data = new ArrayList<Row>();
+		List<Row> data = new ArrayList<Row>(50);
 		for(int i = 0; i < 50; i++) {
 			Row r = new Row();
 			r.putData(b, RandomUtils.nextBoolean());
 			r.putData(f, RandomUtils.nextFloat());
 			r.putData(db, RandomUtils.nextFloat());
-			r.putData(it, RandomUtils.nextInt(10000000));
+            r.putData(li, RandomUtils.nextLong() % 10000000);
+            r.putData(it, RandomUtils.nextInt(10000000));
 			r.putData(sh, (short) RandomUtils.nextInt(10000));
 			r.putData(ui, Math.abs(RandomUtils.nextInt(10000000)));
 			r.putData(us, (short) Math.abs(RandomUtils.nextInt(10000)));
@@ -134,10 +137,11 @@ public class TestDbfOutputStream {
 		DbfInputStream dbfis = new DbfInputStream(is, null);
 		Schema readschema = (Schema) dbfis.read();
 		assertNotNull(readschema);
-		assertEquals(8, readschema.getKeys().size());
+		assertEquals(9, readschema.getKeys().size());
 		compare(b, readschema.get("b"));
 		compare(f, readschema.get("f"));
 		compare(db, readschema.get("db"));
+        compare(li, readschema.get("li"));
 		compare(it, readschema.get("it"));
 		compare(sh, readschema.get("sh"));
 		compare(ui, readschema.get("ui"));
@@ -160,7 +164,7 @@ public class TestDbfOutputStream {
 		FileOutputStream os = new FileOutputStream(temp);
 		DbfOutputStream dbfos = new DbfOutputStream(os, null);
 		dbfos.write(s);
-		List<Row> data = new ArrayList<Row>();
+		List<Row> data = new ArrayList<Row>(50);
 		for(int i = 0; i < 50; i++) {
 			Row r = new Row();
 			Date d = new Date(System.currentTimeMillis() 
@@ -205,7 +209,9 @@ public class TestDbfOutputStream {
 			Object v1 = origrow.getData(field);
 			SimpleField readfield = readschema.get(key);
 			Object v2 = readrow.getData(readfield);
-			if (v1 instanceof Number) { 
+            if (v1 instanceof Long) {
+                assertEquals(((Number) v1).longValue(), ((Number) v2).longValue());
+            } else if (v1 instanceof Number) {
 				assertEquals(((Number) v1).doubleValue(), ((Number) v2).doubleValue(), 1e-6);
 			} else if (v1 instanceof Date) {
 				int y1, y2, m1, m2, d1, d2;
