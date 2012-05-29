@@ -23,10 +23,13 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.*;
 
+import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
+
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
@@ -75,6 +78,13 @@ public class TestDbfOutputStream {
         r.putData(s3, largeString);
         dbfos.write(r);
 
+        // write row with all fields set as null values
+        r = new Row();
+        for(SimpleField sf : r.getFields()) {
+            r.putData(sf, null);
+        }
+        dbfos.write(r);
+
         dbfos.close();
         os.close();
 		
@@ -97,6 +107,12 @@ public class TestDbfOutputStream {
         assertEquals(5, StringUtils.length((String)readrow.getData(s1)));
         assertEquals(10, StringUtils.length((String) readrow.getData(s2)));
         assertEquals(253, StringUtils.length((String) readrow.getData(s3)));
+
+        readrow = (Row) dbfis.read();
+        assertNotNull(readrow);
+        for(Map.Entry<SimpleField,Object> e: readrow.getEntrySet()) {
+            assertTrue(ObjectUtils.NULL == e.getValue());
+        }
 	}
 	
 	@Test public void testDbfOutputStreamNumeric() throws Exception {
@@ -159,7 +175,14 @@ public class TestDbfOutputStream {
         r.putData(oid, Long.MAX_VALUE);
         dbfos.write(r);
 
-		dbfos.close();
+        // write row with all null values
+        r = new Row();
+        for(SimpleField sf : r.getFields()) {
+            r.putData(sf, null);
+        }
+        dbfos.write(r);
+
+        dbfos.close();
 		os.close();
 		
 		FileInputStream is = new FileInputStream(temp);
@@ -190,7 +213,18 @@ public class TestDbfOutputStream {
         for(Map.Entry<SimpleField,Object> e: readrow.getEntrySet()) {
             assertNotNull(e.getValue());
         }
-	}
+
+        readrow = (Row) dbfis.read();
+        assertNotNull(readrow);
+        assertTrue(readrow.hasExtendedData());
+        for(Map.Entry<SimpleField,Object> e: readrow.getEntrySet()) {
+           // System.out.println(e.getKey() + " " + e.getValue());
+            if (e.getKey().getType() == Type.BOOL)
+                assertFalse((Boolean)e.getValue());
+            else
+                assertTrue(ObjectUtils.NULL == e.getValue());
+        }
+    }
 	
 	@Test public void testDbfOutputStreamDate() throws Exception {
 		Schema s = new Schema();
