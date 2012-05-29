@@ -291,17 +291,22 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 				return dfmt.format((Number) val);
 			}
 			break;
+        case LONG:
+            if (val instanceof Number) {
+                return Long.toString(((Number) val).longValue());
+            }
+            break;
 		case INT:
 		case UINT:
-			if (val instanceof Integer) {
-				return Integer.toString((Integer) val);
+			if (val instanceof Number) {
+                return Integer.toString(((Number) val).intValue());
 			}
 			break;
 		case SHORT:
 		case USHORT:
-			if (val instanceof Short) {
-				return Short.toString((Short) val);
-			}
+            if (val instanceof Number) {
+                return Short.toString(((Number) val).shortValue());
+            }
 			break;
 		case BOOL:
 			if (val instanceof Boolean) {
