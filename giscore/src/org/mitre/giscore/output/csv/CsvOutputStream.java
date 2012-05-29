@@ -264,7 +264,7 @@ public class CsvOutputStream extends StreamVisitorBase implements
                 throw new IllegalArgumentException("Data that cannot be coerced to float: " + data);
             }
         } else if (Type.INT.equals(type) || Type.SHORT.equals(type)
-                || Type.UINT.equals(type) || Type.USHORT.equals(type)) {
+                || Type.UINT.equals(type) || Type.USHORT.equals(type) || Type.LONG.equals(type)) {
             if (data instanceof String) {
                 return (String) data;
             }
