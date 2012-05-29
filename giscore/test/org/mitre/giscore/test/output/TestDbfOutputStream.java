@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -21,12 +21,16 @@ package org.mitre.giscore.test.output;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.commons.lang.ObjectUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 import static org.junit.Assert.assertTrue;
 
@@ -38,41 +42,66 @@ import org.mitre.giscore.input.dbf.DbfInputStream;
 import org.mitre.giscore.output.dbf.DbfOutputStream;
 
 /**
- * 
+ *
  */
 public class TestDbfOutputStream {
-	Random rand = new Random();
-	
-	@Test public void testDbfOutputStreamString() throws Exception {
-		Schema s = new Schema();
-		SimpleField s1 = new SimpleField("s1");
-		s1.setLength(5);
-		SimpleField s2 = new SimpleField("s2");
-		s2.setLength(10);
-		SimpleField s3 = new SimpleField("s3");
-		s3.setLength(253);
-		
-		s.put(s1);
-		s.put(s2);
-		s.put(s3);
-		
-		File temp = File.createTempFile("test", ".dbf");
-		FileOutputStream os = new FileOutputStream(temp);
-		DbfOutputStream dbfos = new DbfOutputStream(os, null);
-		dbfos.write(s);
-		List<Row> data = new ArrayList<Row>(50);
-		for(int i = 0; i < 50; i++) {
-			Row r = new Row();
-			r.putData(s1, randomString(s1));
-			r.putData(s2, randomString(s2));
-			r.putData(s3, randomString(s3));
-			data.add(r);
-			dbfos.write(r);
-		}
+    private Random rand = new Random();
+
+    private final DateFormat inputDateFormats[] = new DateFormat[]{
+            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"),
+            new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
+            new SimpleDateFormat("MM/dd/yyyy hh:mm"),
+            new SimpleDateFormat("MM/dd/yyyy"),
+            new SimpleDateFormat("dd-MMM-yyyy")
+    };
+
+    private static final String[] DATE_STRINGS = {
+            "05/29/2012T17:00:00.000",
+            "05/29/2012 17:00:00",
+            "05/29/2012 17:00",
+            "05/29/2012",
+            "29-May-2012"
+    };
+
+    {
+        // instance initialization
+        TimeZone tz = TimeZone.getTimeZone("UTC");
+        for (DateFormat sf : inputDateFormats) {
+            sf.setTimeZone(tz);
+        }
+    }
+
+    @Test
+    public void testDbfOutputStreamString() throws Exception {
+        Schema s = new Schema();
+        SimpleField s1 = new SimpleField("s1");
+        s1.setLength(5);
+        SimpleField s2 = new SimpleField("s2");
+        s2.setLength(10);
+        SimpleField s3 = new SimpleField("s3");
+        s3.setLength(253);
+
+        s.put(s1);
+        s.put(s2);
+        s.put(s3);
+
+        File temp = File.createTempFile("test", ".dbf");
+        FileOutputStream os = new FileOutputStream(temp);
+        DbfOutputStream dbfos = new DbfOutputStream(os, null);
+        dbfos.write(s);
+        List<Row> data = new ArrayList<Row>(50);
+        for (int i = 0; i < 50; i++) {
+            Row r = new Row();
+            r.putData(s1, randomString(s1));
+            r.putData(s2, randomString(s2));
+            r.putData(s3, randomString(s3));
+            data.add(r);
+            dbfos.write(r);
+        }
 
         // generate large string that will be truncated in output
         Row r = new Row();
-        String largeString = randomString(s1, 256);
+        String largeString = randomString(256);
         r.putData(s1, largeString);
         r.putData(s2, largeString);
         r.putData(s3, largeString);
@@ -80,87 +109,89 @@ public class TestDbfOutputStream {
 
         // write row with all fields set as null values
         r = new Row();
-        for(SimpleField sf : r.getFields()) {
+        for (SimpleField sf : r.getFields()) {
             r.putData(sf, null);
         }
         dbfos.write(r);
 
         dbfos.close();
         os.close();
-		
-		FileInputStream is = new FileInputStream(temp);
-		DbfInputStream dbfis = new DbfInputStream(is, null);
-		Schema readschema = (Schema) dbfis.read();
-		assertNotNull(readschema);
-		assertEquals(3, readschema.getKeys().size());
-		compare(s1, readschema.get("s1"));
-		compare(s2, readschema.get("s2"));
-		compare(s3, readschema.get("s3"));
-		for(int i = 0; i < 50; i++) {
-			Row readrow = (Row) dbfis.read();
-			Row origrow = data.get(i);
-			compare(s, readschema, origrow, readrow);
-		}
+
+        FileInputStream is = new FileInputStream(temp);
+        DbfInputStream dbfis = new DbfInputStream(is, null);
+        Schema readschema = (Schema) dbfis.read();
+        assertNotNull(readschema);
+        assertEquals(3, readschema.getKeys().size());
+        compare(s1, readschema.get("s1"));
+        compare(s2, readschema.get("s2"));
+        compare(s3, readschema.get("s3"));
+        for (int i = 0; i < 50; i++) {
+            Row readrow = (Row) dbfis.read();
+            Row origrow = data.get(i);
+            compare(s, readschema, origrow, readrow);
+        }
 
         Row readrow = (Row) dbfis.read();
         assertNotNull(readrow);
-        assertEquals(5, StringUtils.length((String)readrow.getData(s1)));
+        assertEquals(5, StringUtils.length((String) readrow.getData(s1)));
         assertEquals(10, StringUtils.length((String) readrow.getData(s2)));
         assertEquals(253, StringUtils.length((String) readrow.getData(s3)));
 
         readrow = (Row) dbfis.read();
         assertNotNull(readrow);
-        for(Map.Entry<SimpleField,Object> e: readrow.getEntrySet()) {
+        for (Map.Entry<SimpleField, Object> e : readrow.getEntrySet()) {
             assertTrue(ObjectUtils.NULL == e.getValue());
         }
-	}
-	
-	@Test public void testDbfOutputStreamNumeric() throws Exception {
-		Schema s = new Schema();
-		SimpleField b = new SimpleField("b", Type.BOOL);
-		SimpleField f = new SimpleField("f", Type.FLOAT);
-		SimpleField db = new SimpleField("db", Type.DOUBLE);
+    }
+
+    @Test
+    public void testDbfOutputStreamNumeric() throws Exception {
+        Schema s = new Schema();
+        SimpleField b = new SimpleField("b", Type.BOOL);
+        SimpleField f = new SimpleField("f", Type.FLOAT);
+        SimpleField db = new SimpleField("db", Type.DOUBLE);
         SimpleField li = new SimpleField("li", Type.LONG);
         li.setLength(10);
         SimpleField it = new SimpleField("it", Type.INT);
         it.setLength(9);
-		SimpleField sh = new SimpleField("sh", Type.SHORT);
+        SimpleField sh = new SimpleField("sh", Type.SHORT);
         it.setLength(5);
-		SimpleField ui = new SimpleField("ui", Type.UINT);
+        SimpleField ui = new SimpleField("ui", Type.UINT);
         ui.setLength(8);
-		SimpleField us = new SimpleField("us", Type.USHORT);
+        SimpleField us = new SimpleField("us", Type.USHORT);
         us.setLength(4);
         SimpleField oid = new SimpleField("oid", Type.OID);
-		
-		s.put(b);
-		s.put(f);
-		s.put(db);
+
+        s.put(b);
+        s.put(f);
+        s.put(db);
         s.put(li);
-		s.put(it);
-		s.put(sh);
-		s.put(ui);
-		s.put(us);
-		s.put(oid);
-		
-		File temp = File.createTempFile("test", ".dbf");
-		FileOutputStream os = new FileOutputStream(temp);
-		DbfOutputStream dbfos = new DbfOutputStream(os, null);
-		dbfos.write(s);
-		List<Row> data = new ArrayList<Row>(50);
-		for(int i = 0; i < 50; i++) {
-			Row r = new Row();
-			r.putData(b, RandomUtils.nextBoolean());
-			r.putData(f, RandomUtils.nextFloat());
-			r.putData(db, RandomUtils.nextFloat());
-            r.putData(li, RandomUtils.nextLong() % 10000000);
+        s.put(it);
+        s.put(sh);
+        s.put(ui);
+        s.put(us);
+        s.put(oid);
+
+        File temp = File.createTempFile("test", ".dbf");
+        FileOutputStream os = new FileOutputStream(temp);
+        DbfOutputStream dbfos = new DbfOutputStream(os, null);
+        dbfos.write(s);
+        List<Row> data = new ArrayList<Row>(50);
+        for (int i = 0; i < 50; i++) {
+            Row r = new Row();
+            r.putData(b, RandomUtils.nextBoolean());
+            r.putData(f, RandomUtils.nextFloat());
+            r.putData(db, RandomUtils.nextFloat());
+            long rndLong = RandomUtils.nextLong();
+            r.putData(li, rndLong % 10000000);
             r.putData(it, RandomUtils.nextInt(10000000));
-			r.putData(sh, (short) RandomUtils.nextInt(10000));
-			r.putData(ui, Math.abs(RandomUtils.nextInt(10000000)));
-			r.putData(us, (short) Math.abs(RandomUtils.nextInt(2000)));
-			r.putData(oid, Math.abs(RandomUtils.nextInt(10000000)));
-			data.add(r);
-			dbfos.write(r);
-		}
+            r.putData(sh, (short) RandomUtils.nextInt(10000));
+            r.putData(ui, Math.abs(RandomUtils.nextInt(10000000)));
+            r.putData(us, (short) Math.abs(RandomUtils.nextInt(2000)));
+            r.putData(oid, Math.abs(RandomUtils.nextInt(10000000)));
+            data.add(r);
+            dbfos.write(r);
+        }
 
         // create values larger than most field lengths
         Row r = new Row();
@@ -177,143 +208,163 @@ public class TestDbfOutputStream {
 
         // write row with all null values
         r = new Row();
-        for(SimpleField sf : r.getFields()) {
+        for (SimpleField sf : r.getFields()) {
             r.putData(sf, null);
         }
         dbfos.write(r);
 
         dbfos.close();
-		os.close();
-		
-		FileInputStream is = new FileInputStream(temp);
-		DbfInputStream dbfis = new DbfInputStream(is, null);
-		Schema readschema = (Schema) dbfis.read();
-		assertNotNull(readschema);
-		assertEquals(9, readschema.getKeys().size());
-		compare(b, readschema.get("b"));
-		compare(f, readschema.get("f"));
-		compare(db, readschema.get("db"));
-        compare(li, readschema.get("li"));
-		compare(it, readschema.get("it"));
-		compare(sh, readschema.get("sh"));
-		compare(ui, readschema.get("ui"));
-		compare(us, readschema.get("us"));
-		compare(oid, readschema.get("oid"));
+        os.close();
 
-		for(int i = 0; i < 50; i++) {
-			Row readrow = (Row) dbfis.read();
-			Row origrow = data.get(i);
-			compare(s, readschema, origrow, readrow);
-		}
+        FileInputStream is = new FileInputStream(temp);
+        DbfInputStream dbfis = new DbfInputStream(is, null);
+        Schema readschema = (Schema) dbfis.read();
+        assertNotNull(readschema);
+        assertEquals(9, readschema.getKeys().size());
+        compare(b, readschema.get("b"));
+        compare(f, readschema.get("f"));
+        compare(db, readschema.get("db"));
+        compare(li, readschema.get("li"));
+        compare(it, readschema.get("it"));
+        compare(sh, readschema.get("sh"));
+        compare(ui, readschema.get("ui"));
+        compare(us, readschema.get("us"));
+        compare(oid, readschema.get("oid"));
+
+        for (int i = 0; i < 50; i++) {
+            Row readrow = (Row) dbfis.read();
+            Row origrow = data.get(i);
+            compare(s, readschema, origrow, readrow);
+        }
 
         Row readrow = (Row) dbfis.read();
         assertNotNull(readrow);
         assertTrue(readrow.hasExtendedData());
         assertFalse((Boolean) readrow.getData(b));
-        for(Map.Entry<SimpleField,Object> e: readrow.getEntrySet()) {
+        for (Map.Entry<SimpleField, Object> e : readrow.getEntrySet()) {
             assertNotNull(e.getValue());
         }
 
         readrow = (Row) dbfis.read();
         assertNotNull(readrow);
         assertTrue(readrow.hasExtendedData());
-        for(Map.Entry<SimpleField,Object> e: readrow.getEntrySet()) {
-           // System.out.println(e.getKey() + " " + e.getValue());
+        for (Map.Entry<SimpleField, Object> e : readrow.getEntrySet()) {
+            // System.out.println(e.getKey() + " " + e.getValue());
             if (e.getKey().getType() == Type.BOOL)
-                assertFalse((Boolean)e.getValue());
+                assertFalse((Boolean) e.getValue());
             else
                 assertTrue(ObjectUtils.NULL == e.getValue());
         }
     }
-	
-	@Test public void testDbfOutputStreamDate() throws Exception {
-		Schema s = new Schema();
-		SimpleField date = new SimpleField("date", Type.DATE);
-		s.put(date);
-		
-		File temp = File.createTempFile("test", ".dbf");
-		FileOutputStream os = new FileOutputStream(temp);
-		DbfOutputStream dbfos = new DbfOutputStream(os, null);
-		dbfos.write(s);
-		List<Row> data = new ArrayList<Row>(50);
-		for(int i = 0; i < 50; i++) {
-			Row r = new Row();
-			Date d = new Date(System.currentTimeMillis() 
-					- (200L * RandomUtils.nextInt()));
-			// System.out.println("Date: " + d);
-			r.putData(date, d);
-			data.add(r);
-			dbfos.write(r);
-		}
-		dbfos.close();
-		os.close();
-		
-		FileInputStream is = new FileInputStream(temp);
-		DbfInputStream dbfis = new DbfInputStream(is, null);
-		Schema readschema = (Schema) dbfis.read();
-		assertNotNull(readschema);
-		assertEquals(1, readschema.getKeys().size());
-		compare(date, readschema.get("date"));
-		for(int i = 0; i < 50; i++) {
-			Row readrow = (Row) dbfis.read();
-			Row origrow = data.get(i);
-			compare(s, readschema, origrow, readrow);
-		}
-	}
 
-	private void compare(SimpleField orig, SimpleField read) {
-		assertEquals(orig.getName(), read.getName());
-		// Not really correct as the lengths from the dbf file are generally longer
-		// than the normal lengths. Still correct for strings
-		if (orig.getType().equals(Type.STRING))
-			assertEquals(orig.getLength(), read.getLength());
-		// Types won't always match because there are destructive mappings
-		// assertEquals(orig.getType(), read.getType());
-	}
+    @Test
+    public void testDbfOutputStreamDate() throws Exception {
+        Schema s = new Schema();
+        SimpleField date = new SimpleField("date", Type.DATE);
+        s.put(date);
 
-	private void compare(Schema s, Schema readschema, Row origrow, Row readrow) {
-		Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
-		assertNotNull(readrow);
-		assertEquals(origrow.getFields().size(), readrow.getFields().size());
-		for(String key : s.getKeys()) {
-			SimpleField field = s.get(key);
-			Object v1 = origrow.getData(field);
-			SimpleField readfield = readschema.get(key);
-			Object v2 = readrow.getData(readfield);
+        File temp = File.createTempFile("test", ".dbf");
+        FileOutputStream os = new FileOutputStream(temp);
+        DbfOutputStream dbfos = new DbfOutputStream(os, null);
+        dbfos.write(s);
+        List<Row> data = new ArrayList<Row>(50 + DATE_STRINGS.length);
+        for (int i = 0; i < 50; i++) {
+            Row r = new Row();
+            Date d = new Date(System.currentTimeMillis()
+                    - (200L * RandomUtils.nextInt()));
+            // System.out.println("Date: " + d);
+            r.putData(date, d);
+            data.add(r);
+            dbfos.write(r);
+        }
+
+        // multiple date formats
+        for (String dateString : DATE_STRINGS) {
+            Row r = new Row();
+            r.putData(date, dateString);
+            data.add(r);
+            dbfos.write(r);
+        }
+
+        Row r = new Row();
+        r.putData(date, null);
+        dbfos.write(r);
+
+        dbfos.close();
+        os.close();
+
+        FileInputStream is = new FileInputStream(temp);
+        DbfInputStream dbfis = new DbfInputStream(is, null);
+        Schema readschema = (Schema) dbfis.read();
+        assertNotNull(readschema);
+        assertEquals(1, readschema.getKeys().size());
+        compare(date, readschema.get("date"));
+        for (Row origrow : data) {
+            Row readrow = (Row) dbfis.read();
+            compare(s, readschema, origrow, readrow);
+        }
+        Row readrow = (Row) dbfis.read();
+        assertNotNull(readrow);
+        assertTrue(readrow.hasExtendedData());
+        assertNull(readrow.getData(date));
+    }
+
+    private void compare(SimpleField orig, SimpleField read) {
+        assertEquals(orig.getName(), read.getName());
+        // Not really correct as the lengths from the dbf file are generally longer
+        // than the normal lengths. Still correct for strings
+        if (orig.getType().equals(Type.STRING))
+            assertEquals(orig.getLength(), read.getLength());
+        // Types won't always match because there are destructive mappings
+        // assertEquals(orig.getType(), read.getType());
+    }
+
+    private void compare(Schema s, Schema readschema, Row origrow, Row readrow) {
+        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        assertNotNull(readrow);
+        assertEquals(origrow.getFields().size(), readrow.getFields().size());
+        for (String key : s.getKeys()) {
+            SimpleField field = s.get(key);
+            Object v1 = origrow.getData(field);
+            SimpleField readfield = readschema.get(key);
+            Object v2 = readrow.getData(readfield);
+            if (v2 instanceof Date && v1 instanceof String) {
+                v1 = getDate(v1);
+            }
             if (v1 instanceof Long) {
                 assertEquals(((Number) v1).longValue(), ((Number) v2).longValue());
             } else if (v1 instanceof Number) {
-				assertEquals(((Number) v1).doubleValue(), ((Number) v2).doubleValue(), 1e-6);
-			} else if (v1 instanceof Date) {
-				int y1, y2, m1, m2, d1, d2;
-				cal.setTimeInMillis(((Date) v1).getTime());
-				y1 = cal.get(Calendar.YEAR);
-				m1 = cal.get(Calendar.MONTH);
-				d1 = cal.get(Calendar.DAY_OF_MONTH);
-				cal.setTimeInMillis(((Date) v2).getTime());
-				y2 = cal.get(Calendar.YEAR);
-				m2 = cal.get(Calendar.MONTH);
-				d2 = cal.get(Calendar.DAY_OF_MONTH);
-				assertEquals("YEAR field", y1, y2);
-				assertEquals("MONTH field", m1, m2);
-				assertEquals("DAY_OF_MONTH field", d1, d2);
-			} else {
-				assertEquals(v1, v2);
-			}
-		}
-	}
+                assertEquals(((Number) v1).doubleValue(), ((Number) v2).doubleValue(), 1e-6);
+            } else if (v1 instanceof Date) {
+                int y1, y2, m1, m2, d1, d2;
+                cal.setTimeInMillis(((Date) v1).getTime());
+                y1 = cal.get(Calendar.YEAR);
+                m1 = cal.get(Calendar.MONTH);
+                d1 = cal.get(Calendar.DAY_OF_MONTH);
+                cal.setTimeInMillis(((Date) v2).getTime());
+                y2 = cal.get(Calendar.YEAR);
+                m2 = cal.get(Calendar.MONTH);
+                d2 = cal.get(Calendar.DAY_OF_MONTH);
+                assertEquals("YEAR field", y1, y2);
+                assertEquals("MONTH field", m1, m2);
+                assertEquals("DAY_OF_MONTH field", d1, d2);
+            } else {
+                assertEquals(v1, v2);
+            }
+        }
+    }
 
-	private String randomString(SimpleField s) {
-		int len = s.getLength();
+    private String randomString(SimpleField s) {
+        int len = s.getLength();
         if (rand.nextFloat() < .3) {
             len -= rand.nextInt(len / 2);
         }
-        return randomString(s, len);
-	}
+        return randomString(len);
+    }
 
-    private String randomString(SimpleField s, int len) {
+    private String randomString(int len) {
         StringBuilder b = new StringBuilder(len);
-        for(int i = 0; i < len; i++) {
+        for (int i = 0; i < len; i++) {
             int ch;
             int m = i % 10;
             if (m == 0)
@@ -324,4 +375,23 @@ public class TestDbfOutputStream {
         }
         return b.toString();
     }
+
+    private Date getDate(Object data) {
+        if (data == null) {
+            return null;
+        } else if (data instanceof Date) {
+            return (Date) data;
+        } else {
+            String dstr = data.toString();
+            for (DateFormat inputDateFormat : inputDateFormats) {
+                try {
+                    return inputDateFormat.parse(dstr);
+                } catch (ParseException pe) {
+                    // Continue
+                }
+            }
+            return null;
+        }
+    }
+
 }
