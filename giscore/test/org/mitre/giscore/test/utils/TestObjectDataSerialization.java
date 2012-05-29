@@ -60,7 +60,8 @@ public class TestObjectDataSerialization {
 		SimpleField f7 = new SimpleField("g", Type.STRING);
 		SimpleField f8 = new SimpleField("h", Type.UINT);
 		SimpleField f9 = new SimpleField("i", Type.USHORT);
-		r.putData(f1, true);
+        SimpleField f10 = new SimpleField("j", Type.LONG);
+        r.putData(f1, true);
 		r.putData(f2, new Date());
 		r.putData(f3, RandomUtils.nextDouble());
 		r.putData(f4, RandomUtils.nextFloat());
@@ -69,7 +70,8 @@ public class TestObjectDataSerialization {
 		r.putData(f7, "str" + RandomUtils.nextInt(100));
 		r.putData(f8, RandomUtils.nextInt(100));
 		r.putData(f9, RandomUtils.nextInt(100));
-		soos.writeObject(r);
+        r.putData(f10, RandomUtils.nextLong());
+        soos.writeObject(r);
 		soos.close();
 		ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
 		SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
