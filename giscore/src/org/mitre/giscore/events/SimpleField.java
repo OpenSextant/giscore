@@ -44,7 +44,8 @@ public class SimpleField implements IDataSerializable, Serializable {
 		INT("esriFieldTypeInteger", "xs:int", 4, 0, 0), 
 		UINT("esriFieldTypeInteger", "xs:int", 4, 0, 0), 
 		SHORT("esriFieldTypeSmallInteger", "xs:int", 2, 0, 0), 
-		USHORT("esriFieldTypeSmallInteger", "xs:int", 2, 0, 0), 
+		USHORT("esriFieldTypeSmallInteger", "xs:int", 2, 0, 0),
+		LONG("esriFieldTypeInteger", "xs:double", 8, 0, 0.0),
 		FLOAT("esriFieldTypeSingle", "xs:float", 4, 0, 0.0), 
 		DOUBLE("esriFieldTypeDouble", "xs:double", 8, 0, 0.0), 
 		GEOMETRY("esriFieldTypeGeometry", null, 0, 0, null),
@@ -106,7 +107,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 		 * @see http://code.google.com/apis/kml/documentation/kmlreference.html#schema
 		 */
 		public boolean isKmlCompatible() {
-			return !(isGeometry() || OID.equals(this) || DATE.equals(this));
+			return !(isGeometry() || LONG.equals(this) || OID.equals(this) || DATE.equals(this));
 		}
 
 		/**
@@ -174,7 +175,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 	/**
 	 * @return the type never null
 	 */
-    @NonNull
+	@NonNull
 	public Type getType() {
 		return type;
 	}
@@ -182,7 +183,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 	/**
 	 * @param type
 	 *            the type to set
-     * @throws IllegalArgumentException if <code>type</code> is null
+	 * @throws IllegalArgumentException if <code>type</code> is null
 	 */
 	public void setType(Type type) {
         if (type == null) {
@@ -196,7 +197,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 	/**
 	 * @return the name, never null
 	 */
-    @NonNull
+	@NonNull
 	public String getName() {
 		return name;
 	}
@@ -261,6 +262,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 	}
 
 	/**
+     * Set maximum length of the field
 	 * @param length the length to set
 	 */
 	public void setLength(Integer length) {
@@ -282,6 +284,7 @@ public class SimpleField implements IDataSerializable, Serializable {
 	}
 
 	/**
+     * Maximum number of decimal places
 	 * @return the scale
 	 */
     @CheckForNull
@@ -290,6 +293,8 @@ public class SimpleField implements IDataSerializable, Serializable {
 	}
 
 	/**
+     * Set maximum number of decimal places for this field.
+     * Zero for non-floating point types.
 	 * @param scale the scale to set
 	 */
 	public void setScale(Integer scale) {
