@@ -98,6 +98,29 @@ public class TestShapefileOutput extends TestShapefileBase {
 		writeShapefile(schema, buffer, pts, "points");
 	}
 
+    @Test public void testLongOutput() throws Exception {
+        Schema schema = new Schema(new URI("urn:test"));
+        SimpleField id = new SimpleField("testid");
+        id.setLength(10);
+        schema.put(id);
+        SimpleField dtm = new SimpleField("dtm", Type.LONG);
+        schema.put(dtm);
+        ObjectBuffer buffer = new FieldCachingObjectBuffer();
+        List<Point> pts = new ArrayList<Point>(5);
+        for(int i = 0; i < 5; i++) {
+            Feature f = new Feature();
+            f.putData(id, "id " + i);
+            f.putData(dtm, i==0 ? Long.MAX_VALUE : System.currentTimeMillis());
+            f.setSchema(schema.getId());
+            Point point = getRandomPoint();
+            pts.add(point);
+            f.setGeometry(point);
+            buffer.write(f);
+        }
+
+        writeShapefile(schema, buffer, pts, "longData");
+    }
+
 	@Test public void testPointzOutput() throws Exception {
 		Schema schema = new Schema(new URI("urn:test"));
 		SimpleField id = new SimpleField("testid");
