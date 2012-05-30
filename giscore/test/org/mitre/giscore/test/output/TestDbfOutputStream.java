@@ -195,7 +195,7 @@ public class TestDbfOutputStream {
 
         // create values larger than most field lengths
         Row r = new Row();
-        r.putData(b, 1); // Integer as boolean
+        r.putData(b, "0"); // String as boolean
         r.putData(f, Float.MAX_VALUE);
         r.putData(db, Double.MAX_VALUE);
         r.putData(li, Long.MIN_VALUE);
@@ -287,7 +287,7 @@ public class TestDbfOutputStream {
         }
 
         Row r = new Row();
-        r.putData(date, null);
+        r.putData(date, null); // null date value
         dbfos.write(r);
 
         dbfos.close();
