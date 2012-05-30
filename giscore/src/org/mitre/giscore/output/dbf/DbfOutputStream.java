@@ -389,7 +389,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
     }
 
     @Nullable
-    private Boolean getBoolean(Object data) {
+    private static Boolean getBoolean(Object data) {
         if (data instanceof Boolean) {
             return (Boolean) data;
         } else if (data instanceof String) {
@@ -400,7 +400,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
             return val.startsWith("t") || val.startsWith("y")
                     || "1".equals(val);
         } else {
-            return false;
+            return Boolean.FALSE;
         }
     }
 
