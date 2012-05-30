@@ -227,7 +227,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
     private int getFieldLength(SimpleField field) {
         Type ft = field.getType();
         int fieldlen = field.getLength();
-        if (Type.STRING.equals(field.getType())) {
+        if (Type.STRING.equals(ft)) {
             if (fieldlen > MAX_CHARLEN)
                 fieldlen = MAX_CHARLEN;
         } else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
@@ -245,6 +245,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
         } else if (Type.OID.equals(ft)) {
             fieldlen = 10;
         } else if (Type.DATE.equals(ft)) {
+            // dates stored as string (8-bytes) in the format YYYMMDD
             fieldlen = 8;
         } else if (Type.BOOL.equals(ft)) {
             fieldlen = 1;
@@ -267,7 +268,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
                 Type ft = field.getType();
                 if (Type.STRING.equals(field.getType())) {
                     String data = getString(row.getData(field));
-                    writeField(stream, data, length);
+                    writeStringField(stream, data, length);
                 } else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
                     Number data = getNumber(row.getData(field));
                     if (data == null)
@@ -300,19 +301,20 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
                     }
                 } else if (Type.DATE.equals(ft)) {
                     Date data = getDate(row.getData(field));
+                    // dates stored as string (8-bytes) in the format YYYMMDD
                     if (data != null) {
-                        writeField(stream, dateFormat.format(data), 8);
+                        writeStringField(stream, dateFormat.format(data), 8);
                     } else {
-                        writeField(stream, "", 8);
+                        writeStringField(stream, "", 8);
                     }
                 } else if (Type.BOOL.equals(ft)) {
                     Boolean bool = getBoolean(row.getData(field));
                     if (bool == null)
-                        writeField(stream, "?", 1);
+                        writeStringField(stream, "?", 1);
                     else if (bool)
-                        writeField(stream, "t", 1);
+                        writeStringField(stream, "t", 1);
                     else
-                        writeField(stream, "f", 1);
+                        writeStringField(stream, "f", 1);
                 } else {
                     String data = getString(row.getData(field));
                     writeField(stream, data, 32);
@@ -335,12 +337,34 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
             throws IOException {
         byte str[] = data.getBytes(US_ASCII);
         if (str.length < length) {
-            stream.write(str, 0, str.length);
+            // Numeric fields are right-justified and padded with blanks to width of field in Shape DBF files
             stream.write(blankpad, 0, length - str.length);
+            stream.write(str, 0, str.length);
         } else {
             if (str.length > length) {
                 log.trace("Value truncated - value too large for field: {} maxlen={}", data, length);
             }
+            stream.write(str, 0, length);
+        }
+    }
+
+    /**
+     * Write String field data, truncating value at the field length
+     *
+     * @param stream the stream
+     * @param data   the string to write, may be more or less than the field
+     *               length. This will be converted to ascii
+     * @param length the field length
+     * @throws IOException if an error occurs
+     */
+    private void writeStringField(BinaryOutputStream stream, String data, int length)
+            throws IOException {
+        byte str[] = data.getBytes(US_ASCII);
+        if (str.length < length) {
+            // String fields are left-justified and padded with blanks to width of field in Shape DBF files
+            stream.write(str, 0, str.length);
+            stream.write(blankpad, 0, length - str.length);
+        } else {
             stream.write(str, 0, length);
         }
     }
