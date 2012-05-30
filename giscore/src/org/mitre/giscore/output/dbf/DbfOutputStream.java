@@ -224,33 +224,52 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
         return rval;
     }
 
-    private int getFieldLength(SimpleField field) {
-        Type ft = field.getType();
+    private static int getFieldLength(SimpleField field) {
         int fieldlen = field.getLength();
-        if (Type.STRING.equals(ft)) {
-            if (fieldlen > MAX_CHARLEN)
-                fieldlen = MAX_CHARLEN;
-        } else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
-            fieldlen = 34;
-        } else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
-            fieldlen = 10;
-        } else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
-            fieldlen = 6;
-        } else if (Type.LONG.equals(ft)) {
-            if (fieldlen < 15) fieldlen = 15; // set minlength = 15
-            else if (fieldlen > 20) {
-                // max formatting of Long value (Long.MIN_VALUE) is -9223372036854775808 or 20 characters
-                fieldlen = 20;
-            }
-        } else if (Type.OID.equals(ft)) {
-            fieldlen = 10;
-        } else if (Type.DATE.equals(ft)) {
-            // dates stored as string (8-bytes) in the format YYYMMDD
-            fieldlen = 8;
-        } else if (Type.BOOL.equals(ft)) {
-            fieldlen = 1;
-        } else {
-            fieldlen = 32;
+        switch (field.getType()) {
+            case STRING:
+                if (fieldlen > MAX_CHARLEN)
+                    fieldlen = MAX_CHARLEN;
+                break;
+
+            case DOUBLE:
+            case FLOAT:
+                fieldlen = 34;
+                break;
+
+            case INT:
+            case UINT:
+                fieldlen = 10;
+                break;
+
+            case SHORT:
+            case USHORT:
+                fieldlen = 6;
+                break;
+
+            case LONG:
+                if (fieldlen < 15) fieldlen = 15; // set minlength = 15
+                else if (fieldlen > 20) {
+                    // max formatting of Long value (Long.MIN_VALUE) is -9223372036854775808 or 20 characters
+                    fieldlen = 20;
+                }
+                break;
+
+            case OID:
+                fieldlen = 10;
+                break;
+
+            case DATE:
+                // dates stored as string (8-bytes) in the format YYYMMDD
+                fieldlen = 8;
+                break;
+
+            case BOOL:
+                fieldlen = 1;
+                break;
+
+            default:
+                fieldlen = 32;
         }
         return fieldlen;
     }
