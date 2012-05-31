@@ -40,30 +40,33 @@ import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.input.dbf.DbfInputStream;
+import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.dbf.DbfOutputStream;
 
 /**
  *
  */
 public class TestDbfOutputStream {
-    private Random rand = new Random();
+    private final Random rand = new Random();
+
+    private final DateFormat isoFormat = new SimpleDateFormat(IKml.ISO_DATE_FMT); // "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
 
     private final DateFormat inputDateFormats[] = new DateFormat[]{
-            new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"),
+            isoFormat, // "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+            new SimpleDateFormat("dd-MMM-yyyy"),
             new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
             new SimpleDateFormat("MM/dd/yyyy hh:mm"),
             new SimpleDateFormat("MM/dd/yyyy"),
-            new SimpleDateFormat("dd-MMM-yyyy"),
             new SimpleDateFormat("yyyyMMdd")
     };
 
     private static final String[] DATE_STRINGS = {
-            "05/29/2012T17:00:00.000",
+            "2012-05-29T17:00:00.000Z",
             "05/29/2012 17:00:00",
             "05/29/2012 17:00",
             "05/29/2012",
             "29-May-2012",
-            "20120529"
+            "20120529",
     };
 
     {
@@ -190,6 +193,55 @@ public class TestDbfOutputStream {
     }
 
     @Test
+    public void testDbfOutputLongNumeric() throws Exception {
+        Schema s = new Schema();
+        SimpleField li = new SimpleField("li", Type.LONG);
+        li.setLength(24); // length will be set to max of 20 characters in output
+        s.put(li);
+        SimpleField ls = new SimpleField("ls", Type.LONG);
+        ls.setLength(14); // length will be set to min of 15 characters in output
+        s.put(ls);
+
+        File temp = File.createTempFile("testLong", ".dbf");
+        FileOutputStream os = new FileOutputStream(temp);
+        List<Row> data = new ArrayList<Row>(50);
+        try {
+            DbfOutputStream dbfos = new DbfOutputStream(os, null);
+            dbfos.write(s);
+            for (int i = 0; i < 50; i++) {
+                Row r = new Row();
+                long rndLong = RandomUtils.nextLong() % 10000000;
+                r.putData(li, rndLong);
+                r.putData(ls, rndLong);
+                data.add(r);
+                dbfos.write(r);
+            }
+
+            dbfos.close();
+        } finally {
+            IOUtils.closeQuietly(os);
+        }
+
+        FileInputStream is = new FileInputStream(temp);
+        try {
+            DbfInputStream dbfis = new DbfInputStream(is, null);
+            Schema readschema = (Schema) dbfis.read();
+            assertNotNull(readschema);
+            assertEquals(2, readschema.getKeys().size());
+            compare(li, readschema.get("li"));
+            compare(ls, readschema.get("ls"));
+            for (int i = 0; i < 50; i++) {
+                Row readrow = (Row) dbfis.read();
+                Row origrow = data.get(i);
+                compare(s, readschema, origrow, readrow);
+            }
+            dbfis.close();
+        } finally {
+            IOUtils.closeQuietly(is);
+        }
+    }
+
+    @Test
     public void testDbfOutputStreamNumeric() throws Exception {
         Schema s = new Schema();
         SimpleField b = new SimpleField("b", Type.BOOL);
@@ -300,6 +352,7 @@ public class TestDbfOutputStream {
             else
                 assertTrue(ObjectUtils.NULL == e.getValue());
         }
+        dbfis.close();
     }
 
     @Test
@@ -335,6 +388,14 @@ public class TestDbfOutputStream {
         r.putData(date, null); // null date value
         dbfos.write(r);
 
+        r = new Row();
+        r.putData(date, "05-31-2014"); // non-supporting date format
+        dbfos.write(r);
+
+        r = new Row();
+        r.putData(date, "2012-05-29T17:00:00"); // non-supporting date format
+        dbfos.write(r);
+
         dbfos.close();
         os.close();
 
@@ -353,6 +414,18 @@ public class TestDbfOutputStream {
             assertNotNull(readrow);
             assertTrue(readrow.hasExtendedData());
             assertNull(readrow.getData(date));
+
+            readrow = (Row) dbfis.read(); // 05-31-2014 => 0004-09-01T00:00
+            assertNotNull(readrow);
+            //assertNotNull(readrow.getData(date));
+            //System.out.printf("Date: %s %n", isoFormat.format((Date) readrow.getData(date)));
+            assertNull(readrow.getData(date));
+
+            readrow = (Row) dbfis.read();
+            assertNotNull(readrow); // 2012-05-29T17:00:00 => 2011-12-05T00:00
+            //System.out.printf("Date: %s %n", isoFormat.format((Date) readrow.getData(date)));
+            assertNull(readrow.getData(date));
+
         } finally {
             IOUtils.closeQuietly(is);
         }
@@ -402,6 +475,7 @@ public class TestDbfOutputStream {
             } else if (v1 instanceof Number) {
                 assertEquals(((Number) v1).doubleValue(), ((Number) v2).doubleValue(), 1e-6);
             } else if (v1 instanceof Date) {
+
                 int y1, y2, m1, m2, d1, d2;
                 // note: original timestamp is discarded -- only YYYYMMDD is preserved in Date type
                 cal.setTimeInMillis(((Date) v1).getTime());
@@ -450,8 +524,27 @@ public class TestDbfOutputStream {
             return (Date) data;
         } else {
             String dstr = data.toString();
-            for (DateFormat inputDateFormat : inputDateFormats) {
+            /*
+                0. yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+                1. dd-MMM-yyyy
+                2. MM/dd/yyyy hh:mm:ss
+                3. MM/dd/yyyy hh:mm
+                4. MM/dd/yyyy
+                5. yyyyMMdd
+             */
+            int startIdx, endIdx;
+            if (dstr.indexOf('-') > 0) {
+                startIdx = 0;
+                endIdx = 1;
+            } else if (dstr.indexOf('/') > 0) {
+                startIdx = 2;
+                endIdx = 4;
+            } else {
+                startIdx = endIdx = 5;
+            }
+            for (int i = startIdx; i <= endIdx; i++) {
                 try {
+                    DateFormat inputDateFormat = inputDateFormats[i];
                     return inputDateFormat.parse(dstr);
                 } catch (ParseException pe) {
                     // Continue
