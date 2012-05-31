@@ -8,7 +8,7 @@
  *  (C) Copyright MITRE Corporation 2009
  *
  *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantibility and
+ *  the warranty of non-infringement and the implied warranties of merchantability and
  *  fitness for a particular purpose.  The Copyright owner will not be liable for any
  *  damages suffered by you as a result of using the Program.  In no event will the
  *  Copyright owner be liable for any special, indirect or consequential damages or
@@ -36,13 +36,11 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class TestShapefileOutput extends TestShapefileBase {
