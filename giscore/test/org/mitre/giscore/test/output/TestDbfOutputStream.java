@@ -518,6 +518,7 @@ public class TestDbfOutputStream {
     }
 
     private Date getDate(Object data) {
+        // getDate() should match DbfOutputStream.getDate()
         if (data == null) {
             return null;
         } else if (data instanceof Date) {
@@ -525,11 +526,17 @@ public class TestDbfOutputStream {
         } else {
             String dstr = data.toString();
             /*
+            SimpleDateFormat is flaky on which dates the parser accepts
+            so do some pre-tests on which patterns to match against with
+            3 groups of patterns:
+
                 0. yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
                 1. dd-MMM-yyyy
+
                 2. MM/dd/yyyy hh:mm:ss
                 3. MM/dd/yyyy hh:mm
                 4. MM/dd/yyyy
+
                 5. yyyyMMdd
              */
             int startIdx, endIdx;
