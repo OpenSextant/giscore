@@ -44,9 +44,9 @@ import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.TimeZone;
 
 /**
@@ -260,7 +260,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
                 break;
 
             case DATE:
-                // dates stored as string (8-bytes) in the format YYYMMDD
+                // dates stored as string (8-bytes) in the format YYYYMMDD
                 fieldlen = 8;
                 break;
 
@@ -292,9 +292,15 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
                     Number data = getNumber(row.getData(field));
                     if (data == null)
                         writeField(stream, "", length);
-                    else
-                        writeField(stream, decimalFormat.format(data
-                                .doubleValue()), 34);
+                    else {
+                        double number = data.doubleValue();
+                        String decimalString = decimalFormat.format(number);
+                        if (decimalString.length() > 34) {
+                            // value would be truncated - use numeric exponent format (e.g. 1.2e+308)
+                            decimalString = doubleExpFormat(number);
+                        }
+                        writeField(stream, decimalString, 34);
+                    }
                 } else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
                     Number data = getNumber(row.getData(field));
                     if (data != null) {
@@ -320,7 +326,8 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
                     }
                 } else if (Type.DATE.equals(ft)) {
                     Date data = getDate(row.getData(field));
-                    // dates stored as string (8-bytes) in the format YYYMMDD
+                    // NOTE: dates stored as string (8-bytes) in the format (YYYYMMDD)
+                    // and timestamp if any is discarded.
                     if (data != null) {
                         writeStringField(stream, dateFormat.format(data), 8);
                     } else {
@@ -394,9 +401,9 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
             return (Boolean) data;
         } else if (data instanceof String) {
             String val = (String) data;
-            val = val.toLowerCase();
             if (val.equals("?"))
                 return null;
+            val = val.toLowerCase();
             return val.startsWith("t") || val.startsWith("y")
                     || "1".equals(val);
         } else {
@@ -433,6 +440,40 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
         }
     }
 
+    /**
+     * Format decimal number in format consistent with ESRI Arc output.
+     * Example: +987000000000000000000000000000000 => 9.87e+32
+     *
+     * @param d the <code>double</code> to be converted.
+     * @return a string representation of the argument.
+     */
+    @NonNull
+    private static String doubleExpFormat(double d) {
+        /*
+         * Double.toString() formats exponents as 9.87E32
+         * ESRI ArcMap outputs 9.87e+32
+         */
+        String str = Double.toString(d);
+        int ind = str.lastIndexOf('E');
+        if (ind == -1) {
+            // ind = str.lastIndexOf('e');
+            // if (ind == -1) return str;
+            return str; // no exponent return as-is
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append('e');
+        if (Character.isDigit(str.charAt(ind + 1)))
+            sb.append('+');
+        sb.append(str.substring(ind + 1));
+        if (ind + sb.length() > 24) {
+            // keep up to 24 characters
+            ind = 24 - sb.length();
+            if (ind <= 0) return str;
+        }
+        sb.insert(0, str.substring(0, ind));
+        return sb.toString();
+    }
+
     @Nullable
     private Number getNumber(Object data) {
         if (data == null) {
@@ -460,7 +501,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
         }
         byte len[] = new byte[schema.getKeys().size()];
         int i = 0;
-        Collection<String> attrNames = new ArrayList<String>();
+        Collection<String> attrNames = new HashSet<String>();
         for (SimpleField field : schema.getFields()) {
             // Write the field name, padded with null bytes
             String fieldname = field.getName();
@@ -481,25 +522,36 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
             Type ft = field.getType();
             if (Type.STRING.equals(ft)) {
                 type = 'C';
+                // fieldlen varies (1..253)
             } else if (Type.DOUBLE.equals(ft) || Type.FLOAT.equals(ft)) {
                 type = 'F';
                 fielddec = 16;
+                // fieldlen=34
+                // TODO: double values > 1E+32 exceed the fixed 34 character length and will be truncated.
+                // likewise 1.7E+308 cannot be a whole string -- exceeds max 253 characters in length
             } else if (Type.LONG.equals(ft)) {
                 type = 'N';
+                // fieldlen=min(max(fieldlen, 15), 20)
                 // N (Numeric) type -> Integer or Long or Double (depends on field's decimal count and fieldLength)
                 // decimal count = 0 (Integer (w/fieldLength < 10) or Long) decimal Count > 0 => Double
             } else if (Type.INT.equals(ft) || Type.UINT.equals(ft)) {
                 type = 'N';
+                // fieldlen=10
             } else if (Type.SHORT.equals(ft) || Type.USHORT.equals(ft)) {
                 type = 'N';
+                // fieldlen=6
             } else if (Type.OID.equals(ft)) {
                 type = 'N';
+                // fieldlen=10
             } else if (Type.DATE.equals(ft)) {
                 type = 'D';
+                // fieldlen=8
             } else if (Type.BOOL.equals(ft)) {
                 type = 'L';
+                // fieldlen=1
             } else {
                 type = 'C';
+                // fieldlen=32
             }
             len[i++] = (byte) fieldlen;
             stream.writeByte(type); // 11
