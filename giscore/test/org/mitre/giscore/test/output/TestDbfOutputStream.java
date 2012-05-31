@@ -53,7 +53,8 @@ public class TestDbfOutputStream {
             new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
             new SimpleDateFormat("MM/dd/yyyy hh:mm"),
             new SimpleDateFormat("MM/dd/yyyy"),
-            new SimpleDateFormat("dd-MMM-yyyy")
+            new SimpleDateFormat("dd-MMM-yyyy"),
+            new SimpleDateFormat("yyyyMMdd")
     };
 
     private static final String[] DATE_STRINGS = {
@@ -61,7 +62,8 @@ public class TestDbfOutputStream {
             "05/29/2012 17:00:00",
             "05/29/2012 17:00",
             "05/29/2012",
-            "29-May-2012"
+            "29-May-2012",
+            "20120529"
     };
 
     {
@@ -159,7 +161,7 @@ public class TestDbfOutputStream {
         DbfOutputStream dbfos = new DbfOutputStream(os, null);
         dbfos.write(s);
 
-        Object[] objs = {Boolean.TRUE, Boolean.FALSE, "?", "t", "f", "1", "0", null, "abc"};
+        Object[] objs = {Boolean.TRUE, Boolean.FALSE, "?", "T", "t", "F", "f", "1", "0", null, "abc"};
 
         List<Row> data = new ArrayList<Row>(objs.length);
         for (Object o : objs) {
@@ -401,6 +403,7 @@ public class TestDbfOutputStream {
                 assertEquals(((Number) v1).doubleValue(), ((Number) v2).doubleValue(), 1e-6);
             } else if (v1 instanceof Date) {
                 int y1, y2, m1, m2, d1, d2;
+                // note: original timestamp is discarded -- only YYYYMMDD is preserved in Date type
                 cal.setTimeInMillis(((Date) v1).getTime());
                 y1 = cal.get(Calendar.YEAR);
                 m1 = cal.get(Calendar.MONTH);
@@ -463,9 +466,9 @@ public class TestDbfOutputStream {
             return (Boolean) data;
         } else if (data instanceof String) {
             String val = (String) data;
-            val = val.toLowerCase();
             if (val.equals("?"))
                 return null;
+            val = val.toLowerCase();
             return val.startsWith("t") || val.startsWith("y")
                     || "1".equals(val);
         } else {
