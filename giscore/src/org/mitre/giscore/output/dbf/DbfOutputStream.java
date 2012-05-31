@@ -62,10 +62,10 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
     private final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     private final DateFormat inputDateFormats[] = new DateFormat[]{
             new SimpleDateFormat(IKml.ISO_DATE_FMT),
+            new SimpleDateFormat("dd-MMM-yyyy"),
             new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
             new SimpleDateFormat("MM/dd/yyyy hh:mm"),
-            new SimpleDateFormat("MM/dd/yyyy"),
-            new SimpleDateFormat("dd-MMM-yyyy"), dateFormat};
+            new SimpleDateFormat("MM/dd/yyyy"), dateFormat};
     private final DecimalFormat decimalFormat = new DecimalFormat(
             "+###############0.################;-###############0.################");
     private final SafeDateFormat isoDateFormat = new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
@@ -430,13 +430,33 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
             return (Date) data;
         } else {
             String dstr = data.toString();
-            for (DateFormat inputDateFormat : inputDateFormats) {
+            /*
+                0. yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+                1. dd-MMM-yyyy
+                2. MM/dd/yyyy hh:mm:ss
+                3. MM/dd/yyyy hh:mm
+                4. MM/dd/yyyy
+                5. yyyyMMdd
+             */
+            int startIdx, endIdx;
+            if (dstr.indexOf('-') > 0) {
+                startIdx = 0;
+                endIdx = 1;
+            } else if (dstr.indexOf('/') > 0) {
+                startIdx = 2;
+                endIdx = 4;
+            } else {
+                startIdx = endIdx = 5;
+            }
+            for (int i = startIdx; i <= endIdx; i++) {
                 try {
+                    DateFormat inputDateFormat = inputDateFormats[i];
                     return inputDateFormat.parse(dstr);
                 } catch (ParseException pe) {
                     // Continue
                 }
             }
+            log.debug("failed to parse date {}", dstr);
             return null;
         }
     }
