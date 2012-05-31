@@ -19,8 +19,10 @@
 package org.mitre.giscore.test.input;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.Test;
+
 import static org.junit.Assert.*;
 
 import org.mitre.giscore.events.IGISObject;
@@ -30,107 +32,64 @@ import org.mitre.giscore.input.dbf.DbfInputStream;
 
 public class TestDbfInputStream {
 
-	@Test public void testDbfInputStream1() throws Exception {
-        final File file = new File("data/shape/Iraq.dbf");
-        if (!file.exists()) {
-            System.err.println("file not found: " + file);
-            return;
-        }
-        DbfInputStream dbfs = new DbfInputStream(file, new Object[0]);
-		IGISObject obj = dbfs.read();
-		assertNotNull(obj);
-		assertTrue(obj instanceof Schema);
-		Schema s = (Schema) obj;
-		assertNotNull(s.getKeys());
-		assertTrue(s.getKeys().size() > 1);
-		obj = dbfs.read();
-		while(obj != null) {
-			assertNotNull(obj);
-			assertTrue(obj instanceof Row);
-			obj = dbfs.read();
-		}
-	}
+    @Test
+    public void testDbfInputStream1() throws Exception {
+        checkDbf(new File("data/shape/Iraq.dbf"));
+    }
 
-    @Test public void testDbfInputStreamShort() throws Exception {
-        final File file = new File("data/shape/MBTA.dbf");
-        if (!file.exists()) {
-            System.err.println("file not found: " + file);
-            return;
-        }
-        DbfInputStream dbfs = new DbfInputStream(file, new Object[0]);
-        IGISObject obj = dbfs.read();
-        assertNotNull(obj);
-        assertTrue(obj instanceof Schema);
-        Schema s = (Schema) obj;
+    @Test
+    public void testDbfInputStreamShort() throws Exception {
+        checkDbf(new File("data/shape/MBTA.dbf"));
         /*
         <Schema name='schema_2' id='s_2'>
-          <SimpleField name='OBJECTID' type='LONG'/>
-          <SimpleField name='SOURCE' type='STRING'/>
-          <SimpleField name='LINE' type='STRING'/>
-          <SimpleField name='GRADE' type='SHORT'/>
-          <SimpleField name='SHAPE_LEN' type='DOUBLE'/>
+          <SimpleField name='OBJECTID' type='LONG/10'/>
+          <SimpleField name='SOURCE' type='STRING/5'/>
+          <SimpleField name='LINE' type='STRING/6'/>
+          <SimpleField name='GRADE' type='SHORT/1'/>
+          <SimpleField name='SHAPE_LEN' type='DOUBLE/19 scale=11'/>
         </Schema>
-         */
-        assertNotNull(s.getKeys());
-        assertTrue(s.getKeys().size() > 1);
-        obj = dbfs.read();
-        while (obj != null) {
-            /*
-            Row data=
-            OBJECTID (LONG) = '1'
-            SOURCE (STRING) = 'DLG'
-            LINE (STRING) = 'SILVER'
-            GRADE (SHORT) = '3'
-            SHAPE_LEN (DOUBLE) = '4575.18028634'
-             */
+
+        Sample row data:
+        OBJECTID (LONG) = '1'
+        SOURCE (STRING) = 'DLG'
+        LINE (STRING) = 'SILVER'
+        GRADE (SHORT) = '3'
+        SHAPE_LEN (DOUBLE) = '4575.18028634'
+        */
+    }
+
+    @Test
+    public void testDbfInputStream2() throws Exception {
+        checkDbf(new File("data/shape/tl_2008_us_metdiv.dbf"));
+    }
+
+    @Test
+    public void testDbfInputStream3() throws Exception {
+        checkDbf(new File("data/shape/AlleghenyCounty_Floodplain2000.dbf"));
+    }
+
+    private void checkDbf(File file) throws IOException {
+        if (!file.exists()) {
+            System.err.println("file not found: " + file);
+            return;
+        }
+        DbfInputStream dbfs = new DbfInputStream(file, new Object[0]);
+        try {
+            IGISObject obj = dbfs.read();
             assertNotNull(obj);
-            assertTrue(obj instanceof Row);
+            assertTrue(obj instanceof Schema);
+            Schema s = (Schema) obj;
+            assertNotNull(s.getKeys());
+            assertTrue(s.getKeys().size() > 1);
             obj = dbfs.read();
+            while (obj != null) {
+                assertNotNull(obj);
+                assertTrue(obj instanceof Row);
+                obj = dbfs.read();
+            }
+        } finally {
+            dbfs.close();
         }
-        dbfs.close();
     }
 
-	@Test public void testDbfInputStream2() throws Exception {
-        final File file = new File("data/shape/tl_2008_us_metdiv.dbf");
-        if (!file.exists()) {
-            System.err.println("file not found: " + file);
-            return;
-        }
-        DbfInputStream dbfs = new DbfInputStream(file, new Object[0]);
-		IGISObject obj = dbfs.read();
-		assertNotNull(obj);
-		assertTrue(obj instanceof Schema);
-		Schema s = (Schema) obj;
-		assertNotNull(s.getKeys());
-		assertTrue(s.getKeys().size() > 1);
-		obj = dbfs.read();
-		while(obj != null) {
-			assertNotNull(obj);
-			assertTrue(obj instanceof Row);
-			obj = dbfs.read();
-		}
-        dbfs.close();
-    }
-	
-	@Test public void testDbfInputStream3() throws Exception {
-        final File file = new File("data/shape/AlleghenyCounty_Floodplain2000.dbf");
-        if (!file.exists()) {
-            System.err.println("file not found: " + file);
-            return;
-        }
-        DbfInputStream dbfs = new DbfInputStream(file, new Object[0]);
-		IGISObject obj = dbfs.read();
-		assertNotNull(obj);
-		assertTrue(obj instanceof Schema);
-		Schema s = (Schema) obj;
-		assertNotNull(s.getKeys());
-		assertTrue(s.getKeys().size() > 1);
-		obj = dbfs.read();
-		while(obj != null) {
-			assertNotNull(obj);
-			assertTrue(obj instanceof Row);
-			obj = dbfs.read();
-		}
-
-	}	
 }
