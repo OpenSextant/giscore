@@ -319,9 +319,10 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
                     }
                 } else if (Type.LONG.equals(ft) || Type.OID.equals(ft)) {
                     Number data = getNumber(row.getData(field));
-                    if (data == null)
+                    if (data == null) {
+                        // some DBF implementations also interpret values starting with '*' as null
                         writeField(stream, "", length);
-                    else {
+                    } else {
                         writeField(stream, Long.toString(data.longValue()), length);
                     }
                 } else if (Type.DATE.equals(ft)) {
@@ -338,9 +339,9 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
                     if (bool == null)
                         writeStringField(stream, "?", 1);
                     else if (bool)
-                        writeStringField(stream, "t", 1);
+                        writeStringField(stream, "T", 1);
                     else
-                        writeStringField(stream, "f", 1);
+                        writeStringField(stream, "F", 1);
                 } else {
                     String data = getString(row.getData(field));
                     writeField(stream, data, 32);
