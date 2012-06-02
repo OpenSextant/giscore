@@ -32,7 +32,6 @@ import org.mitre.giscore.output.shapefile.BinaryOutputStream;
 import org.mitre.giscore.utils.DateParser;
 import org.mitre.giscore.utils.FieldCachingObjectBuffer;
 import org.mitre.giscore.utils.ObjectBuffer;
-import org.mitre.giscore.utils.SafeDateFormat;
 import org.mitre.giscore.utils.StringHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,12 +60,13 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
     private final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
     private final DecimalFormat decimalFormat = new DecimalFormat(
             "+###############0.################;-###############0.################");
-    private final SafeDateFormat isoDateFormat = new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+    private final DateFormat isoDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
 
     {
         // instance initialization
         TimeZone tz = TimeZone.getTimeZone("UTC");
         dateFormat.setTimeZone(tz);
+        isoDateFormat.setTimeZone(tz);
     }
 
     static {
