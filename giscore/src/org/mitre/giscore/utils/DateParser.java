@@ -1,3 +1,17 @@
+/****************************************************************************************
+ *  DateParser.java
+ *
+ *  (C) Copyright MITRE Corporation 2009
+ *
+ *  The program is provided "as is" without any warranty express or implied, including
+ *  the warranty of non-infringement and the implied warranties of merchantability and
+ *  fitness for a particular purpose.  The Copyright owner will not be liable for any
+ *  damages suffered by you as a result of using the Program.  In no event will the
+ *  Copyright owner be liable for any special, indirect or consequential damages or
+ *  lost profits even if the Copyright owner has been advised of the possibility of
+ *  their occurrence.
+ *
+ ***************************************************************************************/
 package org.mitre.giscore.utils;
 
 import org.slf4j.Logger;
@@ -36,7 +50,7 @@ import java.util.TimeZone;
  * date then the timestamp offset is ignored (e.g. 2012-05-29T01:00:00-0700 should
  * actually be 2012-05-28T18:00 in UTC but parsed simply instead as 2012-05-29).
  *
- * @author Jason Mathews
+ * @author Jason Mathews, MITRE Corporation
  *         Date: 6/1/12 2:02 PM
  */
 public final class DateParser {
@@ -55,7 +69,7 @@ public final class DateParser {
     }
 
     public static Date parse(String str) {
-        // System.out.println(str);
+        //System.out.println(str);
         String strToken = "";
         int val = 0;
         int year = -1;
@@ -68,12 +82,14 @@ public final class DateParser {
             if (Character.isDigit(ch)) {
                 if (year == -1 && digitCount == 4) {
                     /*
-                        1. yyyy-MM-dd"T"HH:mm[:ss.SSS]["Z"]
-                        2. yyyyMMdd HHmm[ss]["Z"]
-                        3. yyyyMMddHHmm[ss]["Z"]
-                        4. yyyyMMdd
+                        ' => ' marks context where parser is looking at at
+                        in the input. Here we just saw 4 digits and are looking
+                        at the 5th digit. The first 4-digits are assumed to be
+                        part of the year. 3 possible cases for this situation:
 
-                        8. MM/dd/yyyy hh:mm[:ss]
+                        2. yyyy => MMdd HHmm[ss]["Z"]
+                        3. yyyy => MMddHHmm[ss]["Z"]
+                        4. yyyy => MMdd
                     */
                     year = val;
                     val = 0;
@@ -82,7 +98,7 @@ public final class DateParser {
                         /*
                         unlikely case: would have to seen month and day
                         then 4-digit year immediately followed by a digit
-                        (e.g. 05/31/201212:30PM or May 31,201218:30:00)
+                        (e.g. 05/31/201212:30PM or May 31,201218:30:00).
                         */
                         if (year < 1900) return null; // sanity check
                         break; // completed
