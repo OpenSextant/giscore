@@ -191,13 +191,11 @@ public final class DateParser {
                 } else {
                     // if (ch != ',' && ch != ' ' && ch != '-' && ch != '/') {
                     if (Character.isLetter(ch)) {
-                        if (strToken.isEmpty()) strToken = "" + ch;
-                        else strToken += ch;
-                    } else {
+                        strToken += ch;
+                    } else if (!strToken.isEmpty()) {
                         // discard comma, dash, space, etc.
-                        if (!strToken.isEmpty())
-                            log.debug("discard token: {}", strToken);
-                        strToken = "";
+                        log.debug("discard token: {}", strToken);
+                        strToken = ""; // reset
                     }
                 }
                 digitCount = 0;
