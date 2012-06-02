@@ -73,9 +73,17 @@ public class TestDateParser {
     }
 
     @Test
+    public void testLongMonth() {
+        Date d = DateParser.parse("5 January 2012");
+        assertNotNull(d);
+        assertEquals("20120105", dateFormat.format(d));
+    }
+
+    @Test
     public void testBadDates() {
         String[] dates = {
 
+                "05/31/000012:30PM", // bogus date
                 "May 2012",
                 "May 29",
                 "01:45:30",
