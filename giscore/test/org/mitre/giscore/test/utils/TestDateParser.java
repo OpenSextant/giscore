@@ -23,7 +23,7 @@ public class TestDateParser {
     @Test
     public void testParser() {
         String[] dates = {
-                "2012-05-29T17:00:00.000Z",
+                "2012-05-29T17:00:00.000Z", // ISO 8601
                 "2012-05-29T17:00:00.000",
                 "2012-05-29T17:00:00Z",
                 "2012-05-29T17:00:00",
@@ -47,8 +47,11 @@ public class TestDateParser {
                 "201205291730",
                 "20120529170000",
                 "5/29/2012 1:45:30 PM",
+                "Tue, 29 May 2012 08:49:37 GMT",  // RFC 822, updated by RFC 1123
                 "2012.05.29 AD at 12:08:56 PDT",
                 "Tue, 29 May 2012 12:08:56 -0700",
+                "Tue, 29 May 2012 13:19:41",
+                "Tuesday, May 29, 2012 17:37:43-PST",
                 "Tuesday, May 29, 2012",
                 "May 29, 2012",
         };
@@ -82,15 +85,17 @@ public class TestDateParser {
     @Test
     public void testBadDates() {
         String[] dates = {
-
-                "05/31/000012:30PM", // bogus date
+                "Sunday, 06-Nov-94 08:49:37 GMT", // RFC 850, obsoleted by RFC 1036
+                "Sun Nov  6 08:49:37 1994",       // ANSI C's asctime() format
+                "Wed Sep 10 13:43:13 2003",
+                "Tue Sep 09 11:34:27 EDT 2003", // java.util.Date format
+                "05/31/000012:30PM", // bogus date format
                 "May 2012",
                 "May 29",
                 "01:45:30",
                 "1 2 3",
                 "abc",
                 "a b c"
-
         };
         for (String s : dates) {
             //System.out.println("---");
