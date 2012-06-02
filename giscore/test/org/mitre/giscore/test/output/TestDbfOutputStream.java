@@ -21,9 +21,6 @@ package org.mitre.giscore.test.output;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 import org.apache.commons.io.IOUtils;
@@ -40,25 +37,14 @@ import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.input.dbf.DbfInputStream;
-import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.dbf.DbfOutputStream;
+import org.mitre.giscore.utils.DateParser;
 
 /**
  *
  */
 public class TestDbfOutputStream {
     private final Random rand = new Random();
-
-    private final DateFormat isoFormat = new SimpleDateFormat(IKml.ISO_DATE_FMT); // "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-
-    private final DateFormat inputDateFormats[] = new DateFormat[]{
-            isoFormat, // "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-            new SimpleDateFormat("dd-MMM-yyyy"),
-            new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
-            new SimpleDateFormat("MM/dd/yyyy hh:mm"),
-            new SimpleDateFormat("MM/dd/yyyy"),
-            new SimpleDateFormat("yyyyMMdd")
-    };
 
     private static final String[] DATE_STRINGS = {
             "2012-05-29T17:00:00.000Z",
@@ -68,14 +54,6 @@ public class TestDbfOutputStream {
             "29-May-2012",
             "20120529",
     };
-
-    {
-        // instance initialization
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        for (DateFormat sf : inputDateFormats) {
-            sf.setTimeZone(tz);
-        }
-    }
 
     @Test
     public void testDbfOutputStreamString() throws Exception {
@@ -389,11 +367,7 @@ public class TestDbfOutputStream {
         dbfos.write(r);
 
         r = new Row();
-        r.putData(date, "05-31-2014"); // non-supporting date format
-        dbfos.write(r);
-
-        r = new Row();
-        r.putData(date, "2012-05-29T17:00:00"); // non-supporting date format
+        r.putData(date, "May-2014"); // incomplete date
         dbfos.write(r);
 
         dbfos.close();
@@ -417,12 +391,6 @@ public class TestDbfOutputStream {
 
             readrow = (Row) dbfis.read(); // 05-31-2014 => 0004-09-01T00:00
             assertNotNull(readrow);
-            //assertNotNull(readrow.getData(date));
-            //System.out.printf("Date: %s %n", isoFormat.format((Date) readrow.getData(date)));
-            assertNull(readrow.getData(date));
-
-            readrow = (Row) dbfis.read();
-            assertNotNull(readrow); // 2012-05-29T17:00:00 => 2011-12-05T00:00
             //System.out.printf("Date: %s %n", isoFormat.format((Date) readrow.getData(date)));
             assertNull(readrow.getData(date));
 
@@ -475,7 +443,6 @@ public class TestDbfOutputStream {
             } else if (v1 instanceof Number) {
                 assertEquals(((Number) v1).doubleValue(), ((Number) v2).doubleValue(), 1e-6);
             } else if (v1 instanceof Date) {
-
                 int y1, y2, m1, m2, d1, d2;
                 // note: original timestamp is discarded -- only YYYYMMDD is preserved in Date type
                 cal.setTimeInMillis(((Date) v1).getTime());
@@ -518,46 +485,13 @@ public class TestDbfOutputStream {
     }
 
     private Date getDate(Object data) {
-        // getDate() should match DbfOutputStream.getDate()
         if (data == null) {
             return null;
         } else if (data instanceof Date) {
             return (Date) data;
         } else {
             String dstr = data.toString();
-            /*
-            SimpleDateFormat is flaky on which dates the parser accepts
-            so do some pre-tests on which patterns to match against with
-            3 groups of patterns:
-
-                0. yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-                1. dd-MMM-yyyy
-
-                2. MM/dd/yyyy hh:mm:ss
-                3. MM/dd/yyyy hh:mm
-                4. MM/dd/yyyy
-
-                5. yyyyMMdd
-             */
-            int startIdx, endIdx;
-            if (dstr.indexOf('-') > 0) {
-                startIdx = 0;
-                endIdx = 1;
-            } else if (dstr.indexOf('/') > 0) {
-                startIdx = 2;
-                endIdx = 4;
-            } else {
-                startIdx = endIdx = 5;
-            }
-            for (int i = startIdx; i <= endIdx; i++) {
-                try {
-                    DateFormat inputDateFormat = inputDateFormats[i];
-                    return inputDateFormat.parse(dstr);
-                } catch (ParseException pe) {
-                    // Continue
-                }
-            }
-            return null;
+            return DateParser.parse(dstr);
         }
     }
 

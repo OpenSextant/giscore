@@ -27,9 +27,9 @@ import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.SimpleField.Type;
 import org.mitre.giscore.input.dbf.IDbfConstants;
-import org.mitre.giscore.input.kml.IKml;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.shapefile.BinaryOutputStream;
+import org.mitre.giscore.utils.DateParser;
 import org.mitre.giscore.utils.FieldCachingObjectBuffer;
 import org.mitre.giscore.utils.ObjectBuffer;
 import org.mitre.giscore.utils.SafeDateFormat;
@@ -42,7 +42,6 @@ import java.io.OutputStream;
 import java.nio.ByteOrder;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
@@ -60,12 +59,6 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
     private static final String US_ASCII = "US-ASCII";
     private static final byte[] blankpad = new byte[255];
     private final DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-    private final DateFormat inputDateFormats[] = new DateFormat[]{
-            new SimpleDateFormat(IKml.ISO_DATE_FMT),
-            new SimpleDateFormat("dd-MMM-yyyy"),
-            new SimpleDateFormat("MM/dd/yyyy hh:mm:ss"),
-            new SimpleDateFormat("MM/dd/yyyy hh:mm"),
-            new SimpleDateFormat("MM/dd/yyyy"), dateFormat};
     private final DecimalFormat decimalFormat = new DecimalFormat(
             "+###############0.################;-###############0.################");
     private final SafeDateFormat isoDateFormat = new SafeDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
@@ -73,9 +66,6 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
     {
         // instance initialization
         TimeZone tz = TimeZone.getTimeZone("UTC");
-        for (DateFormat sf : inputDateFormats) {
-            sf.setTimeZone(tz);
-        }
         dateFormat.setTimeZone(tz);
     }
 
@@ -430,34 +420,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
             return (Date) data;
         } else {
             String dstr = data.toString();
-            /*
-                0. yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-                1. dd-MMM-yyyy
-                2. MM/dd/yyyy hh:mm:ss
-                3. MM/dd/yyyy hh:mm
-                4. MM/dd/yyyy
-                5. yyyyMMdd
-             */
-            int startIdx, endIdx;
-            if (dstr.indexOf('-') > 0) {
-                startIdx = 0;
-                endIdx = 1;
-            } else if (dstr.indexOf('/') > 0) {
-                startIdx = 2;
-                endIdx = 4;
-            } else {
-                startIdx = endIdx = 5;
-            }
-            for (int i = startIdx; i <= endIdx; i++) {
-                try {
-                    DateFormat inputDateFormat = inputDateFormats[i];
-                    return inputDateFormat.parse(dstr);
-                } catch (ParseException pe) {
-                    // Continue
-                }
-            }
-            log.debug("failed to parse date {}", dstr);
-            return null;
+            return DateParser.parse(dstr);
         }
     }
 
