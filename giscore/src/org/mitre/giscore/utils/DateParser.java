@@ -29,7 +29,8 @@ import java.util.TimeZone;
  *    10. d[ -]MMM[ -]YYYY (e.g. 1 May 2012)
  *    11. MMM[ -]d,?[ -]YYYY (e.g. May 1, 2012)
  * </pre>
- * Notes:<p>
+ * Notes:
+ * <p/>
  * Date parsing is time zone agnostic.
  * If date-timestamp has time zone offset whose offset would change the effective
  * date then the timestamp offset is ignored (e.g. 2012-05-29T01:00:00-0700 should
@@ -75,15 +76,19 @@ public final class DateParser {
                         8. MM/dd/yyyy hh:mm[:ss]
                     */
                     year = val;
-                    if (day != -1 && month != -1) {
-                        /*
-                            8. MM/dd/yyyy hh:mm[:ss]
-                        */
-                        break; // completed
-                    }
                     val = 0;
                     digitCount = 0;
+                    if (day != -1 && month != -1) {
+                        /*
+                        unlikely case: would have to seen month and day
+                        then 4-digit year immediately followed by a digit
+                        (e.g. 05/31/201212:30PM or May 31,201218:30:00)
+                        */
+                        if (year < 1900) return null; // sanity check
+                        break; // completed
+                    }
                 } else if (year != -1 && digitCount == 2) {
+                    digitCount = 0;
                     if (month == -1) {
                         /*
                         2. yyyy => MMdd HHmm[ss]["Z"]
@@ -101,7 +106,6 @@ public final class DateParser {
                         break; // completed
                     }
                     val = 0;
-                    digitCount = 0;
                 }
 
                 digitCount++;
@@ -171,6 +175,7 @@ public final class DateParser {
                         if (month != -1) {
                             // 5. dd-MMM => -yyyy[ hh:mm[:ss]]
                             // 10. d[ -]MMM => [ -]YYYY (e.g. 1 May 2012)
+                            // swap month value into day
                             day = month;
                         }
                         // otherwise month == -1
