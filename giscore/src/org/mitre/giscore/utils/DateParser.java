@@ -165,6 +165,11 @@ public final class DateParser {
                         9. MM/dd => /yyyy
                        11. MMM[ -]d => ,?[ -]YYYY (e.g. May 1, 2012)
                         */
+                        if (day != -1) {
+                            // e.g. 01-02-04 12:44PM
+                            log.debug("XXX: 2-digit year not allowed {}", str);
+                            return null;
+                        }
                         day = val;
                         if (year != -1) {
                             // done if already got month & year (e.g. 2012/05/29...)
@@ -227,7 +232,7 @@ public final class DateParser {
             day = val;
         }
 
-        // System.out.printf("\tval=%04d cnt=%d [%04d/%02d/%02d]%n%n", val, digitCount, year, month, day);
+        //System.out.printf("\tval=%04d cnt=%d [%04d/%02d/%02d]%n%n", val, digitCount, year, month, day);
 
         if (year <= 0 || month <= 0 || month > 12 || day <= 0) {
             return null;

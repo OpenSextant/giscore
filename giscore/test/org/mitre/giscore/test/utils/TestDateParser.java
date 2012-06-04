@@ -85,6 +85,8 @@ public class TestDateParser {
     @Test
     public void testBadDates() {
         String[] dates = {
+                "01-02-04", // 2-digit years not allowed (2001 vs 2004 ??)
+                "01-02-04 12:44PM",
                 "Sunday, 06-Nov-94 08:49:37 GMT", // RFC 850, obsoleted by RFC 1036
                 "Sun Nov  6 08:49:37 1994",       // ANSI C's asctime() format
                 "Wed Sep 10 13:43:13 2003",
