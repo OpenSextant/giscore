@@ -413,24 +413,28 @@ UrlRef
 
 Release 0.7.1
 
+This release fixes few Shape/DBF bugs in addition to some improvements to ESRI
+Shape file and KML handling.
+
 Bug fixes:
 
 DbfOutputStream
 -Correctly write numeric fields with right-justification as per spec
--Change non-floating numeric fields (OID, SHORT, INT) from "F" field type 
- to N' field type.
+-Change non-floating numeric fields (OID, SHORT, INT) from 'F' field type 
+ to 'N' field type.
 -Fix large double/floats [formatted length > 34 chars] being truncated and
- values mangled by adding doubleExpFormat() method to format double/floats
+ values mangled by formatting in exponent notation
     
 Improvements:
 
+-Added support for gx:drawOrder to GeometryBase, KmlInputStream, and KmlOutputStream
+
 DbfInputStream
--numeric fields starting with '*'  are considered null
+-Numeric fields starting with '*' are considered null
 -Added LONG type to SimpleField
 
 DbfOutputStream
 -Handle Long values in ShapeOutput as numeric (N) type field with decimal count=0
--Added support for gx:drawOrder to GeometryBase, KmlInputStream, and KmlOutputStream
 
 Schema
 -Added entrySet()
