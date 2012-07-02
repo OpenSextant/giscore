@@ -42,16 +42,23 @@ import java.util.TimeZone;
  *     9. MM/dd/yyyy (e.g. 12/31/2012)
  *    10. d[ -]MMM[ -]YYYY (e.g. 1 May 2012)
  *    11. MMM[ -]d,?[ -]YYYY (e.g. May 1, 2012)
+ *
+ *    12. EEE, dd MMM yyyy hh:mm:ss z (e.g. Tue, 29 May 2012 08:49:37 GMT) RFC 822, updated by RFC 1123
  * </pre>
  * Notes:
  * <p/>
  * Date parsing is time zone agnostic.
- * If date-timestamp has time zone offset whose offset would change the effective
- * date then the timestamp offset is ignored (e.g. 2012-05-29T01:00:00-0700 should
- * actually be 2012-05-28T18:00 in UTC but parsed simply instead as 2012-05-29).
+ * If date-timestamp has time zone offset (or time zone code) whose offset would change
+ * the effective date then the timestamp offset is ignored (e.g. 2012-05-29T01:00:00-0700
+ * should actually be 2012-05-28T18:00 in UTC but parsed simply instead as 2012-05-29).
+ * <p/>
+ * Does not support the old RFC 850 format (e.g. Sunday, 06-Nov-94 08:49:37 GMT).
+ * Must have explicit 4-digit years to disambiguate.
+ * <p/>
+ * Does not support the ANSI C's asctime() format (e.g. Sun Nov  6 08:49:37 1994)
  *
  * @author Jason Mathews, MITRE Corporation
- *         Date: 6/1/12 2:02 PM
+ * Date: 6/1/12 2:02 PM
  */
 public final class DateParser {
 
