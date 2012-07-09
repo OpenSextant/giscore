@@ -13,7 +13,7 @@ import org.mitre.giscore.input.shapefile.ShapefileInputStream;
 import org.mitre.giscore.output.kml.KmzOutputStream;
 
 import javax.xml.stream.XMLStreamException;
-import java.awt.Color;
+import org.mitre.giscore.utils.Color;
 import java.io.*;
 
 /**

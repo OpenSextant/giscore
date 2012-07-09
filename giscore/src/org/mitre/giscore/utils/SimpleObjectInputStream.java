@@ -57,6 +57,7 @@ import org.apache.commons.lang.ObjectUtils;
  * 
  */
 public class SimpleObjectInputStream implements Closeable {
+
 	static final int NULL = 0;
 	static final int BOOL = 1;
 	static final int SHORT = 2;
@@ -290,7 +291,7 @@ public class SimpleObjectInputStream implements Closeable {
 			return new Date(stream.readLong());
 		case COLOR:
 			int value = stream.readInt();
-			return new java.awt.Color(value, true);
+			return new Color(value, true);
 		default:
 			throw new UnsupportedOperationException(
 					"Found unsupported scalar enum " + type);

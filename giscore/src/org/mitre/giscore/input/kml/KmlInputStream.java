@@ -39,7 +39,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.*;
 import javax.xml.stream.events.Namespace;
-import java.awt.Color;
+import org.mitre.giscore.utils.Color;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;

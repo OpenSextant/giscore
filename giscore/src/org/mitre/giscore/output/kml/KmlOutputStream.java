@@ -37,7 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.xml.stream.XMLStreamException;
-import java.awt.Color;
+import org.mitre.giscore.utils.Color;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -1613,7 +1613,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      *
      * @param style icon Style element to be written
      * @throws XMLStreamException if there is an error with the underlying XML
-     * @see Style#setIconStyle(java.awt.Color, Double, Double, String)
+     * @see Style#setIconStyle(Color, Double, Double, String)
      */
     private void handleIconStyleElement(Style style)
             throws XMLStreamException {

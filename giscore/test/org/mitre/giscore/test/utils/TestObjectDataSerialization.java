@@ -18,7 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.test.utils;
 
-import java.awt.Color;
+import org.mitre.giscore.utils.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.net.URI;

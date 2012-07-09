@@ -18,7 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.output.shapefile;
 
-import java.awt.Color;
+import org.mitre.giscore.utils.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

@@ -249,6 +249,9 @@ public class SimpleObjectOutputStream implements Closeable {
 		} else if (value instanceof Date) {
 			stream.writeShort(SimpleObjectInputStream.DATE);
 			writeLong(((Date) value).getTime());
+        } else if (value instanceof Color) {
+            stream.writeShort(SimpleObjectInputStream.COLOR);
+            stream.writeInt(((Color)value).getRGB());
 		} else if (value instanceof java.awt.Color) {
 			stream.writeShort(SimpleObjectInputStream.COLOR);
 			stream.writeInt(((java.awt.Color)value).getRGB());
@@ -337,6 +340,5 @@ public class SimpleObjectOutputStream implements Closeable {
 	public void flush() throws IOException {
 		stream.flush();
 	}
-
 
 }

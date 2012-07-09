@@ -18,7 +18,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
-import java.awt.Color;
+import org.mitre.giscore.utils.Color;
 import java.io.IOException;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;

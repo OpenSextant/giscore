@@ -3,7 +3,7 @@ package org.mitre.giscore.test;
 import org.junit.Test;
 import org.mitre.giscore.events.Style;
 
-import java.awt.Color;
+import org.mitre.giscore.utils.Color;
 
 import static org.junit.Assert.*;
 

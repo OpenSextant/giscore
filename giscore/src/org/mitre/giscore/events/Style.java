@@ -26,7 +26,7 @@ import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 
-import java.awt.Color;
+import org.mitre.giscore.utils.Color;
 import java.io.IOException;
 
 /**

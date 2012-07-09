@@ -21,7 +21,7 @@ package org.mitre.giscore.test;
 import static junit.framework.Assert.*;
 import static org.junit.Assert.assertNotNull;
 
-import java.awt.Color;
+import org.mitre.giscore.utils.Color;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;

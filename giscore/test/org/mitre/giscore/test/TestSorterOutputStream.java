@@ -1,6 +1,6 @@
 package org.mitre.giscore.test;
 
-import java.awt.Color;
+import org.mitre.giscore.utils.Color;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
