@@ -7,8 +7,9 @@ import static org.junit.Assert.*;
 
 /**
  * Tests for the Color class.
+ *
  * @author Jason Mathews, MITRE Corporation
- * Date: 7/5/12 7:02 PM
+ *         Date: 7/5/12 7:02 PM
  */
 public class TestColor {
 
@@ -20,6 +21,7 @@ public class TestColor {
         assertEquals(c.getGreen(), 0x33);
         assertEquals(c.getBlue(), 0x44);
         assertEquals(c.getRGB(), 0x11223344);
+        assertEquals(c.getTransparency(), 3);
     }
 
     @Test
@@ -30,11 +32,25 @@ public class TestColor {
         assertEquals(c.getGreen(), 0x33);
         assertEquals(c.getBlue(), 0x44);
         assertEquals(c.getRGB(), 0xff223344);
+        assertEquals(c.getTransparency(), 1);
+    }
+
+    @Test
+    public void testOutRange() {
+        try {
+            new Color(300, 300, 300);
+            fail("Expected IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            // expected
+        }
     }
 
     @Test
     public void testEquals() {
-        assertEquals(new Color(0,0,0), Color.BLACK);
+        Color c = new Color(0, 0, 0);
+        assertEquals(c, Color.BLACK);
+        assertFalse(c.equals(Color.WHITE));
+        assertFalse(c.equals(null));
     }
 
     @Test
