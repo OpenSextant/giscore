@@ -6,7 +6,7 @@
 
 	<!-- Remove and reinstate ivy:buildnumber should that ever start working again -->
 	<property name="previous.revision" value="0.7.1" />
-	<property name="ivy.new.revision" value="0.7.2" />
+	<property name="ivy.new.revision" value="0.8.0" />
 	
 	<property name="proxy.host" value="gatekeeper.mitre.org" />
 	<property name="proxy.port" value="80" />
