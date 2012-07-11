@@ -12,6 +12,21 @@
  * the Copyright owner has been advised of the possibility of their
  * occurrence.
  *
+ * Portions of this file are controlled by the following license:
+ *  Licensed to the Apache Software Foundation (ASF) under one or more
+ *  contributor license agreements.  See the NOTICE file distributed with
+ *  this work for additional information regarding copyright ownership.
+ *  The ASF licenses this file to You under the Apache License, Version 2.0
+ *  (the "License"); you may not use this file except in compliance with
+ *  the License.  You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  ***************************************************************************/
 package org.mitre.giscore.geometry;
 
@@ -23,7 +38,6 @@ import org.mitre.itf.geodesy.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.geom.Line2D;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -50,6 +64,8 @@ import java.util.List;
  *   -LinearRing must contain at least 4 Points. <br/>
  *   -If validateTopology is selected then constructor enforces that the ring must start and end
  *    with the same point and the ring does not self-intersect. <br/>
+ *   -Portions of the class were taken from the Apache Harmony project and are subject
+ *    to the Apache license. Those portions were (probably) written by Denis M. Kishenko.
  *
  * @author Paul Silvey
  */
@@ -205,13 +221,13 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
                 boolean inv;
                 if ((j - i) == 1) {
                     // make sure non-zero distance from (x1, y1)->(x2, y2) to (x4, y4)
-                    inv = (Line2D.Double.ptLineDist(x1, y1, x2, y2, x4, y4) == 0.0);
+                    inv = (ptLineDist(x1, y1, x2, y2, x4, y4) == 0.0);
                 } else if ((i == 0) && (j == (n - 2))) {
                     // make sure non-zero distance from (x1, y1)->(x2, y2) to (x3, y3)
-                    inv = (Line2D.Double.ptLineDist(x1, y1, x2, y2, x3, y3) == 0.0);
+                    inv = (ptLineDist(x1, y1, x2, y2, x3, y3) == 0.0);
                 } else {
                     // make sure non-adjacent segments do not intersect
-                    inv = Line2D.Double.linesIntersect(x1, y1, x2, y2, x3, y3, x4, y4);
+                    inv = linesIntersect(x1, y1, x2, y2, x3, y3, x4, y4);
                 }
                 if (inv) {
                     if (log.isDebugEnabled())
@@ -376,7 +392,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
                 gp4 = that.pointList.get(j + 1).asGeodetic2DPoint();
                 double x4 = gp4.getLongitude().inRadians();
                 double y4 = gp4.getLatitude().inRadians();
-                if (Line2D.Double.linesIntersect(x1, y1, x2, y2, x3, y3, x4, y4))
+                if (linesIntersect(x1, y1, x2, y2, x3, y3, x4, y4))
                     return true;
             }
         }
@@ -450,4 +466,77 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
 		out.writeBoolean(idlWrap);
 		out.writeObjectCollection(pointList);
 	}
+	
+	/**
+	 * Taken from Apache Harmony's implementation of Line2D.
+	 *
+	 * @see java.awt.geom.Line2D
+	 */
+    private static double ptLineDistSq(double x1, double y1, double x2, double y2, double px, double py) {
+        x2 -= x1;
+        y2 -= y1;
+        px -= x1;
+        py -= y1;
+        double s = px * y2 - py * x2;
+        return s * s / (x2 * x2 + y2 * y2);
+    }
+
+	/**
+	 * Taken from Apache Harmony's implementation of Line2D.
+	 *
+	 * @see java.awt.geom.Line2D
+	 */
+    private static double ptLineDist(double x1, double y1, double x2, double y2, double px, double py) {
+        return Math.sqrt(ptLineDistSq(x1, y1, x2, y2, px, py));
+    }
+
+	/**
+	 * Taken from Apache Harmony's implementation of Line2D.
+	 *
+	 * @see java.awt.geom.Line2D
+	 */
+    private static boolean linesIntersect(double x1, double y1, double x2,
+            double y2, double x3, double y3, double x4, double y4)
+    {
+        /*
+         * A = (x2-x1, y2-y1) B = (x3-x1, y3-y1) C = (x4-x1, y4-y1) D = (x4-x3,
+         * y4-y3) = C-B E = (x1-x3, y1-y3) = -B F = (x2-x3, y2-y3) = A-B
+         *
+         * Result is ((AxB) * (AxC) <=0) and ((DxE) * (DxF) <= 0)
+         *
+         * DxE = (C-B)x(-B) = BxB-CxB = BxC DxF = (C-B)x(A-B) = CxA-CxB-BxA+BxB =
+         * AxB+BxC-AxC
+         */
+
+        x2 -= x1; // A
+        y2 -= y1;
+        x3 -= x1; // B
+        y3 -= y1;
+        x4 -= x1; // C
+        y4 -= y1;
+
+        double AvB = x2 * y3 - x3 * y2;
+        double AvC = x2 * y4 - x4 * y2;
+
+        // Online
+        if (AvB == 0.0 && AvC == 0.0) {
+            if (x2 != 0.0) {
+                return
+                    (x4 * x3 <= 0.0) ||
+                    ((x3 * x2 >= 0.0) &&
+                     (x2 > 0.0 ? x3 <= x2 || x4 <= x2 : x3 >= x2 || x4 >= x2));
+            }
+            if (y2 != 0.0) {
+                return
+                    (y4 * y3 <= 0.0) ||
+                    ((y3 * y2 >= 0.0) &&
+                     (y2 > 0.0 ? y3 <= y2 || y4 <= y2 : y3 >= y2 || y4 >= y2));
+            }
+            return false;
+        }
+
+        double BvC = x3 * y4 - x4 * y3;
+
+        return (AvB * AvC <= 0.0) && (BvC * (AvB + BvC - AvC) <= 0.0);
+    }
 }
