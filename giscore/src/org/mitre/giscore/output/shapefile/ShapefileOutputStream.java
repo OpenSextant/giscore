@@ -162,13 +162,12 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
 		    ZipUtils.outputZipComponents(outputPath.getName(), outputPath, outputStream);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.ContainerEnd)
+	/**
+	 * @exception  EmptyStackException  if <code>ContainerEnd</code> did not have a preceding <code>ContainerStart</code>
 	 */
 	@Override
 	public void visit(ContainerEnd containerEnd) {
-		path.pop();
-		
+        path.pop();
 	}
 
 	/* (non-Javadoc)
