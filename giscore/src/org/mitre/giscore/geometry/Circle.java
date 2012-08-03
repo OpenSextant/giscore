@@ -16,12 +16,11 @@
 package org.mitre.giscore.geometry;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
+import java.io.IOException;
+import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.utils.SimpleObjectInputStream;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;
 import org.mitre.itf.geodesy.*;
-import org.mitre.giscore.IStreamVisitor;
-
-import java.io.IOException;
 
 /**
  * The Circle class represents a circular region containing three coordinates (center-point
@@ -69,6 +68,22 @@ public class Circle extends Point {
         super(center);
         this.radius = radius;
     }
+	
+    /**
+     * The Constructor takes a GeoPoint (either a Geodetic2DPoint or a
+     * Geodetic3DPoint) and a radius then initializes a Geometry object for it.
+     *
+     * @param center
+     *            Center GeoPoint to initialize this Circle with (must be Geodetic form)
+     * @param radius
+     *          Radius in meters from the center point (in meters) 
+     * @throws IllegalArgumentException
+     *             error if object is null or not valid.
+     */
+    public Circle(Point center, double radius) throws IllegalArgumentException {
+		this(center.asGeodetic2DPoint(), radius);
+    }
+
 
     /**
 	 * Empty ctor only for object IO.  Constructor must be followed by call to {@code readData()}
