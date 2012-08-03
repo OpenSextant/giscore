@@ -44,6 +44,7 @@ import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.SimpleField;
+import org.mitre.giscore.geometry.Circle;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
@@ -197,7 +198,7 @@ public class TestGeoAtomOutputStream {
 		rval.setStartTime(new Date());
 		rval.setName("Random Name " + RandomUtils.nextInt(100));
 		fillData((Row) rval);
-		int i = RandomUtils.nextInt(3);
+		int i = RandomUtils.nextInt(4);
 		double centerlat = 40.0 + RandomUtils.nextDouble() * 2.0;
 		double centerlon = 40.0 + RandomUtils.nextDouble() * 2.0;
 		Point p1 = new Point(centerlat, centerlon);
@@ -215,6 +216,9 @@ public class TestGeoAtomOutputStream {
 			rval.setGeometry(new Line(pts));
 			break;
 		}
+		case 2:
+			rval.setGeometry(new Circle(p1.asGeodetic2DPoint(), RandomUtils.nextDouble() * 3000.0));
+			break;
 		default: {
 			List<Point> pts = new ArrayList<Point>();
 			pts.add(p1);

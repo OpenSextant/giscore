@@ -42,6 +42,7 @@ import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.Row;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.events.SimpleField.Type;
+import org.mitre.giscore.geometry.Circle;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
@@ -479,5 +480,17 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 			throw new RuntimeException(e);
 		}
 
+	}
+
+	@Override
+	public void visit(Circle circle) {
+		final Geodetic2DPoint center = circle.getCenter();
+		try {
+			handleSimpleElement(gns, "circle", dfmt.format(center.getLatitudeAsDegrees()) + " "
+					+ dfmt.format(center.getLongitudeAsDegrees()) + " "
+					+ dfmt.format(circle.getRadius()));
+		} catch (XMLStreamException e) {
+			throw new RuntimeException(e);
+		}
 	}
 }

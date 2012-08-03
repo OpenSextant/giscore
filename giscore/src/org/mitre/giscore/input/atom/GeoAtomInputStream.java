@@ -19,28 +19,7 @@
 package org.mitre.giscore.input.atom;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
-import org.apache.commons.lang.StringUtils;
-import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.events.*;
-import org.mitre.giscore.events.SimpleField.Type;
-import org.mitre.giscore.geometry.Geometry;
-import org.mitre.giscore.geometry.Line;
-import org.mitre.giscore.geometry.LinearRing;
-import org.mitre.giscore.geometry.Point;
-import org.mitre.giscore.input.XmlInputStream;
-import org.mitre.giscore.input.kml.IKml;
-import org.mitre.giscore.output.atom.IAtomConstants;
-import org.mitre.giscore.utils.SafeDateFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.Namespace;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
@@ -51,6 +30,29 @@ import java.text.ParseException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.events.Attribute;
+import javax.xml.stream.events.Namespace;
+import javax.xml.stream.events.StartElement;
+import javax.xml.stream.events.XMLEvent;
+
+import org.apache.commons.lang.StringUtils;
+import org.mitre.giscore.DocumentType;
+import org.mitre.giscore.events.*;
+import org.mitre.giscore.events.SimpleField.Type;
+import org.mitre.giscore.geometry.Circle;
+import org.mitre.giscore.geometry.Geometry;
+import org.mitre.giscore.geometry.Line;
+import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.Point;
+import org.mitre.giscore.input.XmlInputStream;
+import org.mitre.giscore.input.kml.IKml;
+import org.mitre.giscore.output.atom.IAtomConstants;
+import org.mitre.giscore.utils.SafeDateFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GeoAtomInputStream extends XmlInputStream {
 
@@ -370,6 +372,8 @@ public class GeoAtomInputStream extends XmlInputStream {
 							geo = readLine(getElementText(se.getName()));
 						} else if ("polygon".equals(name)) {
 							geo = readPoly(getElementText(se.getName()));
+						} else if ("circle".equals(name)) {
+							geo = readCircle(getElementText(se.getName()));
 						}
 					} else {
 						elements.add((Element) getForeignElement(se));
@@ -472,6 +476,11 @@ public class GeoAtomInputStream extends XmlInputStream {
 	private Geometry readPoint(String elementText) {
 		List<Point> pts = parsePoints(elementText);
 		return pts.get(0);
+	}
+
+	private Geometry readCircle(String elementText) {
+		double[] coords = parseCoords(elementText);
+		return new Circle(new Point(coords[0], coords[1]), coords[2]);
 	}
 
 	private List<Point> parsePoints(String text) {
