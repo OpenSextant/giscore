@@ -282,6 +282,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * handles adding that attribute
 	 * @param type the type, never <code>null</code> or empty.
 	 * @throws XMLStreamException if there is an error with the underlying XML
+	 * @throws IllegalArgumentException if type is null or emty string
 	 */
 	private void writeEsriType(String type) throws XMLStreamException {
 		if (type == null || type.trim().length() == 0) {
@@ -320,7 +321,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 				try {
 					writeDataSetDef(key, datasetname);
 				} catch (XMLStreamException e) {
-					throw new RuntimeException(e);
+					throw new IOException(e);
 				}
 			}
 			sorter.close();
@@ -482,7 +483,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			if (type.getGdbEmptyValue() != null) {
 				datum = type.getGdbEmptyValue();
 			} else {
-				throw new RuntimeException("Missing required value for type " + type.name());
+				throw new XMLStreamException("Missing required value for type " + type.name());
 			}
 		}
 		if (SimpleField.Type.GEOMETRY.equals(type)) {
@@ -499,7 +500,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
                 if (dtm != null)
 				    handleCharacters(ISO_DATE_FMT.format(dtm));
 			} catch (ParseException e) {
-				throw new RuntimeException(e);
+				throw new XMLStreamException(e);
 			}
 		} else {
 			String val = datum.toString();
