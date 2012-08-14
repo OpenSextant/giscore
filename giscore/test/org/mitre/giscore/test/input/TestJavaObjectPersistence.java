@@ -1,34 +1,27 @@
-/****************************************************************************************
- *  TestObjectPersistence.java
+/***************************************************************************
+ * (C) Copyright MITRE Corporation 2009-2012
  *
- *  Created: Mar 24, 2009
+ * The program is provided "as is" without any warranty express or implied,
+ * including the warranty of non-infringement and the implied warranties of
+ * merchantability and fitness for a particular purpose.  The Copyright
+ * owner will not be liable for any damages suffered by you as a result of
+ * using the Program.  In no event will the Copyright owner be liable for
+ * any special, indirect or consequential damages or lost profits even if
+ * the Copyright owner has been advised of the possibility of their
+ * occurrence.
  *
- *  @author DRAND
- *
- *  (C) Copyright MITRE Corporation 2009
- *
- *  The program is provided "as is" without any warranty express or implied, including
- *  the warranty of non-infringement and the implied warranties of merchantability and
- *  fitness for a particular purpose.  The Copyright owner will not be liable for any
- *  damages suffered by you as a result of using the Program.  In no event will the
- *  Copyright owner be liable for any special, indirect or consequential damages or
- *  lost profits even if the Copyright owner has been advised of the possibility of
- *  their occurrence.
- *
- ***************************************************************************************/
+ ***************************************************************************/
 package org.mitre.giscore.test.input;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-import org.mitre.giscore.utils.Color;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.Test;
@@ -38,16 +31,20 @@ import org.mitre.giscore.test.TestGISBase;
 import org.mitre.giscore.utils.*;
 
 /**
- * Test the geometry and the feature objects
- *
+ * Test Java's serialization of the geometry and the feature objects.
+ * <br>
+ * This is essentially just copied from {@code TestObjectPersistence}.
+ * 
+ * @see TestObjectPersistence
  * @author DRAND
+ * @author jgibson
  */
-public class TestObjectPersistence {
+public class TestJavaObjectPersistence {
 
     @Test
     public void testSimpleGeometries() throws Exception {
         ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
-        SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+        ObjectOutputStream soos = new ObjectOutputStream(bos);
 
         Point p = new Point(.30, .42);
         soos.writeObject(p);
@@ -83,7 +80,7 @@ public class TestObjectPersistence {
         soos.close();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-        SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+        ObjectInputStream sois = new ObjectInputStream(bis);
 
         Geometry g = (Geometry) sois.readObject();
         assertEquals(p, g);
@@ -111,7 +108,7 @@ public class TestObjectPersistence {
     @Test
     public void testMixedMultiPoint() throws Exception {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+        ObjectOutputStream soos = new ObjectOutputStream(bos);
 
         Point pt2d = TestGISBase.getRandomPoint();
         Point pt3d = new Point(TestGISBase.random3dGeoPoint());
@@ -124,7 +121,7 @@ public class TestObjectPersistence {
         soos.close();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-        SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+        ObjectInputStream sois = new ObjectInputStream(bis);
 
         MultiPoint ml = (MultiPoint) sois.readObject();
         assertEquals(2, ml.getNumParts());
@@ -137,7 +134,7 @@ public class TestObjectPersistence {
     @Test
     public void testMultiGeometries() throws Exception {
         ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
-        SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+        ObjectOutputStream soos = new ObjectOutputStream(bos);
 
         List<Line> lines = new ArrayList<Line>();
         List<Point> pts = new ArrayList<Point>();
@@ -185,7 +182,7 @@ public class TestObjectPersistence {
         soos.close();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-        SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+        ObjectInputStream sois = new ObjectInputStream(bis);
 
         MultiLine ml = (MultiLine) sois.readObject();
         assertEquals(1, ml.getNumParts());
@@ -207,7 +204,7 @@ public class TestObjectPersistence {
     @Test
     public void testFeatureProperties() throws Exception {
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
-        SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+        ObjectOutputStream soos = new ObjectOutputStream(bos);
         List<Line> lines = new ArrayList<Line>(5);
 
         // output every combination of extrude and tessellate: 0, 1, or null (2)
@@ -227,7 +224,7 @@ public class TestObjectPersistence {
             }
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-        SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+        ObjectInputStream sois = new ObjectInputStream(bis);
 
         for (Line line : lines) {
             Geometry g = (Geometry) sois.readObject();
@@ -247,21 +244,21 @@ public class TestObjectPersistence {
     @Test
     public void testFeatures() throws Exception {
         ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
-        SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+        ObjectOutputStream soos = new ObjectOutputStream(bos);
 
-        Feature pt = makePointFeature();
+        Feature pt = TestObjectPersistence.makePointFeature();
         soos.writeObject(pt);
 
-        GroundOverlay go = makeGO();
+        GroundOverlay go = TestObjectPersistence.makeGO();
         soos.writeObject(go);
 
-        PhotoOverlay po = makePO();
+        PhotoOverlay po = TestObjectPersistence.makePO();
         soos.writeObject(po);
 
-        ScreenOverlay so = makeSO();
+        ScreenOverlay so = TestObjectPersistence.makeSO();
         soos.writeObject(so);
 
-        NetworkLink nl = makeNL();
+        NetworkLink nl = TestObjectPersistence.makeNL();
         soos.writeObject(nl);
 
         ContainerStart cs = new ContainerStart("folder");
@@ -275,7 +272,7 @@ public class TestObjectPersistence {
         soos.close();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-        SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+        ObjectInputStream sois = new ObjectInputStream(bis);
         Feature f2 = (Feature) sois.readObject();
         assertEquals(pt, f2);
 
@@ -302,12 +299,12 @@ public class TestObjectPersistence {
     @Test
     public void testWrapper() throws Exception {
         ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
-        SimpleObjectOutputStream soos = new SimpleObjectOutputStream(bos);
+        ObjectOutputStream soos = new ObjectOutputStream(bos);
         final int count = 4;
         System.out.println("testWrapper");
         List<IDataSerializable> objects = new ArrayList<IDataSerializable>(count);
         for (int i = 0; i < count; i++) {
-            Feature f = makePointFeature();
+            Feature f = TestObjectPersistence.makePointFeature();
             f.setName(Integer.toString(i));
             WrappedObject obj = new WrappedObject(f);
             objects.add(obj);
@@ -316,103 +313,11 @@ public class TestObjectPersistence {
         soos.close();
 
         ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
-        SimpleObjectInputStream sois = new SimpleObjectInputStream(bis);
+        ObjectInputStream sois = new ObjectInputStream(bis);
         for (IDataSerializable o1 : objects) {
             WrappedObject o2 = (WrappedObject) sois.readObject();
             assertEquals(o1, o2);
         }
         sois.close();
-    }
-
-    static Feature makePointFeature() {
-        Feature f = new Feature();
-        f.setName("test");
-        f.setDescription("this is a test placemark");
-        Date date = new Date();
-        f.setStartTime(date);
-        f.setEndTime(date);
-        f.setGeometry(new Point(42.504733587704, -71.238861602674));
-        return f;
-    }
-
-    /**
-     * @return
-     */
-    static NetworkLink makeNL() {
-        NetworkLink nl = new NetworkLink();
-        nl.setFlyToView(true);
-        nl.setLink(new TaggedMap());
-        nl.setRefreshVisibility(false);
-        return nl;
-    }
-
-    /**
-     * @return
-     */
-    static ScreenOverlay makeSO() {
-        ScreenOverlay so = new ScreenOverlay();
-        ScreenLocation s1 = new ScreenLocation();
-        ScreenLocation s2 = new ScreenLocation();
-        ScreenLocation s3 = new ScreenLocation();
-        ScreenLocation s4 = new ScreenLocation();
-
-        s1.x = 11;
-        s1.y = 12;
-        s2.x = .3;
-        s2.y = .4;
-        s2.xunit = ScreenLocation.UNIT.FRACTION;
-        s2.yunit = ScreenLocation.UNIT.FRACTION;
-        s3.x = 14;
-        s3.y = 15;
-        s4.x = 16;
-        s4.y = 17;
-        so.setOverlay(s1);
-        so.setRotation(s2);
-        so.setSize(s3);
-        so.setScreen(s4);
-        so.setRotationAngle(.78);
-
-        return so;
-    }
-
-    /**
-     * @return
-     */
-    static PhotoOverlay makePO() {
-        PhotoOverlay po = new PhotoOverlay();
-        po.setColor(Color.RED);
-        po.setId("po01");
-
-        return po;
-    }
-
-    static GroundOverlay makeGO() throws URISyntaxException {
-        GroundOverlay go = new GroundOverlay();
-        go.setAltitude(3.1);
-        go.setAltitudeMode(AltitudeModeEnumType.clampToGround);
-        go.setColor(Color.red);
-        go.setDescription("abc");
-        go.setDrawOrder(2);
-        go.setEast(22.0);
-        go.setWest(10.0);
-        go.setNorth(42.0);
-        go.setSouth(40.0);
-        go.setStartTime(new Date(100000));
-        go.setEndTime(new Date(110000));
-        go.setGeometry(new Point(1.0, 2.0));
-        TaggedMap tm = new TaggedMap("extra");
-        tm.put("a", "1");
-        tm.put("b", "2");
-        tm.put("c", "3");
-        go.setIcon(tm);
-        go.setName("def");
-        go.setRotation(-20.0);
-        go.setSchema(new URI("#123"));
-        go.setStyleUrl("#style1");
-
-        SimpleField f1 = new SimpleField("f1");
-        f1.setLength(100);
-        go.putData(f1, 5.6);
-        return go;
     }
 }
