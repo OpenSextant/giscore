@@ -8,8 +8,9 @@
 	of the coordinate values are questionable wrt KML Reference.
 	
 	Annotations in placemark descriptions as to how Google Earth
-	6.0.1.2032 (beta) interprets those values.  Note interpretation
+	6.0.1.2032 (beta) interprets those values.  Interpretation
 	of some of the edge cases may change in future releases.
+	For example, GE v6.1 implemented stricter parsing for coordinates.
 
 	This KML displays all Placemarks in Google Earth with default
 	values for all questionable locations under its lax parsing.
@@ -248,8 +249,10 @@
 
         <Placemark>
             <name>Line5</name>
-            <description>[1, 2, 3, 4, 5, 6] as [1,2,3 4,5,6]</description>
-            <!-- LineString with , separating coordinate -->
+            <description>[1, 2, 3, 4, 5, 6] as [1,0,0 2,0,0 3,0,0 4,0,0 5,0,0 6,0,0]</description>
+            <!-- 
+			Google Earth 5.x or earlier interpret this as two tuples: 1,2,3 4,5,6
+			LineString with , separating coordinate -->
             <LineString>
 		<tessellate>1</tessellate>
                 <coordinates>1, 2, 3, 4, 5, 6</coordinates>

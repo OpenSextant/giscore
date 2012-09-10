@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
+This KML file intentionally has an error making it an invalid XML file.
 Uses atom namespace without declaring the namespace
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
