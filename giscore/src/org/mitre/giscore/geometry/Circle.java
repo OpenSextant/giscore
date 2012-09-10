@@ -62,7 +62,7 @@ public class Circle extends Point {
      * @param radius
      *          Radius in meters from the center point (in meters) 
      * @throws IllegalArgumentException
-     *             error if object is null or not valid.
+     *             error if center is null or not valid.
      */
     public Circle(GeoPoint center, double radius) throws IllegalArgumentException {
         super(center);
@@ -77,8 +77,10 @@ public class Circle extends Point {
      *            Center GeoPoint to initialize this Circle with (must be Geodetic form)
      * @param radius
      *          Radius in meters from the center point (in meters) 
+     * @throws NullPointerException
+     *             error if center is null
      * @throws IllegalArgumentException
-     *             error if object is null or not valid.
+     *             error if center is not valid
      */
     public Circle(Point center, double radius) throws IllegalArgumentException {
 		this(center.asGeodetic2DPoint(), radius);
@@ -87,7 +89,7 @@ public class Circle extends Point {
 
     /**
 	 * Empty ctor only for object IO.  Constructor must be followed by call to {@code readData()}
-     * to initialize the object instance otherwise object is invalid.
+     * to initialize the object instance otherwise object is invalid and will result in exceptions if used.
 	 */
 	public Circle() {
 		//
