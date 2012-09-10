@@ -1018,6 +1018,7 @@ public class KmlMetaDump implements IKml {
 				if ((flags & 1) == 0 && !outerRing.contains(inner)) {
 					flags |= 1;
 					addTag(":Inner ring not contained within outer ring");
+					if (verbose) System.out.printf(" Inner ring %d not contained within outer ring%n", 0);
 				}
 				// Verify that inner rings don't overlap with each other
 				// ATC 69: Polygon - rings
@@ -1026,6 +1027,7 @@ public class KmlMetaDump implements IKml {
 					for (int j = i + 1; j < n; j++) {
 						if (inner.overlaps(rings.get(j))) {
 							addTag(":Inner rings in Polygon must not overlap with each other");
+							if (verbose) System.out.printf(" Inner rings %d, %d in Polygon must not overlap with each other%n", i, j);
 							flags |= 2;
 							break;
 						}
@@ -1098,7 +1100,7 @@ public class KmlMetaDump implements IKml {
 				Point pt = pts.get(i);
 				if (last.equals(pt)) {
 					if (verbose) {
-						System.out.println("Duplicate point at index: " + i);
+						System.out.println(" Duplicate point at index: " + i);
 						dups++;
 					} else {
 						addTag(":" + label + " has duplicate consecutive points");
@@ -1108,7 +1110,7 @@ public class KmlMetaDump implements IKml {
 				last = pt;
 			}
 			if (verbose && dups != 0)
-				System.out.printf("%d duplicate points out of %d%n", dups, n);
+				System.out.printf(" %d duplicate points out of %d%n", dups, n);
 
 			// first/last point not the same
 			if (n > 2 && !pts.get(0).equals(pts.get(n - 1))) {
@@ -1127,6 +1129,7 @@ public class KmlMetaDump implements IKml {
 			// error -> LinearRing cannot self-intersect
 		} catch (IllegalArgumentException e) {
 			// LinearRing fails validation
+			if (verbose) System.out.println(" Error in " + label);
 			addTag(":" + e.getMessage(), true);
 		}
 	}
