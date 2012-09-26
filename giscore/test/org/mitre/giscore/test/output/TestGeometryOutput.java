@@ -19,7 +19,7 @@ import static junit.framework.Assert.*;
  * Test reading/writing core geometry classes.
  *
  * @author Jason Mathews, MITRE Corp.
- *         Date: Oct 5, 2009 3:12:57 PM
+ * Date: Oct 5, 2009 3:12:57 PM
  */
 public class TestGeometryOutput extends TestGISBase {
 
