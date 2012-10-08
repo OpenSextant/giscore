@@ -20,9 +20,9 @@
 	<property name="lib" value="${basedir}/lib" />
 	<property name="rel" value="${basedir}/rel" />
 	<property name="build" value="${basedir}/build" />
-	<property name="build.classes" value="${build}/classes" />
+	<property name="classes" value="${rel}/classes" />
 	<property name="build.previous" value="${build}/previous" />
-	<property name="test.classes" value="${build}/test" />
+	<property name="test.classes" value="${rel}/test" />
 	<property name="testoutput" value="${basedir}/testOutput" />
 	<property name="testdeploy" value="C:/apache-tomcat-5.5.23-giscore-rmi/webapps/giscore" />
 	<property name="test.excludes" value="**/TestGISBase.java **/TestShapefileBase.java"/>
@@ -40,7 +40,7 @@
 
 	<target name="init" unless="ivy.default.ivy.user.dir">
 		<mkdir dir="${rel}" />
-		<mkdir dir="${build.classes}" />
+		<mkdir dir="${classes}" />
 		<mkdir dir="${rel}/jars" />
 		<dependset>
 			<srcfilelist dir="${basedir}" files="ivy.xml,ivy.settings" />
@@ -106,6 +106,13 @@
 			</filterchain>
 		</copy>
 	</target>
+	
+	<target name="generate-jni" depends="compile">
+		<mkdir dir="${rel}/jni"/>
+		<javah destdir="${rel}/jni" classpath="${classes}">
+			<class name="org.mitre.giscore.filegdb.Geodatabase" />
+		</javah>
+	</target>
 
 	<target name="generate-eclipse-classpath.clean">
 		<delete file=".classpath" quiet="true" />
@@ -126,14 +133,14 @@
 		<pathconvert dirsep="/" pathsep=";" property="netbeans-classpath.test" refid="project.classpath" />
                 <!-- The goofy indentation is intentional because this being output to a file. -->
 		<echo file="${basedir}/nbproject/private/classpath.properties" append="false">src.classpath=${netbeans-classpath.src}
-test.classpath=${build.classes};${netbeans-classpath.test}
+test.classpath=${classes};${netbeans-classpath.test}
 		</echo>
 		<touch file="nbproject/project.xml" />
 	</target>
 
 	<target name="compile" depends="resolve">
 		<javac source="1.6" target="1.6" classpathref="project.classpath" srcdir="${src}"
-			destdir="${build.classes}"
+			destdir="${classes}"
 			includeantruntime="false"
 			debug="true"/>
 	</target>
@@ -145,7 +152,7 @@ test.classpath=${build.classes};${netbeans-classpath.test}
 			includeantruntime="false"
 			destdir="${test.classes}">
 			<classpath>
-				<pathelement path="${build.classes}" />
+				<pathelement path="${classes}" />
 				<path refid="project.classpath" />
 			</classpath>
 		</javac>
@@ -178,7 +185,7 @@ test.classpath=${build.classes};${netbeans-classpath.test}
 				<path refid="project.classpath"/>
 			</importClasspath>
 
-			<fileset dir="${build.classes}" />
+			<fileset dir="${classes}" />
 			<zipfileset dir="resources" includes="license.txt" prefix="META-INF" />
 			<autoimportpackage prefix="javax.xml.stream"/>
 			<!-- The SimpleObjectInputStream may require this to read in class
@@ -224,7 +231,7 @@ test.classpath=${build.classes};${netbeans-classpath.test}
 			</assertions>
 			<jvmarg value="-DkeepTempFiles=false" />
 			<classpath>
-				<pathelement path="${build.classes}" />
+				<pathelement path="${classes}" />
 				<pathelement path="${test.classes}" />
 				<path refid="project.classpath" />
 			</classpath>
