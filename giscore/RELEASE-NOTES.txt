@@ -9,187 +9,163 @@ This product includes software developed by the JDOM Project (http://www.jdom.or
 
 ------------------------------------------------------------------------------
 
-Release 0.5.23
+Release 0.7.1
 
-This release primarily introduces enhancenments and minor bug-fixes to KML input/output
-and some underlying XML handling.
+This release fixes few Shape/DBF bugs in addition to some improvements to ESRI
+Shape file and KML handling.
 
-General
-  * Added ListStyle support to Style/KmlOutputStream/KmlInputStream
-  * Update geodesy 1.9.14 using short-cut from Geodetic2DPoint.getLatitude().inDegrees()
-    to Geodetic2DPoint.getLatitudeAsDegrees().
-  * Add @Nullable/@CheckForNull annotations to methods in GroundOverlay, Overlay, Style, etc.
-  * Added getEncoding() to XmlInputStream, KmlInputStream, KmlReader so output stream can have
-    correct character encoding if not UTF-8 used
+Bug fixes:
 
-Common
-  * Fix setStyleUrl() to auto-fix the url if relative idref and '#' not first character
+DbfOutputStream
+-Correctly write numeric fields with right-justification as per spec
+-Change non-floating numeric fields (OID, SHORT, INT) from 'F' field type 
+ to 'N' field type.
+-Fix large double/floats [formatted length > 34 chars] being truncated and
+ values mangled by formatting in exponent notation
+    
+Improvements:
 
-GISFactory
-  * Added encoding (String) as first argument to KML + KMZ type in getOutputStream()
-    so can match correct character encoding
+-Added support for gx:drawOrder to GeometryBase, KmlInputStream, and KmlOutputStream
 
-KmzOutputStream
-  * Added public KmzOutputStream(OutputStream stream, String encoding) constructor
+DbfInputStream
+-Numeric fields starting with '*' are considered null
+-Added LONG type to SimpleField
 
-XmlGdbOutputStream
-  * Update close() and close streams in finally block to close even if exception thrown
-
-GroundOverlay
-  * Added setBoundingBox(Geodetic2DBounds box) to set overlay bounding box from Geodetic2DBounds
-
-Style
-  * Change double to Double and boolean to Boolean in field types and associated getters/setters to allow Nullable values.
-
-UrlRef
-  * Update User-Agent to Google Earth 5.2 identifier
-  * Add new methods: isIdentifier(), isXMLNameCharacter(), isXMLNameStartCharacter()
-  * Updated escapeUri() to handle ascii control chars 00-2f and extended 7f-ff
-
-
-------------------------------------------------------------------------------
-
-Release 0.5.24
-
-This release primarily introduces cleanup and bug-fixes to KML input/output and some underlying XML handling.
-
-Fixed bug in KmlWriter that did not close all image entries in created KMZ file
-creating corrupt ZIP file. Added flag to underlying KmlOutputStream/XmlOutputStreamBase classes.
-
-StyleMap
--add containsKey() method + added NORMAL/HIGHLIGHT constants
-
-KmlInputStream
--Updated StyleMap handling
-
-UrlRef
--Added check in escapeUri() to escape all control chars (ASCII code < 0x20) and extended chars (code >= 0x7f)
-
-------------------------------------------------------------------------------
-
-Release 0.5.25
-
-This release fixes minor bugs in KML input/output, Schema, and Polygon point handling.
-
-Polygon
--fix getPoints(). failed if points in "wrong" order.
- Puts outer ring points in clockwise order and inner ring points in ccw order
-
-KmlInputStream
--fix interpreting KML elements as non-kml/foreign elements if kml root element does not declare explicit kml namespace
-
-KmlOutputStream
--Properly escape schema id value in output
-
-UrlRef
--updated isIdentifier() to allow %HH URI-escaping
--added isHexDegit()
+DbfOutputStream
+-Handle Long values in ShapeOutput as numeric (N) type field with decimal count=0
 
 Schema
--Update setName() to normalize name value stripping leading/trailing whitespace and not allow blank strings as valid
-
-KmlMetaDump.java
--Add check for suspicious Schema id/name characters to enforce Schema id/name constraints
+-Added entrySet()
 
 ------------------------------------------------------------------------------
 
-Release 0.5.26
+Release 0.7.0
 
-This release fixes minor bugs in KML handling and updated geodesy library with Geodetic3DBounds fixes.
+This release adds support for a new data format: OGC Well-known text (WKT).
+Fixed minor bugs along with additional support and improvements to KML handling.
+Few minor API changes as cleanup.
 
-LinearRing
--Fixed LinearRing(Geodetic2DBounds box) to check for 3D bbox and create 3d points accordingly at max elevation height
+-Added new WKTInputStream and WKTOutputStream classes.
+
+-Added support for address and phoneNumber in KmlInputStream and KmlOutputStream
+
+-Added support for non-KML namespace elements in ExtendedData
+
+-Correctly handle namespace declarations in XML elements
+
+-Change XmlOutputStreamBase.formatDouble(double d) from static to instance method
+ change formatting from Double.toString() with DecimalFormater instance
+ as used by KmlOutputStream. Now rounds-off at 10 decimal places to eliminate
+ round-off errors.
+ 
+Common
+-added setRegion(Geodetic2DBounds bbox)
 
 KmlInputStream
--Handle ArrayIndexOutOfBoundsException in read() such that read gracefully fails
+-Minor fix to allow whitespace before/after listItemType values
 
-KmlReader
--Added KmlReader(InputStream is, boolean isCompressed, URL baseUrl, Proxy proxy) constr
-
-KmlMetaDump
--added custom log4j Appender to capture warn/errors logged by KML classes and add them to summary of errors/warnings.
--updated checkGeometry() to check Lines, Polygons and LinearRings.
--added check for duplicate consecutive points
--added checks:
- * comma found instead of whitespace between tuples (error)
- * ignore invalid character in coordinate string (error)
- * ignore invalid string in coordinate (error)
- * Line clipped at DateLine (info)
- * Inner rings in Polygon must not overlap with each other (warn)
- * LinearRing must start and end with the same point (error)
- * LinearRing can not self-intersect (warn)
- * Bad poly found, no outer ring (error)
-
-Add support for "open" element on KML input and output for containers
--Added IContainerType with changes to NetworkLink, ContainerStart, KmlInputStream, and KmlOutputStream
-
-XmlInputStream
--Change skipNextElement() accessibility from public to protected
-
-Added java.net.Proxy to UrlRef/KmlReader to proxy URL connections
-
-Updated dependency: itf-geodesy 1.9.14 -> 1.9.16 with Geodetic3DBounds fixes
-
-------------------------------------------------------------------------------
-
-Release 0.5.27
-
-This release fixes minor bugs and enhancements in KML and Shape file handling.
-
-ShapefileInputStream
--Allow file argument in constructor to be directory or single .shp file
-
-Added getType() to IContainerType interface
-
-Add support for Snippet/snippet in KmlInputStream/KmlOutputStream
-
-Added crossDateLine() to GroundOverlay
-
-Updated KmlOutputStream.handleOverlay() and KmlInputStream.handleLatLonBox
-to normalize LatLonBox coords if needed.
-
-KmlMetaDump
-- Added checks:
-  * Feature uses merged shared/inline Style (info)
-  * Feature uses shared Style (info)
-  * Shared styles in Folder not allowed [ATC 7] (warning)
-  * Shared styles must have 'id' attribute [ATC 7] (warning)
-  * StyleUrl must contain '#' with identifier reference
-  * GroundOverlay fails to satisfy east > west constraint [ATC 11]
-  * GroundOverlay fails to satisfy north > south constraint [ATC 11]
-  * GroundOverlay spans -180/+180 longitude line
-
-------------------------------------------------------------------------------
-
-Release 0.5.28
-
-This release fixes minor bugs and enhancements in KML handling. Also fixes
-NullPointerException bugs in two geometry classes.
-
-KmlInputStream
--Fixed parsing drawOrder in GroundOverlay allowing whitespace in value and catching exception for non-numeric values
--Allow '#' prefix in color values as does Google Earth
--Add better handling of HTML markup in name field
-
-KmlReader
--Replace ZipFile with ZipInputStream which is not as strict in validation of zip header fields
+KmlMetadataDump
+-change containers from Stack to LinkedList so can search from newest to oldest ancestor for inheritance
 
 KmlOutputStream
--Handle Circle geometry and generate Line/Ring/Poly depending on circle hints types
--Added getNumCirclePoints()
--Corrected output order of elements for ListStyle
--Fix order of gx:balloonVisibility in output
+-updated handleExtendedData() to handle arbitrary XML extended elements
+-fix handleLinkElement() to encode whitespace as %20 in URLs
+
+Style
+-Added copy constructor
+
+UrlRef
+-Updated getInputStream() to retry failed KMZ as KML in case content is mis-categorized
+
+------------------------------------------------------------------------------
+
+Release 0.6.2
+
+This release fixes minor bugs and enhancements in KML handling.
+
+IKml
+-add viewRefreshMode and refreshMode enumeration values as constants
+
+GeometryBag
+-Adjust all methods that change the geometries list to reset the bbox field (e.g. add(), addAll(), remove(), etc.)
+-getCenter() now returns null if no contained geometies has a center point
+-Override getBoundingBox() and return null if cannot compute a bounding box
+
+KmlBaseReader
+-Added setHttpQuery and setViewFormat to override default query/format parameter values
+-Changed default viewFormat default values from 0's to more meaningful values
+-Renamed getTrimmedValue() to trimToNull()
+-Added trimToEmpty()
+-Added getBaseUrl()
+
+KmlReader
+-Added isMaxLinkCountExceeded() to flag if limit was reached
+
+KmlInputStream
+-Support rotation element for PhotoOverlays
+-Allow viewFormat tag in Link to have empty string value (Before empty strings were treated as nulls)
+-Support deprecated color element in BalloonStyle
+
+KmlOutputStream
+-Add missing roll element for Camera in output
+-Output Point and rotation elements for PhotoOverlay
 
 KmlMetaDump
--Fixed bug that aborted scan of directories if failed to open a file
--Fixed parsing tilt in LookAt with non-numeric values
+-add check for valid output file names in getWriter()
+-added test for absolute/relative styleUrl in Features and StyleMap Pairs
+
+NumberStreamTokenizer
+-reimplemented using Apache Harmony project and its implementation
+ of java.io.StreamTokenizer. This has Apache vs GPLv2 license.
+
+PhotoOverlay
+-add rotation field
+-implement readData(), approximatelyEquals(), writeData() methods
+
+Style
+-Updated checks in setBalloonStyles()
+
+UrlRef
+-Added isAbsoluteUrl() helper method
+
+------------------------------------------------------------------------------
+
+Release 0.6.1
+
+This release fixes minor bugs and enhancements in KML handling.
 
 Circle
--Fixed NullPointerException in equals(Circle) if argument was null
+-cleanup visit(Circle circle) allowing to draw point if numberCirclePts = 1 or line if n = 2
+-added setNumberCirclePoints(int) to set circle point count per instance basis
+-rename getNumCirclePoints() to getNumberCirclePoints()
+
+DocumentStart
+-Added addNamespace() method
+
+KmlMetaDump
+-Added maxLinkCount argument to set limit of recursion when importing networklinks
+
+KmlReader/KmlWriter
+-add support for inline Styles within StyleMaps for URL normalization
+
+KmlReader
+-Added maxLinkCount field to limit recursion when importing networklinks
+
+KmlOutputStream
+-add support for gx:TimeStamp/gx:TimeSpan in LookAt/Camera elements
+
+Line
+-Added new constructor with Geodetic2DBounds argument
+
+NetworkLink
+add hashCode() + equals()
 
 Point
--Simplified null check logic forcing "pt" field to always be non-null
--Fixed NullPointerException in equals(Point) if argument was null
+-add constructor Point(Latitude lat, Longitude lon)
+
+UrlRef
+-add explicit check for relative URIs in constructor and throw MalformedURLException
+ vs allowing URI.toURL() to throw a Runtime Exception
 
 ------------------------------------------------------------------------------
 
@@ -281,162 +257,185 @@ XmlOutputStreamBase
 
 ------------------------------------------------------------------------------
 
-Release 0.6.1
+Release 0.5.28
 
-This release fixes minor bugs and enhancements in KML handling.
+This release fixes minor bugs and enhancements in KML handling. Also fixes
+NullPointerException bugs in two geometry classes.
+
+KmlInputStream
+-Fixed parsing drawOrder in GroundOverlay allowing whitespace in value and catching exception for non-numeric values
+-Allow '#' prefix in color values as does Google Earth
+-Add better handling of HTML markup in name field
+
+KmlReader
+-Replace ZipFile with ZipInputStream which is not as strict in validation of zip header fields
+
+KmlOutputStream
+-Handle Circle geometry and generate Line/Ring/Poly depending on circle hints types
+-Added getNumCirclePoints()
+-Corrected output order of elements for ListStyle
+-Fix order of gx:balloonVisibility in output
+
+KmlMetaDump
+-Fixed bug that aborted scan of directories if failed to open a file
+-Fixed parsing tilt in LookAt with non-numeric values
 
 Circle
--cleanup visit(Circle circle) allowing to draw point if numberCirclePts = 1 or line if n = 2
--added setNumberCirclePoints(int) to set circle point count per instance basis
--rename getNumCirclePoints() to getNumberCirclePoints()
-
-DocumentStart
--Added addNamespace() method
-
-KmlMetaDump
--Added maxLinkCount argument to set limit of recursion when importing networklinks
-
-KmlReader/KmlWriter
--add support for inline Styles within StyleMaps for URL normalization
-
-KmlReader
--Added maxLinkCount field to limit recursion when importing networklinks
-
-KmlOutputStream
--add support for gx:TimeStamp/gx:TimeSpan in LookAt/Camera elements
-
-Line
--Added new constructor with Geodetic2DBounds argument
-
-NetworkLink
-add hashCode() + equals()
+-Fixed NullPointerException in equals(Circle) if argument was null
 
 Point
--add constructor Point(Latitude lat, Longitude lon)
-
-UrlRef
--add explicit check for relative URIs in constructor and throw MalformedURLException
- vs allowing URI.toURL() to throw a Runtime Exception
+-Simplified null check logic forcing "pt" field to always be non-null
+-Fixed NullPointerException in equals(Point) if argument was null
 
 ------------------------------------------------------------------------------
 
-Release 0.6.2
+Release 0.5.27
 
-This release fixes minor bugs and enhancements in KML handling.
+This release fixes minor bugs and enhancements in KML and Shape file handling.
 
-IKml
--add viewRefreshMode and refreshMode enumeration values as constants
+ShapefileInputStream
+-Allow file argument in constructor to be directory or single .shp file
 
-GeometryBag
--Adjust all methods that change the geometries list to reset the bbox field (e.g. add(), addAll(), remove(), etc.)
--getCenter() now returns null if no contained geometies has a center point
--Override getBoundingBox() and return null if cannot compute a bounding box
+Added getType() to IContainerType interface
 
-KmlBaseReader
--Added setHttpQuery and setViewFormat to override default query/format parameter values
--Changed default viewFormat default values from 0's to more meaningful values
--Renamed getTrimmedValue() to trimToNull()
--Added trimToEmpty()
--Added getBaseUrl()
+Add support for Snippet/snippet in KmlInputStream/KmlOutputStream
 
-KmlReader
--Added isMaxLinkCountExceeded() to flag if limit was reached
+Added crossDateLine() to GroundOverlay
 
-KmlInputStream
--Support rotation element for PhotoOverlays
--Allow viewFormat tag in Link to have empty string value (Before empty strings were treated as nulls)
--Support deprecated color element in BalloonStyle
-
-KmlOutputStream
--Add missing roll element for Camera in output
--Output Point and rotation elements for PhotoOverlay
+Updated KmlOutputStream.handleOverlay() and KmlInputStream.handleLatLonBox
+to normalize LatLonBox coords if needed.
 
 KmlMetaDump
--add check for valid output file names in getWriter()
--added test for absolute/relative styleUrl in Features and StyleMap Pairs
-
-NumberStreamTokenizer
--reimplemented using Apache Harmony project and its implementation
- of java.io.StreamTokenizer. This has Apache vs GPLv2 license.
-
-PhotoOverlay
--add rotation field
--implement readData(), approximatelyEquals(), writeData() methods
-
-Style
--Updated checks in setBalloonStyles()
-
-UrlRef
--Added isAbsoluteUrl() helper method
+- Added checks:
+  * Feature uses merged shared/inline Style (info)
+  * Feature uses shared Style (info)
+  * Shared styles in Folder not allowed [ATC 7] (warning)
+  * Shared styles must have 'id' attribute [ATC 7] (warning)
+  * StyleUrl must contain '#' with identifier reference
+  * GroundOverlay fails to satisfy east > west constraint [ATC 11]
+  * GroundOverlay fails to satisfy north > south constraint [ATC 11]
+  * GroundOverlay spans -180/+180 longitude line
 
 ------------------------------------------------------------------------------
 
-Release 0.7.0
+Release 0.5.26
 
-This release adds support for a new data format: OGC Well-known text (WKT).
-Fixed minor bugs along with additional support and improvements to KML handling.
-Few minor API changes as cleanup.
+This release fixes minor bugs in KML handling and updated geodesy library with Geodetic3DBounds fixes.
 
--Added new WKTInputStream and WKTOutputStream classes.
-
--Added support for address and phoneNumber in KmlInputStream and KmlOutputStream
-
--Added support for non-KML namespace elements in ExtendedData
-
--Correctly handle namespace declarations in XML elements
-
--Change XmlOutputStreamBase.formatDouble(double d) from static to instance method
- change formatting from Double.toString() with DecimalFormater instance
- as used by KmlOutputStream. Now rounds-off at 10 decimal places to eliminate
- round-off errors.
- 
-Common
--added setRegion(Geodetic2DBounds bbox)
+LinearRing
+-Fixed LinearRing(Geodetic2DBounds box) to check for 3D bbox and create 3d points accordingly at max elevation height
 
 KmlInputStream
--Minor fix to allow whitespace before/after listItemType values
+-Handle ArrayIndexOutOfBoundsException in read() such that read gracefully fails
 
-KmlMetadataDump
--change containers from Stack to LinkedList so can search from newest to oldest ancestor for inheritance
+KmlReader
+-Added KmlReader(InputStream is, boolean isCompressed, URL baseUrl, Proxy proxy) constr
 
-KmlOutputStream
--updated handleExtendedData() to handle arbitrary XML extended elements
--fix handleLinkElement() to encode whitespace as %20 in URLs
+KmlMetaDump
+-added custom log4j Appender to capture warn/errors logged by KML classes and add them to summary of errors/warnings.
+-updated checkGeometry() to check Lines, Polygons and LinearRings.
+-added check for duplicate consecutive points
+-added checks:
+ * comma found instead of whitespace between tuples (error)
+ * ignore invalid character in coordinate string (error)
+ * ignore invalid string in coordinate (error)
+ * Line clipped at DateLine (info)
+ * Inner rings in Polygon must not overlap with each other (warn)
+ * LinearRing must start and end with the same point (error)
+ * LinearRing can not self-intersect (warn)
+ * Bad poly found, no outer ring (error)
 
-Style
--Added copy constructor
+Add support for "open" element on KML input and output for containers
+-Added IContainerType with changes to NetworkLink, ContainerStart, KmlInputStream, and KmlOutputStream
 
-UrlRef
--Updated getInputStream() to retry failed KMZ as KML in case content is mis-categorized
+XmlInputStream
+-Change skipNextElement() accessibility from public to protected
+
+Added java.net.Proxy to UrlRef/KmlReader to proxy URL connections
+
+Updated dependency: itf-geodesy 1.9.14 -> 1.9.16 with Geodetic3DBounds fixes
 
 ------------------------------------------------------------------------------
 
-Release 0.7.1
+Release 0.5.25
 
-This release fixes few Shape/DBF bugs in addition to some improvements to ESRI
-Shape file and KML handling.
+This release fixes minor bugs in KML input/output, Schema, and Polygon point handling.
 
-Bug fixes:
+Polygon
+-fix getPoints(). failed if points in "wrong" order.
+ Puts outer ring points in clockwise order and inner ring points in ccw order
 
-DbfOutputStream
--Correctly write numeric fields with right-justification as per spec
--Change non-floating numeric fields (OID, SHORT, INT) from 'F' field type 
- to 'N' field type.
--Fix large double/floats [formatted length > 34 chars] being truncated and
- values mangled by formatting in exponent notation
-    
-Improvements:
+KmlInputStream
+-fix interpreting KML elements as non-kml/foreign elements if kml root element does not declare explicit kml namespace
 
--Added support for gx:drawOrder to GeometryBase, KmlInputStream, and KmlOutputStream
+KmlOutputStream
+-Properly escape schema id value in output
 
-DbfInputStream
--Numeric fields starting with '*' are considered null
--Added LONG type to SimpleField
-
-DbfOutputStream
--Handle Long values in ShapeOutput as numeric (N) type field with decimal count=0
+UrlRef
+-updated isIdentifier() to allow %HH URI-escaping
+-added isHexDegit()
 
 Schema
--Added entrySet()
+-Update setName() to normalize name value stripping leading/trailing whitespace and not allow blank strings as valid
+
+KmlMetaDump.java
+-Add check for suspicious Schema id/name characters to enforce Schema id/name constraints
+
+------------------------------------------------------------------------------
+
+Release 0.5.24
+
+This release primarily introduces cleanup and bug-fixes to KML input/output and some underlying XML handling.
+
+Fixed bug in KmlWriter that did not close all image entries in created KMZ file
+creating corrupt ZIP file. Added flag to underlying KmlOutputStream/XmlOutputStreamBase classes.
+
+StyleMap
+-add containsKey() method + added NORMAL/HIGHLIGHT constants
+
+KmlInputStream
+-Updated StyleMap handling
+
+UrlRef
+-Added check in escapeUri() to escape all control chars (ASCII code < 0x20) and extended chars (code >= 0x7f)
+
+------------------------------------------------------------------------------
+
+Release 0.5.23
+
+This release primarily introduces enhancenments and minor bug-fixes to KML input/output
+and some underlying XML handling.
+
+General
+  * Added ListStyle support to Style/KmlOutputStream/KmlInputStream
+  * Update geodesy 1.9.14 using short-cut from Geodetic2DPoint.getLatitude().inDegrees()
+    to Geodetic2DPoint.getLatitudeAsDegrees().
+  * Add @Nullable/@CheckForNull annotations to methods in GroundOverlay, Overlay, Style, etc.
+  * Added getEncoding() to XmlInputStream, KmlInputStream, KmlReader so output stream can have
+    correct character encoding if not UTF-8 used
+
+Common
+  * Fix setStyleUrl() to auto-fix the url if relative idref and '#' not first character
+
+GISFactory
+  * Added encoding (String) as first argument to KML + KMZ type in getOutputStream()
+    so can match correct character encoding
+
+KmzOutputStream
+  * Added public KmzOutputStream(OutputStream stream, String encoding) constructor
+
+XmlGdbOutputStream
+  * Update close() and close streams in finally block to close even if exception thrown
+
+GroundOverlay
+  * Added setBoundingBox(Geodetic2DBounds box) to set overlay bounding box from Geodetic2DBounds
+
+Style
+  * Change double to Double and boolean to Boolean in field types and associated getters/setters to allow Nullable values.
+
+UrlRef
+  * Update User-Agent to Google Earth 5.2 identifier
+  * Add new methods: isIdentifier(), isXMLNameCharacter(), isXMLNameStartCharacter()
+  * Updated escapeUri() to handle ascii control chars 00-2f and extended 7f-ff
 
 ------------------------------------------------------------------------------
