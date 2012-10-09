@@ -117,6 +117,7 @@
       <ModuleDefinitionFile>.\giscore_filegdb.def</ModuleDefinitionFile>
       <AdditionalLibraryDirectories>../libs/win64</AdditionalLibraryDirectories>
       <AdditionalDependencies>FileGDBAPI.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <TurnOffAssemblyGeneration>true</TurnOffAssemblyGeneration>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
