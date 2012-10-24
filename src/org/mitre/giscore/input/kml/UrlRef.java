@@ -77,9 +77,6 @@ package org.mitre.giscore.input.kml;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
@@ -90,6 +87,10 @@ import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
+
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <code>UrlRef</code> manages the encoding/decoding of internally created
@@ -350,7 +351,7 @@ public final class UrlRef implements java.io.Serializable {
 		// In rare occasions a KML file ends with ".kmz" file extension -- Google Earth allows this.
 		String contentType = conn.getContentType();
 		// contentType could end with mime parameters (e.g. application/vnd.google-earth.kmz; encoding=...)
-		if (contentType != null && contentType.startsWith(MIME_TYPE_KMZ) || url.getFile().toLowerCase().endsWith(".kmz")) {
+		if (contentType != null && contentType.startsWith(MIME_TYPE_KMZ) || url.getPath().toLowerCase().endsWith(".kmz")) {
 			// kmz file requires special handling
 			boolean closeOnExit = true;
 			InputStream is = null;
