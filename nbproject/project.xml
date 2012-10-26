@@ -50,12 +50,12 @@
             </ide-actions>
             <export>
                 <type>folder</type>
-                <location>build/classes</location>
+                <location>rel/classes</location>
                 <build-target>compile</build-target>
             </export>
             <export>
                 <type>folder</type>
-                <location>build/test</location>
+                <location>rel/test</location>
                 <build-target>compile</build-target>
             </export>
             <view>
@@ -80,20 +80,22 @@
                     <ide-action name="test"/>
                 </context-menu>
             </view>
-            <subprojects/>
+            <subprojects>
+                <project>.</project>
+            </subprojects>
         </general-data>
         <java-data xmlns="http://www.netbeans.org/ns/freeform-project-java/2">
             <compilation-unit>
                 <package-root>src</package-root>
-                <classpath mode="compile">${src.classpath}</classpath>
-                <built-to>build/classes</built-to>
+                <classpath mode="compile">lib/annotations-1.0.0.jar:lib/aopalliance-1.0.jar:lib/arcobjects-9.3.1.jar:lib/commons-io-1.4.jar:lib/commons-lang-2.5.jar:lib/geodesy-1.9.24.jar:lib/jcl-over-slf4j-1.5.6.jar:lib/junit-4.4.jar:lib/log4j-osgi-1.2.15.jar:lib/slf4j-api-1.5.6.jar:lib/slf4j-log4j12-1.5.6.jar:lib/spring-aop-2.5.6.SEC02.jar:lib/spring-beans-2.5.6.SEC02.jar:lib/spring-context-2.5.6.SEC02.jar:lib/spring-core-2.5.6.SEC02.jar:lib/spring-test-2.5.6.SEC02.jar:lib/spring-web-2.5.6.SEC02.jar:lib/stax-api-osgi-1.0.1.jar:j2eelibs/servlet-api-2.4.jar</classpath>
+                <built-to>rel/classes</built-to>
                 <source-level>1.5</source-level>
             </compilation-unit>
             <compilation-unit>
                 <package-root>test</package-root>
                 <unit-tests/>
                 <classpath mode="compile">${test.classpath}</classpath>
-                <built-to>build/test</built-to>
+                <built-to>rel/test</built-to>
                 <source-level>1.5</source-level>
             </compilation-unit>
         </java-data>
