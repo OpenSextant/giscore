@@ -79,22 +79,14 @@ public class TestShapefileInput {
 		}
 	}
 
-	@Test public void testBadStream() throws Exception {
-		ByteArrayInputStream bis = new ByteArrayInputStream(new byte[0]);
-		try {
-			new ShapefileInputStream(bis, null);
-			fail("constructor should fail");
-		} catch (IOException e) {
-			// this is expected result
-		}
-		
-		bis = new ByteArrayInputStream("not a shape file".getBytes());
-		try {
-			new ShapefileInputStream(bis, null);
-			fail("constructor should fail");
-		} catch (IOException e) {
-			// this is expected result
-		}
+	@Test(expected=IOException.class)
+	public void testBadStream() throws Exception {
+		new ShapefileInputStream(new ByteArrayInputStream(new byte[0]), null);
+	}
+	
+	@Test(expected=IOException.class)
+	public void testBadStream2() throws Exception {
+		new ShapefileInputStream(new ByteArrayInputStream("not a shape file".getBytes()), null);
 	}
 
 	@Test public void testErrorcase1() throws Exception {
