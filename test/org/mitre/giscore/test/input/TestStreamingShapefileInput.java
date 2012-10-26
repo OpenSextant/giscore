@@ -20,6 +20,8 @@ package org.mitre.giscore.test.input;
 
 import java.io.*;
 import java.net.URISyntaxException;
+import java.util.Collections;
+import java.util.EnumMap;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
@@ -35,6 +37,7 @@ import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.MultiPolygons;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.input.shapefile.ShapefileComponent;
 import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
 
 /**
@@ -48,7 +51,7 @@ public class TestStreamingShapefileInput {
 	
 	@Test public void testReadShpDirectly() throws Exception {
 		FileInputStream is = new FileInputStream(new File(shpdir, "afghanistan.shp"));
-		SingleShapefileInputHandler sis = new SingleShapefileInputHandler(is, null, null, "afghanistan");
+		SingleShapefileInputHandler sis = new SingleShapefileInputHandler(is, null, "afghanistan");
 		IGISObject ob;
 		while((ob = sis.read()) != null) {
 			if (ob instanceof Feature) {
@@ -61,7 +64,7 @@ public class TestStreamingShapefileInput {
 
 	@Test public void testReadShpDirectly2() throws Exception {
 		FileInputStream is = new FileInputStream(new File(shpdir, "linez.shp"));
-		SingleShapefileInputHandler sis = new SingleShapefileInputHandler(is, null, null, "linez");
+		SingleShapefileInputHandler sis = new SingleShapefileInputHandler(is, null, "linez");
 		IGISObject ob;
 		while((ob = sis.read()) != null) {
 			if (ob instanceof Feature) {
@@ -74,17 +77,17 @@ public class TestStreamingShapefileInput {
 
 	@Test(expected=IllegalArgumentException.class)
 	public void testBadStream() throws Exception {
-		new SingleShapefileInputHandler(new ByteArrayInputStream(new byte[0]), null, null, null);
+		new SingleShapefileInputHandler(new ByteArrayInputStream(new byte[0]), null, null);
 	}
 	
 	@Test(expected=IOException.class)
 	public void testBadStream2() throws Exception {
-		new SingleShapefileInputHandler(new ByteArrayInputStream(new byte[0]), null, null, "foo");
+		new SingleShapefileInputHandler(new ByteArrayInputStream(new byte[0]), null, "foo");
 	}
 
 	@Test(expected=IOException.class)
 	public void testBadStream3() throws Exception {
-		new SingleShapefileInputHandler(new ByteArrayInputStream("not a shape file".getBytes()), null, null, "foo");
+		new SingleShapefileInputHandler(new ByteArrayInputStream("not a shape file".getBytes()), null, "foo");
 	}
 
 	@Test public void testErrorcase1() throws Exception {
@@ -145,8 +148,8 @@ public class TestStreamingShapefileInput {
 	
 	@Test public void testAfghanistan() throws Exception {
 		FileInputStream shp_is = new FileInputStream(new File(shpdir, "afghanistan.shp"));
-		FileInputStream dbf_is = new FileInputStream(new File(shpdir, "afghanistan.dbf"));
-		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shp_is, dbf_is, null, "afghanistan");
+		InputStream dbf_is = new FileInputStream(new File(shpdir, "afghanistan.dbf"));
+		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shp_is, Collections.singletonMap(ShapefileComponent.DBF, dbf_is), "afghanistan");
 		Schema sh = (Schema) handler.read();
 		Feature shape = (Feature) handler.read();
 		assertNotNull(shape);
@@ -172,10 +175,14 @@ public class TestStreamingShapefileInput {
 		File shp = new File(shpdir, file + ".shp");
 		File dbf = new File(shpdir, file + ".dbf");
 		File prj = new File(shpdir, file + ".prj");
-		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(new FileInputStream(shp),
-				dbf.exists() ? new FileInputStream(dbf) : null,
-				prj.exists() ? new FileInputStream(prj) : null,
-				file);
+        final EnumMap<ShapefileComponent, InputStream> map = new EnumMap<ShapefileComponent, InputStream>(ShapefileComponent.class);
+        if(dbf.exists()) {
+            map.put(ShapefileComponent.DBF, new FileInputStream(dbf));
+        }
+        if(prj.exists()) {
+            map.put(ShapefileComponent.PRJ, new FileInputStream(prj));
+        }
+		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(new FileInputStream(shp), map, file);
 		try {
 			IGISObject ob = handler.read();
 			assertTrue(ob instanceof Schema);

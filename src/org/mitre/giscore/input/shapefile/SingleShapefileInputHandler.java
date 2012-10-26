@@ -29,6 +29,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
@@ -133,8 +134,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
      * as a series of {@code InputStream}s.
      *
      * @param shpStream the shapefile (.shp) stream.
-     * @param dbfStream the DBF stream, may be {@code null}.
-     * @param prjStream the projection stream, may be {@code null}.
+     * @param otherStreams any other shapefile components as streams, may be {@code null}.
      * @param shapefilename  base shape file name (never {@code null} or blank
      *                       string) without the .shp extension
      * @throws IllegalArgumentException if shape stream is {@code null} or if
@@ -143,8 +143,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
      * @throws IOException              if an I/O error occurs
      */
     public SingleShapefileInputHandler(InputStream shpStream,
-            InputStream dbfStream,
-            InputStream prjStream,
+            Map<ShapefileComponent, InputStream> otherStreams,
             String shapefilename) throws IOException {
         if(shpStream == null) {
             throw new IllegalArgumentException("shpStream must not be null");
@@ -153,11 +152,15 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
             throw new IllegalArgumentException(
                     "shapefilename should never be null or blank");
         }
-        if(prjStream != null) {
-            checkPrj(prjStream);
-        }
-        if(dbfStream != null) {
-            loadDbf(dbfStream, shapefilename);
+        if(otherStreams != null) {
+            final InputStream prjStream = otherStreams.get(ShapefileComponent.PRJ);
+            if(prjStream != null) {
+                checkPrj(prjStream);
+            }
+            final InputStream dbfStream = otherStreams.get(ShapefileComponent.DBF);
+            if(dbfStream != null) {
+                loadDbf(dbfStream, shapefilename);
+            }
         }
         plainChannel = Channels.newChannel(shpStream);
         readHeader();
