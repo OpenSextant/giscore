@@ -1,0 +1,16 @@
+
+# /
+/lib
+/rel
+/build
+/testOutput
+/bin
+/.classpath
+/bnd.bnd
+/generated
+
+# /data/gdb/
+/data/gdb/EH_FGDB92_20090314153313.gdb
+
+# /nbproject/
+/nbproject/private
