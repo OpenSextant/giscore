@@ -18,8 +18,21 @@
  ***************************************************************************************/
 package org.mitre.giscore.input.shapefile;
 
+import java.io.*;
+import java.nio.BufferUnderflowException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.Channels;
+import java.nio.channels.FileChannel;
+import java.nio.channels.FileChannel.MapMode;
+import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
@@ -31,16 +44,6 @@ import org.mitre.giscore.utils.PolyHolder;
 import org.mitre.itf.geodesy.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.*;
-import java.nio.BufferUnderflowException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileChannel.MapMode;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Read a single shapefile (.prj, .shp, .dbf, etc) to an object buffer for later
@@ -89,8 +92,19 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     /**
      * Open shp file as a binary input stream
      */
-    private FileChannel channel;
+    private FileChannel fileChannel;
 
+    /**
+     * Open shp stream as a channel
+     */
+    private ReadableByteChannel plainChannel;
+
+    /**
+     * Ensures that we don't read bytes out of order when reading from an
+     * InputStream.
+     */
+    private int plainFileOffsetSanity = 0;
+    
     /**
      * Geometry type for this shapefile
      */
@@ -113,6 +127,42 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
       * is overrunning the current written record for error detection purposes
       */
     // private int recLen;
+
+    /**
+     * Create {@code SingleShapefileInputHandler} for single shapefile given
+     * as a series of {@code InputStream}s.
+     *
+     * @param shpStream the shapefile (.shp) stream.
+     * @param dbfStream the DBF stream, may be {@code null}.
+     * @param prjStream the projection stream, may be {@code null}.
+     * @param shapefilename  base shape file name (never {@code null} or blank
+     *                       string) without the .shp extension
+     * @throws IllegalArgumentException if shape stream is {@code null} or if
+     *                                  shapefilename is {@code null} or blank
+     *                                  string.
+     * @throws IOException              if an I/O error occurs
+     */
+    public SingleShapefileInputHandler(InputStream shpStream,
+            InputStream dbfStream,
+            InputStream prjStream,
+            String shapefilename) throws IOException {
+        if(shpStream == null) {
+            throw new IllegalArgumentException("shpStream must not be null");
+        }
+        if (StringUtils.isBlank(shapefilename)) {
+            throw new IllegalArgumentException(
+                    "shapefilename should never be null or blank");
+        }
+        if(prjStream != null) {
+            checkPrj(prjStream);
+        }
+        if(dbfStream != null) {
+            loadDbf(dbfStream, shapefilename);
+        }
+        plainChannel = Channels.newChannel(shpStream);
+        readHeader();
+        fileOffset = 100;
+    }
 
     /**
      * Create <tt>SingleShapefileInputHandler</tt> for single shapefile given
@@ -147,27 +197,15 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
                     "SHP file missing for shapefile " + shapefilename);
         }
         if (prjFile.exists()) {
-            checkPrj(prjFile);
+            checkPrj(new FileInputStream(prjFile));
         }
 
         if (dbfFile.exists()) {
-            dbf = new DbfInputStream(dbfFile, null);
-            dbf.setRowClass(Feature.class);
-
-            // First thing in the dbf should be a schema
-            IGISObject ob = dbf.read();
-            if (ob instanceof Schema) {
-                Schema schema = (Schema) ob;
-                schema.setName(shapefilename);
-                addFirst(schema);
-            } else {
-                throw new IllegalStateException(
-                        "Schema not the first thing returned from dbf");
-            }
+            loadDbf(new FileInputStream(dbfFile), shapefilename);
         }
 
         FileInputStream fis = new FileInputStream(shpFile);
-        channel = fis.getChannel();
+        fileChannel = fis.getChannel();
         readHeader();
         fileOffset = 100;
     }
@@ -179,11 +217,9 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
      * @throws IOException                  if an I/O error occurs
      * @throws UnsupportedEncodingException
      */
-    private void checkPrj(File prjFile) throws IOException {
-        FileInputStream fis = new FileInputStream(prjFile);
-
+    private void checkPrj(InputStream stream) throws IOException {
         try {
-            Reader reader = new InputStreamReader(fis, "UTF8");
+            Reader reader = new InputStreamReader(stream, "UTF8");
             StringWriter writer = new StringWriter();
             IOUtils.copy(reader, writer);
             PrjReader wkt = new PrjReader(writer.toString());
@@ -200,7 +236,42 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(e);
         } finally {
-            IOUtils.closeQuietly(fis);
+            IOUtils.closeQuietly(stream);
+        }
+    }
+
+    private void loadDbf(InputStream stream, String shapefilename) throws IOException {
+        dbf = new DbfInputStream(stream, null);
+        dbf.setRowClass(Feature.class);
+        
+        // First thing in the dbf should be a schema
+        IGISObject ob = dbf.read();
+        if (ob instanceof Schema) {
+            Schema schema = (Schema) ob;
+            schema.setName(shapefilename);
+            addFirst(schema);
+        } else {
+            throw new IllegalStateException(
+                    "Schema not the first thing returned from dbf");
+        }
+    }
+    
+    private ByteBuffer readFromChannel(int position, int size) throws IOException {
+        if(fileChannel != null) {
+            return fileChannel.map(MapMode.READ_ONLY, position, size);
+        } else {
+            if(position != plainFileOffsetSanity) {
+                throw new AssertionError("Stream reading was not fully sequential, requested: " + position + " furthest seen: " + plainFileOffsetSanity);
+            }
+            plainFileOffsetSanity += size;
+            final ByteBuffer ret = ByteBuffer.allocate(size);
+            do {
+                if(plainChannel.read(ret) == -1) {
+                    throw new IOException("Unexpected EOF while reading at: " + position + " len: " + size);
+                }
+            } while(ret.hasRemaining());
+            ret.rewind();
+            return ret;
         }
     }
 
@@ -212,13 +283,21 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
      */
     public void close() {
         RuntimeException channelCloseException = null;
-        if (channel != null) {
+        if (fileChannel != null) {
             try {
-                channel.close();
+                fileChannel.close();
             } catch (IOException e) {
                 channelCloseException = new RuntimeException("Problem closing shp stream", e);
             }
-            channel = null;
+            fileChannel = null;
+        }
+        if (plainChannel != null) {
+            try {
+                plainChannel.close();
+            } catch (IOException e) {
+                channelCloseException = new RuntimeException("Problem closing shp stream", e);
+            }
+            plainChannel = null;
         }
         if (dbf != null) {
             dbf.close();
@@ -266,7 +345,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     private Geometry getGeometry(boolean is3D, boolean includeM)
             throws IOException, IllegalArgumentException {
         // EOF is OK if it occurs here, otherwise we'll throw the exception to caller
-        ByteBuffer buffer = channel.map(MapMode.READ_ONLY, fileOffset, 8);
+        ByteBuffer buffer = readFromChannel(fileOffset, 8);
         int num = readInt(buffer, ByteOrder.BIG_ENDIAN);
         int contentLen = readInt(buffer, ByteOrder.BIG_ENDIAN); // In 16 bit words
         int nextFilePos = 2 * (contentLen + 4) + fileOffset;
@@ -274,7 +353,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
             throw new IOException("Shapefile contains badly formatted record");
         Geometry geomObj = null;
         int recLen = contentLen * 2;
-        buffer = channel.map(MapMode.READ_ONLY, fileOffset + 8, recLen);
+        buffer = readFromChannel(fileOffset + 8, recLen);
         int recShapeType = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
         if (recShapeType != NULL_TYPE) {
             if (recShapeType != shpType)
@@ -325,7 +404,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
      * @throws IllegalArgumentException
      */
     private void readHeader() throws IllegalArgumentException, IOException {
-        ByteBuffer buffer = channel.map(MapMode.READ_ONLY, 0, 100);
+        ByteBuffer buffer = readFromChannel(0, 100);
         shpType = getShapeTypeFromHeader(buffer);
         getBoundingBoxFromHeader(buffer, is3D(shpType));
     }
