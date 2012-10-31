@@ -1,7 +1,7 @@
 /****************************************************************************************
- *  Geodatabase.java
+ *  FileGdbTester.java
  *
- *  Created: Oct 3, 2012
+ *  Created: Oct 30, 2012
  *
  *  @author DRAND
  *
@@ -19,16 +19,14 @@
 package org.mitre.giscore.filegdb;
 
 import java.io.File;
-import java.util.List;
 
-/**
- * Wraps the FileGDB API Geodatabase Object and presents the 
- * needed operations on the Geodatabase Object so they can be executed
- * from Java.
- * 
- * @author DRAND
- */
-public class Geodatabase extends GDB {	
+public class Geodatabase extends GDB {
+	private File path;
+	
+	static {
+		System.loadLibrary("filegdb");
+	}
+	
 	/**
 	 * Ctor
 	 * 
@@ -36,45 +34,45 @@ public class Geodatabase extends GDB {
 	 * and must exist
 	 */
 	public Geodatabase(File pathToGeodatabase) {
-		if (pathToGeodatabase == null || ! pathToGeodatabase.exists()) {
+		if (pathToGeodatabase == null) {
 			throw new IllegalArgumentException("Bad path");
 		}
-		ptr = open(pathToGeodatabase.getAbsolutePath());
+		if (pathToGeodatabase.exists()) {
+			ptr = open(pathToGeodatabase.getAbsolutePath());
+		} else {
+			ptr = create(pathToGeodatabase.getAbsolutePath());
+		}
+		path = pathToGeodatabase;
 	}
 	
 	/**
-	 * Close the geodatabase, will do nothing if the database is already 
-	 * closed
+	 * Delete the current Geodatabase, closing it if it is currently 
+	 * open.
+	 */
+	public void delete() {
+		close();
+		delete(path.getAbsolutePath());
+	}
+	
+	/**
+	 * Close the geodatabase. If already closed do nothing.
 	 */
 	public void close() {
-		if (ptr != 0L) {
-			close_db(ptr);
-		}
+		if (isValid()) close1();
+		ptr = 0L;
 	}
-
-	public native String[] getChildDatasets(String datasettype);
+	
+	private native long open(String path);
+	
+	private native long create(String path);
+	
+	private native void close1();
 		
+	public static native void delete(String path);
+	
 	public native String[] getDatasetTypes();
 	
-	public native String[] getRelatedDatasets();
+	public native String[] getChildDatasets(String parentPath, String child);
 	
-	public native String getDatasetDef(String datasettype);
-	
-	public native String getDatasetDocumentation(String datasettype);
-	
-	/**
-	 * Open the geodatabase
-	 * 
-	 * @param absolutePath path to the geodatabase, assumed to be valid
-	 * @return
-	 */
-	private native long open(String absolutePath);
-	
-	/**
-	 * Close the geodatabase (internal)
-	 * @param ptr 
-	 */
-	private native void close_db(long ptr);  
-	
-
+	public native String[] getChildDatasetDefinitions(String parentPath, String child);
 }

@@ -23,6 +23,6 @@ import org.junit.BeforeClass;
 public class FileGDBTest {
 	@BeforeClass public static void openLib() {
 		Runtime rt = Runtime.getRuntime();	
-		rt.loadLibrary("giscore_filegdb");
+		rt.loadLibrary("filegdb");
 	}
 }
