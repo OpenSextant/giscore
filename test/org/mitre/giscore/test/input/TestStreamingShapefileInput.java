@@ -20,14 +20,12 @@ package org.mitre.giscore.test.input;
 
 import java.io.*;
 import java.net.URISyntaxException;
-import java.util.zip.ZipInputStream;
+import java.util.Collections;
+import java.util.EnumMap;
 
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-import org.mitre.giscore.DocumentType;
-import org.mitre.giscore.GISFactory;
-import org.mitre.giscore.IAcceptSchema;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.Feature;
@@ -39,22 +37,21 @@ import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.MultiPolygons;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
-import org.mitre.giscore.input.IGISInputStream;
-import org.mitre.giscore.input.shapefile.ShapefileInputStream;
+import org.mitre.giscore.input.shapefile.ShapefileComponent;
 import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
 
 /**
  * Test single shapefile reader
  * 
  * @author DRAND
+ * @author jgibson
  */
-public class TestShapefileInput {
+public class TestStreamingShapefileInput {
 	public static File shpdir = new File("data/shape");
 	
 	@Test public void testReadShpDirectly() throws Exception {
 		FileInputStream is = new FileInputStream(new File(shpdir, "afghanistan.shp"));
-		ShapefileInputStream sis = new ShapefileInputStream(is, null);
-		assertNotNull(sis);
+		SingleShapefileInputHandler sis = new SingleShapefileInputHandler(is, null, "afghanistan");
 		IGISObject ob;
 		while((ob = sis.read()) != null) {
 			if (ob instanceof Feature) {
@@ -67,8 +64,7 @@ public class TestShapefileInput {
 
 	@Test public void testReadShpDirectly2() throws Exception {
 		FileInputStream is = new FileInputStream(new File(shpdir, "linez.shp"));
-		ShapefileInputStream sis = new ShapefileInputStream(is, null);
-		assertNotNull(sis);
+		SingleShapefileInputHandler sis = new SingleShapefileInputHandler(is, null, "linez");
 		IGISObject ob;
 		while((ob = sis.read()) != null) {
 			if (ob instanceof Feature) {
@@ -79,14 +75,19 @@ public class TestShapefileInput {
 		}
 	}
 
-	@Test(expected=IOException.class)
+	@Test(expected=IllegalArgumentException.class)
 	public void testBadStream() throws Exception {
-		new ShapefileInputStream(new ByteArrayInputStream(new byte[0]), null);
+		new SingleShapefileInputHandler(new ByteArrayInputStream(new byte[0]), null, null);
 	}
 	
 	@Test(expected=IOException.class)
 	public void testBadStream2() throws Exception {
-		new ShapefileInputStream(new ByteArrayInputStream("not a shape file".getBytes()), null);
+		new SingleShapefileInputHandler(new ByteArrayInputStream(new byte[0]), null, "foo");
+	}
+
+	@Test(expected=IOException.class)
+	public void testBadStream3() throws Exception {
+		new SingleShapefileInputHandler(new ByteArrayInputStream("not a shape file".getBytes()), null, "foo");
 	}
 
 	@Test public void testErrorcase1() throws Exception {
@@ -114,7 +115,7 @@ public class TestShapefileInput {
 	}
 
 	@Test public void testMultipolys() throws Exception {
-		doTest("multipolys", MultiPolygons.class);                                                              
+		doTest("multipolys", MultiPolygons.class);
 	}
 	
 	@Test public void testMultipolyz() throws Exception {
@@ -146,7 +147,9 @@ public class TestShapefileInput {
 	}
 	
 	@Test public void testAfghanistan() throws Exception {
-		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shpdir, "afghanistan");
+		FileInputStream shp_is = new FileInputStream(new File(shpdir, "afghanistan.shp"));
+		InputStream dbf_is = new FileInputStream(new File(shpdir, "afghanistan.dbf"));
+		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shp_is, Collections.singletonMap(ShapefileComponent.DBF, dbf_is), "afghanistan");
 		Schema sh = (Schema) handler.read();
 		Feature shape = (Feature) handler.read();
 		assertNotNull(shape);
@@ -155,41 +158,31 @@ public class TestShapefileInput {
 		assertNull(next);
 	}
 	
-	@Test public void testShapefileInputStream() throws Exception {
-		IAcceptSchema test = new IAcceptSchema() {
-			@Override
-			public boolean accept(Schema schema) {
-				return schema.get("today") != null;
-			}
-		};
-		
-		IGISInputStream stream = GISFactory.getInputStream(DocumentType.Shapefile, shpdir, test);
-		while(stream.read() != null) {
-			// No body
-		}
-	}
-	
-	@Test public void testShapefileInputStream2() throws Exception {
-		IGISInputStream stream = GISFactory.getInputStream(DocumentType.Shapefile, shpdir);
-		while(stream.read() != null) {
-			// No body
-		}
-	}
-	
-	@Test public void testShapefileInputStream3() throws Exception {
-		FileInputStream fis = new FileInputStream(new File(shpdir, "testLayersShp.zip"));
-		ZipInputStream zis = new ZipInputStream(fis);
-		IGISInputStream stream = GISFactory.getInputStream(DocumentType.Shapefile, zis);
-		
-		IGISObject ob;
-		while((ob = stream.read()) != null) {
-			System.out.println("(Zip) read: " + ob);
-		}
-	}
+    // TODO? Replicate this test for the single shapefile input handler
+//	@Test public void testShapefileInputStream3() throws Exception {
+//		FileInputStream fis = new FileInputStream(new File(shpdir, "testLayersShp.zip"));
+//		ZipInputStream zis = new ZipInputStream(fis);
+//		IGISInputStream stream = GISFactory.getInputStream(DocumentType.Shapefile, zis);
+//		
+//		IGISObject ob;
+//		while((ob = stream.read()) != null) {
+//			System.out.println("(Zip) read: " + ob);
+//		}
+//	}
 
 	private void doTest(String file, Class geoclass) throws URISyntaxException, IOException {
 		System.out.println("Test " + file);
-		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(shpdir, file);
+		File shp = new File(shpdir, file + ".shp");
+		File dbf = new File(shpdir, file + ".dbf");
+		File prj = new File(shpdir, file + ".prj");
+        final EnumMap<ShapefileComponent, InputStream> map = new EnumMap<ShapefileComponent, InputStream>(ShapefileComponent.class);
+        if(dbf.exists()) {
+            map.put(ShapefileComponent.DBF, new FileInputStream(dbf));
+        }
+        if(prj.exists()) {
+            map.put(ShapefileComponent.PRJ, new FileInputStream(prj));
+        }
+		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(new FileInputStream(shp), map, file);
 		try {
 			IGISObject ob = handler.read();
 			assertTrue(ob instanceof Schema);

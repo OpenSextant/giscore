@@ -150,7 +150,8 @@ test.classpath=${classes};${netbeans-classpath.test}
 		<javac source="1.6" target="1.6" srcdir="${basedir}/test"
 			debug="true"
 			includeantruntime="false"
-			destdir="${test.classes}">
+			destdir="${test.classes}"
+			encoding="ISO-8859-1">
 			<classpath>
 				<pathelement path="${classes}" />
 				<path refid="project.classpath" />
