@@ -3,8 +3,6 @@
  *
  *  Created: Oct 30, 2012
  *
- *  @author DRAND
- *
  *  (C) Copyright MITRE Corporation 2012
  *
  *  The program is provided "as is" without any warranty express or implied, including
@@ -20,7 +18,15 @@ package org.mitre.giscore.filegdb;
 
 import java.io.File;
 
+/**
+ * Wraps the FileGDB API Geodatabase Object and presents the 
+ * needed operations on the Geodatabase Object so they can be executed
+ * from Java.
+ * 
+ * @author DRAND
+ */
 public class Geodatabase extends GDB {
+
 	private File path;
 	
 	static {
