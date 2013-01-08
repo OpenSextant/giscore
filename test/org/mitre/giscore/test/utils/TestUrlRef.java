@@ -4,7 +4,7 @@ import junit.framework.TestCase;
 import org.mitre.giscore.input.kml.UrlRef;
 
 /**
- * User: MATHEWS
+ * @author Jason Mathews, MITRE Corp.
  * Date: Oct 28, 2010 5:19:13 PM
  */
 public class TestUrlRef extends TestCase {
