@@ -28,7 +28,7 @@ public class TestShape2Kml extends TestCase {
 
 	private void testOutput(Shape2Kml app, int count, File input, File target)
 			throws XMLStreamException, IOException {
-		app.outputKml(input);
+		app.outputKml(input, dumpOnly);
 		assertTrue(target.exists());
 		KmlReader reader = new KmlReader(target);
 		try {
