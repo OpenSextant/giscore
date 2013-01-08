@@ -1,5 +1,5 @@
 /***************************************************************************
- * $Id$
+ * $Id: MultiLinearRings.java 1207 2011-06-20 13:58:07Z mathews $
  *
  * (C) Copyright MITRE Corporation 2006-2008
  *
