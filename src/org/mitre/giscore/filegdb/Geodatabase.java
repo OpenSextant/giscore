@@ -1,9 +1,7 @@
 /****************************************************************************************
- *  FileGdbTester.java
+ *  Geodatabase.java
  *
  *  Created: Oct 30, 2012
- *
- *  @author DRAND
  *
  *  (C) Copyright MITRE Corporation 2012
  *
@@ -20,12 +18,18 @@ package org.mitre.giscore.filegdb;
 
 import java.io.File;
 
+/**
+ * Wraps the FileGDB API Geodatabase Object and presents the 
+ * needed operations on the Geodatabase Object so they can be executed
+ * from Java.
+ * 
+ * @author DRAND
+ */
 public class Geodatabase extends GDB {
 	public static final String FEATURE_CLASS = "Feature Class";
 	public static final String TABLE = "Table";
 	public static final String FOLDER = "Folder";
 	public static final String DATASET = "Dataset";
-	
 	private File path;
 	
 	static {

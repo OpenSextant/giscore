@@ -349,7 +349,8 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		if (datasetname == null || datasetname.equals("\\")) {
 			datasetname = "\\" + getNameFromRow(row);
 		}
-		writeDataSetDef(featureKey, datasetname, ElementType.FEATURE_CLASS);
+		writeDataSetDef(featureKey, datasetname, 
+				row instanceof Row ? ElementType.TABLE : ElementType.FEATURE_CLASS);
 		writer.writeEndDocument();
 		closeWriter();
 		return new String(((ByteArrayOutputStream) stream).toByteArray(), "UTF8");

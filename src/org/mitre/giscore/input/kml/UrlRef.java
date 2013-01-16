@@ -77,6 +77,9 @@ package org.mitre.giscore.input.kml;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
@@ -88,22 +91,19 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * <code>UrlRef</code> manages the encoding/decoding of internally created
  * KML/KMZ URLs to preserve the association between the parent KMZ file
- * and its relative file reference. Handles getting an inputStream to KML
+ * and its relative file reference. Handles getting an InputStream to KML
  * linked resources whether its a fully qualified URL or a entry in a KMZ file.
  * <p/>
  * If <code>KmlReader</code> is used to read a KMZ resource then href values for
- * relative URLs will be rewritten as special URIs such that the links can be fetched
- * later using <code>UrlRef</code> to wrap the URI. A UrlRef is created for each linked
- * resource (e.g. NetworkLink, GroundOverlay, ScreenOverlay, Style with IconStyle, etc.)
- * during reading and an internal URI is used to reference the resource.  If the parent
- * file/URL is a KMZ file and link is a relative URL then the association is preserved
+ * relative URLs will be rewritten as special URIs such that the links can be
+ * fetched later using <code>UrlRef</code> to wrap the URI and return InputStream
+ * to the resource. A UrlRef is created for each linked resource (e.g. NetworkLink,
+ * GroundOverlay, ScreenOverlay, Style with IconStyle, etc.) during reading and
+ * an internalized URI is used to reference the resource.  If the parent file/URL
+ * is a KMZ file and link is a relative URL then the association is preserved
  * otherwise the URL is treated normally.
  * <p/>
  * For example suppose we have a KMZ resource at <code>http://server/test.kmz</code>
@@ -520,25 +520,28 @@ public final class UrlRef implements java.io.Serializable {
 	 */
 	public static String escapeUri(String href) {
 		/*
-				URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment
+		   URI-reference = [ absoluteURI | relativeURI ] [ "#" fragment
 
-				excluded characters from URI syntax:
+		   excluded characters from URI syntax:
 
-				control     = <US-ASCII coded characters 00-1F and 7F hexadecimal>
-				space       = <US-ASCII coded character 20 hexadecimal>
-				delims      = "<" | ">" | "#" | "%" | <">
+		   control     = <US-ASCII coded characters 00-1F and 7F hexadecimal>
+		   space       = <US-ASCII coded character 20 hexadecimal>
+		   delims      = "<" | ">" | "#" | "%" | <">
 
-			   Other characters are excluded because gateways and other transport
-			   agents are known to sometimes modify such characters, or they are
-			   used as delimiters.
+		   Other characters are excluded because gateways and other transport
+		   agents are known to sometimes modify such characters, or they are
+		   used as delimiters.
 
-			   unwise      = "{" | "}" | "|" | "\" | "^" | "[" | "]" | "`"
+		   unwise      = "{" | "}" | "|" | "\" | "^" | "[" | "]" | "`"
 
-			   Data corresponding to excluded characters must be escaped in order to
-			   be properly represented within a URI.
+		   Data corresponding to excluded characters must be escaped in order to
+		   be properly represented within a URI.
 
-			   http://www.ietf.org/rfc/rfc2396.txt
-				 */
+		   Note within a query component, these characters are reserved:
+			";" | "/" | "?" | ":" | "@" | "&" | "=" | "+" | "," | "$"
+
+		   http://www.ietf.org/rfc/rfc2396.txt
+		 */
 		StringBuilder buf = new StringBuilder(href.length());
 		for (char c : href.toCharArray()) {
 			if (c <= 0x20 || c >= 0x7f)

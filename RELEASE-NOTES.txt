@@ -9,6 +9,47 @@ This product includes software developed by the JDOM Project (http://www.jdom.or
 
 ------------------------------------------------------------------------------
 
+Changes
+
+New implementation of FileGDB Input and Output based on ESRI's C++
+libraries.
+
+------------------------------------------------------------------------------
+
+Release 1.8.1
+
+Maintenance release
+
+Previous versions should have been 1.x.x versions
+so new version 0.8.1 is changing baseline to 1.8.1
+to reflect major version number.
+
+0.8.0 had some old code included due to migration mixup
+from subversion to git repository in Oct 2012.
+
+------------------------------------------------------------------------------
+
+Release 0.8.0
+
+Improvements:
+
+-Added circle support to GeoAtom
+-Added support for reading shapefiles from input streams
+-Made streaming shapefile reading more extensible
+
+DbfOutputStream
+-replaced multiple SimpleDateFormats with custom date parser
+
+Introduced 21 non-compatiable API changes due to replacement of
+ java.awt.Color to custom light-weight class of the same name. Some method
+ signatures changed from java.awt.Color to the custom class. All caller
+ code should only need to change package name in the java.awt.Color import
+ to org.mitre.giscore.utils.Color and recompile. This change allows giscore
+ to run in restricted environments such as the Google App Engine where
+ java.awt.Color is blacklisted.
+ 
+------------------------------------------------------------------------------
+
 Release 0.7.1
 
 This release fixes few Shape/DBF bugs in addition to some improvements to ESRI

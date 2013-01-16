@@ -1,5 +1,5 @@
 /****************************************************************************************
- *  TestOpenCloseGeodatabase.java
+ *  TestGeodatabase.java
  *
  *  Created: Oct 3, 2012
  *

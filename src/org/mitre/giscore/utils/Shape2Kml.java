@@ -13,8 +13,8 @@ import org.mitre.giscore.input.shapefile.ShapefileInputStream;
 import org.mitre.giscore.output.kml.KmzOutputStream;
 
 import javax.xml.stream.XMLStreamException;
-import org.mitre.giscore.utils.Color;
 import java.io.*;
+import java.util.Map;
 
 /**
  * Simple Shape file-to-KML Converter. Convert arbitrary shape files to KMZ files.
@@ -45,27 +45,33 @@ public class Shape2Kml {
 		this.labelName = labelName;
 	}
 
-	public void outputKml(File shapefile) throws IOException, XMLStreamException {
+	public void outputKml(File shapefile, boolean dumpOnly) throws IOException, XMLStreamException {
 		// InputStream is = new FileInputStream(shapefile);
 		// if (shapefile.getName().endsWith(".zip") ) is = new ZipInputStream(is);
-		String filename = shapefile.getName();
-		String baseName;
-		int ind = filename.lastIndexOf('.');
-		if (ind > 0) baseName = filename.substring(0, ind);
-		else baseName = "out";
-		File temp;
-		while (true) {
-			temp = new File(baseDir, baseName + ".kmz");
-			if (!temp.exists()) break;
-			baseName += '~';
-		}
 		System.out.println("Input: " + shapefile);
-		System.out.println("Output: " + temp);
-		if (labelName != null)
-			System.out.println("Label: " + labelName);
-		KmzOutputStream kmzos = new KmzOutputStream(new FileOutputStream(temp));
+		String filename = shapefile.getName();
+		KmzOutputStream kmzos = null;
+
+		if (!dumpOnly) {
+			String baseName;
+			int ind = filename.lastIndexOf('.');
+			if (ind > 0) baseName = filename.substring(0, ind);
+			else baseName = "out";
+			File temp;
+			while (true) {
+				temp = new File(baseDir, baseName + ".kmz");
+				if (!temp.exists()) break;
+				baseName += '~';
+			}
+			System.out.println("Output: " + temp);
+			if (labelName != null)
+				System.out.println("Label: " + labelName);
+
+			kmzos = new KmzOutputStream(new FileOutputStream(temp));
+		}
+
 		int count = 0;
-		int outCount = 0;
+		// int outCount = 0;
 		int labelCount = 0;
 
 		IGISInputStream sis = null;
@@ -88,24 +94,42 @@ public class Shape2Kml {
 			 if (ind > 0) shapefileName = shapefileName.substring(0,ind); // strip off .shp extension
 			 sis = new SingleShapefileInputHandler(shapefile.getParentFile(), shapefileName);
 			*/
-			Style style = new Style("style");
-			style.setPolyStyle(null, false, null);
-			double width = filename.startsWith("STATE") ? 1 : filename.startsWith("US_Highway") ? 2 : 3;
-			style.setLineStyle(new Color(196, 161, 45, 255), width); // matches GE road color #c4a12d
-			// TODO: can add objects to temp cache for first ~50 objects after which insert
-			// a hide-child style and apply to the container to suppress large # items in GE menu list
-			needContainerEnd = true;
-			ContainerStart cs = new ContainerStart(IKml.DOCUMENT);
-			cs.addStyle(style);
-			kmzos.write(cs);
+
+			final boolean hasLineStyle = true;
+			if (!dumpOnly) {
+				Style style = new Style("style");
+				style.setPolyStyle(null, false, null);
+				double width = filename.startsWith("STATE") ? 1 : filename.startsWith("US_Highway") ? 2 : 3;
+				style.setLineStyle(new Color(196, 161, 45, 255), width); // matches GE road color #c4a12d
+				// TODO: can add objects to temp cache for first ~50 objects after which insert
+				// a hide-child style and apply to the container to suppress large # items in GE menu list
+				// hasLineStyle = style.hasLineStyle(); // always true
+
+				needContainerEnd = true;
+				ContainerStart cs = new ContainerStart(IKml.DOCUMENT);
+				cs.addStyle(style);
+				kmzos.write(cs);
+			} // else hasLineStyle = false;
+
 			boolean otherFlag = false;
 			SimpleField sf = (labelName != null) ? new SimpleField(labelName) : null;
-			final boolean hasLineStyle = style.hasLineStyle();
+
 			Class lastGeom = null;
 			IGISObject ob;
 			while ((ob = sis.read()) != null) {
 				if (ob instanceof Feature) {
 					Feature f = (Feature) ob;
+					if (dumpOnly) {
+						System.out.println();
+						System.out.println(ToStringBuilder.reflectionToString(
+								ob, ToStringStyle.MULTI_LINE_STYLE));
+						System.out.println();
+						for(Map.Entry<SimpleField,Object> entry : f.getEntrySet()) {
+							SimpleField key = entry.getKey();
+							System.out.printf(" %-12s %-10s %s%n", key.getName(), key.getType(), entry.getValue());
+						}
+						break;
+					}
 					Geometry geo = f.getGeometry();
 					if (geo == null) {
 						// null geometry
@@ -166,6 +190,7 @@ public class Shape2Kml {
 						break;
 					}
 					*/
+
 					if (sf != null) {
 						Object name = f.removeData(sf); // f.getData(sf);
 						if (name != null) {
@@ -176,10 +201,22 @@ public class Shape2Kml {
 						}
 						//else if (outCount < 50) System.out.println("XXX: no name.2: " + f.getFields()); // debug
 					}
-					kmzos.write(f);
+					if (!dumpOnly) {
+						kmzos.write(f);
+					}
 				} else if (ob.getClass() == Schema.class) {
+
+					if (dumpOnly) {
+						Schema s = (Schema) ob;
+						for (SimpleField field : s.getFields()) {
+							System.out.printf("%-12s %s/%d%n", field.getName(), field.getType(), field.getLength());
+						}
+						continue;
+					}
+
 					System.out.println(ToStringBuilder.reflectionToString(
-						ob, ToStringStyle.MULTI_LINE_STYLE));
+							ob, ToStringStyle.MULTI_LINE_STYLE));
+
 					if (labelName == null) {
 						Schema s = (Schema) ob;
 						for (SimpleField field : s.getFields()) {
@@ -202,12 +239,16 @@ public class Shape2Kml {
 			}
 		} finally {
 			if (sis != null) sis.close();
-			if (needContainerEnd) kmzos.write(new ContainerEnd());
-			kmzos.close();
+			if (!dumpOnly) {
+				if (needContainerEnd) kmzos.write(new ContainerEnd());
+				kmzos.close();
+			}
 		}
 
-		System.out.println("Total feature count: " + count);
-		System.out.println("Features with names: " + labelCount);
+		if (!dumpOnly) {
+			System.out.println("Total feature count: " + count);
+			System.out.println("Features with names: " + labelCount);
+		}
 	}
 
 	private static boolean hasPolygon(Geometry geo) {
@@ -227,8 +268,9 @@ public class Shape2Kml {
 	}
 
 	private static void usage() {
-		System.out.println("Usage: Shape2Kml [-v] [-nlabelName] <shp output file>");
+		System.out.println("Usage: Shape2Kml [-d] [-v] [-nlabelName] <shp output file>");
 		System.out.println(" -nlabelName = name attribute for feature");
+		System.out.println(" -d = dump shape file properties only [does not create output]");
 		System.out.println(" -v = verbose mode");
 		System.exit(0);
 	}
@@ -237,9 +279,11 @@ public class Shape2Kml {
 		String file = null;
 		boolean verbose = false;
 		String label = null;
+		boolean dumpOnly = false;
 		for (String arg : args) {
 			// System.out.println(" " + arg);
 			if ("-v".equals(arg)) verbose = true;
+			else if ("-d".equals(arg)) dumpOnly = true;
 			else if (arg.startsWith("-n")) label = arg.substring(2);
 			else if (!arg.startsWith("-")) file = arg;
 			else usage();
@@ -250,7 +294,7 @@ public class Shape2Kml {
 		Shape2Kml app = new Shape2Kml();
 		app.labelName = label;
 		app.verbose = verbose;
-		app.outputKml(new File(file));
+		app.outputKml(new File(file), dumpOnly);
 	}
 
 }

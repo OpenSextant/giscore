@@ -1004,8 +1004,9 @@ public class KmlMetaDump implements IKml {
 			// contained in the outer ring, and are non-intersecting with each other.
 			List<LinearRing> rings = poly.getLinearRings();
 			final int n = rings.size();
-			byte flags = 0;
-			for (int i = 0; i < n; i++) {
+			if (n < 100) {
+			  byte flags = 0;
+			  for (int i = 0; i < n; i++) {
 				LinearRing inner = rings.get(i);
 				// ATC 70: LinearRing - Simple
 				// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#SimpleLinearRing
@@ -1023,7 +1024,8 @@ public class KmlMetaDump implements IKml {
 				// Verify that inner rings don't overlap with each other
 				// ATC 69: Polygon - rings
 				// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#PolygonRings
-				if ((flags & 2) == 0 && i < n - 1)
+				// perform intersection check if less than 50 inner rings
+				if ((flags & 2) == 0 && i < n - 1 && n < 50)
 					for (int j = i + 1; j < n; j++) {
 						if (inner.overlaps(rings.get(j))) {
 							addTag(":Inner rings in Polygon must not overlap with each other");
@@ -1033,6 +1035,7 @@ public class KmlMetaDump implements IKml {
 						}
 					}
 				if ((byte) 3 == flags) break; // both bits set. stop checking
+			  }
 			}
 		} else if (geom instanceof Line) {
 			final Line line = (Line) geom;
@@ -1125,7 +1128,7 @@ public class KmlMetaDump implements IKml {
 			// ATC 70: LinearRing - Simple
 			// Check that a kml:LinearRing is a simple ring (that is, it does not cross itself).
 			// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#SimpleLinearRing
-			new LinearRing(pts, true);
+			if (n < 100) new LinearRing(pts, true);
 			// error -> LinearRing cannot self-intersect
 		} catch (IllegalArgumentException e) {
 			// LinearRing fails validation

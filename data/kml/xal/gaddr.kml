@@ -9,10 +9,9 @@
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2"
   xmlns:xal="urn:oasis:names:tc:ciq:xsdschema:xAL:2.0">
-  <Document>
-    <name>1600 amphitheatre mountain view ca</name>
     <Placemark>
-      <address> 
+	<name>1600 amphitheatre mountain view ca</name>
+      <address>
         1600 Amphitheatre Pkwy, Mountain View, CA 94043, USA
       </address>
       <xal:AddressDetails>
@@ -40,5 +39,4 @@
         <coordinates>-122.083739,37.423021,0</coordinates>
       </Point>
     </Placemark>
-  </Document>
 </kml>
