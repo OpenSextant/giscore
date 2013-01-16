@@ -103,9 +103,11 @@ public class Geodatabase extends GDB {
 	
 	public native String[] getDatasetTypes();
 	
-	public native String[] getChildDatasets(String parentPath, String child);
+	public native String getDatasetDefinition(String path, String type);
 	
-	public native String[] getChildDatasetDefinitions(String parentPath, String child);
+	public native String[] getChildDatasets(String parentPath, String type);
+	
+	public native String[] getChildDatasetDefinitions(String parentPath, String type);
 	
 	public native void createFeatureDataset(String featureDatasetDef);
 	

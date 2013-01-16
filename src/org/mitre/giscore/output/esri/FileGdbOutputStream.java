@@ -38,6 +38,7 @@ import java.util.zip.ZipOutputStream;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.Feature;
@@ -218,7 +219,7 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 			Table table = tables.get(fullpath);
 			if (table == null) {
 				String descriptor = createDescriptor(featureKey, false, row);
-				table = database.createTable(getParentPath(row), descriptor);
+				table = database.createTable(getParentPath(), descriptor);
 				tables.put(fullpath, table);
 			}
 			org.mitre.giscore.filegdb.Row tablerow = table.createRow();
@@ -282,13 +283,14 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	public void visit(Feature feature) {
 		try {
 			String fullpath = getFullPath();
+			String parentpath = getParentPath();
 			FeatureKey featureKey = new FeatureKey(sorter.getSchema(feature), fullpath,
 					feature.getGeometry().getClass(), feature.getClass());
 			checkAndRegisterKey(fullpath, featureKey);
 			Table table = tables.get(fullpath);
 			if (table == null) {
 				String descriptor = createDescriptor(featureKey, true, feature);
-				table = Table.createTable(database, getParentPath(feature), descriptor);
+				table = Table.createTable(database, parentpath, descriptor);
 				tables.put(fullpath, table);
 			}
 			org.mitre.giscore.filegdb.Row tablerow = table.createRow();
@@ -305,7 +307,7 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		}
 	}
 
-	private String getParentPath(Row row) {
+	private String getParentPath() {
 		StringBuilder sb = new StringBuilder();
 		for(int i = 0; i < path.size() - 1; i++) {
 			sb.append("\\");
@@ -314,7 +316,7 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		if (sb.toString().length() == 0) {
 			sb.append("\\");
 		}
-		return sb.toString();
+		return sb.toString().replaceAll("\\s+", "_");
 	}
 
 	/**
@@ -347,7 +349,7 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		if (datasetname == null || datasetname.equals("\\")) {
 			datasetname = "\\" + getNameFromRow(row);
 		}
-		writeDataSetDef(featureKey, datasetname, isFeature);
+		writeDataSetDef(featureKey, datasetname, ElementType.FEATURE_CLASS);
 		writer.writeEndDocument();
 		closeWriter();
 		return new String(((ByteArrayOutputStream) stream).toByteArray(), "UTF8");
@@ -522,6 +524,23 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	@Override
 	public void visit(ContainerStart containerStart) {
 		super.visit(containerStart);
-	}
-	
+		
+		try {
+			String datasetdoc = database.getDatasetDefinition(getParentPath(), DATASET_TYPE);
+			
+			if (StringUtils.isEmpty(datasetdoc)) {
+				stream = new ByteArrayOutputStream(2000);
+				init(stream, "UTF8");
+				writer.writeStartDocument();
+				writeDataSetDef(null, getFullPath(), ElementType.FEATURE_DATASET);
+				writer.writeEndDocument();
+				closeWriter();
+				datasetdoc = new String(((ByteArrayOutputStream) stream).toByteArray(), "UTF8");
+				
+				database.createFeatureDataset(datasetdoc);
+			}
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}	
 }

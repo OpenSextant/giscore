@@ -97,79 +97,21 @@ import org.mitre.itf.geodesy.Geodetic2DBounds;
  * @author DRAND
  */
 public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
-//	/**
-//	 * An escaping writer to handle the odd text rules required for ESRI's brand
-//	 * of XML file.
-//	 */
-//	static class ESRIEscapingWriter extends Writer {
-//		private Writer inner = null;
-//		
-//		public ESRIEscapingWriter(Writer inner) {
-//			if (inner == null) {
-//				throw new IllegalArgumentException(
-//						"inner should never be null");
-//			}
-//			this.inner = inner;
-//		}
-//		
-//		/* (non-Javadoc)
-//		 * @see java.io.Writer#close()
-//		 */
-//		@Override
-//		public void close() throws IOException {
-//			inner.close(); 
-//		}
-//
-//		/* (non-Javadoc)
-//		 * @see java.io.Writer#flush()
-//		 */
-//		@Override
-//		public void flush() throws IOException {
-//			inner.flush();
-//		}
-//
-//		/* (non-Javadoc)
-//		 * @see java.io.Writer#write(char[], int, int)
-//		 */
-//		@Override
-//		public void write(char[] cbuf, int off, int len) throws IOException {
-//			for(int i = 0; i < len; i++) {
-//				char ch = cbuf[off + i];
-//				if (ch == '"') {
-//					inner.write("&quot;");
-//				} else if (ch == '<') {
-//					inner.write("&lt;");
-//				} else if (ch == '>') {
-//					inner.write("&gt;");
-//				} else {
-//					inner.write((int) ch);
-//				}
-//			}
-//		}
-//		
-//	}
-//	
-//	static class ESRIEscapingWriterFactory implements EscapingWriterFactory {
-//		/* (non-Javadoc)
-//		 * @see org.codehaus.stax2.io.EscapingWriterFactory#createEscapingWriterFor(java.io.Writer, java.lang.String)
-//		 */
-//		@Override
-//		public Writer createEscapingWriterFor(Writer innerwriter, String enc)
-//				throws UnsupportedEncodingException {
-//			return new ESRIEscapingWriter(innerwriter);
-//		}
-//
-//		/* (non-Javadoc)
-//		 * @see org.codehaus.stax2.io.EscapingWriterFactory#createEscapingWriterFor(java.io.OutputStream, java.lang.String)
-//		 */
-//		@Override
-//		public Writer createEscapingWriterFor(OutputStream innerstream, String enc)
-//				throws UnsupportedEncodingException {
-//			OutputStreamWriter osw = new OutputStreamWriter(innerstream, enc);
-//			return createEscapingWriterFor(osw, enc);
-//		} 
-//		
-//	}
+	protected enum ElementType {
+		FEATURE_DATASET, FEATURE_CLASS, TABLE;
+
+		public boolean isFeatureClass() {
+			return equals(FEATURE_CLASS);
+		}
+		
+		public boolean isFeatureDataset() {
+			return equals(FEATURE_DATASET);
+		}
+		
+		public boolean isTable() {
+			return equals(TABLE);
+		}
+	}
 
 	/**
 	 * The feature sorter takes care of the details of storing features for
@@ -327,7 +269,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			for(FeatureKey key : sorter.keys()) {
 				String datasetname = datasets.get(key);
 				try {
-					writeDataSetDef(key, datasetname, true);
+					writeDataSetDef(key, datasetname, ElementType.FEATURE_CLASS);
 				} catch (XMLStreamException e) {
 					throw new IOException(e);
 				}
@@ -951,7 +893,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 
 	protected String getFullPath() {
 		String fullpath = "\\" + (path != null ? StringUtils.join(path, '\\') : "");
-		return fullpath;
+		return fullpath.replaceAll("\\s+", "_");
 	}
 
 	/**
@@ -963,17 +905,19 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	protected void writeDataSetDef(FeatureKey key, String datasetname, 
-			boolean isFeature) throws XMLStreamException {
-		if (isFeature && key.getGeoclass() == null) {
+			ElementType elementType) throws XMLStreamException {
+		if (elementType.isFeatureClass() && key.getGeoclass() == null) {
 			throw new IllegalArgumentException("Must have a geo class");
 		}
-		Schema schema = key.getSchema();
+		Schema schema = key != null ? key.getSchema() : null;
 		writer.writeStartElement(ESRI, DATA_ELEMENT, ESRI_NS);
 		writer.writeNamespace(ESRI, ESRI_NS);
 		writer.writeNamespace(XSI, XSI_NS);
 		writer.writeNamespace(XS, XS_NS);
-		if (isFeature)
+		if (elementType.isFeatureClass())
 			writeEsriType("DEFeatureClass");
+		else if (elementType.isFeatureDataset())
+			writeEsriType("DEFeatureDataset");
 		else
 			writeEsriType("DETable");
 		handleSimpleElement(CATALOG_PATH, datasetname);
@@ -981,62 +925,71 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		String name = getNameFromDatasetname(datasetname);
 		handleSimpleElement(NAME, name);
 		
-		if (isFeature) {
+		if (elementType.isFeatureClass()) {
 			handleSimpleElement(CHILDREN_EXPANDED, "false");
 			handleSimpleElement(DATASET_TYPE, "esriDTFeatureClass");
-		} else {
+		} else if (elementType.isFeatureDataset()) {
+			handleSimpleElement(CHILDREN_EXPANDED, "false");
+			handleSimpleElement(DATASET_TYPE, "esriDTFeatureDataset");
+		} else if (elementType.isTable()){
 			handleSimpleElement(METADATA_RETRIEVED, "false");
 			handleSimpleElement(DATASET_TYPE, "esriDTTable");
 		}
 		handleSimpleElement(VERSIONED, "false");
 		handleSimpleElement(CAN_VERSION, "false");
-		handleSimpleElement(CONFIGURATION_KEYWORD, "");
-		if (schema.getOidField() != null) {
-			handleSimpleElement(HAS_OID, "true");
-			handleSimpleElement(OID_FIELD_NAME, schema.getOidField().getName());
+		if (! elementType.isFeatureDataset()) {
+			handleSimpleElement(CONFIGURATION_KEYWORD, "");
+			if (schema.getOidField() != null) {
+				handleSimpleElement(HAS_OID, "true");
+				handleSimpleElement(OID_FIELD_NAME, schema.getOidField().getName());
+			} else {
+				handleSimpleElement(HAS_OID, "false");
+			}
+			writeFields(key);
+			writer.writeStartElement(INDEXES);
+			writeEsriType("Indexes");
+			writer.writeStartElement(INDEX_ARRAY);
+			writeEsriType("ArrayOfIndex");
+	        if (schema.getOidField() != null) {
+	        	writeIndex(schema.getOidField(), true, true, key);
+	        }
+			if (elementType.isFeatureClass() && key.getGeoclass() != null) {
+				writeIndex(shape, false, false, key);
+			}
+			writer.writeEndElement(); // IndexArray
+			writer.writeEndElement(); // Indexes
+			if (elementType.isFeatureClass()) {
+				handleSimpleElement(CLSID, getEsriClsid(key.getGeoclass()));
+				handleSimpleElement(EXTCLSID, getEsriExtId(key.getGeoclass()));
+			} else {
+				handleSimpleElement(CLSID, "{7A566981-C114-11D2-8A28-006097AFF44E}");
+				handleSimpleElement(EXTCLSID, "");
+			}
+			writer.writeStartElement(REL_CLASS_NAMES);
+			writeEsriType("Names");
+			writer.writeEndElement();
+			
+			handleSimpleElement(ALIAS_NAME, name);
+			
+			handleSimpleElement(MODEL_NAME, "");
+			handleSimpleElement(HAS_GLOBAL_ID, "false");
+			handleSimpleElement(GLOBAL_ID_FIELD, "");
+			handleSimpleElement(RASTER_FIELD_NAME, "");
+			writer.writeStartElement(EXT_PROPS);
+			writeEsriType("PropertySet");
+			writer.writeStartElement(PROPERTY_ARRAY);
+			writeEsriType("ArrayOfPropertySetProperty");
+			writer.writeEndElement();
+			writer.writeEndElement();
+			writer.writeStartElement(CONTROLLER_MEMBERSHIPS);
+			writeEsriType("ArrayOfControllerMembership");
+			writer.writeEndElement();
 		} else {
-			handleSimpleElement(HAS_OID, "false");
+			writer.writeStartElement("Extent");
+			writer.writeAttribute(XSI_NS, "nil", "true");
+			writer.writeEndElement();
 		}
-		writeFields(key);
-		writer.writeStartElement(INDEXES);
-		writeEsriType("Indexes");
-		writer.writeStartElement(INDEX_ARRAY);
-		writeEsriType("ArrayOfIndex");
-        if (schema.getOidField() != null) {
-        	writeIndex(schema.getOidField(), true, true, key);
-        }
-		if (isFeature && key.getGeoclass() != null) {
-			writeIndex(shape, false, false, key);
-		}
-		writer.writeEndElement(); // IndexArray
-		writer.writeEndElement(); // Indexes
-		if (isFeature) {
-			handleSimpleElement(CLSID, getEsriClsid(key.getGeoclass()));
-			handleSimpleElement(EXTCLSID, getEsriExtId(key.getGeoclass()));
-		} else {
-			handleSimpleElement(CLSID, "{7A566981-C114-11D2-8A28-006097AFF44E}");
-			handleSimpleElement(EXTCLSID, "");
-		}
-		writer.writeStartElement(REL_CLASS_NAMES);
-		writeEsriType("Names");
-		writer.writeEndElement();
-		
-		handleSimpleElement(ALIAS_NAME, name);
-		
-		handleSimpleElement(MODEL_NAME, "");
-		handleSimpleElement(HAS_GLOBAL_ID, "false");
-		handleSimpleElement(GLOBAL_ID_FIELD, "");
-		handleSimpleElement(RASTER_FIELD_NAME, "");
-		writer.writeStartElement(EXT_PROPS);
-		writeEsriType("PropertySet");
-		writer.writeStartElement(PROPERTY_ARRAY);
-		writeEsriType("ArrayOfPropertySetProperty");
-		writer.writeEndElement();
-		writer.writeEndElement();
-		writer.writeStartElement(CONTROLLER_MEMBERSHIPS);
-		writeEsriType("ArrayOfControllerMembership");
-		writer.writeEndElement();
-		if (isFeature) {
+		if (elementType.isFeatureClass()) {
 			handleSimpleElement(FEATURE_TYPE, getEsriFeatureType(key.getGeoclass()));
 			handleSimpleElement(SHAPE_TYPE, getEsriGeoType(key.getGeoclass()));
 			handleSimpleElement(SHAPE_FIELD_NAME, shape.getName());
@@ -1055,6 +1008,8 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 				Geodetic2DBounds bounds = sorter.getBounds(key);
 				writeExtent(bounds, true);
 			}
+			writeSpatialReference(WKT_WGS_84, WGS_84);
+		} else if (elementType.isFeatureDataset()) {
 			writeSpatialReference(WKT_WGS_84, WGS_84);
 		}
 		writer.writeEndElement(); // DataElement

@@ -216,4 +216,37 @@ JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_closeTable(JNI
 	}
 }
 
+/*
+ * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Method:    getDatasetDefinition
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
+ */
+JNIEXPORT jstring JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_getDatasetDefinition(JNIEnv *env, jobject self, jstring path, jstring type) {
+	menv me(env);
+	convstr wpath(env, path);
+	convstr wtype(env, type);
+	string sdatasetDef;
+	Geodatabase *db = me.getGeodatabase(self);
+	if (db->GetDatasetDefinition(wpath.getWstr(), wtype.getWstr(), sdatasetDef) != S_OK)
+		return 0L;
+	else
+		return env->NewStringUTF(sdatasetDef.c_str());
+}
+
+/*
+ * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Method:    createFeatureDataset
+ * Signature: (Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_createFeatureDataset(JNIEnv *env, jobject self, jstring def) {
+	try {
+		menv me(env);
+		convstr wdef(env, def);
+		Geodatabase *db = me.getGeodatabase(self);
+		me.esriCheckedCall(db->CreateFeatureDataset(wdef.getStr()), "Failed");
+	} catch(jni_check) {
+		//
+	}
+}
+
 }
