@@ -10,3 +10,4 @@
 #include "jni.h"
 #include "convstr.h"
 #include "jstring.h"
+#include "menv.h"

@@ -170,30 +170,30 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 //		} 
 //		
 //	}
-	
+
 	/**
 	 * The feature sorter takes care of the details of storing features for
 	 * later retrieval by schema.
 	 */
-	private final FeatureSorter sorter = new FeatureSorter();
+	protected final FeatureSorter sorter = new FeatureSorter();
 	
 	/**
 	 * Tracks the path - useful for naming collections
 	 */
-	private final Stack<String> path = new Stack<String>();
+	protected final Stack<String> path = new Stack<String>();
 	
 	/**
 	 * The first time we find a particular feature key, we store away the 
 	 * path and geometry type as a name. Not perfect, but at least it will
 	 * be somewhat meaningful.
 	 */
-	private final Map<FeatureKey, String> datasets = new HashMap<FeatureKey, String>();
+	protected final Map<FeatureKey, String> datasets = new HashMap<FeatureKey, String>();
 
 	/*
 	 * WGS wkid
 	 */
-	private static final int WGS_84 = 4326;
-	private static String WKT_WGS_84 = "GEOGCS[\"GCS_WGS_1984\"," +
+	protected static final int WGS_84 = 4326;
+	protected static String WKT_WGS_84 = "GEOGCS[\"GCS_WGS_1984\"," +
 			"DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]]," +
 			"PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]," +
 			"AUTHORITY[\"EPSG\",4326]]";
@@ -201,9 +201,9 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	/*
 	 * Formats
 	 */
-	private static final DecimalFormat DEC = new DecimalFormat("###############.#");
-	private static final DecimalFormat LOC = new DecimalFormat("###.#####");
-	private static final SimpleDateFormat ISO_DATE_FMT = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
+	protected static final DecimalFormat DEC = new DecimalFormat("###############.#");
+	protected static final DecimalFormat LOC = new DecimalFormat("###.#####");
+	protected final SimpleDateFormat ISO_DATE_FMT = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
 	
 	/*
 	 * The following three fields are reused for each feature class that
@@ -236,8 +236,15 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		shapeLength.setRequired(true);
 		shapeLength.setAliasName("INT_SHAPE_LENGTH");
 		shapeLength.setModelName("INT_SHAPE_LENGTH");
-
-        ISO_DATE_FMT.setTimeZone(TimeZone.getTimeZone("UTC"));
+	}
+	
+	
+	/**
+	 * Ctor
+	 */
+	protected XmlGdbOutputStream() {
+		// Create the stream as needed
+		ISO_DATE_FMT.setTimeZone(TimeZone.getTimeZone("UTC"));
 	}
 	
     /**
@@ -248,6 +255,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
      */
     public XmlGdbOutputStream(OutputStream stream) throws XMLStreamException {
         super(stream);
+        ISO_DATE_FMT.setTimeZone(TimeZone.getTimeZone("UTC"));
     }
 
 //	/* (non-Javadoc)
@@ -284,7 +292,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * @throws XMLStreamException if there is an error with the underlying XML
 	 * @throws IllegalArgumentException if type is null or emty string
 	 */
-	private void writeEsriType(String type) throws XMLStreamException {
+	protected void writeEsriType(String type) throws XMLStreamException {
 		if (type == null || type.trim().length() == 0) {
 			throw new IllegalArgumentException(
 					"type should never be null or empty");
@@ -319,7 +327,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			for(FeatureKey key : sorter.keys()) {
 				String datasetname = datasets.get(key);
 				try {
-					writeDataSetDef(key, datasetname);
+					writeDataSetDef(key, datasetname, true);
 				} catch (XMLStreamException e) {
 					throw new IOException(e);
 				}
@@ -641,12 +649,16 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	private void writeExtent(Geodetic2DBounds bbox, boolean includeReference)
 		throws XMLStreamException {
 		writer.writeStartElement(EXTENT);
-		writeEsriType("EnvelopeN");
-		handleSimpleElement(XMIN, LOC.format(bbox.getWestLon().inDegrees()));
-		handleSimpleElement(YMIN, LOC.format(bbox.getSouthLat().inDegrees()));
-		handleSimpleElement(XMAX, LOC.format(bbox.getEastLon().inDegrees()));
-		handleSimpleElement(YMAX, LOC.format(bbox.getNorthLat().inDegrees()));
-		if (includeReference) writeSpatialReference(WKT_WGS_84, WGS_84);
+		if (bbox != null) {
+			writeEsriType("EnvelopeN");
+			handleSimpleElement(XMIN, LOC.format(bbox.getWestLon().inDegrees()));
+			handleSimpleElement(YMIN, LOC.format(bbox.getSouthLat().inDegrees()));
+			handleSimpleElement(XMAX, LOC.format(bbox.getEastLon().inDegrees()));
+			handleSimpleElement(YMAX, LOC.format(bbox.getNorthLat().inDegrees()));
+			if (includeReference) writeSpatialReference(WKT_WGS_84, WGS_84);
+		} else {
+			writer.writeAttribute(XSI, XSI_NS, "nil", "true");
+		}
 		writer.writeEndElement();
 	}
 
@@ -713,7 +725,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 *      no geometry
 	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
-	private String writeFields(FeatureKey featureKey)
+	protected String writeFields(FeatureKey featureKey)
 			throws XMLStreamException {
 		Class<? extends Geometry> geoclass = featureKey.getGeoclass();
 		Schema schema = featureKey.getSchema();
@@ -818,16 +830,21 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 */
 	private void writeSpatialReference(String wkt, int wkid) throws XMLStreamException {
 		writer.writeStartElement(SPATIAL_REFERENCE);
-		writeEsriType("GeographicCoordinateSystem");
+		writeEsriType("ProjectedCoordinateSystem");
 		writer.writeStartElement(WKT);
 		writer.writeCharacters(wkt);
 		writer.writeEndElement();
 		handleSimpleElement(X_ORIGIN, -180);
 		handleSimpleElement(Y_ORIGIN, -90);
-		handleSimpleElement(XY_SCALE, DEC.format(25019997929836.1));
-		handleSimpleElement(XY_TOLERANCE, 7.99360577730113E-14);
+		handleSimpleElement(XY_SCALE,"10000000.0");
+		handleSimpleElement(Z_ORIGIN, 0);
+		handleSimpleElement(Z_SCALE, "1000");
+		handleSimpleElement(M_ORIGIN, 0);
+		handleSimpleElement(M_SCALE, "100");
+		handleSimpleElement(XY_TOLERANCE, "0.00000001");
+		handleSimpleElement(Z_TOLERANCE, "0.0001");
+		handleSimpleElement(M_TOLERANCE, "0.0001");
 		handleSimpleElement(HIGH_PRECISION, "true");
-		handleSimpleElement(LEFT_LONGITUDE, -180);
 		handleSimpleElement(WKID, wkid);
 		writer.writeEndElement();		
 	}
@@ -888,20 +905,53 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		// Skip non-geometry features
 		if (feature.getGeometry() == null) return;
 		
-		String fullpath = path != null ? StringUtils.join(path, '_') : null;
+		String fullpath = getFullPath();
 		FeatureKey key = sorter.add(feature, fullpath);
+		checkAndRegisterKey(fullpath, key);
+	}
+
+	/**
+	 * Check the known keys in the datasets collection and if this 
+	 * key isn't in the collection then record the key.
+	 * @param fullpath
+	 * @param key
+	 */
+	protected void checkAndRegisterKey(String fullpath, FeatureKey key) {
 		if (datasets.get(key) == null) {
 			StringBuilder setname = new StringBuilder();
 			setname.append(fullpath);
             Class<? extends Geometry> geoclass = key.getGeoclass();
+            /*
             if (geoclass != null) {
 				setname.append("_");
 				setname.append(geoclass.getSimpleName());
 			}
+			*/
+            if (datasets.values().contains(setname.toString())) {
+            	setname = makeUniqueSetname(setname);
+            }
 			String datasetname = setname.toString();
 			datasetname = datasetname.replaceAll("\\s", "_");
 			datasets.put(key, datasetname);
 		}
+	}
+	
+	private StringBuilder makeUniqueSetname(StringBuilder setname) {
+		String basename = setname.toString();
+		StringBuilder rval = new StringBuilder();
+		for(int i = 1; i < 100; i++) {
+			rval.append(basename);
+			rval.append("_" + i);
+			if (! datasets.values().contains(rval.toString())) {
+				return rval;
+			}
+		}
+		throw new RuntimeException("Something's wrong, we've encountered more than 100 different geometries for the same feature path");
+	}
+
+	protected String getFullPath() {
+		String fullpath = "\\" + (path != null ? StringUtils.join(path, '\\') : "");
+		return fullpath;
 	}
 
 	/**
@@ -912,39 +962,67 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * @param datasetname
 	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
-	private void writeDataSetDef(FeatureKey key, String datasetname) throws XMLStreamException {
-		if (key.getGeoclass() == null) {
+	protected void writeDataSetDef(FeatureKey key, String datasetname, 
+			boolean isFeature) throws XMLStreamException {
+		if (isFeature && key.getGeoclass() == null) {
 			throw new IllegalArgumentException("Must have a geo class");
 		}
 		Schema schema = key.getSchema();
-		writer.writeStartElement(DATA_ELEMENT);
-		writeEsriType("DEFeatureClass");
-		handleSimpleElement(CATALOG_PATH, "/FC=" + datasetname);
-		handleSimpleElement(NAME, datasetname);
-		handleSimpleElement(DATASET_TYPE, "esriDTFeatureClass");
-		handleSimpleElement(DSID, ms_id.incrementAndGet());
+		writer.writeStartElement(ESRI, DATA_ELEMENT, ESRI_NS);
+		writer.writeNamespace(ESRI, ESRI_NS);
+		writer.writeNamespace(XSI, XSI_NS);
+		writer.writeNamespace(XS, XS_NS);
+		if (isFeature)
+			writeEsriType("DEFeatureClass");
+		else
+			writeEsriType("DETable");
+		handleSimpleElement(CATALOG_PATH, datasetname);
+		
+		String name = getNameFromDatasetname(datasetname);
+		handleSimpleElement(NAME, name);
+		
+		if (isFeature) {
+			handleSimpleElement(CHILDREN_EXPANDED, "false");
+			handleSimpleElement(DATASET_TYPE, "esriDTFeatureClass");
+		} else {
+			handleSimpleElement(METADATA_RETRIEVED, "false");
+			handleSimpleElement(DATASET_TYPE, "esriDTTable");
+		}
 		handleSimpleElement(VERSIONED, "false");
 		handleSimpleElement(CAN_VERSION, "false");
-		handleSimpleElement(HAS_OID, "true");
-		handleSimpleElement(OID_FIELD_NAME, schema.getOidField().getName());
+		handleSimpleElement(CONFIGURATION_KEYWORD, "");
+		if (schema.getOidField() != null) {
+			handleSimpleElement(HAS_OID, "true");
+			handleSimpleElement(OID_FIELD_NAME, schema.getOidField().getName());
+		} else {
+			handleSimpleElement(HAS_OID, "false");
+		}
 		writeFields(key);
 		writer.writeStartElement(INDEXES);
 		writeEsriType("Indexes");
 		writer.writeStartElement(INDEX_ARRAY);
 		writeEsriType("ArrayOfIndex");
-        // REVIEW: schema.getOidField() can be null
-		writeIndex(schema.getOidField(), true, true, key);
-		if (key.getGeoclass() != null) {
+        if (schema.getOidField() != null) {
+        	writeIndex(schema.getOidField(), true, true, key);
+        }
+		if (isFeature && key.getGeoclass() != null) {
 			writeIndex(shape, false, false, key);
 		}
 		writer.writeEndElement(); // IndexArray
 		writer.writeEndElement(); // Indexes
-		handleSimpleElement(CLSID, getEsriClsid(key.getGeoclass()));
-		handleSimpleElement(EXTCLSID, getEsriExtId(key.getGeoclass()));
+		if (isFeature) {
+			handleSimpleElement(CLSID, getEsriClsid(key.getGeoclass()));
+			handleSimpleElement(EXTCLSID, getEsriExtId(key.getGeoclass()));
+		} else {
+			handleSimpleElement(CLSID, "{7A566981-C114-11D2-8A28-006097AFF44E}");
+			handleSimpleElement(EXTCLSID, "");
+		}
 		writer.writeStartElement(REL_CLASS_NAMES);
 		writeEsriType("Names");
 		writer.writeEndElement();
-		handleSimpleElement(ALIAS_NAME, datasetname);
+		
+		handleSimpleElement(ALIAS_NAME, name);
+		
 		handleSimpleElement(MODEL_NAME, "");
 		handleSimpleElement(HAS_GLOBAL_ID, "false");
 		handleSimpleElement(GLOBAL_ID_FIELD, "");
@@ -958,28 +1036,34 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		writer.writeStartElement(CONTROLLER_MEMBERSHIPS);
 		writeEsriType("ArrayOfControllerMembership");
 		writer.writeEndElement();
-		handleSimpleElement(FEATURE_TYPE, getEsriFeatureType(key.getGeoclass()));
-		handleSimpleElement(SHAPE_TYPE, getEsriGeoType(key.getGeoclass()));
-		handleSimpleElement(SHAPE_FIELD_NAME, shape.getName());
-		handleSimpleElement(HAS_M, "false");
-		handleSimpleElement(HAS_Z, "false");
-		handleSimpleElement(HAS_SPATIAL_INDEX, "true");
-		if (key.getGeoclass() != null) {
-			if (geoClassNeedsArea(key.getGeoclass()))
-				handleSimpleElement(AREA_FIELD_NAME, shapeArea.getName());
-			else
-				handleSimpleElement(AREA_FIELD_NAME, "");
-			if (geoClassNeedsLength(key.getGeoclass()))
-				handleSimpleElement(LENGTH_FIELD_NAME, shapeLength.getName());
-			else
-				handleSimpleElement(LENGTH_FIELD_NAME, "");
-			Geodetic2DBounds bounds = sorter.getBounds(key);
-			if (bounds != null) {
+		if (isFeature) {
+			handleSimpleElement(FEATURE_TYPE, getEsriFeatureType(key.getGeoclass()));
+			handleSimpleElement(SHAPE_TYPE, getEsriGeoType(key.getGeoclass()));
+			handleSimpleElement(SHAPE_FIELD_NAME, shape.getName());
+			handleSimpleElement(HAS_M, "false");
+			handleSimpleElement(HAS_Z, "false");
+			handleSimpleElement(HAS_SPATIAL_INDEX, "true");
+			if (key.getGeoclass() != null) {
+				if (geoClassNeedsArea(key.getGeoclass()))
+					handleSimpleElement(AREA_FIELD_NAME, shapeArea.getName());
+				else
+					handleSimpleElement(AREA_FIELD_NAME, "");
+				if (geoClassNeedsLength(key.getGeoclass()))
+					handleSimpleElement(LENGTH_FIELD_NAME, shapeLength.getName());
+				else
+					handleSimpleElement(LENGTH_FIELD_NAME, "");
+				Geodetic2DBounds bounds = sorter.getBounds(key);
 				writeExtent(bounds, true);
 			}
+			writeSpatialReference(WKT_WGS_84, WGS_84);
 		}
-		writeSpatialReference(WKT_WGS_84, WGS_84);
 		writer.writeEndElement(); // DataElement
+	}
+
+	private String getNameFromDatasetname(String datasetname) {
+		int last = datasetname.lastIndexOf('\\');
+		String alias = last > -1 ? datasetname.substring(last + 1) : datasetname;
+		return alias;
 	}
 
 	/**

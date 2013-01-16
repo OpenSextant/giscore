@@ -111,6 +111,9 @@
 		<mkdir dir="${rel}/jni"/>
 		<javah destdir="${rel}/jni" classpath="${classes}">
 			<class name="org.mitre.giscore.filegdb.Geodatabase" />
+			<class name="org.mitre.giscore.filegdb.Table" />
+			<class name="org.mitre.giscore.filegdb.Row" />
+			<class name="org.mitre.giscore.filegdb.EnumRows" />
 		</javah>
 	</target>
 

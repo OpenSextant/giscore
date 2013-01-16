@@ -227,7 +227,7 @@ public class FeatureSorter {
 	 *         that internal schemata may be returned.
 	 * @throws MalformedURLException
 	 */
-	private Schema getSchema(Row row) throws MalformedURLException {
+	public Schema getSchema(Row row) throws MalformedURLException {
 		URI schema = row.getSchema();
 		if (schema != null) {
 			Schema rval = schemata.get(schema);

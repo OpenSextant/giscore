@@ -19,6 +19,8 @@
 package org.mitre.giscore.filegdb;
 
 public abstract class GDB {
+	public static Object NULL_OBJECT = new Object();
+	
 	/**
 	 * Holds ptr to internal object
 	 */

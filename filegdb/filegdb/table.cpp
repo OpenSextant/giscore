@@ -1,0 +1,154 @@
+#include "Stdafx.h"
+#include <vector>
+#include <iostream>
+#include <string>
+#include <jni.h>
+#include "org_mitre_giscore_filegdb_Table.h"
+
+using namespace std;
+using namespace FileGDBAPI;
+
+extern "C" {
+
+/*
+ * Class:     org_mitre_giscore_filegdb_Table
+ * Method:    initRow
+ * Signature: (Lorg/mitre/giscore/filegdb/Row;)V
+ */
+JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Table_initRow(JNIEnv *env, jobject self, jobject robj) {
+	try {
+		menv me(env);
+		Table *t = me.getTable(self);
+		Row *row = me.getRow(robj);
+		me.esriCheckedCall(t->CreateRowObject(*row), "Failed to create row");
+	} catch(jni_check) {
+		//
+	}
+}
+
+/*
+ * Class:     org_mitre_giscore_filegdb_Table
+ * Method:    add
+ * Signature: (Lorg/mitre/giscore/filegdb/Row;)V
+ */
+JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Table_add(JNIEnv *env, jobject self, jobject robj) {
+	try {
+		menv me(env);
+		Table *t = me.getTable(self);
+		Row *row = me.getRow(robj);
+		me.esriCheckedCall(t->Insert(*row), "Failed to insert row");
+	} catch(jni_check) {
+		//
+	}
+}
+
+/*
+ * Class:     org_mitre_giscore_filegdb_Table
+ * Method:    enumerate
+ * Signature: ()Lorg/mitre/giscore/filegdb/EnumRows;
+ */
+JNIEXPORT jobject JNICALL Java_org_mitre_giscore_filegdb_Table_enumerate1(JNIEnv *env, jobject self) {
+	try {
+		menv me(env);
+		Table *t = me.getTable(self);
+		EnumRows *enumRows = new EnumRows();
+		Envelope envelope;
+		envelope.SetEmpty();
+		wstring fields(L"*");
+		wstring where(L"");
+		me.esriCheckedCall(t->Search(fields, where, envelope, true, *enumRows), "Search failed");
+		return me.newObject("org.mitre.giscore.filegdb.EnumRows", (void*) enumRows);
+	} catch(jni_check) {
+		return 0l;
+	}
+}
+
+FieldInfo* getFieldInfo(JNIEnv *env, jobject self, Table *t) {
+	menv me(env);
+	FieldInfo* fieldInfo = (FieldInfo*) me.getLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldinfo_holder");
+	if (fieldInfo == 0L) {
+		fieldInfo = new FieldInfo();
+		me.esriCheckedCall(t->GetFieldInformation(*fieldInfo), "Field Info Retrieval Failed");
+	}
+	return fieldInfo;
+}
+
+map<string,FieldType>* getFieldMap(JNIEnv *env, jobject self, Table *t) {
+	menv me(env);
+	map<string,FieldType> *fieldtype_map = (map<string,FieldType> *) me.getLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldtype_map");
+	if (fieldtype_map == 0L) {
+		FieldInfo *info = getFieldInfo(env, self, t);
+		fieldtype_map = new map<string,FieldType>();
+		int count;
+		if (info->GetFieldCount(count) == S_OK) {
+			for(int i = 0; i < count; i++) {
+				wstring fieldName;
+				FieldType type;
+				info->GetFieldName(i, fieldName);
+				info->GetFieldType(i, type);
+				convstr fn(fieldName.c_str());
+				(*fieldtype_map)[fn.getStr()] = type;
+			}
+		}
+	}
+	return fieldtype_map;
+}
+
+/*
+ * Class:     org_mitre_giscore_filegdb_Table
+ * Method:    getFieldInfo
+ * Signature: ()[Ljava/lang/Object;
+ */
+JNIEXPORT jobjectArray JNICALL Java_org_mitre_giscore_filegdb_Table_getFieldInfo(JNIEnv *env, jobject self) {
+	try {
+		menv me(env);
+		Table *t = me.getTable(self);
+		FieldInfo* fieldInfo = getFieldInfo(env, self, t);
+		int count;
+		me.esriCheckedCall(fieldInfo->GetFieldCount(count), "Field Count");
+		jclass objclz = me.findClass("java.lang.Object");
+		jobjectArray oarr = env->NewObjectArray((jsize) count * 4, objclz, 0L);
+		int ptr = 0;
+		for(int i = 0; i < count; i++) {
+			wstring fieldName;
+			FieldType type;
+			int fieldLen;
+			bool isNullable;
+			fieldInfo->GetFieldName(i, fieldName);
+			fieldInfo->GetFieldType(i, type);
+			fieldInfo->GetFieldLength(i, fieldLen);
+			fieldInfo->GetFieldIsNullable(i, isNullable);
+			convstr sstr(fieldName.c_str());
+			env->SetObjectArrayElement(oarr, ptr++, env->NewStringUTF(sstr.getStr().c_str()));
+			env->SetObjectArrayElement(oarr, ptr++, me.newInteger(type));
+			env->SetObjectArrayElement(oarr, ptr++, me.newInteger(fieldLen));
+			env->SetObjectArrayElement(oarr, ptr++, me.newBoolean(isNullable));
+		}
+		return oarr;
+	} catch(jni_check) {
+		return 0l;
+	}
+}
+
+/*
+ * Class:     org_mitre_giscore_filegdb_Table
+ * Method:    close1
+ * Signature: ()V
+ */
+JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Table_close1(JNIEnv *env, jobject self) {
+	try {
+		menv me(env);
+		Table *t = me.getTable(self);
+		FieldInfo* fieldInfo = (FieldInfo*) me.getLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldinfo_holder");
+		if (fieldInfo != 0L) {
+			delete fieldInfo;
+		}
+		map<string,FieldType> *fieldtype_map = (map<string,FieldType> *) me.getLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldtype_map");
+		if (fieldtype_map != 0L) {
+			delete fieldtype_map;
+		}
+	} catch(jni_check) {
+	}
+}
+
+}

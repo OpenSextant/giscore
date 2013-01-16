@@ -27,7 +27,7 @@ package org.mitre.giscore.input.gdb;
 public interface IXmlGdb {
 	// Values
 	static final String ESRI = "esri";
-	static final String ESRI_NS = "http://www.esri.com/schemas/ArcGIS/9.3";
+	static final String ESRI_NS = "http://www.esri.com/schemas/ArcGIS/10.1";
 	static final String XS = "xs";
 	static final String XS_NS = "http://www.w3.org/2001/XMLSchema";
 	static final String XSI = "xsi";
@@ -46,6 +46,8 @@ public interface IXmlGdb {
 	static final String AVG_NUM_POINTS = "AvgNumPoints";
 	static final String CAN_VERSION = "CanVersion";
 	static final String CATALOG_PATH = "CatalogPath";
+	static final String CHILDREN_EXPANDED = "ChildrenExpanded";
+	static final String CONFIGURATION_KEYWORD = "ConfigurationKeyword";
 	static final String CONTROLLER_MEMBERSHIPS = "ControllerMemberships";
 	static final String CLSID = "CLSID";
 	static final String DATA = "Data";
@@ -87,6 +89,7 @@ public interface IXmlGdb {
 	static final String LENGTH = "Length";
 	static final String LENGTH_FIELD_NAME = "LengthFieldName";
 	static final String METADATA = "Metadata";
+	static final String METADATA_RETRIEVED = "MetadataRetrieved";
 	static final String MODEL_NAME = "ModelName";
 	static final String MULTIPOINT_N = "MultipointN";
 	static final String M_ORIGIN = "MOrigin";

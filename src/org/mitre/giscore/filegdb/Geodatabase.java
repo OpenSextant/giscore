@@ -21,10 +21,23 @@ package org.mitre.giscore.filegdb;
 import java.io.File;
 
 public class Geodatabase extends GDB {
+	public static final String FEATURE_CLASS = "Feature Class";
+	public static final String TABLE = "Table";
+	public static final String FOLDER = "Folder";
+	public static final String DATASET = "Dataset";
+	
 	private File path;
 	
 	static {
 		System.loadLibrary("filegdb");
+		initialize();
+	}
+	
+	/**
+	 * Ctor - FIXME remove
+	 */
+	protected Geodatabase() {
+		// Empty ctor
 	}
 	
 	/**
@@ -38,41 +51,67 @@ public class Geodatabase extends GDB {
 			throw new IllegalArgumentException("Bad path");
 		}
 		if (pathToGeodatabase.exists()) {
-			ptr = open(pathToGeodatabase.getAbsolutePath());
+			open(pathToGeodatabase.getAbsolutePath());
 		} else {
-			ptr = create(pathToGeodatabase.getAbsolutePath());
+			create(pathToGeodatabase.getAbsolutePath());
 		}
 		path = pathToGeodatabase;
-	}
+	} 
 	
 	/**
 	 * Delete the current Geodatabase, closing it if it is currently 
 	 * open.
 	 */
 	public void delete() {
-		close();
-		delete(path.getAbsolutePath());
+		closeAndDestroy(path.getAbsolutePath());
 	}
 	
 	/**
 	 * Close the geodatabase. If already closed do nothing.
 	 */
 	public void close() {
-		if (isValid()) close1();
-		ptr = 0L;
+		closeAndDestroy(null);
 	}
 	
-	private native long open(String path);
+	/* (non-Javadoc)
+	 * @see java.lang.Object#finalize()
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+		closeAndDestroy(null);		
+		super.finalize();
+	}
 	
-	private native long create(String path);
+	/**
+	 * Allow any initialization for the library to occur
+	 */
+	private static native void initialize();
+
+	private native void open(String path);
 	
-	private native void close1();
-		
-	public static native void delete(String path);
+	private native void create(String path);
+	
+	/**
+	 * Do low level operation to close the geodatabase. If a path is given then
+	 * destroy the geodatabase as well. Last, destroy the memory instance.
+	 * @param path the path, if not <code>null</code> then destroy the given
+	 * database.
+	 */
+	private native void closeAndDestroy(String path);
+	
+	public native long test();
 	
 	public native String[] getDatasetTypes();
 	
 	public native String[] getChildDatasets(String parentPath, String child);
 	
 	public native String[] getChildDatasetDefinitions(String parentPath, String child);
+	
+	public native void createFeatureDataset(String featureDatasetDef);
+	
+	public native Table openTable(String parentpath);
+	
+	public native Table createTable(String parentpath, String descriptor);
+	
+	public native void closeTable(Table t);	
 }

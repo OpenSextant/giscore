@@ -51,7 +51,13 @@ public class SimpleField implements IDataSerializable, Serializable {
 		GEOMETRY("esriFieldTypeGeometry", null, 0, 0, null),
 		DATE("esriFieldTypeDate", "xs:dateTime", 4, 0, new Date(0)),
 		OID("esriFieldTypeOID", "xs:int", 4, 0, null),
-		BOOL(null, "xs:boolean", 1, 0, 0);
+		BOOL("esriFieldTypeSmallInteger", "xs:boolean", 1, 0, 0),
+		BLOB("esriFieldTypeBlob", null, 1000, 0, null), 
+		IMAGE("esriFieldTypeRaster", null, 1000, 0, null), 
+		GUID("esriFieldTypeGUID", "xs:int", 16, 0, 0),
+		ID("esriFieldTypeGlobalID", "xs:int", 16, 0, 0), 
+		XML("ersiFieldTypeXML", "xs:string", 2048, 0, ""),
+		CLOB("esriFieldTypeString", null, 255, 0, null);
 
 		private Type(String gdbxml, String xmlschematype, int def_len, int def_pre, Object gdbEmptyValue) {
 			gdbXmlType = gdbxml;

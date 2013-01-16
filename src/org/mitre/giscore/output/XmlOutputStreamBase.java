@@ -67,6 +67,13 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     public static final String ISO_8859_1 = "ISO-8859-1";
 
     /**
+     * Ctor
+     */
+    protected XmlOutputStreamBase() {
+    	// Create the stream as needed
+    }
+    
+    /**
      * Creates a new XML output stream to write data to the specified 
      * underlying output stream with specified encoding.
      * The encoding on <code>writeStartDocument()</code> call to the writer must
@@ -77,6 +84,17 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
      * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	public XmlOutputStreamBase(OutputStream stream, String encoding) throws XMLStreamException {
+		init(stream, encoding);
+	}
+
+	/**
+	 * Create and initialize the xml output stream
+	 * @param stream
+	 * @param encoding
+	 * @throws XMLStreamException
+	 */
+	protected void init(OutputStream stream, String encoding)
+			throws XMLStreamException {
 		if (stream == null) {
 			throw new IllegalArgumentException("stream should never be null");
 		}
@@ -86,7 +104,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
                 ? factory.createXMLStreamWriter(stream) // use default encoding 'Cp1252'
                 : factory.createXMLStreamWriter(stream, encoding);
 	}
-
+	
     /**
      * Creates a new XML output stream to write data to the specified
      * underlying output stream with default encoding 'Cp1252'.
@@ -123,6 +141,8 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 		} finally {
             writerOpen = false;
             IOUtils.closeQuietly(stream);
+            stream = null;
+            writer = null;
         }
 	}    
 

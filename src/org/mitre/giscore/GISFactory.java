@@ -30,6 +30,7 @@ import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.input.IGISInputStream;
 import org.mitre.giscore.input.atom.GeoAtomInputStream;
 import org.mitre.giscore.input.csv.CsvInputStream;
+import org.mitre.giscore.input.gdb.FileGdbInputStream;
 import org.mitre.giscore.input.gdb.GdbInputStream;
 import org.mitre.giscore.input.kml.KmlInputStream;
 import org.mitre.giscore.input.shapefile.ShapefileInputStream;
@@ -38,6 +39,7 @@ import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
 import org.mitre.giscore.output.atom.GeoAtomOutputStream;
 import org.mitre.giscore.output.csv.CsvOutputStream;
+import org.mitre.giscore.output.esri.FileGdbOutputStream;
 import org.mitre.giscore.output.esri.GdbOutputStream;
 import org.mitre.giscore.output.esri.XmlGdbOutputStream;
 import org.mitre.giscore.output.kml.KmlOutputStream;
@@ -105,7 +107,7 @@ public class GISFactory {
 					new boolean[] { false });
 			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
 					&& arguments.length > 0 ? arguments[0] : null);
-			return new GdbInputStream(type, stream, accepter);
+			return new FileGdbInputStream(stream, accepter);
 		} else if (DocumentType.CSV.equals(type)) {
 			checkArguments(new Class[] { Schema.class, String.class, 
 					Character.class, Character.class },
@@ -171,7 +173,7 @@ public class GISFactory {
 					new boolean[] { false });
 			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
 					&& arguments.length > 0 ? arguments[0] : null);
-			return new GdbInputStream(type, file, accepter);
+			return new FileGdbInputStream(file, accepter);
 		} else if (DocumentType.CSV.equals(type)) {
 			checkArguments(new Class[] { Schema.class, String.class, Character.class, Character.class },
 					arguments,
@@ -250,7 +252,7 @@ public class GISFactory {
 							new boolean[] { false, false });
 					strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
 							: null);
-					return new GdbOutputStream(type, outputStream,
+					return new FileGdbOutputStream(outputStream,
 							(File) arguments[0], strategy);
 				case XmlGDB:
 					checkArguments(new Class[] {}, arguments, new boolean[] {});

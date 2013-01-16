@@ -62,7 +62,7 @@ public class TestGdbStringTruncation extends TestGISBase {
 		SimpleField extra = new SimpleField("extra");
 		extra.setType(SimpleField.Type.INT);
 		SimpleField large = new SimpleField("large", SimpleField.Type.STRING);
-		large.setLength(150);
+		large.setLength(550);
 		
 		Schema s = new Schema();
 		s.put(nameid);

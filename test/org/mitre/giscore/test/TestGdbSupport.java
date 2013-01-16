@@ -32,6 +32,8 @@ import java.util.zip.ZipOutputStream;
 import org.junit.Test;
 import org.mitre.giscore.DocumentType;
 import org.mitre.giscore.GISFactory;
+import org.mitre.giscore.events.ContainerEnd;
+import org.mitre.giscore.events.ContainerStart;
 import org.mitre.giscore.events.Feature;
 import org.mitre.giscore.events.IGISObject;
 import org.mitre.giscore.events.Schema;
@@ -48,7 +50,7 @@ import org.mitre.giscore.test.input.TestKmlInputStream;
  * @author DRAND
  * 
  */
-public class TestGdbSupport extends TestGISBase {	
+public class TestGdbSupport extends TestGISBase {
 	/**
 	 * Base path to test directories
 	 */
@@ -61,18 +63,23 @@ public class TestGdbSupport extends TestGISBase {
 		IGISOutputStream os = null;
 		ZipOutputStream zos = null;
 		zos = new ZipOutputStream(fos);
-		os = GISFactory.getOutputStream(DocumentType.FileGDB, zos, createTemp("t",".gdb"));
-		
+		os = GISFactory.getOutputStream(DocumentType.FileGDB, zos,
+				createTemp("t", ".gdb"));
+
+		// ContainerStart cs = new ContainerStart("Folder");
+		// cs.setName("mp");
+		// os.write(cs);
+
 		SimpleField nameid = new SimpleField("nameid");
 		nameid.setType(SimpleField.Type.INT);
 		SimpleField dtm = new SimpleField("dtm");
 		dtm.setType(SimpleField.Type.DATE);
-		
+
 		Schema s = new Schema();
 		s.put(nameid);
 		s.put(dtm);
 		os.write(s);
-		
+
 		Feature f = new Feature();
 		f.setSchema(s.getId());
 		List<Point> pnts = new ArrayList<Point>();
@@ -86,7 +93,7 @@ public class TestGdbSupport extends TestGISBase {
 		f.putData(nameid, null);
 		f.putData(dtm, new Date());
 		os.write(f);
-		
+
 		f = new Feature();
 		f.setSchema(s.getId());
 		pnts = new ArrayList<Point>();
@@ -100,12 +107,13 @@ public class TestGdbSupport extends TestGISBase {
 		f.putData(nameid, 2);
 		f.putData(dtm, new Date());
 		os.write(f);
-		
+		// os.write(new ContainerEnd());
+
 		os.close();
 		zos.close();
 		fos.close();
 	}
-	
+
 	@Test
 	public void test1f() throws Exception {
 		InputStream s = TestKmlInputStream.class
@@ -182,30 +190,25 @@ public class TestGdbSupport extends TestGISBase {
 				.getResourceAsStream("KML_sample1.kml");
 		doKmlTest(s, ".gdb", true, DocumentType.FileGDB);
 	}
-	
+
 	@Test
 	public void test4s() throws Exception {
 		InputStream s = TestKmlInputStream.class
 				.getResourceAsStream("KML_sample1.kml");
 		doKmlTest(s, "", true, DocumentType.Shapefile);
 	}
-	
-	/** Multi geometry is not supported by FileGDB 
-	@Test
-	public void test5() throws Exception {
-		InputStream s = new FileInputStream(base_path
-				+ "MultiGeometry/polygon-point.kml");
-		doKmlTest(s, "", true, DocumentType.FileGDB);
-	}
 
-	@Test
-	public void test6f() throws Exception {
-		InputStream s = new FileInputStream(base_path
-				+ "MultiGeometry/multi-linestrings.kml");
-		doKmlTest(s, "", true, DocumentType.FileGDB);
-	}
-	*/
-	
+	/**
+	 * Multi geometry is not supported by FileGDB
+	 * 
+	 * @Test public void test5() throws Exception { InputStream s = new
+	 *       FileInputStream(base_path + "MultiGeometry/polygon-point.kml");
+	 *       doKmlTest(s, "", true, DocumentType.FileGDB); }
+	 * @Test public void test6f() throws Exception { InputStream s = new
+	 *       FileInputStream(base_path + "MultiGeometry/multi-linestrings.kml");
+	 *       doKmlTest(s, "", true, DocumentType.FileGDB); }
+	 */
+
 	@Test
 	public void test6s() throws Exception {
 		InputStream s = new FileInputStream(base_path
@@ -213,7 +216,6 @@ public class TestGdbSupport extends TestGISBase {
 		doKmlTest(s, "", true, DocumentType.Shapefile);
 	}
 
-	
 	public void doKmlTest(InputStream is, String suffix, boolean usezip,
 			DocumentType type) throws IOException {
 		IGISInputStream gisis = GISFactory.getInputStream(DocumentType.KML, is);

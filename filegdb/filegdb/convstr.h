@@ -28,6 +28,7 @@ public:
 	}
 
 	convstr(JNIEnv *env, jstring jstr) {
+		buf = 0L;
 		jstring_holder strchars(env, jstr);
 		str.append(strchars.getStr());
 	}
