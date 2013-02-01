@@ -40,6 +40,7 @@ import org.mitre.giscore.events.Schema;
 import org.mitre.giscore.events.SimpleField;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.input.IGISInputStream;
@@ -98,11 +99,11 @@ public class TestFileGDBSupport {
 		
 		/* Points */
 		x = new ContainerStart("Folder");
-		x.setName("geo_dots");
+		x.setName("individual dots");
 		os.write(x);
 		
 		Random rand = new Random();
-		for(int i = 0; i < 100; i++) {
+		for(int i = 0; i < 20; i++) {
 			f = new Feature();
 			f.setName("pos" + i);
 			f.setSchema(schema.getId());
@@ -114,7 +115,27 @@ public class TestFileGDBSupport {
 		y = new ContainerEnd();
 		os.write(y);
 
-		List<Point> pts;
+		List<Point> pts = new ArrayList<Point>();
+		
+		/* Multi Points */
+		x = new ContainerStart("Folder");
+		x.setName("multipoint");
+		os.write(x);
+		
+		for(int i = 0; i < 10; i++) {
+			pts.add(new Point(-5.0 + rand.nextDouble(), -15.0 + rand.nextDouble()));
+		}
+		
+		f = new Feature();
+		f.setName("mp");
+		f.setSchema(schema.getId());
+		f.setGeometry(new MultiPoint(pts));
+		f.putData(field, 10.0 + (5.0 * rand.nextDouble()));
+		os.write(f);
+
+		y = new ContainerEnd();
+		os.write(y);
+
 		/* Lines */
 		x = new ContainerStart("Folder");
 		x.setName("geo_lines");
@@ -173,6 +194,14 @@ public class TestFileGDBSupport {
 		f.setGeometry(new Polygon(makeRing(6, 1.0, 10.0, 10.0)));
 		f.putData(field, 0.0);
 		os.write(f);		
+
+		y = new ContainerEnd();
+		os.write(y);
+		
+		/* Poly */
+		x = new ContainerStart("Folder");
+		x.setName("poly2");
+		os.write(x);
 		
 		f = new Feature();
 		f.setName("poly2");
@@ -191,9 +220,9 @@ public class TestFileGDBSupport {
 
 	private LinearRing makeRing(int count, double radius, double xoffset, double yoffset) {
 		List<Point> pts = new ArrayList<Point>(count);
-		double denominator = count - 1;
-		for(int i = 0; i < count; i++) {
-			double angle = -(2.0 * Math.PI * ((double) i )/denominator);
+		double denominator = count;
+		for(int i = 0; i <= count; i++) {
+			double angle = -(2.0 * i * Math.PI) / denominator;
 			double s = Math.sin(angle);
 			double c = Math.cos(angle);
 			pts.add(new Point(yoffset + s * radius, xoffset + c * radius));

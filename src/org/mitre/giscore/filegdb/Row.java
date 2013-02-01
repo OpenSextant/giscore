@@ -120,10 +120,6 @@ public class Row extends GDB {
 						larr.add(getPoint(ptr, shapeInfo, hasz));
 						ptr += incr;
 					}
-					if (! larr.get(0).equals(larr.get(larr.size() - 1))) {
-						// Add the first point to the end as the ctor expects this
-						larr.add(larr.get(0));
-					}
 					if (outerRing == null) {
 						outerRing = new LinearRing(larr);
 						if (! outerRing.clockwise()) {

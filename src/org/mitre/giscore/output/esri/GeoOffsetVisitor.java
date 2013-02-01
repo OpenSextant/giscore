@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
+import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.output.StreamVisitorBase;
 import org.mitre.giscore.output.shapefile.PolygonCountingVisitor;
@@ -40,6 +41,14 @@ public class GeoOffsetVisitor extends StreamVisitorBase {
 	private final List<Integer> offsets = new ArrayList<Integer>();
 	private int partCount = 0;
 	private int total = 0;
+	
+	@Override
+	public void visit(MultiPoint points) {
+		offsets.add(total);
+		// Semantics of MP aren't right for FileGDB, instead treat as 1 part
+		total += points.getNumPoints();
+		partCount += 1;
+	}
 	
 	@Override
 	public void visit(LinearRing ring) {
