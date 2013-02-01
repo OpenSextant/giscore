@@ -252,8 +252,14 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         else {
             int n = pts.size();
             // ring expected to e closed, i.e. that beginning and ending point are equal
-            if (!pts.get(0).equals(pts.get(n - 1)))
-                log.warn("LinearRing should start and end with the same point");
+            if (!pts.get(0).equals(pts.get(n - 1))) {
+                log.warn("LinearRing should start and end with the same point, closing the ring");
+                // Close it
+                ArrayList<Point> copypts = new ArrayList<Point>(pts.size() + 1);
+                copypts.addAll(pts);
+                copypts.add(pts.get(0));
+                pts = copypts;
+            }
         }
         // Make sure all the points have the same number of dimensions (2D or 3D)
         is3D = pts.get(0).is3D();

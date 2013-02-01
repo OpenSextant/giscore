@@ -236,9 +236,8 @@ JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Row_setGeometry(JNIEnv *en
 				psb.Setup(st);
 				psb.GetPoint(points);
 				if (hasz) psb.GetZ(zs);
-				ptr++; // Skip the part index
 				inputPoint(env, ptr, iarr, points, zs, hasz);
-				row->SetGeometry(psb);
+				me.esriCheckedCall(row->SetGeometry(psb), "bad geometry");
 			}
 			break;
 		case 1: // Multipoint
@@ -247,13 +246,13 @@ JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Row_setGeometry(JNIEnv *en
 				mpart.Setup(st, npoints);
 				mpart.GetPoints(points);
 				if (hasz) mpart.GetZs(zs);
-				ptr++; // Skip the part index
 				for(int i = 0; i < npoints; i++) {
 					Point *p = &points[i];
 					if (hasz) z = &zs[i];
 					inputPoint(env, ptr, iarr, p, z, hasz);
 				}
-				row->SetGeometry(mpart);
+				me.esriCheckedCall(mpart.CalculateExtent(), "error");
+				me.esriCheckedCall(row->SetGeometry(mpart), "bad geometry");
 			}
 			break;
 		case 2: // Polyline
@@ -274,7 +273,8 @@ JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Row_setGeometry(JNIEnv *en
 					if (hasz) z = &zs[i];
 					inputPoint(env, ptr, iarr, p, z, hasz);
 				}
-				row->SetGeometry(mpart);
+				me.esriCheckedCall(mpart.CalculateExtent(), "error");
+				me.esriCheckedCall(row->SetGeometry(mpart), "bad geometry");
 			}
 			break;
 		case 5: // Patches

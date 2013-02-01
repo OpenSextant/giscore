@@ -1,5 +1,5 @@
 /****************************************************************************************
- *  PointCountingVisitor.java
+ *  PointOffsetVisitor.java
  *
  *  Created: Jul 30, 2009
  *
@@ -16,43 +16,56 @@
  *  their occurrence.
  *
  ***************************************************************************************/
-package org.mitre.giscore.output.shapefile;
+package org.mitre.giscore.output.esri;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.output.StreamVisitorBase;
+import org.mitre.giscore.output.shapefile.PolygonCountingVisitor;
+import org.mitre.itf.geodesy.Geodetic3DPoint;
 
 /**
- * Visit a set of polygon and ring objects and sum the points. 
+ * Figure out the point offsets for the components,
+ * the total point count and the part count.
  * 
  * @author DRAND
  *
  */
-public class PolygonCountingVisitor extends StreamVisitorBase {
-	private int pointCount = 0;
+public class GeoOffsetVisitor extends StreamVisitorBase {
+	private final PolygonCountingVisitor pv = new PolygonCountingVisitor();
+	private final List<Integer> offsets = new ArrayList<Integer>();
+	private int partCount = 0;
+	private int total = 0;
 	
 	@Override
 	public void visit(LinearRing ring) {
-		List<Point> pts = ring.getPoints();
-		if (pts != null && pts.size() > 0) {
-			pointCount += pts.size();
-		}
+		offsets.add(total);
+		ring.accept(pv);
+		total += pv.getPointCount();
+		pv.resetCount();
+		partCount += ring.getNumParts();
+	}	
+
+	@Override
+	public void visit(Line line) {
+		offsets.add(total);
+		total += line.getNumPoints();
+		partCount += line.getNumParts();
 	}
 
-	/**
-	 * @return the point count after the accept method is called on the given
-	 * geometry(ies).
-	 */
-	public int getPointCount() {
-		return pointCount;
+	public int getPartCount() {
+		return partCount;
 	}
 
-	/**
-	 * Allow reuse
-	 */
-	public void resetCount() {
-		pointCount = 0;
+	public int getTotal() {
+		return total;
 	}
+
+	public List<Integer> getOffsets() {
+		return offsets;
+	}	
 }

@@ -143,19 +143,11 @@ public class TestFileGDBSupport {
 		x = new ContainerStart("Folder");
 		x.setName("ring");
 		os.write(x);
-
-		pts = new ArrayList<Point>(2);
-		for(int i = 0; i < 7; i++) {
-			double angle = -(2.0 * Math.PI * ((double) i / 6.0));
-			double s = Math.sin(angle);
-			double c = Math.cos(angle);
-			pts.add(new Point(s * .3, c * .3));
-		}
 		
 		f = new Feature();
 		f.setName("ring");
 		f.setSchema(schema.getId());
-		f.setGeometry(new LinearRing(pts));
+		f.setGeometry(makeRing(6, 1.0, 0.0, 0.0));
 		f.putData(field, 0.0);
 		os.write(f);	
 		
@@ -178,14 +170,35 @@ public class TestFileGDBSupport {
 		f = new Feature();
 		f.setName("poly");
 		f.setSchema(schema.getId());
-		f.setGeometry(new Polygon(new LinearRing(pts)));
+		f.setGeometry(new Polygon(makeRing(6, 1.0, 10.0, 10.0)));
 		f.putData(field, 0.0);
-		os.write(f);	
+		os.write(f);		
+		
+		f = new Feature();
+		f.setName("poly2");
+		f.setSchema(schema.getId());
+		List<LinearRing> inner = new ArrayList<LinearRing>();
+		inner.add(makeRing(5, .5, -10.0, -10.0));
+		f.setGeometry(new Polygon(makeRing(9, 1.2, -10.0, -10.0), inner));
+		f.putData(field, 0.0);
+		os.write(f);
 		
 		y = new ContainerEnd();
 		os.write(y);
 		
 		os.close();
+	}
+
+	private LinearRing makeRing(int count, double radius, double xoffset, double yoffset) {
+		List<Point> pts = new ArrayList<Point>(count);
+		double denominator = count - 1;
+		for(int i = 0; i < count; i++) {
+			double angle = -(2.0 * Math.PI * ((double) i )/denominator);
+			double s = Math.sin(angle);
+			double c = Math.cos(angle);
+			pts.add(new Point(yoffset + s * radius, xoffset + c * radius));
+		}
+		return new LinearRing(pts);
 	}
 	
 	@Test

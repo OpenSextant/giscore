@@ -63,6 +63,7 @@ import org.mitre.giscore.geometry.Polygon;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
+import org.mitre.giscore.output.shapefile.PointOffsetVisitor;
 import org.mitre.giscore.utils.Pair;
 import org.mitre.giscore.utils.ZipUtils;
 import org.mitre.itf.geodesy.Geodetic2DPoint;
@@ -281,16 +282,16 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	 */
 	@Override
 	public void visit(Feature feature) {
+		if (feature.getGeometry() == null) return; // Not really a feature, skip
 		try {
 			String fullpath = getFullPath();
-			String parentpath = getParentPath();
 			FeatureKey featureKey = new FeatureKey(sorter.getSchema(feature), fullpath,
 					feature.getGeometry().getClass(), feature.getClass());
 			checkAndRegisterKey(fullpath, featureKey);
 			Table table = tables.get(fullpath);
 			if (table == null) {
 				String descriptor = createDescriptor(featureKey, true, feature);
-				table = Table.createTable(database, parentpath, descriptor);
+				table = Table.createTable(database, "\\", descriptor);
 				tables.put(fullpath, table);
 			}
 			org.mitre.giscore.filegdb.Row tablerow = table.createRow();
@@ -345,12 +346,9 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 			throws XMLStreamException, IOException {
 		stream = new ByteArrayOutputStream(2000);
 		init(stream, "UTF8");
-		String datasetname = datasets.get(featureKey);
-		if (datasetname == null || datasetname.equals("\\")) {
-			datasetname = "\\" + getNameFromRow(row);
-		}
+		String datasetname = containerNameStrategy.deriveContainerName(path, featureKey);
 		writeDataSetDef(featureKey, datasetname, 
-				row instanceof Row ? ElementType.TABLE : ElementType.FEATURE_CLASS);
+				isFeature ? ElementType.FEATURE_CLASS : ElementType.TABLE);
 		writer.writeEndDocument();
 		closeWriter();
 		return new String(((ByteArrayOutputStream) stream).toByteArray(), "UTF8");
@@ -441,24 +439,24 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	 * @param geo
 	 */
 	private void outputPartsAndPoints(Short type, Short type3d, Geometry geo) {
-		int nparts = geo.getNumParts();
-		int npoints = geo.getNumPoints();
 		boolean hasz = geo.getCenter() instanceof Geodetic3DPoint;
+		GeoOffsetVisitor pov = new GeoOffsetVisitor();
 		
+		geo.accept(pov);
+		int pc = pov.getPartCount();
 		outputList.add(hasz ? type3d : type);
 		outputList.add(hasz);
-		outputList.add(npoints);
-		outputList.add(nparts);
-		int index = 0;
-		for(int i = 0; i < geo.getNumParts(); i++) {
-			Geometry sub = geo.getPart(i);
-			outputList.add(index);
-			index += sub.getNumPoints();
+		outputList.add(pov.getTotal());
+		outputList.add(pc);
+		for(int i = 0; i < pc; i++) {
+			outputList.add(pov.getOffsets().get(i));
 		}
-		for(Point p : geo.getPoints()) {
-			Geodetic2DPoint center = p.getCenter();
-			outputList.add(center.getLongitude().inDegrees());
-			outputList.add(center.getLatitude().inDegrees());
+		List<Point> pts = geo.getPoints();
+		Geodetic2DPoint center;
+		for(Point p : pts) {
+			center = p.getCenter();
+			outputList.add(center.getLongitudeAsDegrees());
+			outputList.add(center.getLatitudeAsDegrees());
 			if (hasz) {
 				outputList.add(((Geodetic3DPoint) center).getElevation());
 			}
@@ -524,24 +522,9 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	 */
 	@Override
 	public void visit(ContainerStart containerStart) {
-		super.visit(containerStart);
-		
-		try {
-			String datasetdoc = database.getDatasetDefinition(getParentPath(), DATASET_TYPE);
-			
-			if (StringUtils.isEmpty(datasetdoc)) {
-				stream = new ByteArrayOutputStream(2000);
-				init(stream, "UTF8");
-				writer.writeStartDocument();
-				writeDataSetDef(null, getFullPath(), ElementType.FEATURE_DATASET);
-				writer.writeEndDocument();
-				closeWriter();
-				datasetdoc = new String(((ByteArrayOutputStream) stream).toByteArray(), "UTF8");
-				
-				database.createFeatureDataset(datasetdoc);
-			}
-		} catch (Exception e) {
-			throw new RuntimeException(e);
+		if (containerStart.getName() == null) {
+			containerStart.setName("");
 		}
+		super.visit(containerStart);
 	}	
 }

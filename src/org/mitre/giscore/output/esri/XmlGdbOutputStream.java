@@ -772,7 +772,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 */
 	private void writeSpatialReference(String wkt, int wkid) throws XMLStreamException {
 		writer.writeStartElement(SPATIAL_REFERENCE);
-		writeEsriType("ProjectedCoordinateSystem");
+		writeEsriType("GeographicCoordinateSystem");
 		writer.writeStartElement(WKT);
 		writer.writeCharacters(wkt);
 		writer.writeEndElement();
@@ -920,7 +920,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			writeEsriType("DEFeatureDataset");
 		else
 			writeEsriType("DETable");
-		handleSimpleElement(CATALOG_PATH, datasetname);
+		handleSimpleElement(CATALOG_PATH, "\\" + datasetname);
 		
 		String name = getNameFromDatasetname(datasetname);
 		handleSimpleElement(NAME, name);
