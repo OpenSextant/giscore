@@ -1599,9 +1599,13 @@ public class KmlMetaDump implements IKml {
 			if (location == null) return;
 			String className = location.getClassName();
 			// log only KML classes (e.g. org.mitre.giscore.input.kml.KmlInputStream)
-			if (className != null &&
-					(className.startsWith("org.mitre.giscore.events.") ||
-							className.startsWith("org.mitre.giscore.input.kml."))) {
+			if (className == null) return;
+			if ("org.mitre.giscore.geometry.LinearRing".equals(className)) {
+				// LinearRing should start and end with the same point, closing the ring
+				if (msg.startsWith("LinearRing should start"))
+					addTag(":LinearRing should start and end with the same point");
+			} else if (className.startsWith("org.mitre.giscore.events.") ||
+					className.startsWith("org.mitre.giscore.input.kml.")) {
 				// TODO: log XmlInputStream errors/warnings if keeping counts
 				// truncate long error message in KmlInputStream.handleGeometry()
 				if (msg.startsWith("comma found instead of whitespace between tuples before"))
