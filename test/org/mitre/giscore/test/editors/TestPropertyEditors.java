@@ -87,10 +87,12 @@ public class TestPropertyEditors {
 	}
 
 	@Test public void testLinearRingEditor() throws Exception {
-		List<Point> pts = new ArrayList<Point>();
+		List<Point> pts = new ArrayList<Point>(6);
 		for(int i = 0; i < 5; i++) {
 			pts.add(new Point(getRandomPoint()));
 		}
+		// LinearRing must start and end with same point
+		pts.add(pts.get(0));
 		LinearRing lr = new LinearRing(pts);
 		LinearRingPropertyEditor lrpe = new LinearRingPropertyEditor();
 		lrpe.setValue(lr);
@@ -98,7 +100,7 @@ public class TestPropertyEditors {
 		System.out.println("Ring text: " + str);
 		lrpe.setAsText(str);
 		LinearRing b = (LinearRing) lrpe.getValue();
-		assertEquals(5, b.getPoints().size());
+		assertEquals(6, b.getPoints().size());
 		for(int i = 0; i < 5; i++) {
 			checkApproximatelyEqual(lr.getPoints().get(i), b.getPoints().get(i));
 		}
