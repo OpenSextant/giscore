@@ -251,7 +251,7 @@ public class LinearRing extends GeometryBase implements Iterable<Point> {
         if (validateTopology) validateTopology(pts);
         else {
             int n = pts.size();
-            // ring expected to e closed, i.e. that beginning and ending point are equal
+            // ring expected to be closed, i.e. that beginning and ending point are equal
             if (!pts.get(0).equals(pts.get(n - 1))) {
                 log.warn("LinearRing should start and end with the same point, closing the ring");
                 // Close it
