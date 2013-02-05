@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.mutable.MutableInt;
 import org.mitre.giscore.geometry.Geometry;
 import org.mitre.giscore.geometry.Line;
 import org.mitre.giscore.geometry.LinearRing;
@@ -68,66 +69,32 @@ public class Row extends GDB {
 			// Decode
 			Short type = (Short) shapeInfo[0];
 			Boolean hasz = (Boolean) shapeInfo[1];
-			int ptr = 4;
-			int npoints = (Integer) shapeInfo[2];
-			int nparts = (Integer) shapeInfo[3];
-			int part_start;
-			int point_start;
-			int last;
-			int incr = hasz ? 3 : 2;
-			List<Point> larr;
+			List<Point>[] lists;
 			switch(type) {
-			case 0: // Point
+			case 0: { // Point
+				MutableInt ptr = new MutableInt(4);
 				geo = getPoint(ptr, shapeInfo, hasz);
 				break;
+			}
 			case 1: // Multipoint
-				larr = new ArrayList<Point>();
-				for(int i = 0; i < npoints; i++) {
-					larr.add(getPoint(ptr, shapeInfo, hasz));
-					ptr += incr;
-				}
-				geo = new MultiPoint(larr);
+				lists = getPointLists(shapeInfo, hasz);
+				geo = new MultiPoint(lists[0]);
 				break;
 			case 2: // Polyline
+				lists = getPointLists(shapeInfo, hasz);
 				List<Line> lines = new ArrayList<Line>();
-				part_start = ptr;
-				ptr = part_start + nparts;
-				last = (Integer) shapeInfo[part_start];
-				larr = new ArrayList<Point>();
-				for(int j = 0; j < nparts; j++) {
-					int jpo = j + 1;
-					int next = jpo == nparts ? npoints : (Integer) shapeInfo[part_start + j];
-					for(int i = last; i < next; i++) {
-						larr.add(getPoint(ptr, shapeInfo, hasz));
-						ptr += incr;
-					}
-					Line l = new Line(larr);
-					lines.add(l);
+				for(List<Point> pts : lists) {
+					lines.add(new Line(pts));
 				}
 				geo = new MultiLine(lines);
 				break;
 			case 3: // Polygon
-				LinearRing outerRing = null;
+				lists = getPointLists(shapeInfo, hasz);
+				if (lists.length == 0) break;
+				LinearRing outerRing = new LinearRing(lists[0]);
 				List<LinearRing> innerRings = new ArrayList<LinearRing>();
-				part_start = ptr;
-				ptr = part_start + nparts;
-				last = (Integer) shapeInfo[part_start];
-				larr = new ArrayList<Point>();
-				for(int j = 0; j < nparts; j++) {
-					int jpo = j + 1;
-					int next = jpo == nparts ? npoints : (Integer) shapeInfo[part_start + j];
-					for(int i = last; i < next; i++) {
-						larr.add(getPoint(ptr, shapeInfo, hasz));
-						ptr += incr;
-					}
-					if (outerRing == null) {
-						outerRing = new LinearRing(larr);
-						if (! outerRing.clockwise()) {
-							Collections.reverse(larr);
-						}
-					} else {
-						innerRings.add(new LinearRing(larr));
-					}
+				for(int i = 1; i < lists.length; i++) {
+					innerRings.add(new LinearRing(lists[i]));
 				}
 				geo = new Polygon(outerRing, innerRings, true);
 				break;
@@ -142,11 +109,59 @@ public class Row extends GDB {
 		return geo;
 	}
 	
-	private Point getPoint(int ptr, Object[] shapeInfo, boolean hasz) {
-		Double lon = (Double) shapeInfo[ptr++];
-		Double lat = (Double) shapeInfo[ptr++];
+	/**
+	 * For all multipart geometries, the first several elements in the 
+	 * shapeInfo array are the shapeType, the hasz boolean, the point
+	 * count and the part count. The next two things are then the
+	 * part array and the point array. This method handles turning
+	 * the part array and point array into an array of point lists.
+	 * @param ptr
+	 * @param shapeInfo
+	 * @param hasz
+	 * @return
+	 */
+	private List<Point>[] getPointLists(Object[] shapeInfo, boolean hasz) {
+		int pointcount = (Integer) shapeInfo[2];
+		int partcount = (Integer) shapeInfo[3];
+		int[] partarray = new int[partcount == 0 ? 1 : partcount];
+		MutableInt ptr = new MutableInt(4);
+		if (partcount == 0) {
+			partarray[0] = pointcount;
+			partcount = 1;
+		} else {
+			for(int i = 0; i < partcount; i++) {
+				boolean end = (partcount - i) <= 1; // == 1 really
+				int lower = (Integer) shapeInfo[ptr.intValue()];
+				ptr.increment();
+				int upper = end ? pointcount : (Integer) shapeInfo[ptr.intValue()];
+				partarray[i] = upper - lower;
+			}
+		}
+		@SuppressWarnings("unchecked")
+		List<Point>[] rval = new List[partcount];
+		for(int i = 0; i < partcount; i++) {
+			int count = partarray[i];
+			rval[i] = getPointList(ptr, count, shapeInfo, hasz);
+		}
+		return rval;
+	}
+	
+	private List<Point> getPointList(MutableInt ptr, int count, Object[] shapeInfo, boolean hasz) {
+		List<Point> pts = new ArrayList<Point>();
+		for(int j = 0; j < count; j++) {
+			pts.add(getPoint(ptr, shapeInfo, hasz));
+		}
+		return pts;
+	}
+	
+	private Point getPoint(MutableInt ptr, Object[] shapeInfo, boolean hasz) {
+		Double lon = (Double) shapeInfo[ptr.intValue()];
+		ptr.increment();
+		Double lat = (Double) shapeInfo[ptr.intValue()];
+		ptr.increment();
 		if (hasz) {
-			Double elev = (Double) shapeInfo[ptr++];
+			Double elev = (Double) shapeInfo[ptr.intValue()];
+			ptr.increment();
 			return new Point(lat, lon, elev);
 		} else {
 			return new Point(lat, lon, 0.0);
