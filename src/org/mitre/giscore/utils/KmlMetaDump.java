@@ -759,9 +759,9 @@ public class KmlMetaDump implements IKml {
 	/**
 	 * Check Style
 	 *
-	 * @param style			Style or StyleMap to check
+	 * @param style            Style or StyleMap to check
 	 * @param checkSharedStyle Flag to check Style as shared style in context of a container
-	 * @param addTag		   Flag to add count Style or StyleMap if top-level, not counted if inline Style in StyleMap
+	 * @param addTag           Flag to add count Style or StyleMap if top-level, not counted if inline Style in StyleMap
 	 */
 	private void checkStyle(StyleSelector style, boolean checkSharedStyle, boolean addTag) {
 		final Class<? extends StyleSelector> aClass = style.getClass();
@@ -1005,37 +1005,38 @@ public class KmlMetaDump implements IKml {
 			List<LinearRing> rings = poly.getLinearRings();
 			final int n = rings.size();
 			if (n < 100) {
-			  byte flags = 0;
-			  for (int i = 0; i < n; i++) {
-				LinearRing inner = rings.get(i);
-				// ATC 70: LinearRing - Simple
-				// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#SimpleLinearRing
-				// Check that a kml:LinearRing is a simple ring (that is, it does not cross itself).
-				validateLinearRing("Inner ring", inner);
-				//if (inner.clockwise())
-				//addTag(":All inner rings in Polygon must be " +
-				//"in counter-clockwise point order");
-				// Verify that inner rings are properly contained inside outer ring
-				if ((flags & 1) == 0 && !outerRing.contains(inner)) {
-					flags |= 1;
-					addTag(":Inner ring not contained within outer ring");
-					if (verbose) System.out.printf(" Inner ring %d not contained within outer ring%n", 0);
-				}
-				// Verify that inner rings don't overlap with each other
-				// ATC 69: Polygon - rings
-				// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#PolygonRings
-				// perform intersection check if less than 50 inner rings
-				if ((flags & 2) == 0 && i < n - 1 && n < 50)
-					for (int j = i + 1; j < n; j++) {
-						if (inner.overlaps(rings.get(j))) {
-							addTag(":Inner rings in Polygon must not overlap with each other");
-							if (verbose) System.out.printf(" Inner rings %d, %d in Polygon must not overlap with each other%n", i, j);
-							flags |= 2;
-							break;
-						}
+				byte flags = 0;
+				for (int i = 0; i < n; i++) {
+					LinearRing inner = rings.get(i);
+					// ATC 70: LinearRing - Simple
+					// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#SimpleLinearRing
+					// Check that a kml:LinearRing is a simple ring (that is, it does not cross itself).
+					validateLinearRing("Inner ring", inner);
+					//if (inner.clockwise())
+					//addTag(":All inner rings in Polygon must be " +
+					//"in counter-clockwise point order");
+					// Verify that inner rings are properly contained inside outer ring
+					if ((flags & 1) == 0 && !outerRing.contains(inner)) {
+						flags |= 1;
+						addTag(":Inner ring not contained within outer ring");
+						if (verbose) System.out.printf(" Inner ring %d not contained within outer ring%n", 0);
 					}
-				if ((byte) 3 == flags) break; // both bits set. stop checking
-			  }
+					// Verify that inner rings don't overlap with each other
+					// ATC 69: Polygon - rings
+					// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#PolygonRings
+					// perform intersection check if less than 50 inner rings
+					if ((flags & 2) == 0 && i < n - 1 && n < 50)
+						for (int j = i + 1; j < n; j++) {
+							if (inner.overlaps(rings.get(j))) {
+								addTag(":Inner rings in Polygon must not overlap with each other");
+								if (verbose)
+									System.out.printf(" Inner rings %d, %d in Polygon must not overlap with each other%n", i, j);
+								flags |= 2;
+								break;
+							}
+						}
+					if ((byte) 3 == flags) break; // both bits set. stop checking
+				}
 			}
 		} else if (geom instanceof Line) {
 			final Line line = (Line) geom;
@@ -1115,6 +1116,8 @@ public class KmlMetaDump implements IKml {
 			if (verbose && dups != 0)
 				System.out.printf(" %d duplicate points out of %d%n", dups, n);
 
+			/*
+			// LinearRing now auto-adds first point if not same as last
 			// first/last point not the same
 			if (n > 2 && !pts.get(0).equals(pts.get(n - 1))) {
 				List<Point> newPts = new ArrayList<Point>(n + 1);
@@ -1123,6 +1126,7 @@ public class KmlMetaDump implements IKml {
 				pts = newPts;
 				addTag(":" + label + " must start and end with the same point");
 			}
+			*/
 
 			// validate linear ring topology for self-intersection
 			// ATC 70: LinearRing - Simple
@@ -1595,9 +1599,13 @@ public class KmlMetaDump implements IKml {
 			if (location == null) return;
 			String className = location.getClassName();
 			// log only KML classes (e.g. org.mitre.giscore.input.kml.KmlInputStream)
-			if (className != null &&
-					(className.startsWith("org.mitre.giscore.events.") ||
-							className.startsWith("org.mitre.giscore.input.kml."))) {
+			if (className == null) return;
+			if ("org.mitre.giscore.geometry.LinearRing".equals(className)) {
+				// LinearRing should start and end with the same point, closing the ring
+				if (msg.startsWith("LinearRing should start"))
+					addTag(":LinearRing should start and end with the same point");
+			} else if (className.startsWith("org.mitre.giscore.events.") ||
+					className.startsWith("org.mitre.giscore.input.kml.")) {
 				// TODO: log XmlInputStream errors/warnings if keeping counts
 				// truncate long error message in KmlInputStream.handleGeometry()
 				if (msg.startsWith("comma found instead of whitespace between tuples before"))
