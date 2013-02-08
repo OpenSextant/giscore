@@ -5,8 +5,8 @@
 	<property file="local.properties"/>
 
 	<!-- Remove and reinstate ivy:buildnumber should that ever start working again -->
-	<property name="previous.revision" value="1.8.1" />
-	<property name="ivy.new.revision" value="1.8.2" />
+	<property name="previous.revision" value="1.8.2" />
+	<property name="ivy.new.revision" value="1.8.3" />
 	
 	<property name="proxy.host" value="gatekeeper.mitre.org" />
 	<property name="proxy.port" value="80" />
