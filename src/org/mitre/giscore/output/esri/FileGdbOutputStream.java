@@ -60,6 +60,7 @@ import org.mitre.giscore.geometry.MultiPoint;
 import org.mitre.giscore.geometry.MultiPolygons;
 import org.mitre.giscore.geometry.Point;
 import org.mitre.giscore.geometry.Polygon;
+import org.mitre.giscore.input.gdb.FileGDBLibraryInitializer;
 import org.mitre.giscore.output.FeatureKey;
 import org.mitre.giscore.output.IContainerNameStrategy;
 import org.mitre.giscore.output.IGISOutputStream;
@@ -85,7 +86,7 @@ import org.mitre.itf.geodesy.Geodetic3DPoint;
  *
  */
 public class FileGdbOutputStream extends XmlGdbOutputStream implements
-		IGISOutputStream, FileGdbConstants {	  
+		IGISOutputStream, FileGdbConstants {	
 	private boolean deleteOnClose;
 	private IContainerNameStrategy containerNameStrategy;
 	private OutputStream outputStream;

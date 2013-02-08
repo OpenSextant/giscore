@@ -18,6 +18,8 @@ package org.mitre.giscore.filegdb;
 
 import java.io.File;
 
+import org.mitre.giscore.input.gdb.FileGDBLibraryInitializer;
+
 /**
  * Wraps the FileGDB API Geodatabase Object and presents the 
  * needed operations on the Geodatabase Object so they can be executed
@@ -33,7 +35,8 @@ public class Geodatabase extends GDB {
 	private File path;
 	
 	static {
-		System.loadLibrary("filegdb");
+		FileGDBLibraryInitializer.initialize();
+		
 		initialize();
 	}
 	

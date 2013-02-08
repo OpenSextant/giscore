@@ -38,7 +38,7 @@ import org.mitre.giscore.geometry.Point;
 
 import static org.junit.Assert.*;
 
-public class TestGeodatabase extends FileGDBTest {
+public class TestGeodatabase {
 	static Random rand;	
 
 	public static final String DB = "data/gdb/Shapes.gdb";

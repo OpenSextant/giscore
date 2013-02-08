@@ -54,6 +54,7 @@ import org.mitre.giscore.input.GISInputStreamBase;
 import org.mitre.giscore.output.esri.FileGdbConstants;
 
 public class FileGdbInputStream extends GISInputStreamBase implements FileGdbConstants {
+	
 	private class TableState {
 		private boolean hasGeo;
 		private int index = -1;

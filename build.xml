@@ -162,7 +162,7 @@ test.classpath=${classes};${netbeans-classpath.test}
 		</javac>
 	</target>
 	
-	<target name="jar" depends="compile">
+	<target name="jar" depends="compile, package-filegdb">
 		<ivy:cachepath pathid="kf.path" organisation="org.knopflerfish"
 			module="knopflerfish-ant" revision="2.1.0-mitre-13"
 			conf="default" inline="true"/>
@@ -220,6 +220,27 @@ test.classpath=${classes};${netbeans-classpath.test}
 				<include name="giscore.jar" />
 			</lib>
 		</war>
+	</target>
+	
+	<macrodef name="package-library">
+		<attribute name="lib" />
+		<attribute name="os" />
+		<attribute name="ext" />
+		<attribute name="package" />
+		<sequential>
+			<property name="dest" value="${classes}/@{package}/@{os}"/>
+			<mkdir dir="${dest}"/>
+			<propertyfile file="${dest}/filegdb.properties">
+				<entry key="modified" value="now" type="date" pattern="yyyy/MM/dd" />
+				<entry key="filename" value="filegdb.@{ext}"/>
+			</propertyfile>
+			<copy file="@{lib}" todir="${dest}" />
+		</sequential>
+	</macrodef>
+	
+	<target name="package-filegdb">
+		<package-library lib="${basedir}/filegdb/x64/x64/filegdb.dll" 
+			package="org/mitre/giscore/filegdb" os="win64" ext="dll" />
 	</target>
 	
 	<target name="testdeploy" depends="war">
