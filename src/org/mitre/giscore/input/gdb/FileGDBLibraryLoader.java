@@ -30,8 +30,7 @@ public class FileGDBLibraryLoader extends LibraryLoader {
 		super(Package.getPackage("org.mitre.giscore.filegdb"), "filegdb");
 	}
 
-	/* This method can be uncommented to directly load the dll if you don't want
-	 * to run the build before testing.
+	/* This method causes the debug library to be run while debugging. */
 	public void loadLibrary() throws IOException, ParseException {
 		boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
 			    getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
@@ -41,7 +40,6 @@ public class FileGDBLibraryLoader extends LibraryLoader {
 			super.loadLibrary();
 		}
 	}
-	*/
 	
 	/**
 	 * Method uses knowledge of the workspace layout to load the appropriate
@@ -51,6 +49,8 @@ public class FileGDBLibraryLoader extends LibraryLoader {
 		if ("win64".equals(osarch)) {
 			File libpath = new File("filegdb/x64/x64_debug/filegdb.dll");
 			System.load(libpath.getAbsolutePath());
+		} else if ("linux64".equals(osarch)) {
+			File libpath = new File("filegdb/linux/dist/Debug/GNU-Linux-x86/libfilegdb.so");
 		} else {
 			throw new RuntimeException("Architecture " + osarch + " not supported for debugger until you configure this method");
 		}
