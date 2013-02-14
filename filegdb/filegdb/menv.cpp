@@ -11,7 +11,46 @@ using namespace FileGDBAPI;
 #if defined(_MSC_VER)
 HANDLE menv::mutex; 
 #else
+pthread_mutex_t menv::mutex;
 #endif
+
+menv::menv(JNIEnv *e) {
+#if defined(_MSC_VER)
+        DWORD result = WaitForSingleObject(mutex, INFINITE);
+        if (result == WAIT_OBJECT_0) {
+                unlock = true;
+        } else {
+                unlock = false;
+                if (result == WAIT_FAILED) {
+                }
+                throw jni_check();
+        }
+#else
+        pthread_mutex_lock(&mutex);
+#endif
+        env = e;
+}
+
+
+menv::~menv() {
+#if defined(_MSC_VER)
+        if (unlock) {
+                if (ReleaseMutex(mutex) == 0) {
+                        throw jni_check(); 
+                }
+        }
+#else
+        pthread_mutex_unlock(&mutex);
+#endif		
+}
+        
+void menv::initialize() {
+#if defined(_MSC_VER)
+        mutex = CreateMutex(NULL, FALSE, NULL);
+#else
+        mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
+#endif
+}
 
 /**
  * Throw an exception specific to this library code. You still need to return 
@@ -80,7 +119,7 @@ void menv::esriCheckedCall(fgdbError err, const char* message) throw(jni_check) 
 	if (err != S_OK) {
 		char buf[100];
 		cerr << "message is " << message;
-		cerr << " error number is " << itoa(err, buf, 10) << "\n";
+		cerr << " error number is " << err << "\n";
 		throwException(message);
         throw jni_check();
 	}

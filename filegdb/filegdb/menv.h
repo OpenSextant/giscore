@@ -1,8 +1,12 @@
 #pragma once
 
 #include "Stdafx.h"
+#ifdef __unix__
+#include <pthread.h>
+#else
 #include <Windows.h>
 #include <WinBase.h>
+#endif
 #include <vector>
 #include <iostream>
 
@@ -26,57 +30,18 @@ protected:
 #if defined(_MSC_VER)
 	static HANDLE mutex; 
 #else
+        static pthread_mutex_t  mutex;
 #endif
 
 public:
 	/**
 	 * Ctor
 	 */
-	menv(JNIEnv *e) {
-#if defined(_MSC_VER)
-		// DWORD tid = GetCurrentThreadId();
-		// cerr << "Taking lock on tid: " << tid << "\n"; 
-		DWORD result = WaitForSingleObject(mutex, INFINITE);
-		if (result == WAIT_OBJECT_0) {
-			unlock = true;
-			// cerr << "Locked tid: " << tid  << "\n";
-		} else {
-			unlock = false;
-			if (result == WAIT_FAILED) {
-				// result = GetLastError();	
-			}
-			// cerr << "Lock failed on tid: " << tid << " result: " << result << "\n";
-			throw jni_check();
-		}
-#else
-		// pthreads code here
-#endif
-		env = e;
-	}
+        menv(JNIEnv *e);
+	
+        ~menv();
 
-	~menv() {
-#if defined(_MSC_VER)
-		if (unlock) {
-			// DWORD tid = GetCurrentThreadId();
-			// cerr << "Unlocking tid: " << tid << "\n";
-			if (ReleaseMutex(mutex) == 0) {
-				// cerr << "Unlock failed on tid: " << tid << "\n";
-				throw jni_check(); 
-			}
-			// cerr << "Unlocked tid: " << tid << "\n";
-		}
-#else
-		// pthreads code here
-#endif		
-	}
-
-	static void initialize() {
-#if defined(_MSC_VER)
-		mutex = CreateMutex(NULL, FALSE, NULL);
-#else
-		// pthreads code here
-#endif
-	}
+        static void initialize();
 
 	Row* getRow(jobject self);
 

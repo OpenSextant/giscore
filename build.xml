@@ -227,20 +227,23 @@ test.classpath=${classes};${netbeans-classpath.test}
 		<attribute name="os" />
 		<attribute name="ext" />
 		<attribute name="package" />
+		<attribute name="pre" default="" />
 		<sequential>
-			<property name="dest" value="${classes}/@{package}/@{os}"/>
-			<mkdir dir="${dest}"/>
-			<propertyfile file="${dest}/filegdb.properties">
+			<mkdir dir="${classes}/@{package}/@{os}"/>
+			<propertyfile file="${classes}/@{package}/@{os}/filegdb.properties">
 				<entry key="modified" value="now" type="date" pattern="yyyy/MM/dd" />
-				<entry key="filename" value="filegdb.@{ext}"/>
+				<entry key="filename" value="@{pre}filegdb.@{ext}"/>
 			</propertyfile>
-			<copy file="@{lib}" todir="${dest}" />
+			<copy file="@{lib}" todir="${classes}/@{package}/@{os}" />
 		</sequential>
 	</macrodef>
 	
 	<target name="package-filegdb">
 		<package-library lib="${basedir}/filegdb/x64/x64/filegdb.dll" 
 			package="org/mitre/giscore/filegdb" os="win64" ext="dll" />
+		<package-library 
+			lib="${basedir}/filegdb/linux/filegdb/dist/Release/GNU-Linux-x86/libfilegdb.so" 
+			package="org/mitre/giscore/filegdb" os="linux64" ext="so" pre="lib" />
 	</target>
 	
 	<target name="testdeploy" depends="war">
