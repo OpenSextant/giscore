@@ -4,7 +4,12 @@
 #include <string>
 #include <jni.h>
 #define _CRT_SECURE_NO_WARNINGS 1
+#ifdef __unix__
+#include <stdlib.h>
+size_t _mbslen(const unsigned char* string);
+#else
 #include <mbstring.h>
+#endif
 #include "jstring.h"
 
 // Hold a reference to a const char* or a const wchar* and 
@@ -35,27 +40,11 @@ public:
 
 	~convstr() {
 		if (buf != 0L) {
-			delete buf;
+			delete (char*) buf;
 		}
 	}
 
-	std::wstring getWstr() {		
-		if (wstr.length() == 0) {
-			size_t len = _mbslen((const unsigned char*) str.c_str());
-			buf = new wchar_t[len+1];
-			size_t chars = mbstowcs((wchar_t *) buf, str.c_str(), len);
-			wstr.append((const wchar_t*) buf, chars);
-		}
-		return wstr;
-	}
+        std::wstring getWstr();
 
-	std::string getStr() {
-		if (str.length() == 0) {
-			size_t len = wcslen(wstr.c_str());
-			buf = new char[2*(len+1)];
-			size_t chars = wcstombs((char*) buf, wstr.c_str(), len);
-			str.append((const char*) buf, chars);
-		}
-		return str;
-	}
+        std::string getStr();
 };

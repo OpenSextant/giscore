@@ -50,7 +50,8 @@ public class FileGDBLibraryLoader extends LibraryLoader {
 			File libpath = new File("filegdb/x64/x64_debug/filegdb.dll");
 			System.load(libpath.getAbsolutePath());
 		} else if ("linux64".equals(osarch)) {
-			File libpath = new File("filegdb/linux/dist/Debug/GNU-Linux-x86/libfilegdb.so");
+			File libpath = new File("filegdb/linux/filegdb/dist/Debug/GNU-Linux-x86/libfilegdb.so");
+			System.load(libpath.getAbsolutePath());
 		} else {
 			throw new RuntimeException("Architecture " + osarch + " not supported for debugger until you configure this method");
 		}

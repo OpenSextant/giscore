@@ -55,14 +55,15 @@ public class TestFileGDBSupport {
 
 	@Test
 	public void testCreateFeatureAndRow() throws XMLStreamException, IOException, URISyntaxException {
-		File db = new File("C:\\Temp\\ftest1.gdb");
+		File temp = new File(System.getProperty("java.io.tmpdir"));
+		File db = new File(temp, "ftest1.gdb");
 		if (db.exists()) {
 			for(File f : db.listFiles()) {
 				f.delete();
 			}
 			db.delete();
 		}
-		FileOutputStream fos = new FileOutputStream("C:\\Temp\\ftest" + System.currentTimeMillis() + ".zip");
+		FileOutputStream fos = new FileOutputStream(new File(temp, "ftest" + System.currentTimeMillis() + ".zip"));
 		ZipOutputStream zos = new ZipOutputStream(fos);
 		IGISOutputStream os = new FileGdbOutputStream(zos, db, null);
 		Schema schema = new Schema();
