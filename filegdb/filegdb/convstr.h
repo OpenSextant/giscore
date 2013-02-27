@@ -4,12 +4,6 @@
 #include <string>
 #include <jni.h>
 #define _CRT_SECURE_NO_WARNINGS 1
-#ifdef __unix__
-#include <stdlib.h>
-size_t _mbslen(const unsigned char* string);
-#else
-#include <mbstring.h>
-#endif
 #include "jstring.h"
 
 // Hold a reference to a const char* or a const wchar* and 

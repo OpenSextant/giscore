@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Stdafx.h"
-#ifdef __unix__
+#if defined __APPLE__ || defined __unix__
 #include <pthread.h>
 #else
 #include <Windows.h>

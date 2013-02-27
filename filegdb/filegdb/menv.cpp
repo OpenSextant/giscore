@@ -47,6 +47,8 @@ menv::~menv() {
 void menv::initialize() {
 #if defined(_MSC_VER)
         mutex = CreateMutex(NULL, FALSE, NULL);
+#elif defined(__APPLE__)
+        mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER;
 #else
         mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 #endif
@@ -117,7 +119,6 @@ jmethodID menv::getCtor(jclass clazz, const char* sig) {
 
 void menv::esriCheckedCall(fgdbError err, const char* message) throw(jni_check) {
 	if (err != S_OK) {
-		char buf[100];
 		cerr << "message is " << message;
 		cerr << " error number is " << err << "\n";
 		throwException(message);
