@@ -557,8 +557,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				QName qname = se.getName();
 				String tag = qname.getLocalPart();
 				boolean handleAsForeignElement = false;
-                /*
-                     * xmlns:prefix handling. skips namespaces other than parent namespace (e.g. http://www.opengis.net/kml/2.2)
+				/*
+					 * xmlns:prefix handling. skips namespaces other than parent namespace (e.g. http://www.opengis.net/kml/2.2)
                      */
 				if (!StringUtils.equals(rootNS, qname.getNamespaceURI())) {
 					handleAsForeignElement = true;
@@ -1408,9 +1408,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						if (next.getEventType() == XMLEvent.START_ELEMENT) {
 							next = stream.nextTag();
 							return handleStartElement(next);
-						} else if (next.getEventType() == XMLEvent.END_ELEMENT)
+						} else if (next.getEventType() == XMLEvent.END_ELEMENT) {
 							log.debug("Skip element: {}", localname);
-						else throw new XMLStreamException("unexpected element");
+							stream.nextTag();
+						} else throw new XMLStreamException("unexpected element");
 					}
 				} else {
 					log.debug("XXX: handle startElement with foreign namespace: {}", name);
