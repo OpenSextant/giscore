@@ -145,7 +145,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         writer.writeCharacters("\n");
         writer.writeStartElement(KML);
         writer.writeDefaultNamespace(KML_NS);
-        writer.writeCharacters("\n");
     }
 
     /**
