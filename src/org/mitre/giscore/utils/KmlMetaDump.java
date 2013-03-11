@@ -84,7 +84,6 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
  * Lists following conditions if found:
  * <ul>
  * <li> Camera altitudeMode cannot be clampToGround [ATC 54.2] (warning)
- * <li> comma found instead of whitespace between tuples (error)
  * <li> Container end date is later than that of its ancestors (info)
  * <li> Container start date is earlier than that of its ancestors (info)
  * <li> Document must explicitly reference a shared style (error)
@@ -137,6 +136,7 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
  * Geometry checks: <br>
  * <ul>
  * <li> Bad poly found, no outer ring (error)
+ * <li> Comma found instead of whitespace between [coordinate] tuples (error)
  * <li> Geometry spans -180/+180 longitude line (dateline wrap or antimeridian spanning problem) (warn)
  * <li> GroundOverlay fails to satisfy east > west constraint [ATC 11] (warn)
  * <li> GroundOverlay fails to satisfy north > south constraint [ATC 11] (warn)
@@ -146,10 +146,15 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
  * <li> Inner rings in Polygon must not overlap with each other (warn)
  * <li> Line clipped at DateLine (info)
  * <li> [Line|Inner/Outer Ring|LinearRing] has duplicate consecutive points (warn)
+ * <li> LineString geometry fails constraint to contain at least two coordinate tuples [ATC 15] (warning)
+ * <li> LinearRing geometry fails constraint to contain at least 4 coordinate tuples [ATC 16] (warning)
  * <li> LinearRing cannot self-intersect (warn) [ATC 70: LinearRing - Simple]
  * <li> LinearRing must start and end with the same point (error)
  * <li> Nested MultiGeometries (info)
  * <li> Outer ring clipped at DateLine (info)
+ * <li> Point geometry fails constraint to contain exactly one coordinate tuple [ATC 14] (warn)
+ * <li> Polygon/LinearRing geometry fails constraint to contain at least 4 coordinate tuples [ATC 16]
+ * <li> Whitespace found within coordinate tuple [ATC 3] (warn)
  * </ul>
  * <p/>
  * This tool helps to uncover issues in reading and writing target KML files.
