@@ -141,9 +141,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             writer.writeStartDocument();
         else
             writer.writeStartDocument(encoding, "1.0");
+        // All line breaks must have been normalized on input to #xA (\n)
         writer.writeCharacters("\n");
         writer.writeStartElement(KML);
         writer.writeDefaultNamespace(KML_NS);
+        writer.writeCharacters("\n");
     }
 
     /**
