@@ -50,6 +50,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Read a Google Earth Keyhole Markup Language (KML) file in as an input stream
@@ -98,18 +99,36 @@ import java.util.*;
  * those elements in a valid order. It should still work with Google Earth but it
  * will not conform to the KML 2.2 spec.
  * <p/>
- * <h4>Notes/Limitations:</h4>
  * <p/>
- * The actual handling of containers and other features has some uniform
+ * If debug mode is enabled for this class, the following additional validations will be checked:
+ * <ul>
+ * <li> ATC 3: Geometry coordinates:
+ * Whitespace found within coordinate tuple
+ * </li>
+ * <li> ATC 14: Point [OGC-07-147r2: cl. 10.3.2]:
+ * Check that the kml:coordinates element in a kml:Point geometry contains exactly one coordinate tuple.
+ * </li>
+ * <li>ATC 15: LineString [OGC-07-147r2: cl. 10.7.3.4.1]:
+ * Verify that the kml:coordinates element in a kml:LineString geometry contains at least two coordinate tuples.
+ * </li>
+ * <li>ATC 16: LinearRing - control points:
+ * LinearRing geometry must contain at least 4 coordinate tuples, where the first and last are identical.
+ * </li>
+ * </ul>
+ * <p/>
+ * <h4>Notes/Limitations:</h4>
+ * <ul>
+ * <li> The actual handling of containers and other features has some uniform
  * methods. Every feature in KML can have a set of common attributes and
  * additional elements.
- * Geometry is handled by common code as well. All coordinates in KML are
+ * <p/></li>
+ * <li> Geometry is handled by common code as well. All coordinates in KML are
  * transmitted as tuples of two or three elements. The formatting of these is
  * consistent and is handled by {@link #parseCoordinates(QName)}. {@code Tessellate},
  * {@code extrude}, {@code altitudeMode} and {@code gx:drawOrder} properties are maintained
  * on the associated Geometry.
- * <p/>
- * <a name="ExtendedData">
+ * <p/></li>
+ * <li> <a name="ExtendedData">
  * Handles ExtendedData with Data/Value or SchemaData/SimpleData elements including the non-KML namespace
  * form of extended data for arbitrary XML data (see http://code.google.com/apis/kml/documentation/extendeddata.html#opaquedata).
  * Only a single {@code Data/SchemaData/Schema ExtendedData} mapping is assumed
@@ -117,34 +136,39 @@ import java.util.*;
  * Schemas. Features with mixed {@code Data} and/or multiple {@code SchemaData} elements
  * will be associated only with the last {@code Schema} referenced.
  * </a>
- * <p/>
- * Unsupported deprecated tags include: {@code Metadata}, which is consumed but ignored.
- * <p/>
- * Some support for gx KML extensions (e.g. Track, MultiTrack, Tour, etc.). Also {@code gx:altitudeMode}
+ * <p/></li>
+ * <li> Unsupported deprecated tags include: {@code Metadata}, which is consumed but ignored.
+ * <p/></li>
+ * <li> Some support for gx KML extensions (e.g. Track, MultiTrack, Tour, etc.). Also {@code gx:altitudeMode}
  * is handle specially and stored as a value of the {@code altitudeMode} in LookAt, Camera, Geometry,
  * and GroundOverlay.
- * <p/>
- * <a name="PhotoOverlay">
+ * <p/></li>
+ * <li> <a name="PhotoOverlay">
  * Limited support for {@code PhotoOverlay} which creates an basic overlay object
  * with Point and rotation without retaining other PhotoOverlay-specific properties
  * (ViewVolume, ImagePyramid, or shape).</a>
- * <p/>
- * <a name="Model">
+ * <p/></li>
+ * <li> <a name="Model">
  * Limited support for {@code Model} geometry type. Keeps only location and altitude
  * properties.</a>
- * <p/>
- * <a name="NetworkLinkControl">
+ * <p/></li>
+ * <li> <a name="NetworkLinkControl">
  * Limited support for {@code NetworkLinkControl} which creates an object wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.</a>
- * <p/>
- * Allows timestamps to omit seconds field as does Google Earth. Strict XML schema validation requires
+ * <p/></li>
+ * <li> Allows timestamps to omit seconds field as does Google Earth. Strict XML schema validation requires
  * seconds field in the dateTime ({@code YYYY-MM-DDThh:mm:ssZ}) format but Google Earth is lax in its rules.
  * Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC.
+ * </li>
+ * </ul>
  *
  * @author J.Mathews
  */
 public class KmlInputStream extends XmlInputStream implements IKml {
+
 	public static final Logger log = LoggerFactory.getLogger(KmlInputStream.class);
+
+	private static final Pattern WHITESPACE_PAT = Pattern.compile(",\\s+\\.?\\d");
 
 	private static final Set<String> ms_kml_ns = new HashSet<String>(7);
 
@@ -318,7 +342,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 							return rval;
 					}
 					/*
-                         // saving comments messes up the junit tests so comment out for now
+						 // saving comments messes up the junit tests so comment out for now
                          } else if (XMLStreamReader.COMMENT == type) {
                              IGISObject comment = handleComment(e);
                              if (comment != null)
@@ -2121,6 +2145,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private GeometryBase getGeometryBase(QName name, String localname) throws XMLStreamException {
 		if (localname.equals(LINE_STRING)) {
 			GeometryGroup geom = parseCoordinates(name);
+			if (log.isDebugEnabled() && geom.size() < 2) {
+				// ATC 15: LineString [OGC-07-147r2: cl. 10.7.3.4.1]
+				// Verify that the kml:coordinates element in a kml:LineString geometry contains at least two coordinate tuples.
+				// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#LineString
+				// NOTE: log level checked at debug level but logged at warn level to be picked up with KmlMetaDataDump
+				log.warn("LineString geometry fails constraint to contain at least two coordinate tuples [ATC 15]");
+			}
 			if (geom.size() == 1) {
 				Point pt = geom.points.get(0);
 				log.info("line with single coordinate converted to point: {}", pt);
@@ -2131,12 +2162,19 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			}
 		} else if (localname.equals(LINEAR_RING)) {
 			GeometryGroup geom = parseCoordinates(name);
+			if (log.isDebugEnabled() && geom.size() < 4) {
+				// ATC 16: LinearRing - control points
+				// LinearRing geometry must contain at least 4 coordinate tuples, where the first and last are identical (i.e. they constitute a closed figure).
+				// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#LinearRing-ControlPoints
+				// NOTE: log level checked at debug level but logged at warn level to be picked up with KmlMetaDataDump
+				log.warn("LinearRing geometry fails constraint to contain at least 4 coordinate tuples [ATC 16]");
+			}
 			if (geom.size() == 1) {
 				Point pt = geom.points.get(0);
-				log.info("ring with single coordinate converted to point: " + pt);
+				log.info("ring with single coordinate converted to point: {}", pt);
 				return getGeometry(geom, pt);
 			} else if (geom.size() != 0 && geom.size() < 4) {
-				log.info("ring with " + geom.size() + " coordinates converted to line: " + geom);
+				log.info("ring with {} coordinates converted to line: {}", geom.size(), geom);
 				return getGeometry(geom, new Line(geom.points));
 			} else {
 				// if geom.size() == 0 throws IllegalArgumentException
@@ -2159,13 +2197,20 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					if (OUTER_BOUNDARY_IS.equals(localPart)) {
 						parseCoordinates(qname, geom);
 						int nPoints = geom.size();
+						if (log.isDebugEnabled() && nPoints < 4) {
+							// ATC 16: LinearRing - control points
+							// LinearRing geometry must contain at least 4 coordinate tuples, where the first and last are identical (i.e. they constitute a closed figure).
+							// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#LinearRing-ControlPoints
+							// NOTE: log level checked at debug level but logged at warn level to be picked up with KmlMetaDataDump
+							log.warn("Polygon/LinearRing geometry fails constraint to contain at least 4 coordinate tuples [ATC 16]");
+						}
 						if (nPoints == 1) {
 							Point pt = geom.points.get(0);
-							log.info("polygon with single coordinate converted to point: " + pt);
+							log.info("polygon with single coordinate converted to point: {}", pt);
 							return getGeometry(geom, pt);
 						} else if (nPoints != 0 && nPoints < 4) {
 							// less than 4 points - use line for the shape
-							log.info("polygon with " + nPoints + " coordinates converted to line: " + geom);
+							log.info("polygon with {} coordinates converted to line: {}", nPoints, geom);
 							Line line = new Line(geom.points);
 							return getGeometry(geom, line);
 						}
@@ -2279,7 +2324,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				final String localPart = name.getLocalPart();
 				if (COORDINATES.equals(localPart)) {
 					String text = getNonEmptyElementText();
-					if (text != null) geom.points = parseCoord(text);
+					if (text != null) {
+						geom.points = parseCoord(text);
+					}
 				} else {
 					parseGeomAttr(geom, name, localPart);
 				}
@@ -2404,6 +2451,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	private static Point parsePointCoord(String coord) {
 		List<Point> list = parseCoord(coord);
+		if (log.isDebugEnabled() && list.size() != 1) {
+			// ATC 14: Point [OGC-07-147r2: cl. 10.3.2]
+			// Check that the kml:coordinates element in a kml:Point geometry contains exactly one coordinate tuple
+			// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#Point
+			// NOTE: log level checked at debug level but logged at warn level to be picked up with KmlMetaDataDump
+			log.warn("Point geometry fails constraint to contain exactly one coordinate tuple [ATC 14]");
+		}
 		return list.isEmpty() ? null : list.get(0);
 	}
 
@@ -2434,6 +2488,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		double elev = 0;
 		Longitude lon = null;
 		Latitude lat = null;
+
+		if (log.isDebugEnabled() && WHITESPACE_PAT.matcher(coord).find()) {
+			// ATC 3: Geometry coordinates
+			// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#Geometry-Coordinates
+			log.warn("Whitespace found within coordinate tuple [ATC 3]");
+			// NOTE: log level checked at debug level but logged at warn level to be picked up with KmlMetaDataDump
+		}
 		// note the NumberStreamTokenizer may introduce some floating-error (e.g., 5.5 -> 5.499999999999999)
 		try {
 			while (st.nextToken() != NumberStreamTokenizer.TT_EOF) {
