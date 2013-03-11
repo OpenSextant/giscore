@@ -364,7 +364,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	}
 
     /*
-         private IGISObject handleComment(XMLEvent e) throws XMLStreamException {
+		 private IGISObject handleComment(XMLEvent e) throws XMLStreamException {
              if (e instanceof javax.xml.stream.events.Comment) {
                  String text = ((javax.xml.stream.events.Comment)e).getText();
                  if (StringUtils.isNotBlank(text))
@@ -1403,9 +1403,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				String namespace = name.getNamespaceURI();
 				if (ms_kml_ns.contains(namespace)) {
 					// Look for next start element and recurse
-					XMLEvent next = stream.nextTag();
-					if (next != null && next.getEventType() == XMLEvent.START_ELEMENT) {
-						return handleStartElement(next);
+					XMLEvent next = stream.peek();
+					if (next != null) {
+						if (next.getEventType() == XMLEvent.START_ELEMENT) {
+							next = stream.nextTag();
+							return handleStartElement(next);
+						} else if (next.getEventType() == XMLEvent.END_ELEMENT)
+							log.debug("Skip element: {}", localname);
+						else throw new XMLStreamException("unexpected element");
 					}
 				} else {
 					log.debug("XXX: handle startElement with foreign namespace: {}", name);
@@ -1413,7 +1418,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				}
 			}
 		} catch (XMLStreamException e1) {
-			log.warn("Skip element: " + localname);
+			log.warn("Skip element: {}", localname);
 			log.debug("", e1);
 			skipNextElement(stream, name);
 		}
