@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+ well-formed XML but invalid KML document
+-->
+<kml xmlns="http://earth.google.com/kml/2.2">
+    <Document>
+        <Placemark>
+            <Point>
+                <coordinates>-122.4,37.8</coordinates>
+            </Point>
+        </Placemark>
+		
+        <styleUrl/>
+        <description/>
+		
+    </Document>
+</kml>
