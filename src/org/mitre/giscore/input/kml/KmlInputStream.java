@@ -602,8 +602,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					// handle extended data elements (i.e., arbitrary XML data) with
 					// namespace other than the root (KML) namespace.
 					// http://code.google.com/apis/kml/documentation/extendeddata.html#opaquedata
-                    /*
-                             <ExtendedData xmlns:camp="http://campsites.com">
+					/*
+							 <ExtendedData xmlns:camp="http://campsites.com">
                                <camp:number>14</camp:number>
                                <camp:parkingSpaces>2</camp:parkingSpaces>
                                <camp:tentSites>4</camp:tentSites>
@@ -907,7 +907,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			if (useUTC) cal.setTimeZone(UTC);
 			//else datestr += "*";
 			//System.out.format("%-10s\t%s%n", type, datestr);
-            /*
+			/*
                  possible dateTime types: { dateTime, date, gYearMonth, gYear }
                  if other than dateTime then must adjust the time to 0
 
@@ -1693,6 +1693,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		} else if (network) {
 			fs = new NetworkLink();
 		} else {
+			// should never get here
 			String localname = se.getName().getLocalPart();
 			if (!localname.equals(type))
 				log.error("Found new unhandled feature type: {} [{}]", type, localname);
@@ -1784,8 +1785,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 										double rot = Double.parseDouble(val);
 										if (Math.abs(rot) <= 180)
 											((ScreenOverlay) fs).setRotationAngle(rot);
-										else
-											log.warn("Invalid ScreenOverlay rotation value " + val);
+										else {
+											// 190 => -170, -190 => 170
+											if (rot > 180) rot -= 360;
+											else rot += 360; // otherwise rot < -180
+											log.warn("Normalize ScreenOverlay rotation value: {} => {}", val, rot);
+											((ScreenOverlay) fs).setRotationAngle(rot);
+										}
 									} catch (IllegalArgumentException nfe) {
 										log.warn("Invalid ScreenOverlay rotation " + val + ": " + nfe);
 									}
