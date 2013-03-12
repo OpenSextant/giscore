@@ -12,14 +12,14 @@
       <Placemark>
         <name>Radio A</name>
         <Point>
-          <coordinates>-121.9921875, 37.44140625</coordinates>
+          <coordinates>-121.9921875,37.44140625</coordinates>
         </Point>
       </Placemark>
       <Placemark>
         <name>Radio B</name>
         <visibility>0</visibility>
         <Point>
-          <coordinates>-121.9921875, 37.265625</coordinates>
+          <coordinates>-121.9921875,37.265625</coordinates>
         </Point>
       </Placemark>
     </Folder>
@@ -28,13 +28,13 @@
       <Placemark>
         <name>C</name>
         <Point>
-          <coordinates>-121.16796875, 37.44140625</coordinates>
+          <coordinates>-121.16796875,37.44140625</coordinates>
         </Point>
       </Placemark>
       <Placemark>
         <name>D</name>
         <Point>
-          <coordinates>-121.16796875, 37.265625</coordinates>
+          <coordinates>-121.16796875,37.265625</coordinates>
         </Point>
       </Placemark>
     </Folder>

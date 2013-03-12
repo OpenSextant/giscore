@@ -4,6 +4,7 @@
     <!-- This Camera inhibits the Camera on the PhotoOverlay which would
       fly the user straight into the PhotoOverlay on load of this file.
     -->
+	<open>1</open>
     <Camera>
       <longitude>-93.265032</longitude>
       <latitude>44.976335</latitude>
@@ -11,6 +12,7 @@
       <heading>270</heading>
       <tilt>0</tilt>
       <roll>0</roll>
+	  <altitudeMode>absolute</altitudeMode>
     </Camera>
     <Style id="balloon-style">
       <BalloonStyle>
@@ -31,6 +33,7 @@
         <heading>270</heading>
         <tilt>90</tilt>
         <roll>0</roll>
+		<altitudeMode>relativeToGround</altitudeMode>
       </Camera>
       <styleUrl>#balloon-style</styleUrl>
       <Icon>
