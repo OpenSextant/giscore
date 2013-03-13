@@ -210,11 +210,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     }
 
     /**
-     * Visit a DocumentStart object
+	 * Visit a DocumentStart object.
+	 * This can only be done once immediately after creating the KmlOutputStream
+	 * and before writing any Features, Containers, etc.
      *
      * @param documentStart
-     * @throws RuntimeException if the current XML state does not allow Namespace writing
-     *                          or if there is an error with the underlying XML
+	 * @throws IllegalStateException if there is an error with the underlying XML (e.g. current XML
+	 *                               state does not allow Namespace writing)
+	 *                               or attempt to call visit(DocumentStart) more than once
      */
     @Override
     public void visit(DocumentStart documentStart) {
@@ -235,7 +238,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
             if (needNewline) writer.writeCharacters("\n");
         } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -243,14 +246,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Visit a ContainerEnd object
      *
      * @param containerEnd
-     * @throws RuntimeException if there is an error with the underlying XML
+     * @throws IllegalStateException if there is an error with the underlying XML
      */
     @Override
     public void visit(ContainerEnd containerEnd) {
         try {
             writer.writeEndElement();
         } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -258,7 +261,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Visit a ContainerStart object
      *
      * @param containerStart
-     * @throws RuntimeException if there is an error with the underlying XML
+     * @throws IllegalStateException if there is an error with the underlying XML
      */
     @Override
     public void visit(ContainerStart containerStart) {
@@ -291,7 +294,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 }
             }
         } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -346,7 +349,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 if (waitingList.size() < 2)
                     writer.writeEndElement(); // end Region
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         }
     }
@@ -425,7 +428,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         }
     }
@@ -460,6 +463,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @param containerType type of Container were visiting if Feature is a Document or Folder otherwise null
      * @return list of elements initialized with getElement() and removed those elements that were processed, empty list
      *         if no non-kml elements left.
+	 * @throws IllegalStateException if there is an error with the underlying XML
      */
     private List<Element> handleAttributes(Common feature, String containerType) {
         try {
@@ -578,7 +582,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
             return elements;
         } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -737,7 +741,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Visit a Feature including its geometry and any child XML Elements.
      *
      * @param feature
-     * @throws RuntimeException if there is an error with the underlying XML
+     * @throws IllegalStateException if there is an error with the underlying XML
      */
     @Override
     public void visit(Feature feature) {
@@ -766,7 +770,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             writer.writeEndElement();
             writer.writeCharacters("\n");
         } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -774,7 +778,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Visit a row. Output as a Placemark with ExtendedData without geometry
      *
      * @param row Row to visit
-     * @throws RuntimeException if there is an error with the underlying XML
+     * @throws IllegalStateException if there is an error with the underlying XML
      */
     @Override
     public void visit(Row row) {
@@ -785,7 +789,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 writer.writeEndElement();
                 writer.writeCharacters("\n");
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         }
     }
@@ -794,7 +798,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Visit an XML Element.
      *
      * @param element Element to visit, never null
-     * @throws RuntimeException if there is an error with the underlying XML
+     * @throws IllegalStateException if there is an error with the underlying XML
      */
     @Override
     public void visit(Element element) {
@@ -813,7 +817,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 writeAsComment(element);
             }
         } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -1022,7 +1026,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 }
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
@@ -1040,7 +1044,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleSimpleElement(COORDINATES, handleCoordinates(r.iterator()));
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
@@ -1058,7 +1062,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleSimpleElement(COORDINATES, handleCoordinates(l.getPoints()));
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
@@ -1066,7 +1070,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Handle the output of a point
      *
      * @param p the point, ignored if <code>null</code>
-     * @throws RuntimeException thrown if XMLStreamException is caught
+     * @throws IllegalStateException thrown if XMLStreamException is caught
      */
     @Override
     public void visit(Point p) {
@@ -1079,7 +1083,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleSimpleElement(COORDINATES, handleSingleCoordinate(p));
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
@@ -1135,7 +1139,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                     writer.writeEndElement();
                 }
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         }
     }
@@ -1153,7 +1157,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 super.visit(bag);
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
@@ -1171,7 +1175,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 super.visit(multiPoint);
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
@@ -1189,7 +1193,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 super.visit(multiLine);
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
@@ -1206,7 +1210,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 super.visit(rings);
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
@@ -1223,7 +1227,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 super.visit(polygons);
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
@@ -1355,7 +1359,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Visit a Schema object
      *
      * @param schema Schema to visit, never null
-     * @throws RuntimeException if there is an error with the underlying XML
+     * @throws IllegalStateException if there is an error with the underlying XML
      */
     @Override
     public void visit(Schema schema) {
@@ -1394,7 +1398,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
             writer.writeEndElement();
         } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -1409,7 +1413,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             try {
                 handle(style);
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
@@ -1417,7 +1421,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Handle the output of a NetworkLinkControl feature
      *
      * @param networkLinkControl
-     * @throws RuntimeException if there is an error with the underlying XML
+     * @throws IllegalStateException if there is an error with the underlying XML
      */
     public void visit(NetworkLinkControl networkLinkControl) {
         /*
@@ -1464,7 +1468,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             handleAbstractView(networkLinkControl.getViewGroup()); // LookAt or Camera AbstractViewGroup
             writer.writeEndElement();
         } catch (XMLStreamException e) {
-            throw new RuntimeException(e);
+            throw new IllegalStateException(e);
         }
     }
 
@@ -1681,7 +1685,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             try {
                 handleStyleMap(styleMap);
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
@@ -1725,7 +1729,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * Visit a Model object
      *
      * @param model Model to visit, ignored if null
-     * @throws RuntimeException if there is an error with the underlying XML
+     * @throws IllegalStateException if there is an error with the underlying XML
      */
     @Override
     public void visit(Model model) {
@@ -1749,7 +1753,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                     writer.writeEndElement();
                 }
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
