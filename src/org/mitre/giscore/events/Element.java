@@ -70,11 +70,19 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	private String text;
 
     /**
-	 * Empty constructor requires caller to call setName() and setNamespace()
+	 * Empty constructor requires caller to call setName() and optionally setNamespace()
      * directly or deserialize with {@link #readData}.
 	 */
 	public Element() {
         namespace = Namespace.NO_NAMESPACE;
+	}
+
+	/**
+	 * Create Element with noname namespace by default.
+	 */
+	public Element(String name) {
+		setName(name);
+		namespace = Namespace.NO_NAMESPACE;
 	}
 	
 	/**
@@ -164,6 +172,20 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
 	 */
 	public void setText(String text) {
 		this.text = text;
+	}
+
+	/**
+	 * Set text and return this.
+	 * This allows creating an element and setting text in one line such as:
+	 * <blockquote>
+	 * 	<code>Element e = new Element("when").withText("2010-05-28T02:02:09Z");</code>
+	 * </blockquote>
+	 * @param text the text to set
+	 * @return the Element itself
+	 */
+	public Element withText(String text) {
+		setText(text);
+		return this;
 	}
 
 	/**
