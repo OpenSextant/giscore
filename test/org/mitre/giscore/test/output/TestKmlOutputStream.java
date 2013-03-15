@@ -288,7 +288,7 @@ public class TestKmlOutputStream extends TestGISBase {
 			  <when>2010-05-28T02:02:09Z</when>
 			  <when>2010-05-28T02:02:56Z</when>
 			  <gx:coord>-122.207881 37.371915 156.000000</gx:coord>
-			  <gx:coord>--122.203207 37.374857 140.199997</gx:coord>
+			  <gx:coord>-122.203207 37.374857 140.199997</gx:coord>
 			</gx:Track>
 		  </Placemark>
 		 */
@@ -301,11 +301,11 @@ public class TestKmlOutputStream extends TestGISBase {
 		Feature f = new Feature();
 		f.setName("track");
 		Element gxElt = new Element(gxNs, "Track");
-		List<Element> elements = gxElt.getChildren();
-		elements.add(new Element("when").withText("2010-05-28T02:02:09Z"));
-		elements.add(new Element("when").withText("2010-05-28T02:02:56Z"));
-		elements.add(new Element(gxNs, "coord").withText("-122.207881 37.371915 156.000000"));
-		elements.add(new Element(gxNs, "coord").withText("-122.203207 37.374857 140.199997"));
+		List<Element> elts = gxElt.getChildren();
+		elts.add(new Element("when").withText("2010-05-28T02:02:09Z"));
+		elts.add(new Element("when").withText("2010-05-28T02:02:56Z"));
+		elts.add(new Element(gxNs, "coord").withText("-122.207881 37.371915 156.000000"));
+		elts.add(new Element(gxNs, "coord").withText("-122.203207 37.374857 140.199997"));
 		f.addElement(gxElt);
 		kos.write(f);
 		kos.close();
