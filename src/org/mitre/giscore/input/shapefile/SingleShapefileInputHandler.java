@@ -281,15 +281,15 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
      * Closes this input stream and releases any system resources
      * associated with the stream.
      *
-     * @throws RuntimeException if an I/O error occurs closing shp stream
+     * @throws IllegalStateException if an I/O error occurs closing shp stream
      */
     public void close() {
-        RuntimeException channelCloseException = null;
+        IllegalStateException channelCloseException = null;
         if (fileChannel != null) {
             try {
                 fileChannel.close();
             } catch (IOException e) {
-                channelCloseException = new RuntimeException("Problem closing shp stream", e);
+                channelCloseException = new IllegalStateException("Problem closing shp stream", e);
             }
             fileChannel = null;
         }
@@ -297,7 +297,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
             try {
                 plainChannel.close();
             } catch (IOException e) {
-                channelCloseException = new RuntimeException("Problem closing shp stream", e);
+                channelCloseException = new IllegalStateException("Problem closing shp stream", e);
             }
             plainChannel = null;
         }
