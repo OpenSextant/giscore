@@ -41,6 +41,7 @@ public final class ZipUtils {
      * @param prefix String file path prefix
      * @param outputPath File or Directory to be recursively processed
      * @param outputStream ZipOutputStream to write to
+     * @throws IllegalStateException if there is an I/O error
      */
     public static void outputZipComponents(String prefix, File outputPath,
                                      ZipOutputStream outputStream) {
@@ -62,7 +63,7 @@ public final class ZipUtils {
                 } catch (FileNotFoundException e) {
                     // Ignore since lock files may linger and cause this
                 } catch (IOException e) {
-                    throw new RuntimeException("Problem writing zip output", e);
+                    throw new IllegalStateException("Problem writing zip output", e);
                 } finally {
                     IOUtils.closeQuietly(is);
                     is = null;

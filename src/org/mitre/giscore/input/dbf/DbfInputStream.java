@@ -251,6 +251,16 @@ public class DbfInputStream extends GISInputStreamBase implements
         }
     }
 
+  /**
+   * Reads the next <code>IGISObject</code> from the InputStream.
+   *
+   * @return next <code>IGISObject</code>,
+   *         or <code>null</code> if the end of the stream is reached.
+   * @throws IOException
+   *            if an I/O error occurs or if there
+   * @throws IllegalArgumentException
+   *            if a fatal error with the underlying data
+   */
     public IGISObject read() throws IOException {
         if (hasSaved())
             return readSaved();
@@ -259,7 +269,7 @@ public class DbfInputStream extends GISInputStreamBase implements
             try {
                 rval = rowClass.newInstance();
             } catch (Exception e) {
-                throw new RuntimeException(
+                throw new IllegalArgumentException(
                         "Cannot instantiate given row class "
                                 + rowClass.getCanonicalName(), e);
             }
@@ -276,7 +286,8 @@ public class DbfInputStream extends GISInputStreamBase implements
      *
      * @param row row to be populated, never <code>null</code>
      * @return
-     * @throws IOException
+     * @throws IOException if an I/O error occurs
+     * @throws IllegalArgumentException if row is null
      */
     public boolean readRecord(Row row) throws IOException {
         if (row == null) {

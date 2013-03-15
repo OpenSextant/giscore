@@ -102,7 +102,8 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
      *
      * @param outputStream the output stream
      * @param arguments    the optional arguments, none are defined for this stream
-     * @throws IOException if an error occurs
+     * @throws IOException if an I/O error occurs
+     * @throws IllegalArgumentException if outputStream is null
      */
     public DbfOutputStream(OutputStream outputStream, Object[] arguments)
             throws IOException {
@@ -117,6 +118,15 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
         stream.writeByte(SIGNATURE);
     }
 
+    /**
+     * Ctor
+     *
+     * @param outputStream the output stream
+     * @param schema    the optional arguments, none are defined for this stream
+     * @param buffer    the buffer
+     * @throws IOException if an I/O error occurs
+     * @throws IllegalArgumentException if outputStream is null
+     */
     public DbfOutputStream(OutputStream outputStream, Schema schema,
                            ObjectBuffer buffer) throws IOException {
         if (outputStream == null) {
@@ -131,6 +141,12 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
         stream.writeByte(SIGNATURE);
     }
 
+    /**
+     * Write GISObject object to DBF
+     *
+     * @param object GISObject object
+     * @throws IllegalArgumentException if multiple schemas are detected
+     */
     public void write(IGISObject object) {
         if (object instanceof Schema) {
             if (schema == null) {
@@ -143,7 +159,7 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
             try {
                 writeRow((Row) object);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("", e);
             }
         }
     }
@@ -153,6 +169,12 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
         buffer.write(object);
     }
 
+    /**
+     * Close stream
+     *
+     * @throws IOException if an I/O error occurs
+     * @throws IllegalStateException if there is an error with the underlying data structure
+     */
     public void close() throws IOException {
         if (stream != null) {
             try {
@@ -192,11 +214,11 @@ public class DbfOutputStream implements IGISOutputStream, IDbfConstants {
                 try {
                     outputRows(len);
                 } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
+                    throw new IllegalStateException(e);
                 } catch (InstantiationException e) {
-                    throw new RuntimeException(e);
+                    throw new IllegalStateException(e);
                 } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
+                    throw new IllegalStateException(e);
                 }
             } finally {
                 IOUtils.closeQuietly(stream);

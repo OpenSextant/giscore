@@ -482,11 +482,23 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				"Cannot output geometry bags to a shapefile");
 	}
 
+	/**
+	 * Output Line
+	 *
+	 * @param line
+	 * @throws IllegalStateException if there is an I/O error
+	 */
 	@Override
 	public void visit(Line line) {
 		outputLines(line);
 	}
 
+	/**
+	 * Output Lines
+	 *
+	 * @param line
+	 * @throws IllegalStateException if there is an I/O error
+	 */
 	@Override
 	public void visit(MultiLine multiLine) {
 		outputLines(multiLine);
@@ -496,6 +508,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output either a single or a group of lines
 	 *
 	 * @param geo
+	 * @throws IllegalStateException if there is an I/O error
 	 */
 	private void outputLines(Geometry geo) {
 		/*
@@ -519,7 +532,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				// todo: M Array // Measures ??
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -528,6 +541,12 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		outputPolygon(ring, 1);
 	}
 
+	/**
+	 * Output rings
+	 *
+	 * @param rings
+	 * @throws IllegalStateException if there is an I/O error
+	 */
 	@Override
 	public void visit(MultiLinearRings rings) {
 		try {
@@ -550,10 +569,16 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				}
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
+	/**
+	 * Output polygons
+	 *
+	 * @param polygons
+	 * @throws IllegalStateException if there is an I/O error
+	 */
 	@Override
 	public void visit(MultiPolygons polygons) {
 		try {
@@ -582,15 +607,28 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				}
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
+	/**
+	 * Output polygons
+	 *
+	 * @param polygons
+	 * @throws IllegalStateException if there is an I/O error
+	 */
 	@Override
 	public void visit(Polygon polygon) {
 		outputPolygon(polygon, 1 + polygon.getLinearRings().size());
 	}
 
+	/**
+	 * Output polygon
+	 *
+	 * @param geo
+	 * @param partcount
+	 * @throws IllegalStateException if there is an I/O error
+	 */
 	private void outputPolygon(Geometry geo, int partcount) {
 		try {
 			putBBox(geo.getBoundingBox());
@@ -602,10 +640,16 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				putPolyPointsZ(geo);
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
+	/**
+	 * Output points
+	 *
+	 * @param multiPoint
+	 * @throws IllegalStateException if there is an I/O error
+	 */
 	@Override
 	public void visit(MultiPoint multiPoint) {
 		/*
@@ -627,10 +671,16 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				// TODO: not outputting M Range + M Array values...
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
+	/**
+	 * Output point
+	 *
+	 * @param point
+	 * @throws IllegalStateException if there is an I/O error
+	 */
 	@Override
 	public void visit(Point point) {
 		try {
@@ -639,7 +689,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				putPointZ(point, true);
 			}
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -955,7 +1005,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * @param
 	 * @param bbox
 	 * @throws IOException
-	 *             if an error occurs
+	 *             if an I/O error occurs
 	 */
 	private void putBBox(Geodetic2DBounds bbox) throws IOException {
 		double westLonDeg = bbox.getWestLon().inDegrees();

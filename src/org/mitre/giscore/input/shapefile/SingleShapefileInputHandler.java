@@ -218,7 +218,6 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
      *
      * @param prjFile
      * @throws IOException                  if an I/O error occurs
-     * @throws UnsupportedEncodingException
      */
     private void checkPrj(InputStream stream) throws IOException {
         try {
@@ -237,7 +236,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
                 }
             }
         } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+            throw new IOException(e);
         } finally {
             IOUtils.closeQuietly(stream);
         }

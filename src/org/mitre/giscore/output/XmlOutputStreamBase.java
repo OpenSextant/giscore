@@ -168,7 +168,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
      *  
      * @param comment Comment, never <code>null</code>
      * 
-     * @throws RuntimeException if there is an error with the underlying XML 
+     * @throws IllegalStateException if there is an error with the underlying XML 
      */
     @Override
     public void visit(Comment comment) {
@@ -190,14 +190,14 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
                 writer.writeComment(buf.toString());
                 writer.writeCharacters("\n");
             } catch (XMLStreamException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
     }
 
     /**
      * Visit a row. Output as an XML Comment.
      * @param row
-     * @throws RuntimeException if there is an error with the underlying XML
+     * @throws IllegalStateException if there is an error with the underlying XML
      */
     @Override
     public void visit(Row row) {
