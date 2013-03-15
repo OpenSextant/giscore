@@ -280,6 +280,56 @@ public class TestKmlOutputStream extends TestGISBase {
 	}
 
 	@Test
+	public void createGxTrack() throws IOException, XMLStreamException {
+		/*
+		Generate:
+		  <Placemark>
+			<gx:Track>
+			  <when>2010-05-28T02:02:09Z</when>
+			  <when>2010-05-28T02:02:56Z</when>
+			  <gx:coord>-122.207881 37.371915 156.000000</gx:coord>
+			  <gx:coord>--122.203207 37.374857 140.199997</gx:coord>
+			</gx:Track>
+		  </Placemark>
+		 */
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		DocumentStart ds = new DocumentStart(DocumentType.KML);
+		Namespace gxNs = Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT);
+		ds.getNamespaces().add(gxNs);
+		kos.write(ds);
+		Feature f = new Feature();
+		f.setName("track");
+		Element gxElt = new Element(gxNs, "Track");
+		List<Element> elements = gxElt.getChildren();
+		elements.add(new Element("when").withText("2010-05-28T02:02:09Z"));
+		elements.add(new Element("when").withText("2010-05-28T02:02:56Z"));
+		elements.add(new Element(gxNs, "coord").withText("-122.207881 37.371915 156.000000"));
+		elements.add(new Element(gxNs, "coord").withText("-122.203207 37.374857 140.199997"));
+		f.addElement(gxElt);
+		kos.write(f);
+		kos.close();
+
+		// System.out.println("XXX: KML content:\n" + bos.toString("UTF-8"));
+
+		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+		try {
+			assertNotNull(kis.read()); // skip DocumentStart
+			IGISObject obj = kis.read(); // Placemark
+			assertTrue(obj instanceof Feature);
+			Feature f2 = (Feature)obj;
+			List<Element> list = f2.getElements();
+			assertEquals(1, list.size());
+			Element track = list.get(0);
+			assertEquals(gxNs, track.getNamespace());
+			assertEquals(4, track.getChildren().size());
+		} catch (AssertionError ae) {
+			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
+			throw ae;
+		}
+	}
+
+	@Test
 	public void testRowData() throws XMLStreamException, IOException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		KmlOutputStream kos = new KmlOutputStream(bos);
