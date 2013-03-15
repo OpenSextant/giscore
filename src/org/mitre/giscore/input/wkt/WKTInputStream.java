@@ -71,8 +71,10 @@ public class WKTInputStream implements IGISInputStream {
 	
 	/**
 	 * Ctor
-	 * @param stream
+	 * @param stream   An InputStream
 	 * @throws IllegalArgumentException if stream is null
+         * @throws  IllegalStateException
+         *             If UTF-8 encoding is not supported
 	 */
 	public WKTInputStream(InputStream stream) {
 		if (stream == null) {
@@ -83,13 +85,13 @@ public class WKTInputStream implements IGISInputStream {
 			reader = new BufferedReader(reader);
 			lexer = new WKTLexer(reader);
 		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException();
+			throw new IllegalStateException();
 		}
 	}
 	
 	/**
 	 * Ctor
-	 * @param stream
+	 * @param stream   An InputStream
 	 * @param arguments
 	 * @throws IllegalArgumentException if stream is null
 	 */
@@ -97,13 +99,21 @@ public class WKTInputStream implements IGISInputStream {
 		this(stream);
 	}
 
+	/**
+	 * Reads the next <code>IGISObject</code> from the InputStream.
+	 *
+	 * @return next <code>IGISObject</code>,
+	 *         or <code>null</code> if the end of the stream is reached.
+	 * @throws IOException if an I/O error occurs or if there
+	 * @throws IllegalStateException if a fatal error with the underlying data structure
+	 */
 	@Override
 	public IGISObject read() throws IOException {
 		currentop = lexer.nextToken();
 		if(currentop == null) {
 			return null;
 		} else if (! currentop.getType().equals(WKTToken.TokenType.ID)) {
-			throw new RuntimeException("Expected an identifier but found the token type " + currentop.getType() + " instead");
+			throw new IllegalStateException("Expected an identifier but found the token type " + currentop.getType() + " instead");
 		}
 		
 		// Find out if we have extra geometry and remove the M and/or Z from
@@ -316,7 +326,7 @@ public class WKTInputStream implements IGISInputStream {
 				Latitude lat = new Latitude(y.getDouble(), Angle.DEGREES);
 				return new Geodetic3DPoint(lon, lat, z.getDouble());
 			} else {
-				throw new RuntimeException("One of these tokens was not a number: " + x + ", " + y + ", " + z);
+				throw new IllegalStateException("One of these tokens was not a number: " + x + ", " + y + ", " + z);
 			}
 		} else {
 			if (x.getType().equals(WKTToken.TokenType.NUMBER) && 
@@ -325,7 +335,7 @@ public class WKTInputStream implements IGISInputStream {
 				Latitude lat = new Latitude(y.getDouble(), Angle.DEGREES);
 				return new Geodetic2DPoint(lon, lat);
 			} else {
-				throw new RuntimeException("One of these tokens was not a number: " + x + ", " + y);
+				throw new IllegalStateException("One of these tokens was not a number: " + x + ", " + y);
 			}
 		}
 	}
@@ -359,7 +369,7 @@ public class WKTInputStream implements IGISInputStream {
 		try {
 			reader.close();
 		} catch (IOException e) {
-			throw new RuntimeException();
+			throw new IllegalStateException();
 		}
 	}
 

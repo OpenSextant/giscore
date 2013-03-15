@@ -102,7 +102,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 			handlePoint(center);
 			writer.append(')');
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -110,7 +110,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 	 * Output a point
 	 *  
 	 * @param pnt
-	 * @throws IOException
+	 * @throws IOException if an error occurs
 	 */
 	public void handlePoint(Geodetic2DPoint pnt) throws IOException {
 		writer.append(Double.toString(pnt.getLongitude().inDegrees()));
@@ -166,7 +166,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 			writer.append("LINESTRING ");
 			handlePointList(line.getPoints());
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -184,7 +184,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 			handlePointList(ring.getPoints());
 			writer.append(')');
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -201,7 +201,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 			writer.append("POLYGON ");
 			handlePoly(polygon);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -219,7 +219,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 			List<Point> points = multiPoint.getPoints();
 			handlePointList(points);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -246,7 +246,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 			}
 			writer.append(')');
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -274,7 +274,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 			}
 			writer.append(')');
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -300,7 +300,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 			}
 			writer.append(')');
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -326,14 +326,14 @@ public class WKTOutputStream extends StreamVisitorBase implements
 
 				writer.append(')');
 			} catch (IOException e) {
-				throw new RuntimeException(e);
+				throw new IllegalStateException(e);
 			}
 		}
 	}
 
 	/**
 	 * @throws IllegalArgumentException if object is null
-	 * @throws RuntimeException if an I/O error occurs
+	 * @throws IllegalStateException if an I/O error occurs
 	 * @see
 	 * org.mitre.giscore.output.IGISOutputStream#write(org.mitre.giscore.events.IGISObject)
 	 */
@@ -345,7 +345,7 @@ public class WKTOutputStream extends StreamVisitorBase implements
 		try {
 			writer.append("\n");
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 }
