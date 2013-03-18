@@ -1259,7 +1259,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         // To enable tessellation, the value for <altitudeMode> must be clampToGround or clampToSeaFloor.
         //<altitudeMode>clampToGround</altitudeMode>
         // gx:drawOrder and tessellate not applicable to Point
-        // TODO: handle gx:drawOrder for Circle, Line, Ring, Polygon geometries
+        // handle gx:drawOrder for Circle, Line, Ring, Polygon geometries
         final Class<? extends GeometryBase> aClass = geom.getClass();
         if (aClass != Point.class) {
             Integer drawOrder = geom.getDrawOrder();
