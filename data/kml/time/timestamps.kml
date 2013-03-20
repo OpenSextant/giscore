@@ -1,119 +1,130 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- 
+<!--
  All variations of timestamps available for kml:dateTimeType fields
  used in TimeStamp and TimeSpan elements.
 
-            "2009", 			// gYear (YYYY)
-            "2009-07", 			// gYearMonth (YYYY-MM)
-            "2009-07-16",		// date (YYYY-MM-DD)
-            "2009-07-16T07:30:15Z",	// dateTime (YYYY-MM-DDThh:mm:ssZ)
-            "2009-07-16T10:30:15+03:00" // dateTime (YYYY-MM-DDThh:mm:sszzzzzz)
+	"2009", 			// gYear (YYYY)
+	"2009-07", 			// gYearMonth (YYYY-MM)
+	"2009-07-16",			// date (YYYY-MM-DD)
+	"2009-07-16T07:30:15Z",		// dateTime (YYYY-MM-DDThh:mm:ssZ)
+	"2009-07-16T10:30:15+03:00"	// dateTime (YYYY-MM-DDThh:mm:sszzzzzz)
 -->
 <kml xmlns="http://www.opengis.net/kml/2.2">
     <Document>
         <name>TimeStamp'ed Points</name>
-	<open>1</open>
+        <open>1</open>
         <Placemark>
             <name>when 2009</name>
+            <description>point 1</description>
             <TimeStamp>
                 <when>2009</when>
             </TimeStamp>
             <Point>
-                <coordinates>-122.536226,37.86047,0</coordinates>
+                <coordinates>-122.536226,37.86047</coordinates>
             </Point>
         </Placemark>
         <Placemark>
             <name>span 2009</name>
+            <description>point 2</description>
             <TimeSpan>
                 <begin>2009</begin>
                 <end>2009</end>
             </TimeSpan>
             <Point>
-                <coordinates>-122.536422,37.860303,0</coordinates>
+                <coordinates>-122.536422,37.860303</coordinates>
             </Point>
         </Placemark>
         <Placemark>
-            <name>when 2009-03</name>
+            <name>when 2009-02</name>
+            <description>point 3</description>
             <TimeStamp>
-                <when>2009-03</when>
+                <when>2009-02</when>
             </TimeStamp>
             <Point>
-                <coordinates>-122.536688,37.860072,0</coordinates>
+                <coordinates>-122.536688,37.860072</coordinates>
             </Point>
         </Placemark>
         <Placemark>
-            <name>span 2009-03</name>
+            <name>span 2009-02</name>
+            <description>point 4</description>
             <TimeSpan>
-                <begin>2009-03</begin>
-                <end>2009-03</end>
+                <begin>2009-02</begin>
+                <end>2009-02</end>
             </TimeSpan>
             <Point>
-                <coordinates>-122.536923,37.859855,0</coordinates>
+                <coordinates>-122.536923,37.859855</coordinates>
             </Point>
         </Placemark>
         <Placemark>
-            <name>when 2009-03-14</name>
+            <name>when 2009-03-01</name>
+            <description>point 5</description>
             <TimeStamp>
-                <when>2009-03-14</when>
+                <when>2009-03-01</when>
             </TimeStamp>
             <Point>
-                <coordinates>-122.537116,37.85961000000001,0</coordinates>
+                <coordinates>-122.537116,37.85961000000001</coordinates>
             </Point>
         </Placemark>
         <Placemark>
-            <name>span 2009-03</name>
+            <name>span 2009-03-01</name>
+            <description>point 6</description>
             <TimeSpan>
-                <begin>2009-03-14</begin>
-                <end>2009-03-14</end>
+                <begin>2009-03-01</begin>
+                <end>2009-03-01</end>
             </TimeSpan>
             <Point>
-                <coordinates>-122.537298,37.859336,0</coordinates>
+                <coordinates>-122.537298,37.859336</coordinates>
             </Point>
         </Placemark>
         <Placemark>
-            <name>when 2009-03-14T21:06:30Z</name>
+            <name>when 2009-04-01T01:06:30Z</name>
+            <description>point 7</description>
             <TimeStamp>
-                <when>2009-03-14T21:06:30Z</when>
+                <when>2009-04-01T01:06:30Z</when>
             </TimeStamp>
             <Point>
-                <coordinates>-122.537469,37.85907,0</coordinates>
+                <coordinates>-122.537469,37.85907</coordinates>
             </Point>
         </Placemark>
         <Placemark>
-            <name>span 2009-03-14T21:06Z</name>
+            <name>span 2009-04-02T02:06Z</name>
+            <description>point 8</description>
             <TimeSpan>
-                <begin>2009-03-14T21:06:00Z</begin>
-                <end>2009-03-14T21:06:59Z</end>
+                <begin>2009-04-02T02:06:00Z</begin>
+                <end>2009-04-02T02:06:59Z</end>
             </TimeSpan>
             <Point>
-                <coordinates>-122.537635,37.858822,0</coordinates>
+                <coordinates>-122.537635,37.858822</coordinates>
             </Point>
         </Placemark>
         <Placemark>
-            <name>when 2009-03-14T21:10:46+03:00</name>
+            <name>when 2009-04-03T06:10:46+03:00</name>
+            <description>point 9</description>
             <TimeStamp>
-                <when>2009-03-14T21:10:46+03:00</when>
+                <when>2009-04-03T06:10:46+03:00</when>
             </TimeStamp>
             <Point>
-                <coordinates>-122.537848,37.858526,0</coordinates>
+                <coordinates>-122.537848,37.858526</coordinates>
             </Point>
         </Placemark>
         <Placemark>
-            <name>when 2009-03-14T16:10:50-05:00</name>
+            <name>when 2009-04-04T00:10:50-04:00</name>
+            <description>point 10</description>
             <TimeStamp>
-                <when>2009-03-14T16:10:50-05:00</when>
+                <when>2009-04-04T00:10:50-04:00</when>
             </TimeStamp>
             <Point>
-                <coordinates>-122.538044,37.858288,0</coordinates>
+                <coordinates>-122.538044,37.858288</coordinates>
             </Point>
         </Placemark>
         <Placemark>
-            <name>when 2009-03-14T21:10:50</name>
+            <name>when 2009-04-05T05:10:50 (no Z)</name>
+            <description>point 11</description>
             <TimeStamp>
-                <when>2009-03-14T21:10:50</when>
+                <when>2009-04-05T05:10:50</when>
             </TimeStamp>
             <Point>
-                <coordinates>-122.538307,37.858064,0</coordinates>
+                <coordinates>-122.538307,37.858064</coordinates>
             </Point>
         </Placemark>
     </Document>
