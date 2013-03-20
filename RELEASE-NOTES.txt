@@ -16,8 +16,13 @@ Changes
 New implementation of FileGDB Input and Output based on ESRI's C++
 libraries.
 
+Bug fixes:
+-Fix to polygon, ring and line handling for filegdb.
+
 Improvements:
 -Added additional validation checks in KML handling
+-Add checks for whitespace in coordinate tuples and wrong number of points in geometries for KML input
+-Added check in KmlInputStream to normalize out of range rotation values same as Google Earth does
 
 ------------------------------------------------------------------------------
 
