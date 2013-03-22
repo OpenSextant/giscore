@@ -828,6 +828,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @throws XMLStreamException if there is an error with the underlying XML.
      */
     private void handleNetworkLink(NetworkLink link) throws XMLStreamException {
+		if(link.isRefreshVisibility()) {
+			handleSimpleElement(REFRESH_VISIBILITY, "1"); // boolean [default=0]
+		}
+		if (link.isFlyToView()) {
+			handleSimpleElement(FLY_TO_VIEW, "1"); // boolean [default=0]
+		}
         handleLinkElement(LINK, link.getLink());
     }
 

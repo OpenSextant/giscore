@@ -34,9 +34,9 @@ import org.mitre.giscore.utils.SimpleObjectOutputStream;
 public class NetworkLink extends Feature implements IContainerType {
 
 	private static final long serialVersionUID = 1L;
-	private boolean refreshVisibility = false;
-	private boolean flyToView = false;
-	private boolean open;
+	private boolean refreshVisibility;	// default = 0 (false)
+	private boolean flyToView;			// default = 0 (false)
+	private boolean open; 				// default = 0 (false)
 	private TaggedMap link;
 
 	/* (non-Javadoc)
