@@ -141,6 +141,56 @@ public class TestKmlOutputStream extends TestGISBase {
 	}
 
 	@Test
+	public void testNetworkLink() throws XMLStreamException, IOException {
+
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+
+		NetworkLink nl = new NetworkLink();
+		nl.setId("id");
+		nl.setName("Test Link");
+		nl.setDescription("POI");
+		nl.setOpen(true);
+		nl.setStartTime(new Date());
+		nl.setEndTime(nl.getStartTime());
+		nl.setSnippet("snippet");
+		Namespace gxNs = Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT);
+		nl.addElement(new Element(gxNs, "balloonVisibility").withText("1"));
+		TaggedMap region = new TaggedMap(IKml.REGION);
+		region.put("north", "37.834672");
+		region.put("south", "37.79627");
+		region.put("east", "-122.458072");
+		region.put("west", "-122.494786");
+		region.put("minLodPixels", "128");
+		region.put("maxLodPixels", "-1");
+		region.put("minFadeExtent", "0");
+		region.put("maxFadeExtent", "0");
+		nl.setRegion(region);
+		TaggedMap link = new TaggedMap(IKml.LINK);
+		link.put("href", "http://localhost:9005/kml");
+		link.put("refreshMode", IKml.REFRESH_MODE_ON_INTERVAL);
+		link.put("refreshInterval", "4");
+		link.put("viewRefreshMode", "onRegion");
+		link.put("viewRefreshTime", "1");
+		nl.setLink(link);
+		nl.setRefreshVisibility(true);
+		nl.setFlyToView(true);
+		kos.write(nl);
+		kos.close();
+
+		//System.err.println(new String(bos.toByteArray()));
+		//System.err.println(nl);
+
+		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+		assertNotNull(kis.read()); // skip DocumentStart
+		IGISObject obj = kis.read();
+		//System.err.println(obj);
+		assertTrue(obj instanceof NetworkLink);
+		assertEquals(nl, obj);
+		kos.close();
+	}
+
+	@Test
 	public void testMultiDocumentStarts() throws IOException, XMLStreamException {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		KmlOutputStream kos = new KmlOutputStream(bos);
