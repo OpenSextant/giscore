@@ -146,7 +146,7 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
     /**
      * Converts property to Integer if found.
      * @param key
-     * @return Integer if property is found and a valid Integer value, otherwise null.
+     * @return Integer if property is found with a valid Integer value, otherwise null.
      */
     @CheckForNull
     public Integer getIntegerValue(String key) {
@@ -164,7 +164,7 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
     /**
      * Converts property to Double if found.
      * @param key
-     * @return Double if property is found and a valid Double value, otherwise null.
+     * @return Double if property is found with a valid Double value, otherwise null.
      */
     @CheckForNull
     public Double getDoubleValue(String key) {
@@ -178,4 +178,16 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
         }
         return null;
     }
+
+	/**
+	 * Helper method to add an integer value into the Map
+	 * @param key key with which the specified value is to be associated
+	 * @param value value to be associated with the specified key
+	 * @return the previous value associated with <tt>key</tt>, or
+	 *         <tt>null</tt> if there was no mapping for <tt>key</tt>.
+	 */
+	public String put(String key, int value) {
+		return super.put(key, Integer.toString(value));
+	}
+
 }
