@@ -179,7 +179,7 @@ public class FeatureSorter {
 			}
 			FeatureKey key = new FeatureKey(s, path, geoclass, row.getClass());
 			if (styleid != null) key.setStyleRef(styleid);
-			ObjectBuffer buffer = null;
+			ObjectBuffer buffer;
 			if (!key.equals(currentKey)) {
 				currentKey = key;
 				buffer = bufferMap.get(key);

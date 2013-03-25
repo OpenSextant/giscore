@@ -126,7 +126,7 @@ public class SimpleObjectInputStream implements Closeable {
 			InstantiationException, IllegalAccessException {
 		try {
 			short type = readShort();
-			IDataSerializable rval = null;
+			IDataSerializable rval;
 			if (type == NULL) {
 				return null;
 			} else if (type == UNCACHED) {

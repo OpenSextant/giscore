@@ -316,7 +316,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 */
 	private void writeDataSet(FeatureKey featureKey)
 			throws XMLStreamException {
-		String geometryField = null;
+		String geometryField ;
 		writer.writeStartElement(DATASET_DATA);
 		writeEsriType("TableData");
 		handleSimpleElement(DATASET_NAME, datasets.get(featureKey));
@@ -349,7 +349,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 					+ schema.getName());
 		}
 		try {
-			Object next = null;
+			Object next;
 			SimpleField geofielddef = new SimpleField(geometryField);
 			geofielddef.setType(SimpleField.Type.GEOMETRY);
 			int index = 0;
@@ -862,8 +862,8 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		if (datasets.get(key) == null) {
 			StringBuilder setname = new StringBuilder();
 			setname.append(fullpath);
-            Class<? extends Geometry> geoclass = key.getGeoclass();
             /*
+            Class<? extends Geometry> geoclass = key.getGeoclass();
             if (geoclass != null) {
 				setname.append("_");
 				setname.append(geoclass.getSimpleName());

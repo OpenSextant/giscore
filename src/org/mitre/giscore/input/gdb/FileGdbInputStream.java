@@ -29,6 +29,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -194,7 +195,7 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 		inputPath.mkdirs();
 		
 		// The stream better point to zip data
-		ZipInputStream zis = null;
+		ZipInputStream zis;
 		if (!(stream instanceof ZipInputStream)) {
 			zis = new ZipInputStream(stream);
 		} else {
@@ -316,8 +317,7 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 	@Override
 	@NonNull
 	public Iterator<Schema> enumerateSchemata() throws IOException {
-		// TODO Auto-generated method stub
-		return null;
+		return Collections.<Schema>emptyList().iterator();
 	}
 
 	@Override

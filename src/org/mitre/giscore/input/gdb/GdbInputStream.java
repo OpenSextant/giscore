@@ -171,7 +171,7 @@ public class GdbInputStream extends GISInputStreamBase {
 		}
 
 		// The stream better point to zip data
-		ZipInputStream zipstream = null;
+		ZipInputStream zipstream;
 		if (!(stream instanceof ZipInputStream)) {
 			zipstream = new ZipInputStream(stream);
 		} else {
@@ -447,8 +447,8 @@ public class GdbInputStream extends GISInputStreamBase {
 	 */
 	private Geometry makeGeometry(int gtype, IGeometry geo)
 			throws AutomationException, IOException {
-		List<Point> points = null;
-		IPoint point = null;
+		List<Point> points;
+		IPoint point;
 		switch (gtype) {
 			case esriGeometryType.esriGeometryPoint:
 				return makePoint((IPoint) geo);
@@ -554,7 +554,7 @@ public class GdbInputStream extends GISInputStreamBase {
 					if (inners == null) inners = new ArrayList<LinearRing>();
 					inners.add(makeRing(ginner));
 				}
-				Polygon p = null;
+				Polygon p;
 				if (inners == null) {
 					p = new Polygon(makeRing(gouter));
 				} else {
