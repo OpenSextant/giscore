@@ -126,7 +126,7 @@ public class PrjReader {
 					} else if (val instanceof Entry) {
 						toString(indent + 4, (Entry) val, buffer);
 					} else {
-						buffer.append("unexpected: " + val.getClass());
+						buffer.append("unexpected: ").append(val.getClass());
 					}
 				}
 				buffer.append(']');

@@ -1347,7 +1347,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @throws IOException        if encountered NetworkLinkControl or out of order Style element
 	 *                            and failed to skip to end tag for that element.
 	 */
-	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException, IOException {
+	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException {
 		StartElement se = e.asStartElement();
 		QName name = se.getName();
 		String ns = name.getNamespaceURI();

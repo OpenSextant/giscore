@@ -1320,10 +1320,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      *
      * @param coordinateList the list of coordinates, never <code>null</code>
      * @return String formatted list of coordinate points
-     * @throws XMLStreamException if there is an error with the underlying XML
      */
-    private String handleCoordinates(Collection<Point> coordinateList)
-            throws XMLStreamException {
+    private String handleCoordinates(Collection<Point> coordinateList) {
         StringBuilder b = new StringBuilder();
         for (Point point : coordinateList) {
             handleSingleCoordinate(b, point);

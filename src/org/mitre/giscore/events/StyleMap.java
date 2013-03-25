@@ -195,7 +195,7 @@ public class StyleMap extends StyleSelector {
 	 */
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
-		if (mappings == null || mappings.isEmpty()) {
+		if (mappings.isEmpty()) {
 			out.writeInt(0);
 		} else {
 			out.writeInt(mappings.size());

@@ -90,11 +90,7 @@ public class Comment implements IGISObject, Serializable {
 	 *         <code>Comment</code>
 	 */
 	public String toString() {
-		return new StringBuilder()
-			.append("[Comment: ")
-			.append(text)
-			.append(']')
-			.toString();
+		return "[Comment: " + text + ']';
 	}
 
 }
