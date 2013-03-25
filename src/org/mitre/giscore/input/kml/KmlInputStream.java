@@ -74,9 +74,9 @@ import java.util.regex.Pattern;
  * <li>A new feature returning a <tt>Feature</tt> object
  * </ul>
  * <p/>
- * Supports KML Placemark, GroundOverlay, NetworkLink, Document, and Folder elements with
+ * Supports KML Placemark, GroundOverlay, ScreenOverlay, NetworkLink, Document, and Folder elements with
  * limited/partial support for the lesser used NetworkLinkControl(<A href="#NetworkLinkControl">*</A>),
- * ScreenOverlay, PhotoOverlay(<A href="#PhotoOverlay">*</A>) elements.
+ * and PhotoOverlay(<A href="#PhotoOverlay">*</A>) elements.
  * <p/>
  * Geometry support includes: Point, LineString, LinearRing, Polygon, MultiGeometry, and Model(<A href="#Model">*</A>).
  * <p/>
@@ -100,7 +100,7 @@ import java.util.regex.Pattern;
  * will not conform to the KML 2.2 spec.
  * <p/>
  * <p/>
- * If debug mode is enabled for this class, the following additional validations will be checked:
+ * If debug logging mode is enabled for this class, the following additional validations will be checked:
  * <ul>
  * <li> ATC 3: Geometry coordinates:
  * Whitespace found within coordinate tuple
