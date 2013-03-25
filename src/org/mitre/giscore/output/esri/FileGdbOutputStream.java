@@ -176,22 +176,6 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		}
 	}
 
-	/**
-	 * delete dir content
-	 * 
-	 * @param directory
-	 */
-	private void deleteDirContents(File directory) {
-		if (directory != null) {
-			for (File file : directory.listFiles()) {
-				if (file.isDirectory()) {
-					deleteDirContents(file);
-				}
-				file.delete();
-			}
-		}
-	}
-
 	/*
 	 * (non-Javadoc)
 	 * 

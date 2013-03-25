@@ -22,6 +22,8 @@ import org.mitre.giscore.IStreamVisitor;
 import org.mitre.giscore.events.*;
 import org.mitre.giscore.geometry.*;
 
+import java.io.File;
+
 /**
  * The stream visitor base extends the original visitor base and changes the
  * default behaviors to be compatible with the new stream elements. It hides
@@ -236,4 +238,23 @@ public class StreamVisitorBase implements IStreamVisitor {
     public void visit(AtomHeader header) {
     	// Ignored by default
     }
+
+	/**
+	 * delete dir content
+	 * @param directory
+	 */
+	protected static void deleteDirContents(File directory) {
+		if (directory != null) {
+			File[] files = directory.listFiles();
+			if (files != null) {
+				for (File file : files) {
+					if (file.isDirectory()) {
+						deleteDirContents(file);
+					}
+					file.delete();
+				}
+			}
+		}
+	}
+
 }

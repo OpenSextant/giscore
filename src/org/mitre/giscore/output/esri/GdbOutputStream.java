@@ -408,21 +408,6 @@ public class GdbOutputStream extends StreamVisitorBase implements
 	}
 
 	/**
-	 * delete dir content
-	 * @param directory
-	 */
-	private void deleteDirContents(File directory) {
-		if (directory != null) {
-			for(File file : directory.listFiles()) {
-				if (file.isDirectory()) {
-					deleteDirContents(file);
-				}
-				file.delete();
-			}
-		}
-	}
-
-	/**
 	 * This gets the feature data and stores it to the database.
 	 *
 	 * @param key
