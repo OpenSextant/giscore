@@ -22,7 +22,6 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -37,7 +36,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.IAcceptSchema;
 import org.mitre.giscore.events.ContainerEnd;
 import org.mitre.giscore.events.ContainerStart;
@@ -185,9 +183,9 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 		if (stream == null) {
 			throw new IllegalArgumentException("stream should never be null");
 		}
-		if (! (stream instanceof InputStream)) {
-			throw new IllegalArgumentException("stream must be an input stream");
-		}
+		//if (! (stream instanceof InputStream)) {
+		//	throw new IllegalArgumentException("stream must be an input stream");
+		//}
 		deleteOnClose = true;
 		File temp = new File(System.getProperty("java.io.tmpdir"));
 		long t = System.currentTimeMillis();
@@ -243,8 +241,7 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 		feature = new TableState(true, findAllChildren("\\", Geodatabase.FEATURE_CLASS));
 		table = new TableState(false, findAllChildren("\\", Geodatabase.TABLE));
 	}
-	
-	
+
 	/**
 	 * Walk the hierarchy and add all the found paths to the returned
 	 * list
