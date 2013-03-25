@@ -120,8 +120,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
 	 * @return
 	 */
 	protected XMLOutputFactory createFactory() {
-		XMLOutputFactory factory = XMLOutputFactory.newInstance();
-		return factory;
+		return XMLOutputFactory.newInstance();
 	}
 
     /**
@@ -370,7 +369,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
         writer.writeComment(text);
     }
 
-    private void writeAsComment(Element el, StringBuilder sb, int level) throws XMLStreamException {
+    private void writeAsComment(Element el, StringBuilder sb, int level) {
         if (level == 0)
             sb.append('\n');
         else
