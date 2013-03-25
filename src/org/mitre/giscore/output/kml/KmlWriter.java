@@ -199,8 +199,9 @@ public class KmlWriter implements IGISOutputStream {
 	 * 
 	 * @param object IGISObject object to write
 	 * 
-	 * @throws RuntimeException if failed with XMLStreamException
-	 * @throws IllegalStateException if KmlOutputStream is closed
+	 * @throws IllegalStateException if KmlOutputStream is closed.
+	 *  If underlying processing throws an XMLStreamException then it will rethrow
+	 *  it wrapped with an IllegalStateException.
 	 */
 	public void write(IGISObject object) {
 		if (kos == null) throw new IllegalStateException("cannot write after stream is closed");
