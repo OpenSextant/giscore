@@ -116,7 +116,7 @@ public class TestKmlOutputStream extends TestGISBase {
 			assertTrue(o instanceof Feature);
 			Feature f2 = (Feature) o;
 			List<Element> elts = f2.getElements();
-			assertTrue(elts != null && elts.size() == 2);
+			assertTrue(elts.size() == 2);
 			checkApproximatelyEquals(f, f2);
 			Element e = elts.get(0);
 			assertNotNull(e.getNamespaceURI());
@@ -181,13 +181,53 @@ public class TestKmlOutputStream extends TestGISBase {
 		//System.err.println(new String(bos.toByteArray()));
 		//System.err.println(nl);
 
-		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
-		assertNotNull(kis.read()); // skip DocumentStart
-		IGISObject obj = kis.read();
-		//System.err.println(obj);
-		assertTrue(obj instanceof NetworkLink);
-		assertEquals(nl, obj);
+		compareFeature(nl, new ByteArrayInputStream(bos.toByteArray()));
+	}
+
+	@Test
+	public void testScreenOverlay() throws XMLStreamException, IOException {
+
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+
+		/*
+		<ScreenOverlay>
+		  <overlayXY x="0.5" y="0.5" xunits="fraction" yunits="fraction"/>
+		  <screenXY x="0.5" y="0.5" xunits="fraction" yunits="fraction"/>
+		  <rotationXY x="0.5" y="0.5" xunits="fraction" yunits="fraction"/>
+		  <size x="0.5" y="0.5" xunits="fraction" yunits="fraction"/>
+		</ScreenOverlay>
+		 */
+
+		ScreenOverlay so = new ScreenOverlay();
+		so.setRotationAngle(45.0);
+		ScreenLocation xy = new ScreenLocation();
+		xy.x = 0.5;
+		xy.xunit = ScreenLocation.UNIT.FRACTION;
+		xy.y = 0.5;
+		xy.yunit = ScreenLocation.UNIT.FRACTION;
+		so.setRotation(xy);
+		so.setOverlay(xy);
+		so.setScreen(xy);
+		so.setSize(xy);
+		kos.write(so);
 		kos.close();
+
+		compareFeature(so, new ByteArrayInputStream(bos.toByteArray()));
+	}
+
+	private void compareFeature(IGISObject expected, InputStream is) throws IOException {
+		KmlInputStream kis = new KmlInputStream(is);
+		try {
+			assertNotNull(kis.read()); // skip DocumentStart
+			IGISObject actual = kis.read();
+			//System.err.println(obj);
+			assertNotNull(actual);
+			//assertTrue(obj instanceof Feature);
+			assertEquals(expected, actual);
+		} finally {
+			kis.close();
+		}
 	}
 
 	@Test
@@ -686,6 +726,7 @@ public class TestKmlOutputStream extends TestGISBase {
 		f.setRegion(region);
 		kos.write(f);
 		kos.close();
+
 		XmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
 		IGISObject o;
 		while ((o = kis.read()) != null) {
