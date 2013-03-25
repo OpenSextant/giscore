@@ -883,7 +883,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		StringBuilder rval = new StringBuilder();
 		for(int i = 1; i < 100; i++) {
 			rval.append(basename);
-			rval.append("_" + i);
+			rval.append("_").append(i);
 			if (! datasets.values().contains(rval.toString())) {
 				return rval;
 			}
@@ -939,7 +939,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		handleSimpleElement(CAN_VERSION, "false");
 		if (! elementType.isFeatureDataset()) {
 			handleSimpleElement(CONFIGURATION_KEYWORD, "");
-			if (schema.getOidField() != null) {
+			if (schema != null && schema.getOidField() != null) {
 				handleSimpleElement(HAS_OID, "true");
 				handleSimpleElement(OID_FIELD_NAME, schema.getOidField().getName());
 			} else {
@@ -950,7 +950,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			writeEsriType("Indexes");
 			writer.writeStartElement(INDEX_ARRAY);
 			writeEsriType("ArrayOfIndex");
-	        if (schema.getOidField() != null) {
+	        if (schema != null && schema.getOidField() != null) {
 	        	writeIndex(schema.getOidField(), true, true, key);
 	        }
 			if (elementType.isFeatureClass() && key.getGeoclass() != null) {
