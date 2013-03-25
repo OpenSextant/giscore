@@ -373,12 +373,9 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	}
 	
 	public boolean hasNoPoints(Geometry geo) {
+		if (geo == null) return true;
 		List<Point> points = geo.getPoints();
-		if (points.isEmpty()) { 
-			return true;
-		} else {
-			return false;
-		}
+		return points.isEmpty();
 	}
 
 	/*
