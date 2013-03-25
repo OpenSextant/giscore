@@ -40,7 +40,7 @@ public abstract class AbstractObject implements IDataSerializable, IGISObject {
      * @return the id to use to distinguish this object from another.
      * Value is either a non-empty string or <code>null</code>.
      */
-    @CheckForNull
+    @Nullable
     public String getId() {
         return id;
     }
