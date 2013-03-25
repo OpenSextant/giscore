@@ -149,8 +149,6 @@ public class SimpleObjectInputStream implements Closeable {
 				}
 			}
 			return rval;
-		} catch(ClassNotFoundException e) {
-			throw e;
 		} catch(EOFException e) {
 			return null;
 		}
