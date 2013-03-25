@@ -18,6 +18,7 @@ libraries.
 
 Bug fixes:
 -Fix to polygon, ring and line handling for filegdb.
+-Fix KmlOutputStream to output refreshVisibility + flyToView elements if set in NetworkLink.
 
 Improvements:
 -Added additional validation checks in KML handling
