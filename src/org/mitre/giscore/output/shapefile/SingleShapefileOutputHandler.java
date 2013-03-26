@@ -19,6 +19,7 @@
 package org.mitre.giscore.output.shapefile;
 
 import org.mitre.giscore.utils.Color;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -79,10 +80,10 @@ import org.slf4j.LoggerFactory;
  * within the shapefile. Always WGS84 for our classes.
  * </ul>
  * This is a helper class that will not be used standalone.
- * <p>
+ * <p/>
  * The shapefile code is inspired by the old mediate code.
  * <code>ShpHandler</code>
- * <P>
+ * <p/>
  * Note does not support output of geometry bags to a shapefile in which case
  * it will throw an <em>IllegalStateException</em>.
  *
@@ -144,30 +145,23 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Ctor
 	 *
-	 * @param schema
-	 *            the schema, never <code>null</code>.
-	 * @param style
-	 *            the optional style, may be <code>null</code>
-	 * @param buffer
-	 *            the output buffer, never <code>null</code> or empty
-	 * @param outputDirectory
-	 *            the output directory, will be created if it does not exist,
-	 *            never <code>null</code>.
-	 * @param shapefilename
-	 *            the name of the shapefile to be created. This name will be
-	 *            modified with the standard suffixes to create the actual
-	 *            output shapefile. never <code>null</code> or empty
-	 * @param mapper
-	 *            a mapper to go from the url based icons in the Style to a
-	 *            short value for use with ESRI, must not be <code>null</code>
-	 *            if style is not <code>null</code>.
-	 * @throws IllegalArgumentException
-	 *             if couldn't create output directory or any of the required
-	 *             arguments are invalid
+	 * @param schema          the schema, never <code>null</code>.
+	 * @param style           the optional style, may be <code>null</code>
+	 * @param buffer          the output buffer, never <code>null</code> or empty
+	 * @param outputDirectory the output directory, will be created if it does not exist,
+	 *                        never <code>null</code>.
+	 * @param shapefilename   the name of the shapefile to be created. This name will be
+	 *                        modified with the standard suffixes to create the actual
+	 *                        output shapefile. never <code>null</code> or empty
+	 * @param mapper          a mapper to go from the url based icons in the Style to a
+	 *                        short value for use with ESRI, must not be <code>null</code>
+	 *                        if style is not <code>null</code>.
+	 * @throws IllegalArgumentException if couldn't create output directory or any of the required
+	 *                                  arguments are invalid
 	 */
 	public SingleShapefileOutputHandler(Schema schema, Style style,
-			ObjectBuffer buffer, File outputDirectory, String shapefilename,
-			PointShapeMapper mapper) {
+										ObjectBuffer buffer, File outputDirectory, String shapefilename,
+										PointShapeMapper mapper) {
 		if (schema == null) {
 			throw new IllegalArgumentException("schema should never be null");
 		}
@@ -208,8 +202,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Output the data.
 	 *
-	 * @throws IOException
-	 *             if an error occurs
+	 * @throws IOException            if an error occurs
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
@@ -223,20 +216,16 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Output the data.
 	 *
-	 * @param callback
-	 *            Provide {@code ICancelable} callback which if {@code
-	 *            isCanceled()} returns true then processing is aborted and
-	 *            CancellationException is thrown. If {@code null} then no
-	 *            cancellation checks are done.
-	 *
-	 * @throws IOException
-	 *             if an error occurs
+	 * @param callback Provide {@code ICancelable} callback which if {@code
+	 *                 isCanceled()} returns true then processing is aborted and
+	 *                 CancellationException is thrown. If {@code null} then no
+	 *                 cancellation checks are done.
+	 * @throws IOException            if an error occurs
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
 	 * @throws XMLStreamException
-	 * @throws CancellationException
-	 *             if callback is provided and forces a cancellation
+	 * @throws CancellationException  if callback is provided and forces a cancellation
 	 */
 	public void process(ICancelable callback) throws IOException,
 			ClassNotFoundException, InstantiationException,
@@ -311,7 +300,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 			return;
 
 		OutputStream stream = new FileOutputStream(shmFile);
-        XMLStreamWriter writer = null;
+		XMLStreamWriter writer = null;
 		try {
 			XMLOutputFactory factory = XMLOutputFactory.newInstance();
 			writer = factory.createXMLStreamWriter(stream);
@@ -328,7 +317,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 					style.getIconUrl()))));
 			writer.writeEndElement();
 
-            Color color = style.getIconColor();
+			Color color = style.getIconColor();
 			if (color != null) {
 				writer.writeStartElement("symbol__color");
 				StringBuilder sb = new StringBuilder(8);
@@ -354,15 +343,15 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 
 			writer.writeEndElement();
 			writer.writeEndDocument();
-        } finally {
-            if (writer != null)
-                try {
-                    writer.close();
-                } catch (XMLStreamException e) {
-                    logger.warn("Problem closing XMLStreamWriter", e);
-                }
-            IOUtils.closeQuietly(stream);
-        }
+		} finally {
+			if (writer != null)
+				try {
+					writer.close();
+				} catch (XMLStreamException e) {
+					logger.warn("Problem closing XMLStreamWriter", e);
+				}
+			IOUtils.closeQuietly(stream);
+		}
 	}
 
 	/**
@@ -371,14 +360,11 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * features are written we reopen the shapefile to output the header.
 	 *
 	 * @param callback
-	 *
-	 * @throws IOException
-	 *             if an error occurs
+	 * @throws IOException            if an error occurs
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
-	 * @throws CancellationException
-	 *             if callback is provided and forces a cancellation
+	 * @throws CancellationException  if callback is provided and forces a cancellation
 	 */
 	private void outputFeatures(ICancelable callback) throws IOException,
 			ClassNotFoundException, InstantiationException,
@@ -409,40 +395,40 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 				}
 				Feature feat = (Feature) ser;
 				Geometry geo = feat.getGeometry();
-                if (geo != null) {
-                    int shape = getEsriShapeType(geo);
-                    if (shape != NULL_TYPE) {
-                        // Make sure the type is the same as others in the feature
-                        // list
-                        if (shapeAll == NULL_TYPE) {
-                            shapeAll = shape;
-                            is3D = is3D(shape);
-                        } else if (shape != shapeAll)
-                            throw new IllegalArgumentException(
-                                    "Feature list must contain"
-                                            + " geometry objects of same type: expected "
+				if (geo != null) {
+					int shape = getEsriShapeType(geo);
+					if (shape != NULL_TYPE) {
+						// Make sure the type is the same as others in the feature
+						// list
+						if (shapeAll == NULL_TYPE) {
+							shapeAll = shape;
+							is3D = is3D(shape);
+						} else if (shape != shapeAll)
+							throw new IllegalArgumentException(
+									"Feature list must contain"
+											+ " geometry objects of same type: expected "
 											+ shapeAll + " but was " + shape);
-                    }
-                    if (bbox == null) {
-                        bbox = geo.getBoundingBox(); // 3d or not depending on the
-                        // must make copy of the bounding box
-                        bbox = bbox instanceof Geodetic3DBounds ? new Geodetic3DBounds(
-                                (Geodetic3DBounds) bbox)
-                                : new Geodetic2DBounds(bbox);
-                        // geo
-                    } else {
-                        bbox.include(geo.getBoundingBox());
-                    }
-                    int len = getRecLen(geo);
-                    outputGeometry(channel, offset, geo, is3D, shape, recordNumber,
-                            len);
-                    outputIndex(xchannel, ioffset, offset, len);
-                    // Records have additional 4 words of info at the start of the
-                    // record
-                    offset += len + 4;
-                    ioffset += 4;
-                    recordNumber++;
-                }
+					}
+					if (bbox == null) {
+						bbox = geo.getBoundingBox(); // 3d or not depending on the
+						// must make copy of the bounding box
+						bbox = bbox instanceof Geodetic3DBounds ? new Geodetic3DBounds(
+								(Geodetic3DBounds) bbox)
+								: new Geodetic2DBounds(bbox);
+						// geo
+					} else {
+						bbox.include(geo.getBoundingBox());
+					}
+					int len = getRecLen(geo);
+					outputGeometry(channel, offset, geo, is3D, shape, recordNumber,
+							len);
+					outputIndex(xchannel, ioffset, offset, len);
+					// Records have additional 4 words of info at the start of the
+					// record
+					offset += len + 4;
+					ioffset += 4;
+					recordNumber++;
+				}
 				ser = buffer.read();
 			}
 			// Write header
@@ -468,7 +454,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	}
 
 	private void outputIndex(FileChannel xchannel, int offset, int recoffset,
-			int length) throws IOException {
+							 int length) throws IOException {
 		ByteBuffer buffer = ByteBuffer.allocate(8);
 		writeInt(buffer, recoffset, ByteOrder.BIG_ENDIAN);
 		writeInt(buffer, length, ByteOrder.BIG_ENDIAN);
@@ -522,17 +508,13 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		 * Array // Z Values for All Points Double[2] M Range // Bounding
 		 * Measure Range Double[NumPoints] M Array // Measures }
 		 */
-		try {
-			putBBox(geo.getBoundingBox());
-			putPartCount(geo);
-			putPartsVector(geo);
-			putPointsXY(geo.getPoints());
-			if (geo.is3D()) {
-				putPointsZ(geo.getPoints());
-				// todo: M Array // Measures ??
-			}
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
+		putBBox(geo.getBoundingBox());
+		putPartCount(geo);
+		putPartsVector(geo);
+		putPointsXY(geo.getPoints());
+		if (geo.is3D()) {
+			putPointsZ(geo.getPoints());
+			// todo: M Array // Measures ??
 		}
 	}
 
@@ -662,16 +644,12 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		 * bounding Z Range is stored in the order Zmin, Zmax. Bounding M Range
 		 * is stored in the order Mmin, Mmax
 		 */
-		try {
-			putBBox(multiPoint.getBoundingBox());
-			putPointCount(multiPoint);
-			putPointsXY(multiPoint.getPoints());
-			if (multiPoint.is3D()) {
-				putPointsZ(multiPoint.getPoints());
-				// TODO: not outputting M Range + M Array values...
-			}
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
+		putBBox(multiPoint.getBoundingBox());
+		putPointCount(multiPoint);
+		putPointsXY(multiPoint.getPoints());
+		if (multiPoint.is3D()) {
+			putPointsZ(multiPoint.getPoints());
+			// TODO: not outputting M Range + M Array values...
 		}
 	}
 
@@ -683,18 +661,14 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 */
 	@Override
 	public void visit(Point point) {
-		try {
-			putPoint(point);
-			if (point.is3D()) {
-				putPointZ(point, true);
-			}
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
+		putPoint(point);
+		if (point.is3D()) {
+			putPointZ(point, true);
 		}
 	}
 
 	private void outputGeometry(FileChannel channel, int offset, Geometry geom,
-			boolean is3D, int shape, int rnumber, int rlength)
+								boolean is3D, int shape, int rnumber, int rlength)
 			throws IOException {
 		ByteBuffer hbuffer = ByteBuffer.allocate(12);
 		writeInt(hbuffer, rnumber, ByteOrder.BIG_ENDIAN);
@@ -708,7 +682,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		} catch (BufferOverflowException bfe) {
 			logger.error("Overflow at having allocated " + rlength * 2
 					+ " bytes for geometry " + geom + " having "
-					+ geom.getNumPoints() + " points and " + geom.getNumParts() + " parts" );
+					+ geom.getNumPoints() + " points and " + geom.getNumParts() + " parts");
 			throw bfe;
 		}
 		obuf.flip();
@@ -721,9 +695,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * 3d geometry then output zero z values.
 	 *
 	 * @param points
-	 * @throws IOException
 	 */
-	private void putPointsZ(Collection<Point> points) throws IOException {
+	private void putPointsZ(Collection<Point> points) {
 		if (points == null || points.isEmpty()) {
 			writeDouble(obuf, 0.0, ByteOrder.LITTLE_ENDIAN);
 			writeDouble(obuf, 0.0, ByteOrder.LITTLE_ENDIAN);
@@ -759,10 +732,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output point count and indices to each part in the point vector.
 	 *
 	 * @param geom
-	 * @throws IOException
-	 *             if an error occurs
 	 */
-	private void putPartsVector(Geometry geom) throws IOException {
+	private void putPartsVector(Geometry geom) {
 		PointOffsetVisitor pov = new PointOffsetVisitor();
 		geom.accept(pov);
 		writeInt(obuf, pov.getTotal(), ByteOrder.LITTLE_ENDIAN);
@@ -788,8 +759,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * figure.
 	 *
 	 * @param geom
-	 * @throws IOException
-	 *             if an error occurs
+	 * @throws IOException if an error occurs
 	 */
 	private void putPolyPointsXY(Geometry geom) throws IOException {
 		for (int j = 0; j < geom.getNumParts(); j++) {
@@ -812,8 +782,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * first point into the list again.
 	 *
 	 * @param geom
-	 * @throws IOException
-	 *             if an error occurs
+	 * @throws IOException if an error occurs
 	 */
 	private void putPolyPointsZ(Geometry geom) throws IOException {
 		double zmax = 0.0, zmin = 0.0;
@@ -843,6 +812,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Output Z points for a given geometry for each of the geometry's parts
 	 * in order. This is really just used for a ring or poly's geometry
+	 *
 	 * @param geom the geometry
 	 * @throws IOException
 	 */
@@ -868,10 +838,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output point count for the given geometry
 	 *
 	 * @param geom
-	 * @throws IOException
-	 *             if an error occurs
 	 */
-	private void putPointCount(Geometry geom) throws IOException {
+	private void putPointCount(Geometry geom) {
 		writeInt(obuf, geom.getNumPoints(), ByteOrder.LITTLE_ENDIAN);
 	}
 
@@ -879,27 +847,22 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output part count for the given geometry
 	 *
 	 * @param geom
-	 * @throws IOException
-	 *             if an error occurs
 	 */
-	private void putPartCount(Geometry geom) throws IOException {
+	private void putPartCount(Geometry geom) {
 		writeInt(obuf, geom.getNumParts(), ByteOrder.LITTLE_ENDIAN);
 	}
 
 	/**
 	 * Output points
 	 *
-	 * @param points
-	 *            the points
-	 * @throws IOException
-	 *             if an error occurs
+	 * @param points the points
 	 */
-	private void putPointsXY(Collection<Point> points) throws IOException {
+	private void putPointsXY(Collection<Point> points) {
 		if (points != null && !points.isEmpty()) {
 			for (Point p : points) {
-        writeDouble(obuf, p.getCenter().getLongitudeAsDegrees(),
+				writeDouble(obuf, p.getCenter().getLongitudeAsDegrees(),
 						ByteOrder.LITTLE_ENDIAN);
-        writeDouble(obuf, p.getCenter().getLatitudeAsDegrees(),
+				writeDouble(obuf, p.getCenter().getLatitudeAsDegrees(),
 						ByteOrder.LITTLE_ENDIAN);
 			}
 		}
@@ -919,8 +882,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * <em>Note, we do not use the M formats at all. They are included
 	 * here for completeness' sake.</em>
 	 *
-	 * @param geom
-	 *            the geo object
+	 * @param geom the geo object
 	 * @return the count in words (16 bit words) not including the record header
 	 *         (4 words, record number and length)
 	 */
@@ -932,13 +894,13 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		if (geom instanceof MultiPolygons) {
 			MultiPolygons mp = (MultiPolygons) geom;
 			nParts = 0;
-			for(Polygon p : mp.getPolygons()) {
+			for (Polygon p : mp.getPolygons()) {
 				nParts += p.getNumParts();
 			}
 		} else if (geom instanceof MultiLinearRings) {
 			MultiLinearRings mp = (MultiLinearRings) geom;
 			nParts = 0;
-			for(LinearRing r : mp.getLinearRings()) {
+			for (LinearRing r : mp.getLinearRings()) {
 				nParts += r.getNumParts();
 			}
 		} else {
@@ -949,52 +911,52 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 		int bytesPerPart = 0;
 
 		switch (type) {
-		case 0: // Null shape
-			base = 4;
-			break; // Defaults are ok
-		case 1: // Point
-			base = 4;
-			break; // Defaults are ok
-		case 8: // Multipoint
-		case 28: // MultiPointM
-			base = 40;
-			break;
-		case 11: // PointZ
-			base = 4;
-			bytesPerPnt = 32;
-			break;
-		case 21: // PointM
-			base = 4;
-			bytesPerPnt = 24;
-			break;
-		case 18: // MultipointZ
-			base = 56;
-			bytesPerPnt = 24;
-			break;
-		case 5: // Polygon
-		case 25: // PolygonM
-			nPoints = getPolyPntCount(geom);
-			// fall through to Polyline case
-		case 3: // Polyline
-		case 23: // PolyLineM
-			base = 44;
-			bytesPerPart = 4;
-			break;
-		case 15: // PolygonZ
-			nPoints = getPolyPntCount(geom);
-			// fall through to PolyLineZ case
-		case 13: // PolyLineZ
-			base = 60;
-			bytesPerPart = 4;
-			bytesPerPnt = 24;
-			break;
-		case 31: // Multipatch
-			base = 56;
-			bytesPerPart = 8;
-			bytesPerPnt = 32;
-			break;
-		default:
-			throw new UnsupportedOperationException("Unsupported type " + type);
+			case 0: // Null shape
+				base = 4;
+				break; // Defaults are ok
+			case 1: // Point
+				base = 4;
+				break; // Defaults are ok
+			case 8: // Multipoint
+			case 28: // MultiPointM
+				base = 40;
+				break;
+			case 11: // PointZ
+				base = 4;
+				bytesPerPnt = 32;
+				break;
+			case 21: // PointM
+				base = 4;
+				bytesPerPnt = 24;
+				break;
+			case 18: // MultipointZ
+				base = 56;
+				bytesPerPnt = 24;
+				break;
+			case 5: // Polygon
+			case 25: // PolygonM
+				nPoints = getPolyPntCount(geom);
+				// fall through to Polyline case
+			case 3: // Polyline
+			case 23: // PolyLineM
+				base = 44;
+				bytesPerPart = 4;
+				break;
+			case 15: // PolygonZ
+				nPoints = getPolyPntCount(geom);
+				// fall through to PolyLineZ case
+			case 13: // PolyLineZ
+				base = 60;
+				bytesPerPart = 4;
+				bytesPerPnt = 24;
+				break;
+			case 31: // Multipatch
+				base = 56;
+				bytesPerPart = 8;
+				bytesPerPnt = 32;
+				break;
+			default:
+				throw new UnsupportedOperationException("Unsupported type " + type);
 		}
 		return (base + nParts * bytesPerPart + nPoints * bytesPerPnt) / 2;
 	}
@@ -1004,10 +966,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 *
 	 * @param
 	 * @param bbox
-	 * @throws IOException
-	 *             if an I/O error occurs
 	 */
-	private void putBBox(Geodetic2DBounds bbox) throws IOException {
+	private void putBBox(Geodetic2DBounds bbox) {
 		double westLonDeg = bbox.getWestLon().inDegrees();
 		double southLatDeg = bbox.getSouthLat().inDegrees();
 		double eastLonDeg = bbox.getEastLon().inDegrees();
@@ -1034,11 +994,10 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * @param shapeType
 	 * @param is3D
 	 * @param bbox
-	 * @throws IOException
-	 *             if an error occurs
+	 * @throws IOException if an error occurs
 	 */
 	private void putShapeHeader(FileChannel channel, int fileLen,
-			int shapeType, boolean is3D, Geodetic2DBounds bbox)
+								int shapeType, boolean is3D, Geodetic2DBounds bbox)
 			throws IOException {
 		ByteBuffer buffer = ByteBuffer.allocate(100);
 		// Write the shapefile signature (should be 9994)
@@ -1078,14 +1037,12 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Write a single X/Y point
 	 *
 	 * @param pt
-	 * @throws IOException
-	 *             if an error occurs
 	 */
-	private void putPoint(Point pt) throws IOException {
+	private void putPoint(Point pt) {
 		Geodetic2DPoint gp = pt.asGeodetic2DPoint();
-    writeDouble(obuf, gp.getLongitudeAsDegrees(),
+		writeDouble(obuf, gp.getLongitudeAsDegrees(),
 				ByteOrder.LITTLE_ENDIAN);
-    writeDouble(obuf, gp.getLatitudeAsDegrees(), ByteOrder.LITTLE_ENDIAN);
+		writeDouble(obuf, gp.getLatitudeAsDegrees(), ByteOrder.LITTLE_ENDIAN);
 	}
 
 	/**
@@ -1093,10 +1050,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 *
 	 * @param pt
 	 * @param writeM <code>true</code> if we should write the measure value
-	 * @throws IOException
-	 *             if an error occurs
 	 */
-	private void putPointZ(Point pt, boolean writeM) throws IOException {
+	private void putPointZ(Point pt, boolean writeM) {
 		Geodetic2DPoint gp = pt.asGeodetic2DPoint();
 		if (gp instanceof Geodetic3DPoint) {
 			writeDouble(obuf, ((Geodetic3DPoint) gp).getElevation(),
