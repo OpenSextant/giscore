@@ -38,7 +38,7 @@ public class WKTLexer {
 	/**
 	 * Buffer of tokens
 	 */
-	private Stack<WKTToken> buffer = new Stack<WKTToken>();
+	private final Stack<WKTToken> buffer = new Stack<WKTToken>();
 
 	/**
 	 * Ctor

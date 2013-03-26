@@ -135,7 +135,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * WGS wkid
 	 */
 	protected static final int WGS_84 = 4326;
-	protected static String WKT_WGS_84 = "GEOGCS[\"GCS_WGS_1984\"," +
+	protected static final String WKT_WGS_84 = "GEOGCS[\"GCS_WGS_1984\"," +
 			"DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]]," +
 			"PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]," +
 			"AUTHORITY[\"EPSG\",4326]]";

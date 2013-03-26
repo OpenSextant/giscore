@@ -62,7 +62,7 @@ public class KmlWriter implements IGISOutputStream {
     private KmlOutputStream kos;
     private ZipOutputStream zoS;
     private ContainerStart waiting;
-	private boolean compressed;
+	private final boolean compressed;
 
     /**
 	 * Construct a <tt>KmlWriter</tt> which starts writing a KML document into

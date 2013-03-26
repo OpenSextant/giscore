@@ -51,8 +51,8 @@ public enum DocumentType {
 	WKT(false, false)
 	;
 	
-	private boolean requiresZipStream;
-	private boolean requiresZipEntry;
+	private final boolean requiresZipStream;
+	private final boolean requiresZipEntry;
 	
 	private DocumentType(boolean reqZip, boolean reqZipEntry) {
 		requiresZipStream = reqZip;

@@ -73,7 +73,7 @@ public class GeoAtomOutputStream extends XmlOutputStreamBase implements
 		ms_builtinFields.add(UPDATED_ATTR);
 		ms_builtinFields.add(AUTHOR_ATTR);
 	}
-	private static Namespace gns = Namespace.getNamespace("geo", GIS_NS);
+	private static final Namespace gns = Namespace.getNamespace("geo", GIS_NS);
 	private boolean headerwritten = false;
 
 	public GeoAtomOutputStream(OutputStream outputStream, Object[] arguments)

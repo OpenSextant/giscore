@@ -413,7 +413,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 
     // Read first part of shapefile header and get shapeType if possible
     private int getShapeTypeFromHeader(ByteBuffer buffer)
-            throws IOException, IllegalArgumentException {
+            throws IllegalArgumentException {
         // Read and validate the shapefile signature (should be 9994)
         int fileSig = readInt(buffer, ByteOrder.BIG_ENDIAN);
         if (fileSig != SIGNATURE)
@@ -431,8 +431,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     }
 
     // Read the remainder of shapefile header and get bounding box if possible
-    private Geodetic2DBounds getBoundingBoxFromHeader(ByteBuffer buffer, boolean is3D)
-            throws IOException {
+    private Geodetic2DBounds getBoundingBoxFromHeader(ByteBuffer buffer, boolean is3D) {
         // Read Bounding Box coordinates (assume WGS-84 decimal degrees, elevation in meters)
         double xMin = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
         double yMin = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
@@ -465,8 +464,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     }
 
     // Read next Point (ESRI Point or PointZ) record
-    private Point getPoint(ByteBuffer buffer, boolean is3D)
-            throws IOException {
+    private Point getPoint(ByteBuffer buffer, boolean is3D) {
         Geodetic2DPoint gp;
         Longitude lon = new Longitude(readDouble(buffer, ByteOrder.LITTLE_ENDIAN), Angle.DEGREES);
         Latitude lat = new Latitude(readDouble(buffer, ByteOrder.LITTLE_ENDIAN), Angle.DEGREES);
@@ -481,8 +479,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     }
 
     // Read PolyLine and Polygon parts offset array
-    private int[] getPartOffsets(ByteBuffer buffer, int nParts, int nPoints)
-            throws IOException {
+    private int[] getPartOffsets(ByteBuffer buffer, int nParts, int nPoints) {
         // read index array of starting positions for each part, put total numPoints at end
         int[] parts = new int[nParts + 1];
         parts[nParts] = nPoints;
@@ -491,8 +488,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     }
 
     // Read PolyLine and Polygon point values and return Geodetic point array
-    private Geodetic2DPoint[] getPolyPoints(ByteBuffer buffer, int nPoints, boolean is3D, boolean includeM)
-            throws IOException {
+    private Geodetic2DPoint[] getPolyPoints(ByteBuffer buffer, int nPoints, boolean is3D, boolean includeM) {
         Geodetic2DPoint[] pts;
         // Read the X and Y points into arrays
         double[] x = new double[nPoints];

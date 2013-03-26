@@ -41,8 +41,8 @@ import org.mitre.giscore.output.remote.ProxyOutputStream;
  * @author DRAND
  */
 public class RemoteGISService extends GISFactory implements IRemoteGISService  {
-	private static AtomicLong streamId = new AtomicLong(0);
-	private static Map<Long, ProxyOutputStream> activeStreams =
+	private static final AtomicLong streamId = new AtomicLong(0);
+	private static final Map<Long, ProxyOutputStream> activeStreams =
 		new ConcurrentHashMap<Long, ProxyOutputStream>();
 	
 	public Long makeGISOutputStream(DocumentType type, Object... arguments)

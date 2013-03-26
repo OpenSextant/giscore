@@ -362,7 +362,8 @@ public class GISFactory {
 	 * @param properties
 	 * @param strategy
 	 * @return
-	 * @throws IOException 
+	 * @throws IOException
+	 *             if an I/O error occurs
 	 */
 	public static IGISOutputStream getSdeOutputStream(Properties properties, IContainerNameStrategy strategy) throws IOException {
 		if (properties == null) {

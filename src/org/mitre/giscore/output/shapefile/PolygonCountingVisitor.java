@@ -36,8 +36,9 @@ public class PolygonCountingVisitor extends StreamVisitorBase {
 	@Override
 	public void visit(LinearRing ring) {
 		List<Point> pts = ring.getPoints();
-		if (pts != null && pts.size() > 0) {
-			pointCount += pts.size();
+		int size = pts.size();
+		if (size > 0) {
+			pointCount += size;
 		}
 	}
 

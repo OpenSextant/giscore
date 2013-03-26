@@ -199,7 +199,7 @@ public final class Namespace {
      * @param prefix <code>String</code> prefix to map to this namespace.
      * @param uri <code>String</code> URI for namespace.
      */
-    private Namespace(String prefix, String uri) {
+    private Namespace(@NonNull String prefix, @NonNull String uri) {
         this.prefix = prefix;
         this.uri = uri;
     }

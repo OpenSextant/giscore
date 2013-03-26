@@ -53,7 +53,7 @@ public class ScreenLocation implements IDataSerializable, Serializable {
 		UNIT(String v) {
 			kmlValue = v;
 		}
-		public String kmlValue;
+		public final String kmlValue;
 
 		public static UNIT normalize(String s) {
 			if (StringUtils.isNotBlank(s))

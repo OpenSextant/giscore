@@ -47,14 +47,17 @@ public class KmlRegionBox {
 
 	public void checkSource(File file) throws XMLStreamException, IOException {
 		if (file.isDirectory()) {
-			for (File f : file.listFiles())
-				if (f.isDirectory())
-					checkSource(f);
-				else {
-					String name = f.getName().toLowerCase();
-					if (name.endsWith(".kml") || name.endsWith(".kmz"))
+			File[] files = file.listFiles();
+			if (files != null) {
+				for (File f : files)
+					if (f.isDirectory())
 						checkSource(f);
-				}
+					else {
+						String name = f.getName().toLowerCase();
+						if (name.endsWith(".kml") || name.endsWith(".kmz"))
+							checkSource(f);
+					}
+			}
 		} else {
 			System.out.println(file.getAbsolutePath());
 			String name = file.getName();

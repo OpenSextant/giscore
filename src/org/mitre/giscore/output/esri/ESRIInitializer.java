@@ -41,7 +41,7 @@ import com.esri.arcgis.system.esriLicenseStatus;
 public final class ESRIInitializer {
 	private static final String TEST_DLL = "ntvinv";
 
-	private static Logger logger = LoggerFactory.getLogger(ESRIInitializer.class);
+	private static final Logger logger = LoggerFactory.getLogger(ESRIInitializer.class);
 	
 	private static ESRIInitializer esri = null;
 
@@ -77,7 +77,7 @@ public final class ESRIInitializer {
 	}
 
 	@SuppressWarnings("unchecked")
-	private static Pair<Integer, String> LicensesToTry[] = new Pair[] {
+	private static final Pair<Integer, String> LicensesToTry[] = new Pair[] {
 		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeArcEditor, "Arc Editor"),
 		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeEngineGeoDB, "Arc Engine GeoDB"),
 		new Pair<Integer, String>(esriLicenseProductCode.esriLicenseProductCodeArcView, "Arc View"),
@@ -132,46 +132,46 @@ public final class ESRIInitializer {
 			EngineInitializer.initializeEngine();
 			logger.debug("Initializing licenses");
 			boolean worked = false;
-			for(int i = 0; i < LicensesToTry.length; i++) {
-				// Step 2: Initialize a valid license. 
+			for (Pair<Integer, String> license : LicensesToTry) {
+				// Step 2: Initialize a valid license.
 				try {
-					int code = new AoInitialize().initialize(LicensesToTry[i].getFirst());
+					int code = new AoInitialize().initialize(license.getFirst());
 					if (code == esriLicenseStatus.esriLicenseAvailable ||
 							code == esriLicenseStatus.esriLicenseAlreadyInitialized) {
-						logger.info("Successfully initialized ESRI using license: {}", LicensesToTry[i].getSecond());
+						logger.info("Successfully initialized ESRI using license: {}", license.getSecond());
 						worked = true;
 						break; // Worked!
 					}
-					if(logger.isDebugEnabled()) {
-						switch(code) {
+					if (logger.isDebugEnabled()) {
+						switch (code) {
 							case esriLicenseStatus.esriLicenseCheckedIn:
-								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported license checked in.");
+								logger.debug("Initialization of " + license.getSecond() + " reported license checked in.");
 								break;
 							case esriLicenseStatus.esriLicenseCheckedOut:
-								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported license checked out.");
+								logger.debug("Initialization of " + license.getSecond() + " reported license checked out.");
 								break;
 							case esriLicenseStatus.esriLicenseFailure:
-								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported license failure.");
+								logger.debug("Initialization of " + license.getSecond() + " reported license failure.");
 								break;
 							case esriLicenseStatus.esriLicenseNotInitialized:
-								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported license not initialized.");
+								logger.debug("Initialization of " + license.getSecond() + " reported license not initialized.");
 								break;
 							case esriLicenseStatus.esriLicenseNotLicensed:
-								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported not licensed.");
+								logger.debug("Initialization of " + license.getSecond() + " reported not licensed.");
 								break;
 							case esriLicenseStatus.esriLicenseUnavailable:
-								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported license unavailable.");
+								logger.debug("Initialization of " + license.getSecond() + " reported license unavailable.");
 								break;
 							default:
-								logger.debug("Initialization of " + LicensesToTry[i].getSecond() + " reported strange license response: " + code);
+								logger.debug("Initialization of " + license.getSecond() + " reported strange license response: " + code);
 						}
 					}
-				} catch(AutomationException e) {
+				} catch (AutomationException e) {
 					// Ignore
-					logger.debug("Automation exception initializing ESRI using license: {} : {}", LicensesToTry[i].getSecond(), e.getMessage());
-				} catch(IOException e) {
+					logger.debug("Automation exception initializing ESRI using license: {} : {}", license.getSecond(), e.getMessage());
+				} catch (IOException e) {
 					// Ignore
-					logger.debug("IO exception initializing ESRI using license: {} : {}", LicensesToTry[i].getSecond(), e.getMessage());
+					logger.debug("IO exception initializing ESRI using license: {} : {}", license.getSecond(), e.getMessage());
 				}
 			}
 			if(!worked) {

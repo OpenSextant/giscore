@@ -67,10 +67,10 @@ public class SimpleField implements IDataSerializable, Serializable {
 			this.gdbEmptyValue = gdbEmptyValue;
 		}
 		
-		private String gdbXmlType, xmlSchemaType;
-		private int default_length;
-		private int default_precision;
-		private Object gdbEmptyValue;
+		private final String gdbXmlType, xmlSchemaType;
+		private final int default_length;
+		private final int default_precision;
+		private final Object gdbEmptyValue;
 
 		/**
 		 * @return the default_length
