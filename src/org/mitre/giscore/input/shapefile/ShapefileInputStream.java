@@ -36,41 +36,40 @@ import java.util.zip.ZipInputStream;
 
 /**
  * Read one or more shapefiles in from a directory or from a zip input stream.
- * 
- * @author DRAND
  *
+ * @author DRAND
  */
 public class ShapefileInputStream extends GISInputStreamBase {
 	private static final String ms_tempDir = System.getProperty("java.io.tmpdir");
-	
+
 	private static final AtomicInteger ms_tempDirCounter = new AtomicInteger();
 
 	/**
 	 * The accepter, may be null, used to determine if a given schema is wanted
 	 */
 	private IAcceptSchema accepter;
-	
+
 	/**
 	 * Working directory to hold shapefile data. If we are using a temp directory
 	 * then this will be removed when close is called. If not it belongs to the
 	 * caller and will be left alone.
 	 */
 	private File workingDir;
-	
+
 	/**
 	 * Shapefiles found in the working directory. This will have all the found
 	 * shapefiles. Shapefiles will actually be read based on the accepter if
 	 * one is defined.
 	 */
 	private File shapefiles[];
-	
+
 	/**
 	 * The current shapefile being read. When we are done this will be set
 	 * to the length of the shapefiles array.
 	 * is yet been selected.
 	 */
 	private int currentShapefile = 0;
-	
+
 	/**
 	 * The handler. The current handler is held here. If the handler returns
 	 * <code>null</code> then the current shapefile's stream is empty. The first
@@ -79,7 +78,7 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * it won't then we will move onto the next shapefile.
 	 */
 	private SingleShapefileInputHandler handler;
-	
+
 	/**
 	 * This tracks if we're using a temp directory
 	 */
@@ -87,22 +86,20 @@ public class ShapefileInputStream extends GISInputStreamBase {
 
 	/**
 	 * Ctor
-	 * 
-	 * @param stream
-	 *            the stream containing a zip archive of the shapefile directory, or possibly a single shp file
-	 * @param accepter
-	 * 				a function that determines if a schema should be used, may be <code>null</code>
-	 * @throws IOException if an I/O error occurs 
+	 *
+	 * @param stream   the stream containing a zip archive of the shapefile directory, or possibly a single shp file
+	 * @param accepter a function that determines if a schema should be used, may be <code>null</code>
+	 * @throws IOException if an I/O error occurs
 	 */
 	public ShapefileInputStream(InputStream stream, IAcceptSchema accepter) throws IOException {
 		if (stream == null) {
 			throw new IllegalArgumentException(
 					"stream should never be null");
 		}
-		
+
 		ZipInputStream zipstream = null;
 		InputStream shapestream = null;
-		if (! (stream instanceof ZipInputStream)) {
+		if (!(stream instanceof ZipInputStream)) {
 			BufferedInputStream bufferedstream = new BufferedInputStream(stream);
 			// Is this a .shp?
 			bufferedstream.mark(10);
@@ -122,18 +119,21 @@ public class ShapefileInputStream extends GISInputStreamBase {
 		} else {
 			zipstream = (ZipInputStream) stream;
 		}
-		
-		File dir = new File(ms_tempDir, 
+
+		File dir = new File(ms_tempDir,
 				"temp" + ms_tempDirCounter.incrementAndGet());
 		dir.mkdirs();
 		// Remove existing content in the temp dir - important
-		for(File content : dir.listFiles()) {
-			content.delete();
+		File[] files = dir.listFiles();
+		if (files != null) {
+			for (File content : files) {
+				content.delete();
+			}
 		}
 		usingTemp = true;
 		if (zipstream != null) {
 			ZipEntry entry = zipstream.getNextEntry();
-			while(entry != null) {
+			while (entry != null) {
 				String name = entry.getName().replace('\\', '/');
 				String parts[] = name.split("/");
 				File file = new File(dir, parts[parts.length - 1]);
@@ -155,13 +155,11 @@ public class ShapefileInputStream extends GISInputStreamBase {
 
 	/**
 	 * Ctor
-	 * 
-	 * @param file
-	 *            the location of the shapefile(s) as individual .shp file or directory
-	 * @param accepter
-	 * 				a function that determines if a schema should be used,
-	 * 				may be <code>null</code>
-	 * @throws IOException if an I/O error occurs
+	 *
+	 * @param file     the location of the shapefile(s) as individual .shp file or directory
+	 * @param accepter a function that determines if a schema should be used,
+	 *                 may be <code>null</code>
+	 * @throws IOException              if an I/O error occurs
 	 * @throws IllegalArgumentException if file argument is <code>null</code>
 	 */
 	public ShapefileInputStream(File file, IAcceptSchema accepter)
@@ -172,19 +170,16 @@ public class ShapefileInputStream extends GISInputStreamBase {
 		usingTemp = false;
 		initialize(file, accepter);
 	}
-	
+
 	/**
 	 * Initialize the input stream
-	 * @param file
-	 *            the location of the shapefile(s) as individual .shp file or directory
-	 * @param accepter
 	 *
-	 * @throws IOException if an I/O error occurs
+	 * @param file     the location of the shapefile(s) as individual .shp file or directory
+	 * @param accepter
 	 * @throws IllegalArgumentException if file argument does not exist, not shape file,
-	 * 			or no shape files in directory
+	 *                                  or no shape files in directory
 	 */
-	private void initialize(File file, IAcceptSchema accepter)
-			throws IOException {
+	private void initialize(File file, IAcceptSchema accepter) {
 		this.accepter = accepter;
 		if (file.isDirectory()) {
 			workingDir = file;
@@ -196,7 +191,7 @@ public class ShapefileInputStream extends GISInputStreamBase {
 			// review: should we throw exception if no shape files found (shapefiles.length == 0) ??
 		} else if (file.isFile() && file.getName().endsWith(".shp")) {
 			workingDir = file.getParentFile();
-			shapefiles = new File[] { file };
+			shapefiles = new File[]{file};
 		} else {
 			throw new IllegalArgumentException("Invalid shapefile location");
 		}
@@ -220,17 +215,17 @@ public class ShapefileInputStream extends GISInputStreamBase {
 			}
 		});
 		List<Schema> schemata = new ArrayList<Schema>();
-		for(File dbf : dbfs) {
+		for (File dbf : dbfs) {
 			DbfInputStream dbfis = new DbfInputStream(dbf, null);
 			Schema schema = (Schema) dbfis.read();
 			if (schema != null) schemata.add(schema);
 		}
 		return schemata.iterator();
 	}
-	
+
 	public IGISObject read() throws IOException {
 		IGISObject rval = null;
-		while(rval == null && currentShapefile < shapefiles.length) {
+		while (rval == null && currentShapefile < shapefiles.length) {
 			if (handler == null) {
 				handleNewShapefile(); // It will iterate
 			} else {
@@ -240,7 +235,7 @@ public class ShapefileInputStream extends GISInputStreamBase {
 					currentShapefile++;
 					handler = null;
 				} else if ((rval instanceof Schema) && accepter != null) {
-					if (! accepter.accept((Schema) rval)) { 
+					if (!accepter.accept((Schema) rval)) {
 						currentShapefile++; // Next
 						handler.close();
 						handler = null;
@@ -253,9 +248,9 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	}
 
 	/**
-	 * Calculate the shapefile basename and open the single handler to the 
+	 * Calculate the shapefile basename and open the single handler to the
 	 * new shapefile.
-	 * 
+	 *
 	 * @throws IOException if an I/O error occurs
 	 */
 	private void handleNewShapefile() throws IOException {
