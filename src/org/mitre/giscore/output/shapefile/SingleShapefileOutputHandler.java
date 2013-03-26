@@ -365,6 +365,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
 	 * @throws CancellationException  if callback is provided and forces a cancellation
+	 * @throws BufferOverflowException
 	 */
 	private void outputFeatures(ICancelable callback) throws IOException,
 			ClassNotFoundException, InstantiationException,
