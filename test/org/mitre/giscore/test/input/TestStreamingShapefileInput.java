@@ -47,7 +47,7 @@ import org.mitre.giscore.input.shapefile.SingleShapefileInputHandler;
  * @author jgibson
  */
 public class TestStreamingShapefileInput {
-	public static File shpdir = new File("data/shape");
+	public static final File shpdir = new File("data/shape");
 	
 	@Test public void testReadShpDirectly() throws Exception {
 		FileInputStream is = new FileInputStream(new File(shpdir, "afghanistan.shp"));

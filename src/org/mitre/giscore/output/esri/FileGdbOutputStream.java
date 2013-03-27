@@ -92,8 +92,8 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	private OutputStream outputStream;
 	private File outputPath;
 	private Geodatabase database;
-	private Map<String, Table> tables = new HashMap<String, Table>();
-	private AtomicInteger nid = new AtomicInteger();
+	private final Map<String, Table> tables = new HashMap<String, Table>();
+	private final AtomicInteger nid = new AtomicInteger();
 	/**
 	 * Maps the schema name to the schema. The schemata included are both
 	 * defined schemata as well as implied or inline schemata that are defined

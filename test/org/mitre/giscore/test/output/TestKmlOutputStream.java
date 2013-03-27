@@ -58,7 +58,7 @@ import static junit.framework.Assert.*;
  */
 public class TestKmlOutputStream extends TestGISBase {
 
-	private boolean autoDelete = !Boolean.getBoolean("keepTempFiles");
+	private final boolean autoDelete = !Boolean.getBoolean("keepTempFiles");
 
 	@Test
 	public void testSimpleCase() throws IOException {

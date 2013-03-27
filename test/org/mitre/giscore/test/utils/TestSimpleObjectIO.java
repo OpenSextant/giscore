@@ -277,8 +277,8 @@ public class TestSimpleObjectIO {
 	@Test public void testCachedObjectIO() throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream(2000);
 		IObjectCacher cacher = new IObjectCacher() {
-			private Map<Object, Long> objs = new HashMap<Object, Long>();
-			private AtomicLong counter = new AtomicLong();
+			private final Map<Object, Long> objs = new HashMap<Object, Long>();
+			private final AtomicLong counter = new AtomicLong();
 			@Override
 			public void addToCache(Object outputObject) {
 				objs.put(outputObject, counter.incrementAndGet());

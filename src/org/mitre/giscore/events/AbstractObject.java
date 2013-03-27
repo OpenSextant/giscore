@@ -14,7 +14,6 @@
  ***************************************************************************************/
 package org.mitre.giscore.events;
 
-import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.utils.IDataSerializable;
 import org.mitre.giscore.utils.SimpleObjectOutputStream;

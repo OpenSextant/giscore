@@ -93,8 +93,7 @@ import com.esri.arcgis.system.PropertySet;
  * @author DRAND
  */
 public class GdbInputStream extends GISInputStreamBase {
-	private static Logger logger = LoggerFactory
-			.getLogger(GdbInputStream.class);
+	private static final Logger logger = LoggerFactory.getLogger(GdbInputStream.class);
 
 	private static final String ms_tempDir = System.getProperty("java.io.tmpdir");
 

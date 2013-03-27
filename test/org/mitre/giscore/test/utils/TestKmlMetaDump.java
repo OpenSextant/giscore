@@ -76,7 +76,7 @@ public class TestKmlMetaDump extends TestCase {
 		}
 	}
 
-	private void realTest(File file) throws IOException {
+	private void realTest(File file) {
 		if (file.isDirectory()) {
 			KmlMetaDump app = new KmlMetaDump();
 			app.checkSource(file);

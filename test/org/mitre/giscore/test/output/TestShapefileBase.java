@@ -66,7 +66,7 @@ public abstract class TestShapefileBase extends TestGISBase {
 
 	protected void writeShapefile(Schema schema, ObjectBuffer buffer,
 			List<? extends Geometry> geometries, String file)
-			throws IOException, URISyntaxException, XMLStreamException,
+			throws IOException, XMLStreamException,
 			ClassNotFoundException, IllegalAccessException,
 			InstantiationException {
 		// now read shape file back in and test against what we wrote
