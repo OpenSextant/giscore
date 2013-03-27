@@ -157,8 +157,8 @@ import java.util.regex.Pattern;
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.</a>
  * <p/></li>
  * <li> Allows timestamps to omit seconds field as does Google Earth. Strict XML schema validation requires
- * seconds field in the dateTime ({@code YYYY-MM-DDThh:mm:ssZ}) format but Google Earth is lax in its rules.
- * Likewise allow the 'Z' suffix to be omitted in which case it defaults to UTC.
+ * seconds field in the dateTime ({@code YYYY-MM-DDThh:mm:ssZ}) format but Google Earth is lax in its
+ * parsing rules. Likewise allows the 'Z' suffix to be omitted in which case it defaults to UTC.
  * </li>
  * </ul>
  *
@@ -170,23 +170,24 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	private static final Pattern WHITESPACE_PAT = Pattern.compile(",\\s+\\.?\\d");
 
-	private static final Set<String> ms_kml_ns = new HashSet<String>(7);
+	private static final Set<String> ms_kml_ns = new HashSet<String>(8);
 
 	static {
+		ms_kml_ns.add("http://earth.google.com/kml/2.0");
 		ms_kml_ns.add("http://earth.google.com/kml/2.1");
 		ms_kml_ns.add("http://earth.google.com/kml/2.2");
 		ms_kml_ns.add("http://earth.google.com/kml/2.3");
 		ms_kml_ns.add("http://earth.google.com/kml/3.0");
 
-		ms_kml_ns.add("http://www.opengis.net/kml/2.2");
+		ms_kml_ns.add("http://www.opengis.net/kml/2.2"); // this is the default
 		ms_kml_ns.add("http://www.opengis.net/kml/2.3");
 		ms_kml_ns.add("http://www.opengis.net/kml/3.0");
 	}
 
-	private static final Set<String> ms_features = new HashSet<String>(5);
-	private static final Set<String> ms_containers = new HashSet<String>(2);
-	private static final Set<String> ms_attributes = new HashSet<String>(2);
-	private static final Set<String> ms_geometries = new HashSet<String>(6);
+	private static final Set<String> ms_features = new HashSet<String>(5);   // Placement, etc.
+	private static final Set<String> ms_containers = new HashSet<String>(2); // Document, Folder
+	private static final Set<String> ms_attributes = new HashSet<String>(2); // open, metadata
+	private static final Set<String> ms_geometries = new HashSet<String>(6); // Point, LineString, etc.
 
 	private static final List<SimpleDateFormat> ms_dateFormats = new ArrayList<SimpleDateFormat>(6);
 	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
