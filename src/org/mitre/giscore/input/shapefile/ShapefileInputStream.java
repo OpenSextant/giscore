@@ -159,11 +159,9 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * @param file     the location of the shapefile(s) as individual .shp file or directory
 	 * @param accepter a function that determines if a schema should be used,
 	 *                 may be <code>null</code>
-	 * @throws IOException              if an I/O error occurs
 	 * @throws IllegalArgumentException if file argument is <code>null</code>
 	 */
-	public ShapefileInputStream(File file, IAcceptSchema accepter)
-			throws IOException {
+	public ShapefileInputStream(File file, IAcceptSchema accepter) {
 		if (file == null) {
 			throw new IllegalArgumentException("file argument should never be null");
 		}

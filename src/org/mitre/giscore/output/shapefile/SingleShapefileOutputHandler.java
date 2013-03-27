@@ -532,27 +532,23 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 */
 	@Override
 	public void visit(MultiLinearRings rings) {
-		try {
-			PointOffsetVisitor pv = new PointOffsetVisitor();
-			rings.accept(pv);
-			putBBox(rings.getBoundingBox());
-			writeInt(obuf, pv.getPartCount(), ByteOrder.LITTLE_ENDIAN);
-			writeInt(obuf, pv.getTotal(), ByteOrder.LITTLE_ENDIAN);
-			for (Integer offset : pv.getOffsets()) {
-				writeInt(obuf, offset, ByteOrder.LITTLE_ENDIAN);
-			}
+		PointOffsetVisitor pv = new PointOffsetVisitor();
+		rings.accept(pv);
+		putBBox(rings.getBoundingBox());
+		writeInt(obuf, pv.getPartCount(), ByteOrder.LITTLE_ENDIAN);
+		writeInt(obuf, pv.getTotal(), ByteOrder.LITTLE_ENDIAN);
+		for (Integer offset : pv.getOffsets()) {
+			writeInt(obuf, offset, ByteOrder.LITTLE_ENDIAN);
+		}
+		for (LinearRing ring : rings.getLinearRings()) {
+			putPolyPointsXY(ring);
+		}
+		if (rings.is3D()) {
+			writeDouble(obuf, pv.getZmin(), ByteOrder.LITTLE_ENDIAN);
+			writeDouble(obuf, pv.getZmax(), ByteOrder.LITTLE_ENDIAN);
 			for (LinearRing ring : rings.getLinearRings()) {
-				putPolyPointsXY(ring);
+				putPartPointsZ(ring);
 			}
-			if (rings.is3D()) {
-				writeDouble(obuf, pv.getZmin(), ByteOrder.LITTLE_ENDIAN);
-				writeDouble(obuf, pv.getZmax(), ByteOrder.LITTLE_ENDIAN);
-				for (LinearRing ring : rings.getLinearRings()) {
-					putPartPointsZ(ring);
-				}
-			}
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
 		}
 	}
 
@@ -560,37 +556,32 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * Output polygons
 	 *
 	 * @param polygons
-	 * @throws IllegalStateException if there is an I/O error
 	 */
 	@Override
 	public void visit(MultiPolygons polygons) {
-		try {
-			PointOffsetVisitor pv = new PointOffsetVisitor();
-			polygons.accept(pv);
-			putBBox(polygons.getBoundingBox());
-			writeInt(obuf, pv.getPartCount(), ByteOrder.LITTLE_ENDIAN);
-			writeInt(obuf, pv.getTotal(), ByteOrder.LITTLE_ENDIAN);
-			for (Integer offset : pv.getOffsets()) {
-				writeInt(obuf, offset, ByteOrder.LITTLE_ENDIAN);
+		PointOffsetVisitor pv = new PointOffsetVisitor();
+		polygons.accept(pv);
+		putBBox(polygons.getBoundingBox());
+		writeInt(obuf, pv.getPartCount(), ByteOrder.LITTLE_ENDIAN);
+		writeInt(obuf, pv.getTotal(), ByteOrder.LITTLE_ENDIAN);
+		for (Integer offset : pv.getOffsets()) {
+			writeInt(obuf, offset, ByteOrder.LITTLE_ENDIAN);
+		}
+		for (Polygon poly : polygons.getPolygons()) {
+			putPolyPointsXY(poly.getOuterRing());
+			for (LinearRing ring : poly.getLinearRings()) {
+				putPolyPointsXY(ring);
 			}
+		}
+		if (polygons.is3D()) {
+			writeDouble(obuf, pv.getZmin(), ByteOrder.LITTLE_ENDIAN);
+			writeDouble(obuf, pv.getZmax(), ByteOrder.LITTLE_ENDIAN);
 			for (Polygon poly : polygons.getPolygons()) {
-				putPolyPointsXY(poly.getOuterRing());
+				putPartPointsZ(poly.getOuterRing());
 				for (LinearRing ring : poly.getLinearRings()) {
-					putPolyPointsXY(ring);
+					putPartPointsZ(ring);
 				}
 			}
-			if (polygons.is3D()) {
-				writeDouble(obuf, pv.getZmin(), ByteOrder.LITTLE_ENDIAN);
-				writeDouble(obuf, pv.getZmax(), ByteOrder.LITTLE_ENDIAN);
-				for (Polygon poly : polygons.getPolygons()) {
-					putPartPointsZ(poly.getOuterRing());
-					for (LinearRing ring : poly.getLinearRings()) {
-						putPartPointsZ(ring);
-					}
-				}
-			}
-		} catch (IOException e) {
-			throw new IllegalStateException(e);
 		}
 	}
 
@@ -760,9 +751,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * figure.
 	 *
 	 * @param geom
-	 * @throws IOException if an error occurs
 	 */
-	private void putPolyPointsXY(Geometry geom) throws IOException {
+	private void putPolyPointsXY(Geometry geom) {
 		for (int j = 0; j < geom.getNumParts(); j++) {
 			Geometry part = geom.getPart(j);
 			int count = part.getNumPoints();
@@ -815,9 +805,8 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * in order. This is really just used for a ring or poly's geometry
 	 *
 	 * @param geom the geometry
-	 * @throws IOException
 	 */
-	private void putPartPointsZ(Geometry geom) throws IOException {
+	private void putPartPointsZ(Geometry geom) {
 		for (int j = 0; j < geom.getNumParts(); j++) {
 			Geometry part = geom.getPart(j);
 			int count = part.getNumPoints();

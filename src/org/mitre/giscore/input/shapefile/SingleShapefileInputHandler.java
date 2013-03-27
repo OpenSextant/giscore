@@ -539,8 +539,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 
     // Read next MultiLine (ESRI Polyline or PolylineZ) record
     // Take flattened file structure and construct the part hierarchy
-    private Geometry getPolyLine(ByteBuffer buffer, boolean is3D, boolean includeM)
-            throws IOException {
+    private Geometry getPolyLine(ByteBuffer buffer, boolean is3D, boolean includeM) {
         int nParts = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
         int nPoints = readInt(buffer, ByteOrder.LITTLE_ENDIAN);  // total numPoints
         int[] parts = getPartOffsets(buffer, nParts, nPoints);
@@ -571,11 +570,10 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
      * @param includeM the shapefile type indicated that this shape has m or
      *                 measured data
      * @return a geometry
-     * @throws IOException
      * @throws IllegalArgumentException
      */
     private Geometry getPolygon(ByteBuffer buffer, boolean is3D, boolean includeM)
-            throws IOException, IllegalArgumentException {
+            throws IllegalArgumentException {
         int nParts = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
         int nPoints = readInt(buffer, ByteOrder.LITTLE_ENDIAN);  // total numPoints
         int[] parts = getPartOffsets(buffer, nParts, nPoints);
@@ -660,8 +658,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     }
 
     // Read next MultiPoint (ESRI MultiPoint or MultiPointZ) record
-    private Geometry getMultipoint(ByteBuffer buffer, boolean is3D, boolean includeM)
-            throws IOException {
+    private Geometry getMultipoint(ByteBuffer buffer, boolean is3D, boolean includeM) {
         int nPoints = readInt(buffer, ByteOrder.LITTLE_ENDIAN);  // total numPoints
         Geodetic2DPoint[] pts = getPolyPoints(buffer, nPoints, is3D, includeM);
         ArrayList<Point> ptList = new ArrayList<Point>();
