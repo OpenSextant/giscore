@@ -712,7 +712,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		while (true) {
 			XMLEvent next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
-				// must have either Lod or LatLonAltBox name-value pairs
+				// must have at least one value from either Lod or LatLonAltBox
 				if (!region.isEmpty()) {
 					feature.setRegion(region);
 				}
