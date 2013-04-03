@@ -84,6 +84,7 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
  * Lists following conditions if found:
  * <ul>
  * <li> Camera altitudeMode cannot be clampToGround [ATC 54.2] (warning)
+ * <li> Camera has invalid tilt value (error)
  * <li> Container end date is later than that of its ancestors (info)
  * <li> Container start date is earlier than that of its ancestors (info)
  * <li> Document must explicitly reference a shared style (error)
@@ -98,6 +99,7 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
  * <li> ignore invalid string in coordinate (error)
  * <li> Invalid LookAt values (error)
  * <li> Invalid tilt value in LookAt [ATC 38.2] (error)
+ * <li> LookAt has invalid tilt: out of range value [ATC 38.2] (error)
  * <li> Invalid time range: start > end [ATC 4] (error)
  * <li> Invalid TimeSpan if begin later than end value (warning)
  * <li> Invalid ViewGroup tag: XXX (warn)
@@ -114,7 +116,9 @@ import org.mitre.itf.geodesy.Geodetic2DPoint;
  * <li> Overlay does not contain Icon element (info)
  * <li> Region has invalid LatLonAltBox [ATC 8] (error)
  * <li> Region has invalid LatLonAltBox: non-numeric value (error)
+ * <li> Region has invalid LatLonAltBox: out of range value (error)
  * <li> Region has invalid Lod: non-numeric value (error)
+ * <li> Region has invalid Lod: out of range value (error)
  * <li> Shared styles in Folder not allowed [ATC 7] (warning)
  * <li> Shared styles must have 'id' attribute [ATC 7] (warning)
  * <li> Starting container tag with no matching end container (error)
@@ -1273,7 +1277,9 @@ public class KmlMetaDump implements IKml {
 					(3) if kml:altitudeMode does not have the value "clampToGround", then the kml:altitude element is present
 				*/
 				try {
-					double tilt = handleTaggedElement(IKml.TILT, viewGroup, 0, 180);
+					// <element name="tilt" type="kml:anglepos180Type" default="0.0" />
+					// Values for <tilt> are clamped at +180 degrees for Camera definition
+					double tilt = handleTaggedElement(IKml.TILT, viewGroup, 0, 360);
 					if (tilt < 0 || tilt > 90) {
 						// (2) 0 <= kml:tilt <= 90;
 						addTag(":Invalid LookAt values");
@@ -1282,6 +1288,9 @@ public class KmlMetaDump implements IKml {
 				} catch (NumberFormatException nfe) {
 					addTag(":LookAt has invalid tilt: non-numeric value");
 					if (verbose) System.out.println(" Error: " + nfe.getMessage());
+				} catch (IllegalArgumentException e) {
+					addTag(":LookAt has invalid tilt: out of range value [ATC 38.2]");
+					if (verbose) System.out.println(" Error: " + e.getMessage());
 				}
 				if (!CLAMP_TO_GROUND.equals(viewGroup.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND)) &&
 						viewGroup.get(IKml.ALTITUDE) == null) {
@@ -1291,6 +1300,12 @@ public class KmlMetaDump implements IKml {
 				}
 			} else if (IKml.CAMERA.equals(tag)) {
 				addTag(tag); // Camera
+				try {
+					handleTaggedElement(IKml.TILT, viewGroup, 0, 180);
+				} catch (IllegalArgumentException e) {
+					addTag(":Camera has invalid tilt value");
+					if (verbose) System.out.println(" Error: " + e.getMessage());
+				}
 				/*
 					ATC 54: Camera
 					(1) if it is not a descendant of kml:Update, then the following child elements are present:
@@ -1299,6 +1314,7 @@ public class KmlMetaDump implements IKml {
 
 					Reference: OGC-07-147r2: cl. 14.2.2
 				*/
+				// Values greater than 90 indicate that the view is pointed up into the sky. Values for <tilt> are clamped at +180 degrees
 				if (CLAMP_TO_GROUND.equals(viewGroup.get(IKml.ALTITUDE_MODE, CLAMP_TO_GROUND))) {
 					// (2) the value of kml:altitudeMode is not "clampToGround".
 					addTag(":Camera altitudeMode cannot be " + CLAMP_TO_GROUND + " [ATC 54.2]", true); // warning
@@ -1370,11 +1386,13 @@ public class KmlMetaDump implements IKml {
 
 		addTag(REGION);
 		try {
-			double north = handleTaggedElement(IKml.NORTH, region, 0, 90);
-			double south = handleTaggedElement(IKml.SOUTH, region, 0, 90);
-			double east = handleTaggedElement(IKml.EAST, region, 0, 180);
-			double west = handleTaggedElement(IKml.WEST, region, 0, 180);
-			if (Math.abs(north - south) < 1e-5 || Math.abs(east - west) < 1e-5) {
+			// incorrect default values in KML XSD for north/south. Use 90/-90 not 180/-180.
+			// See http://kml4earth.appspot.com/kmlErrata.html#LatLonAltBox
+			double north = handleTaggedElement(IKml.NORTH, region, 90, 90);
+			double south = handleTaggedElement(IKml.SOUTH, region, -90, 90);
+			double east = handleTaggedElement(IKml.EAST, region, 180, 180);
+			double west = handleTaggedElement(IKml.WEST, region, -180, 180);
+			if (Math.abs(north - south) < 1e-6 || Math.abs(east - west) < 1e-6) {
 				// incomplete bounding box or too small so skip it
 				// 0.0001 (1e-4) degree dif  =~ 10 meter
 				// 0.00001 (1e-5) degree dif =~ 1 meter
@@ -1384,8 +1402,11 @@ public class KmlMetaDump implements IKml {
 			} else {
 				// Test ATC 8: Region - LatLonAltBox
 				// Check valid Region-LatLonAltBox values:
+				// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#Region-LatLonAltBox
 				// 1. kml:north > kml:south; lat range: +/- 90
 				// 2. kml:east > kml:west;   lon range: +/- 180
+				// NOTE: east > west constraint invalid if crosses anti-meridian
+				// See http://kml4earth.appspot.com/kmlErrata.html#LatLonBox
 				if (north < south || east < west) {
 					addTag(":Region has invalid LatLonAltBox [ATC 8]");
 					if (verbose) System.out.println(" Error: LatLonAltBox fails to satisfy constraints [ATC 8]");
@@ -1401,6 +1422,9 @@ public class KmlMetaDump implements IKml {
 			}
 		} catch (NumberFormatException nfe) {
 			addTag(":Region has invalid LatLonAltBox: non-numeric value");
+			if (verbose) System.out.println(" Error: " + nfe.getMessage());
+		} catch (IllegalArgumentException nfe) {
+			addTag(":Region has invalid LatLonAltBox: out of range value");
 			if (verbose) System.out.println(" Error: " + nfe.getMessage());
 		}
 		// check constraint: (4)
@@ -1429,6 +1453,9 @@ public class KmlMetaDump implements IKml {
 		} catch (NumberFormatException nfe) {
 			addTag(":Region has invalid Lod: non-numeric value");
 			if (verbose) System.out.println(" Error: " + nfe.getMessage());
+		} catch (IllegalArgumentException e) {
+			addTag(":Region has invalid Lod: out of range value");
+			if (verbose) System.out.println(" Error: " + e.getMessage());
 		}
 	}
 
@@ -1436,7 +1463,7 @@ public class KmlMetaDump implements IKml {
 		return handleTaggedElement(tag, region, defaultValue, 0);
 	}
 
-	private static double handleTaggedElement(String tag, TaggedMap region, int defaultValue, int maxAbsValue) throws NumberFormatException {
+	private static double handleTaggedElement(String tag, TaggedMap region, int defaultValue, int maxAbsValue) {
 		String val = region.get(tag);
 		if (val != null && !val.isEmpty()) {
 			double rv;
@@ -1446,7 +1473,7 @@ public class KmlMetaDump implements IKml {
 				throw new NumberFormatException(String.format("The value '%s' of element '%s' is not valid", val, tag));
 			}
 			if (maxAbsValue > 0 && Math.abs(rv) > maxAbsValue) {
-				throw new NumberFormatException(String.format("Invalid value out of range: %s=%s", tag, val));
+				throw new IllegalArgumentException(String.format("Invalid value out of range: %s=%s", tag, val));
 			}
 			return rv;
 		}
