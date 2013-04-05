@@ -483,10 +483,10 @@ public class TestKmlReader extends TestCase implements IKml {
         TaggedMap links = new TaggedMap(LINK);
         for (int i = 0; i < values.length; i += 2)
 			links.put(values[i], values[i+1]);
-        System.out.println("XXX:" + links);
+        // System.out.println("XXX:" + links);
         URI uri = reader.checkLink(null, links);
         String href = uri.toString();
-        System.out.println("XXX:" + href);
+        // System.out.println("XXX:" + href);
         if (expectedSubstring != null) assertTrue(href.contains(expectedSubstring));
         if (notSubstring != null) assertFalse(href.contains(notSubstring));
         // System.out.println();
