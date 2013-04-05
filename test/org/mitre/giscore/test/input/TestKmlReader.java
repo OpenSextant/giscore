@@ -437,6 +437,19 @@ public class TestKmlReader extends TestCase implements IKml {
                 "viewFormat", "foo=[bar]" }, "foo=%5Bbar%5D", "BBOX=");
         // expected -> http://127.0.0.1/kmlsvc?foo=%5Bbar%5D
 
+		// If you specify an empty <viewFormat> tag, no information is appended to the query string
+		// but null value with <viewRefreshMode> of onStop gets default BBOX fields
+		realTestLink(reader, new String[] { "href", href,
+				"viewFormat", "",
+				VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP }, null, "BBOX");
+		// expected -> http://127.0.0.1/kmlsvc
+
+		// cameraLat/Lon viewFormat entities
+		realTestLink(reader, new String[] { "href", href,
+				"viewFormat", "c=[cameraLat],[cameraLon],[cameraAlt]",
+				VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_REQUEST }, "?c=0,0,0", "[cameraLon]");
+		// expected -> http://127.0.0.1/kmlsvc?c=0,0,0
+
         // file href will not have any viewFormat or httpQuery parameters appended to URL
         realTestLink(reader, new String[] { "href", file.toURI().toASCIIString(),
                 VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP, REFRESH_MODE, REFRESH_MODE_ON_EXPIRE,
@@ -461,19 +474,19 @@ public class TestKmlReader extends TestCase implements IKml {
         KmlReader.setHttpQuery("clientVersion", "6.0.3.2197");
         KmlReader.setViewFormat("lookatHeading", "5");
         realTestLink(reader, new String[] { "href", href,
-                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP, "viewFormat", "lookatHeading=[lookatHeading]",
-                "httpQuery", "clientVersion=[clientVersion]" }, "clientVersion=6.0.3.2197&lookatHeading=5", null);
-        // expected -> http://127.0.0.1/kmlsvc?clientVersion=6.0.3.2197&lookatHeading=5
+                VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP, "viewFormat", "heading=[lookatHeading]",
+                "httpQuery", "clientVersion=[clientVersion]" }, "clientVersion=6.0.3.2197&heading=5", null);
+        // expected -> http://127.0.0.1/kmlsvc?clientVersion=6.0.3.2197&heading=5
     }
 
     private void realTestLink(StubKmlReader reader, String[] values, String expectedSubstring, String notSubstring) {
         TaggedMap links = new TaggedMap(LINK);
         for (int i = 0; i < values.length; i += 2)
 			links.put(values[i], values[i+1]);
-        // System.out.println("XXX:" + links);
+        System.out.println("XXX:" + links);
         URI uri = reader.checkLink(null, links);
         String href = uri.toString();
-        // System.out.println("XXX:" + href);
+        System.out.println("XXX:" + href);
         if (expectedSubstring != null) assertTrue(href.contains(expectedSubstring));
         if (notSubstring != null) assertFalse(href.contains(notSubstring));
         // System.out.println();
