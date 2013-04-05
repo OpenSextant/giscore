@@ -76,16 +76,19 @@ public abstract class KmlBaseReader implements IKml {
 			httpQueryLabels.put(labels[i], labels[i+1]);
 
         final String[] viewLabels = {
-            "bboxEast",         "180",
+			"bboxEast",         "180",
 			"bboxNorth",        "90",
 			"bboxSouth",        "-45",
 			"bboxWest",         "-180",
+			"cameraLon",        "0",
+			"cameraLat",        "0",
+			"cameraAlt",        "0",
 			"horizFov",         "60",
 			"horizPixels",      "917",
 			"lookatHeading",    "0",
 			"lookatLat",        "0",
 			"lookatLon",        "0",
-			"lookatRange",      "7190000.49",
+			"lookatRange",      "7190000",
 			"lookatTerrainAlt", "0",
 			"lookatTerrainLat", "0",
 			"lookatTerrainLon", "0",
