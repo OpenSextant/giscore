@@ -353,6 +353,7 @@ public class XmlOutputStreamBase extends StreamVisitorBase implements
     		writer.writeCharacters(text);
     	}
     	writer.writeEndElement();
+		writer.writeCharacters("\n");
 	}
 
     /**
