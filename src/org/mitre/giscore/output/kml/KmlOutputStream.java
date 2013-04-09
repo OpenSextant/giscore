@@ -523,8 +523,17 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             if (address != null) handleNonEmptySimpleElement(ADDRESS, address);
             if (phoneNumber != null) handleNonEmptySimpleElement(PHONE_NUMBER, phoneNumber);
             if (addressDetails != null) handleXmlElement(addressDetails);
+
             // Use snippet (lower-case 's'). Snippet deprecated in 2.2 (see OGC kml22.xsd)
-            handleNonEmptySimpleElement(SNIPPET, feature.getSnippet());
+			// allow empty string for empty element
+			String snippet = StringUtils.trim(feature.getSnippet());
+			if (snippet != null) {
+				if (snippet.isEmpty())
+					writer.writeEmptyElement(SNIPPET);
+				else
+					handleSimpleElement(SNIPPET, snippet);
+			}
+
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
             handleAbstractView(feature.getViewGroup()); // LookAt or Camera AbstractViewGroup
             Date startTime = feature.getStartTime();
@@ -934,7 +943,13 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         writer.writeStartElement(elementName);
         for (String tag : LINK_TYPE_TAGS) {
             String val = map.get(tag);
-            if (val != null && val.length() != 0) {
+            if (val != null) {
+				if(val.isEmpty()) {
+					// need to support empty tag for viewFormat
+					if (VIEW_FORMAT.equals(tag)) writer.writeEmptyElement(VIEW_FORMAT);
+					// otherwise ignore empty values
+					continue;
+				}
                 if (tag.equals(HREF)) {
                     if (val.startsWith("kmz") && val.indexOf("file=") > 0) {
                         // replace internal URI (which is used to associate link with parent KMZ file)

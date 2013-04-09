@@ -18,6 +18,7 @@ package org.mitre.giscore.input.kml;
 
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.*;
 import org.mitre.giscore.events.*;
@@ -495,7 +496,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				return true;
 			} else if (localname.equals("snippet")) { // kml:snippet
 				// http://code.google.com/apis/kml/documentation/kmlreference.html#snippet
-				feature.setSnippet(getElementText(name));
+				feature.setSnippet(getElementEmptyText(name)); // allow empty string to be preserved
 				return true;
 			} else if (localname.equals(ADDRESS) || localname.equals(PHONE_NUMBER)) { // kml:address | kml:phoneNumber
 				String value = getElementText(name); // non-empty or null value
@@ -2649,6 +2650,19 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			}
 
 		return list;
+	}
+
+	@Nullable
+	private String getElementEmptyText(QName name) throws XMLStreamException {
+		try {
+			String elementText = stream.getElementText();
+			return elementText == null || elementText.isEmpty() ? elementText : elementText.trim();
+		} catch (XMLStreamException e) {
+			log.warn("Unable to parse " + name.getLocalPart()
+					+ " as text element: " + e);
+			skipNextElement(stream, name);
+			return null;
+		}
 	}
 
 	/**

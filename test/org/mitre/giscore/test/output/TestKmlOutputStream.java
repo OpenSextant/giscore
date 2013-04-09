@@ -172,6 +172,7 @@ public class TestKmlOutputStream extends TestGISBase {
 		link.put("refreshInterval", "4");
 		link.put("viewRefreshMode", "onRegion");
 		link.put("viewRefreshTime", "1");
+		link.put("viewFormat", "");
 		nl.setLink(link);
 		nl.setRefreshVisibility(true);
 		nl.setFlyToView(true);
