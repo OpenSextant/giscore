@@ -255,6 +255,43 @@ public class TestKmlOutputStream extends TestGISBase {
 		}
 	}
 
+	@Test
+	public void testBadExtendedElement() throws IOException, XMLStreamException {
+		// System.out.println("XXX: testBadExtendedElement");
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		try {
+			Feature f = new Feature();
+			List<Element> elts = new ArrayList<Element>();
+			Namespace kmlNs = Namespace.getNamespace("kml", IKml.KML_NS);
+			// foreign elements in ExtendedData must be non-empty and non-KML namespace
+			elts.add(new Element(kmlNs, "description").withText("this is an extended description"));
+			elts.add(new Element("noNamespace").withText("2")); // element with no namespace
+			f.setExtendedElements(elts);
+			kos.write(f);
+			kos.close();
+			// System.out.println("KML content:\n" + bos.toString("UTF-8"));
+
+			KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+			IGISObject o = kis.read();
+			assertTrue(o instanceof DocumentStart);
+			o = kis.read();
+			assertTrue(o instanceof Feature);
+			Feature f2 = (Feature)o;
+			// NOTE: invalid extended data elements are output as XML comments
+			// and comments are ignored in input in KmlInputStream so expected count is 0.
+			assertEquals(0, f2.getExtendedElements().size());
+			kis.close();
+
+			// compareFeature(f, new ByteArrayInputStream(bos.toByteArray()));
+			// note this does not test the foreign extended elements
+
+		} catch (AssertionError ae) {
+			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
+			throw ae;
+		}
+	}
+
 	private void compareFeature(IGISObject expected, InputStream is) throws IOException {
 		KmlInputStream kis = new KmlInputStream(is);
 		try {
