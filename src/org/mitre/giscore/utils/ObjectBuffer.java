@@ -23,6 +23,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.mitre.giscore.GISFactory;
 
 /**
@@ -180,6 +181,7 @@ public class ObjectBuffer {
 	 * @throws IOException 
 	 * @throws ClassNotFoundException 
 	 */
+	@Nullable
 	public IDataSerializable read() throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
 		try {
 			if (readIndex >= storeIndex) {

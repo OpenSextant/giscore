@@ -33,6 +33,7 @@ import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.DocumentType;
@@ -200,6 +201,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 * @throws XMLStreamException
 	 *             if there is an error with the underlying XML.
 	 */
+	@NonNull
 	protected IGISObject getForeignElement(StartElement se)
 			throws XMLStreamException {
 		Element el = new Element();
@@ -267,6 +269,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 * @throws XMLStreamException
 	 *             if there is an error with the underlying XML.
 	 */
+	@NonNull
 	protected String getSerializedElement(StartElement start)
 			throws XMLStreamException {
 		Element el = (Element) getForeignElement(start);
@@ -309,6 +312,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 *             if the current event is not a START_ELEMENT or if a non text
 	 *             element is encountered
 	 */
+	@Nullable
 	protected String getNonEmptyElementText() throws XMLStreamException {
 		String elementText = stream.getElementText();
 		if (elementText == null || elementText.isEmpty())
@@ -324,6 +328,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 * @throws XMLStreamException
 	 *             if the current event is not a START_ELEMENT
 	 */
+	@Nullable
 	protected Integer getIntegerElementValue(String localName)
 			throws XMLStreamException {
 		String elementText = getNonEmptyElementText();
@@ -337,6 +342,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 		return null;
 	}
 
+	@Nullable
 	protected Double getDoubleElementValue(String localName)
 			throws XMLStreamException {
 		String elementText = stream.getElementText();
@@ -359,6 +365,7 @@ public abstract class XmlInputStream extends GISInputStreamBase {
 	 * @throws XMLStreamException
 	 *             if there is an error with the underlying XML.
 	 */
+	@Nullable
 	protected String getElementText(QName name) throws XMLStreamException {
 		/*
 		 * some elements such as description may have HTML elements as child

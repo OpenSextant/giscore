@@ -16,6 +16,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.output.kml;
 
+import edu.umd.cs.findbugs.annotations.NonNull;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.mitre.giscore.Namespace;
@@ -448,6 +449,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     }
 
     // Thread-safe date formatter helper method
+	@NonNull
     private SafeDateFormat getDateFormatter() {
         if (dateFormatter == null) {
             dateFormatter = new SafeDateFormat(ISO_DATE_FMT);

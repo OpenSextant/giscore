@@ -384,6 +384,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
+	@NonNull
 	private IGISObject handleContainer(XMLEvent e) throws XMLStreamException {
 		StartElement se = e.asStartElement();
 		QName name = se.getName();
@@ -669,12 +670,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return the value associated with the element
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
+	@Nullable
 	private String parseValue(QName name) throws XMLStreamException {
 		XMLEvent next;
 		String rval = null;
 		while (true) {
 			next = stream.nextEvent();
-			if (foundEndTag(next, name)) {
+			if (foundEndTag(next, name)) { // also checks if next == null
 				return rval;
 			}
 			if (next.getEventType() == XMLEvent.START_ELEMENT) {
@@ -736,6 +738,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param name the qualified name of this event
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
+	@NonNull
 	private StyleMap handleStyleMap(Common cs, XMLEvent ee, QName name)
 			throws XMLStreamException {
 		XMLEvent next;
@@ -996,6 +999,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
+	@NonNull
 	private Style handleStyle(Common cs, XMLEvent ee, QName name)
 			throws XMLStreamException {
 		XMLEvent next;
@@ -1234,11 +1238,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return the href, <code>null</code> if not found.
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
+	@Nullable
 	private String parseIconHref(QName qname) throws XMLStreamException {
 		String href = null;
 		while (true) {
 			XMLEvent e = stream.nextEvent();
-			if (foundEndTag(e, qname)) {
+			if (foundEndTag(e, qname)) { // also checks e == null
 				return href;
 			}
 			if (e.getEventType() == XMLEvent.START_ELEMENT) {
@@ -1257,6 +1262,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param cstr a hex encoded string, must be exactly 8 characters long.
 	 * @return the color value, null if value is null, empty or invalid
 	 */
+	@Nullable
 	private Color parseColor(String cstr) {
 		if (cstr == null) return null;
 		cstr = cstr.trim();
@@ -1349,6 +1355,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @throws IOException        if encountered NetworkLinkControl or out of order Style element
 	 *                            and failed to skip to end tag for that element.
 	 */
+	@NonNull
 	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException {
 		StartElement se = e.asStartElement();
 		QName name = se.getName();
@@ -1438,6 +1445,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		return NullObject.getInstance();
 	}
 
+	@NonNull
 	private IGISObject handleNetworkLinkControl(XMLEventReader stream, QName name) throws XMLStreamException {
 		NetworkLinkControl c = new NetworkLinkControl();
 		// if true indicates we're parsing the Update element
@@ -1518,6 +1526,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
+	@NonNull
 	private IGISObject handleSchema(StartElement element, QName qname)
 			throws XMLStreamException {
 		Schema s = new Schema();
@@ -1632,6 +1641,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return non-empty text value trimmed from attribute,
 	 *         null if empty
 	 */
+	@Nullable
 	private static String getNonEmptyAttrValue(Attribute attr) {
 		if (attr != null) {
 			String value = attr.getValue();
@@ -1648,6 +1658,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return
 	 * @throws XMLStreamException
 	 */
+	@Nullable
 	private String parseDisplayName(String tag) throws XMLStreamException {
 		String rval = null;
 		while (true) {
@@ -1675,6 +1686,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
+	@NonNull
 	private IGISObject handleFeature(XMLEvent e, String type) throws XMLStreamException {
 		StartElement se = e.asStartElement();
 		boolean placemark = PLACEMARK.equals(type);
@@ -1842,6 +1854,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param sl the start element
 	 * @return the location, never <code>null</code>.
 	 */
+	@Nullable
 	private ScreenLocation handleScreenLocation(StartElement sl) {
 		try {
 			ScreenLocation loc = new ScreenLocation();
@@ -1880,6 +1893,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return the map, null if no non-empty values are found
 	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
+	@Nullable
 	private TaggedMap handleTaggedData(QName name, TaggedMap map)
 			throws XMLStreamException {
 		String rootNs = name.getNamespaceURI();
@@ -1920,6 +1934,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		return map.isEmpty() ? null : map;
 	}
 
+	@NonNull
 	private TaggedMap handleTaggedData(QName name) throws XMLStreamException {
 		// handle Camera, LookAt, Icon, Link, and Url elements
 		return handleTaggedData(name, new TaggedMap(name.getLocalPart()));
@@ -1940,13 +1955,13 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	private boolean handleElementExtension(TaggedMap map, Element el, String namePrefix) {
         /*
-                   LookAt/Camera elements can include gx:TimeSpan or gx:TimeStamp child elements:
+		   LookAt/Camera elements can include gx:TimeSpan or gx:TimeStamp child elements:
 
-                   <gx:TimeSpan>
-                     <begin>2010-05-28T02:02:09Z</begin>
-                     <end>2010-05-28T02:02:56Z</end>
-                   </gx:TimeSpan>
-                  */
+		   <gx:TimeSpan>
+			 <begin>2010-05-28T02:02:09Z</begin>
+			 <end>2010-05-28T02:02:56Z</end>
+		   </gx:TimeSpan>
+		  */
 		String prefix = el.getPrefix();
 		String ns = el.getNamespaceURI();
 		// use "gx" handle regardless of what KML uses for gx namespace
@@ -2060,6 +2075,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @throws IllegalArgumentException if geometry is invalid (e.g. invalid Lon/Lat, Line has < 2 points, etc.)
 	 */
 	@SuppressWarnings("unchecked")
+	@Nullable
 	private Geometry handleGeometry(StartElement sl) throws XMLStreamException {
 		QName name = sl.getName();
 		String localname = name.getLocalPart();
@@ -2156,6 +2172,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @throws IllegalArgumentException if geometry is invalid (e.g. no valid coordinates)
 	 * @throws IllegalStateException    if Bad poly found (e.g. no outer ring)
 	 */
+	@Nullable
 	private GeometryBase getGeometryBase(QName name, String localname) throws XMLStreamException {
 		if (localname.equals(LINE_STRING)) {
 			GeometryGroup geom = parseCoordinates(name);
@@ -2255,6 +2272,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param geom  GeometryBase, never null
 	 * @return filled in GeometryBase object
 	 */
+	@NonNull
 	private static GeometryBase getGeometry(GeometryGroup group, GeometryBase geom) {
 		if (group != null) {
 			if (group.tessellate != null)
@@ -2269,6 +2287,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		return geom;
 	}
 
+	@Nullable
 	private Geodetic2DPoint parseLocation(QName qname) throws XMLStreamException {
 		Latitude latitude = null;
 		Longitude longitude = null;
@@ -2310,8 +2329,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		}
 
 		if (longitude == null && latitude == null) return null;
+
 		if (longitude == null) longitude = new Longitude();
 		else if (latitude == null) latitude = new Latitude();
+
 		return altitude == null ? new Geodetic2DPoint(longitude, latitude)
 				: new Geodetic3DPoint(longitude, latitude, altitude);
 	}
@@ -2401,6 +2422,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @return the list coordinates, empty list if no valid coordinates are found
 	 * @throws XMLStreamException if there is an error with the underlying XML.
 	 */
+	@NonNull
 	private GeometryGroup parseCoordinates(QName qname) throws XMLStreamException {
 		GeometryGroup geom = new GeometryGroup();
 		parseCoordinates(qname, geom);
@@ -2418,6 +2440,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @throws XMLStreamException       if there is an error with the underlying XML.
 	 * @throws IllegalArgumentException error if coordinates values are out of range
 	 */
+
+	@Nullable
 	private Point parseCoordinate(QName name) throws XMLStreamException {
 		Point rval = null;
 		String altitudeMode = null;
@@ -2463,6 +2487,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * @throws IllegalArgumentException error if coordinates values are out of range
 	 */
+	@Nullable
 	private static Point parsePointCoord(String coord) {
 		List<Point> list = parseCoord(coord);
 		if (log.isDebugEnabled() && list.size() != 1) {
@@ -2669,6 +2694,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param e
 	 * @return
 	 */
+	@Nullable
 	private IGISObject handleEndElement(XMLEvent e) {
 		EndElement ee = e.asEndElement();
 		String localname = ee.getName().getLocalPart();

@@ -14,6 +14,7 @@
  ***************************************************************************************/
 package org.mitre.giscore.utils;
 
+import edu.umd.cs.findbugs.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +76,7 @@ public final class DateParser {
         }
     }
 
+	@Nullable
     public static Date parse(String str) {
         //System.out.println(str);
         String strToken = "";
@@ -257,5 +259,5 @@ public final class DateParser {
         // System.out.printf("\tcal: %d/%d [%d]%n", cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH), cal.getTimeInMillis());
         return cal.getTime();
     }
-}
 
+}
