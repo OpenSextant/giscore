@@ -217,6 +217,44 @@ public class TestKmlOutputStream extends TestGISBase {
 		compareFeature(so, new ByteArrayInputStream(bos.toByteArray()));
 	}
 
+	@Test
+	public void testExtendedElement() throws IOException, XMLStreamException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		/*
+			recreate example KML with custom namespace in extended data
+			http://code.google.com/apis/kml/documentation/extendeddata.html
+		 */
+		try {
+			DocumentStart ds = new DocumentStart(DocumentType.KML);
+			Namespace campNS = Namespace.getNamespace("camp", "http://campsites.com");
+			ds.addNamespace(campNS);
+			kos.write(ds);
+			Feature f = new Feature();
+			List<Element> elts = new ArrayList<Element>();
+			elts.add(new Element(campNS, "Data").withText("14"));
+			elts.add(new Element(campNS, "parkingSpaces").withText("2"));
+			elts.add(new Element(campNS, "tentSites").withText("4"));
+			f.setExtendedElements(elts);
+			kos.write(f);
+			kos.close();
+			kos = null;
+			// System.out.println("KML content:\n" + bos.toString("UTF-8"));
+
+			compareFeature(f, new ByteArrayInputStream(bos.toByteArray()));
+
+			//KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+			//IGISObject o = kis.read();
+			//kis.close();
+		} catch (AssertionError ae) {
+			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
+			throw ae;
+		} finally {
+			if (kos != null)
+				kos.close();
+		}
+	}
+
 	private void compareFeature(IGISObject expected, InputStream is) throws IOException {
 		KmlInputStream kis = new KmlInputStream(is);
 		try {
