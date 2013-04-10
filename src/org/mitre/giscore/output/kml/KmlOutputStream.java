@@ -729,7 +729,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
 
             if (data instanceof Number) {
-                return String.valueOf(data);
+                return data.toString();
             } else {
                 throw new IllegalArgumentException("Data that cannot be coerced to float: " + data);
             }
@@ -740,7 +740,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
 
             if (data instanceof Number) {
-                return String.valueOf(data);
+                return data.toString();
             } else {
                 throw new IllegalArgumentException("Data that cannot be coerced to int: " + data);
             }
