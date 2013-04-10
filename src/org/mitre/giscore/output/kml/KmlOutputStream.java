@@ -1038,16 +1038,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                         .getOuterRing().iterator()));
                 writer.writeEndElement();
                 writer.writeEndElement();
-                if (poly.getLinearRings() != null) {
-                    for (LinearRing lr : poly.getLinearRings()) {
-                        writer.writeStartElement(INNER_BOUNDARY_IS);
-                        writer.writeStartElement(LINEAR_RING);
-                        handleSimpleElement(COORDINATES, handleCoordinates(lr
-                                .getPoints()));
-                        writer.writeEndElement();
-                        writer.writeEndElement();
-                    }
-                }
+				for (LinearRing lr : poly.getLinearRings()) {
+					writer.writeStartElement(INNER_BOUNDARY_IS);
+					writer.writeStartElement(LINEAR_RING);
+					handleSimpleElement(COORDINATES, handleCoordinates(lr
+							.getPoints()));
+					writer.writeEndElement();
+					writer.writeEndElement();
+				}
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
                 throw new IllegalStateException(e);
