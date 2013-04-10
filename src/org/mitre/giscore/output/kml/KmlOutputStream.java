@@ -682,6 +682,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @return formatted date (e.g. 2003-09-30T00:00:06.930Z)
      */
     private String formatDate(Date date) {
+        // NOTE: this eliminates alternative date forms (date gYearMonth gYear)
+        // all of which are converted to ISO xsd:dateTime format
         String d = getDateFormatter().format(date);
         if (d.endsWith(".000Z")) {
             // trim milliseconds field
@@ -708,6 +710,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             if (val instanceof String) {
                 try {
                     // Try converting to ISO?
+                    // NOTE: alternate date forms (date gYearMonth gYear) will all be converted to full ISO dateTime
                     val = KmlInputStream.parseDate((String) data);
                 } catch (ParseException e) {
                     // Fall through
