@@ -246,12 +246,13 @@ public class Row extends AbstractObject implements IDataSerializable {
 				return false;
 		} else if (!schema.equals(other.schema))
 			return false;
-		if (extendedData == null) {
-			if (other.extendedData != null)
-				return false;
-		} else if (!extendedData.equals(other.extendedData))
-			return false;
-		return true;
+		//if (extendedData == null) {
+			//if (other.extendedData != null)
+				//return false;
+		//} else
+		// extendedData never null
+		return extendedData.equals(other.extendedData);
+		// note: extendedElements not yet checked here
 	}
 
 	/*
@@ -265,7 +266,8 @@ public class Row extends AbstractObject implements IDataSerializable {
 		int result = super.hashCode();
 		result = prime * result
 				+ ((schema == null) ? 0 : schema.hashCode());
-		result = prime * result + ((extendedData == null) ? 0 : extendedData.hashCode());
+		result = prime * result + extendedData.hashCode();
+		// note: extendedElements not yet added here
 		return result;
 	}
 
