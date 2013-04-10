@@ -238,7 +238,6 @@ public class TestKmlOutputStream extends TestGISBase {
 			f.setExtendedElements(elts);
 			kos.write(f);
 			kos.close();
-			kos = null;
 			// System.out.println("KML content:\n" + bos.toString("UTF-8"));
 
 			compareFeature(f, new ByteArrayInputStream(bos.toByteArray()));
@@ -249,9 +248,33 @@ public class TestKmlOutputStream extends TestGISBase {
 		} catch (AssertionError ae) {
 			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
 			throw ae;
-		} finally {
-			if (kos != null)
-				kos.close();
+		}
+	}
+
+	@Test
+	public void testNullData() throws XMLStreamException, IOException {
+		// System.out.println("XXX: testNullData");
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		try {
+			Feature f = new Feature();
+			// fields with null values are ignored in KML output
+			f.putData(new SimpleField("name"), null);
+			kos.write(f);
+			kos.close();
+
+			KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+			IGISObject o = kis.read();
+			assertTrue(o instanceof DocumentStart);
+			o = kis.read();
+			assertTrue(o instanceof Feature);
+			Feature f2 = (Feature)o;
+			// fields with null values are ignored in KML output so empty extendedData is parsed and skipped
+			assertFalse(f2.hasExtendedData());
+			kis.close();
+		} catch (AssertionError ae) {
+			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
+			throw ae;
 		}
 	}
 
