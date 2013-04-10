@@ -449,14 +449,19 @@ public class TestKmlOutputStream extends TestGISBase {
 	public void createGxTrack() throws IOException, XMLStreamException {
 		/*
 		Generate:
-		  <Placemark>
+
+		<Placemark>
+			<name>track</name>
 			<gx:Track>
-			  <when>2010-05-28T02:02:09Z</when>
-			  <when>2010-05-28T02:02:56Z</when>
-			  <gx:coord>-122.207881 37.371915 156.000000</gx:coord>
-			  <gx:coord>-122.203207 37.374857 140.199997</gx:coord>
+				<when>2010-05-28T02:02:00Z</when>
+				<when>2010-05-28T02:02:30Z</when>
+				<when>2010-05-28T02:03:00Z</when>
+				<gx:coord>-122.207881 37.371915 156.000000</gx:coord>
+				<gx:coord/>
+				<gx:coord>-122.203207 37.374857 140.199997</gx:coord>
 			</gx:Track>
-		  </Placemark>
+		</Placemark>
+
 		 */
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		KmlOutputStream kos = new KmlOutputStream(bos);
@@ -467,10 +472,22 @@ public class TestKmlOutputStream extends TestGISBase {
 		Feature f = new Feature();
 		f.setName("track");
 		Element gxElt = new Element(gxNs, "Track");
+		/*
+		https://developers.google.com/kml/documentation/kmlreference#gxtrack
+		"sparse" data support
+		When some data values are missing for positions on the track, empty <coord/> (<coord></coord>)
+		or <angles/> (<angles></angles>) tags can be provided to balance the arrays.
+		An empty <coord/> or <angles/> tag indicates that no such data exists for a given data point,
+		and the value should be interpolated between the nearest two well-specified data points.
+		This behavior also applies to ExtendedData for a track. Any element except <when> can be empty
+		and will be interpolated between the nearest two well-specified elements.
+		 */
 		List<Element> elts = gxElt.getChildren();
-		elts.add(new Element("when").withText("2010-05-28T02:02:09Z"));
-		elts.add(new Element("when").withText("2010-05-28T02:02:56Z"));
+		elts.add(new Element("when").withText("2010-05-28T02:02:00Z"));
+		elts.add(new Element("when").withText("2010-05-28T02:02:30Z"));
+		elts.add(new Element("when").withText("2010-05-28T02:03:00Z"));
 		elts.add(new Element(gxNs, "coord").withText("-122.207881 37.371915 156.000000"));
+		elts.add(new Element(gxNs, "coord").withText(""));
 		elts.add(new Element(gxNs, "coord").withText("-122.203207 37.374857 140.199997"));
 		f.addElement(gxElt);
 		kos.write(f);
@@ -488,7 +505,7 @@ public class TestKmlOutputStream extends TestGISBase {
 			assertEquals(1, list.size());
 			Element track = list.get(0);
 			assertEquals(gxNs, track.getNamespace());
-			assertEquals(4, track.getChildren().size());
+			assertEquals(6, track.getChildren().size());
 		} catch (AssertionError ae) {
 			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
 			throw ae;
