@@ -258,8 +258,9 @@ public class TestKmlOutputStream extends TestGISBase {
 		KmlOutputStream kos = new KmlOutputStream(bos);
 		try {
 			Feature f = new Feature();
-			// fields with null values are ignored in KML output
+			// fields with null values are ignored in KML output so only one field will be written
 			f.putData(new SimpleField("name"), null);
+			f.putData(new SimpleField("date", SimpleField.Type.DATE), "2009-04-02T02:06:59Z");
 			kos.write(f);
 			kos.close();
 
@@ -269,8 +270,9 @@ public class TestKmlOutputStream extends TestGISBase {
 			o = kis.read();
 			assertTrue(o instanceof Feature);
 			Feature f2 = (Feature)o;
-			// fields with null values are ignored in KML output so empty extendedData is parsed and skipped
-			assertFalse(f2.hasExtendedData());
+			// fields with null values are ignored in KML output so only one field is found
+			assertTrue(f2.hasExtendedData());
+			assertEquals(f2.getFieldSize(), 1);
 			kis.close();
 		} catch (AssertionError ae) {
 			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
