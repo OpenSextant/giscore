@@ -480,6 +480,12 @@ public final class UrlRef implements java.io.Serializable {
 			s = s.substring(3);
 			// at end have either have ?file= or &file=
 			// rewrite if file: protocol
+			//
+			// normalized example:
+			// internal representation:
+			// 	file:/C:/projects/giscore/data/kml/kmz/dir/content.kmz?file=kml/hi.kml
+			// returned string representation:
+			// 	file:/C:/projects/giscore/data/kml/kmz/dir/content.kmz/kml/hi.kml
 			if ("kmzfile".equals(uri.getScheme())) {
 				int ind = s.lastIndexOf("file=");
 				if (ind > 0) {
