@@ -81,8 +81,8 @@ import java.util.regex.Pattern;
  * <p/>
  * Geometry support includes: Point, LineString, LinearRing, Polygon, MultiGeometry, and Model(<A href="#Model">*</A>).
  * <p/>
- * Supported KML properties include: name, address, description, open, visibility,
- * Camera/LookAt, atom:author, atom:link, xal:AddressDetails, phoneNumber, styleUrl,
+ * Supported KML properties include: name, address(<A href="#address">*</A>), description, open, visibility,
+ * Camera/LookAt, atom:author, atom:link, xal:AddressDetails, phoneNumber(<A href="#address">*</A>), styleUrl,
  * inline/shared Styles, Region, Snippet, snippet, ExtendedData(<A href="#ExtendedData">*</A>),
  * Schema, TimeStamp/TimeSpan elements in addition to the geometry are parsed
  * and set on the Feature object.
@@ -101,7 +101,8 @@ import java.util.regex.Pattern;
  * will not conform to the KML 2.2 spec.
  * <p/>
  * <p/>
- * If debug logging mode is enabled for this class, the following additional validations will be checked:
+ * If debug logging mode is enabled for this class, the following additional validations will be checked
+ * and logged as warnings:
  * <ul>
  * <li> ATC 3: Geometry coordinates:
  * Whitespace found within coordinate tuple
@@ -125,9 +126,14 @@ import java.util.regex.Pattern;
  * <p/></li>
  * <li> Geometry is handled by common code as well. All coordinates in KML are
  * transmitted as tuples of two or three elements. The formatting of these is
- * consistent and is handled by {@link #parseCoordinates(QName)}. {@code Tessellate},
+ * consistent and is handled internally. {@code Tessellate},
  * {@code extrude}, {@code altitudeMode} and {@code gx:drawOrder} properties are maintained
  * on the associated Geometry.
+ * <p/></li>
+ * <li><a name="address">phoneNumber and address fields</a> do not explicitly exist on the Feature
+ * or Common object but are added as an {@link Element} with the
+ * <code>http://www.opengis.net/kml/2.2</code> namespace. Access by calling {@link
+ *  org.mitre.giscore.events.Feature#getElements() getElements()} on the feature.
  * <p/></li>
  * <li> <a name="ExtendedData">
  * Handles ExtendedData with Data/Value or SchemaData/SimpleData elements including the non-KML namespace
