@@ -5,14 +5,11 @@
 	<property file="local.properties"/>
 
 	<!-- Remove and reinstate ivy:buildnumber should that ever start working again -->
-	<property name="previous.revision" value="1.8.3" />
-	<property name="ivy.new.revision" value="1.8.4" />
+	<property name="previous.revision" value="1.8.4" />
+	<property name="ivy.new.revision" value="2.0.0.snapshot-1" />
 	
-	<property name="proxy.host" value="gatekeeper.mitre.org" />
-	<property name="proxy.port" value="80" />
-	<property name="proxy.user" value="" />
-	<property name="proxy.pass" value="" />
-	<property name="proxy.nonProxyHosts" value="*.mitre.org|localhost|127.0.0.1" />
+	<!-- Create a local.properties to override defaults below -->
+	<property file="${basedir}/src/local.properties" />	
 
 	<property name="basedir" value="."/>
 	<property name="src" value="${basedir}/src" />
@@ -24,7 +21,6 @@
 	<property name="build.previous" value="${build}/previous" />
 	<property name="test.classes" value="${rel}/test" />
 	<property name="testoutput" value="${basedir}/testOutput" />
-	<property name="testdeploy" value="C:/apache-tomcat-5.5.23-giscore-rmi/webapps/giscore" />
 	<property name="test.excludes" value="**/TestGISBase.java **/TestShapefileBase.java"/>
 
 	<path id="project.classpath">

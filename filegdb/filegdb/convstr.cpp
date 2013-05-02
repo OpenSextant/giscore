@@ -1,3 +1,4 @@
+#include "Stdafx.h"
 #include "convstr.h"
 #if defined __APPLE__ || defined __unix__
 #include <stdlib.h>

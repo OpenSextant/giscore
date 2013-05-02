@@ -160,6 +160,16 @@ void* menv::getLongFieldValue(jobject self, const char* classname, const char* f
 }
 
 /**
+ * Set the long field value from the self passed in 
+ */
+void menv::setLongFieldValue(jobject self, const char* classname, const char* fieldname, void* value) {
+	jclass clazz = findClass(classname);
+	jfieldID field = getField(clazz, fieldname, "J");
+	env->SetLongField(self, field, (long) value);
+	checkAndThrow();
+}
+
+/**
  * Allocate a new java object using the default ctor and assign the given
  * void ptr to the ptr instance variable. Assumes the class is a subclass
  * of GDB.

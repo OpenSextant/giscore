@@ -9,6 +9,7 @@
 #endif
 #include <vector>
 #include <iostream>
+#include "FileGDBAPI.h"
 
 
 using namespace std;
@@ -84,6 +85,8 @@ public:
 	void setPtr(jobject self, void* ptr);
 
 	void* getLongFieldValue(jobject self, const char* classname, const char* fieldname);
+
+	void setLongFieldValue(jobject self, const char* classname, const char* fieldname, void* value);
 
 	/**
 	 * Allocate a new java object using the default ctor and assign the given

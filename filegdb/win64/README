@@ -1,0 +1,3 @@
+Developing the Windows library requires the Windows 7 and .NET Framework 4 SDK.
+
+Running requires the sdk, which will include the mscv libs

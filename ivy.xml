@@ -1,6 +1,8 @@
 <?xml-stylesheet type="text/xsl" href="http://www.jayasoft.fr/org/ivyrep/ivy-doc.xsl"?>
 <ivy-module version="2.0">
-	<info organisation="org.mitre.itf" module="giscore" />
+	<info organisation="org.mitre.itf" module="giscore" >
+		<license name="Apache License" url="http://www.apache.org/licenses/LICENSE-2.0" />
+	</info>
 	<configurations>
 		<conf name="compile"
 			description="This is this configuration that describes modules need to build our project" />
@@ -19,7 +21,7 @@
 		<artifact name="giscore" type="javadoc" ext="jar" conf="pubextra" />
 	</publications>
 	<dependencies defaultconf="compile->default">
-		<dependency org="org.mitre.itf" name="geodesy" rev="1.9.24" />
+		<dependency org="org.opensextant" name="geodesy" rev="2.0.0.snapshot-1" />
 		<dependency org="commons-lang" name="commons-lang" rev="2.5" />
 		<dependency org="commons-io" name="commons-io" rev="1.4" />
 		<dependency org="org.slf4j" name="slf4j-api" rev="1.5.6" />
@@ -29,11 +31,7 @@
 		<!-- This dependency will break in OSGi land. -->
 		<dependency org="com.esri.arcgis" name="arcobjects" rev="9.3.1" />
 		
-		<dependency org="org.slf4j" name="slf4j-log4j12" rev="1.5.6"
-			conf="test->default" />
-		<dependency org="org.slf4j" name="jcl-over-slf4j" rev="1.5.6"
-			conf="test->default" />
-		<dependency org="log4j" name="log4j-osgi" rev="1.2.15"
+		<dependency org="org.slf4j" name="slf4j-simple" rev="1.5.6"
 			conf="test->default" />
 		<!-- Spring is needed for the remote implementation only. The minimal
 			necessary modules are referenced here. Exclude spring if you don't

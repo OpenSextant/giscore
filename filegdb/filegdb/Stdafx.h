@@ -6,7 +6,6 @@
 #pragma once
 
 // TODO: reference additional headers your program requires here
-#include "FileGDBAPI.h"
 #include "jni.h"
 #include "convstr.h"
 #include "jstring.h"

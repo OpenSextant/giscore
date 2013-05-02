@@ -69,6 +69,7 @@ FieldInfo* getFieldInfo(JNIEnv *env, jobject self, Table *t) {
 	if (fieldInfo == 0L) {
 		fieldInfo = new FieldInfo();
 		me.esriCheckedCall(t->GetFieldInformation(*fieldInfo), "Field Info Retrieval Failed");
+		me.setLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldinfo_holder", fieldInfo);
 	}
 	return fieldInfo;
 }
@@ -89,6 +90,7 @@ map<string,FieldType>* getFieldMap(JNIEnv *env, jobject self, Table *t) {
 				convstr fn(fieldName.c_str());
 				(*fieldtype_map)[fn.getStr()] = type;
 			}
+			me.setLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldtype_map", fieldtype_map);
 		}
 	}
 	return fieldtype_map;
