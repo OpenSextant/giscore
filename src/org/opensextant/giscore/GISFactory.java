@@ -26,11 +26,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.opensextant.giscore.data.DocumentTypeRegistration;
 import org.opensextant.giscore.data.FactoryDocumentTypeRegistry;
+import org.opensextant.giscore.input.GdbInputStream;
 import org.opensextant.giscore.input.IGISInputStream;
-import org.opensextant.giscore.input.gdb.GdbInputStream;
+import org.opensextant.giscore.output.GdbOutputStream;
 import org.opensextant.giscore.output.IContainerNameStrategy;
 import org.opensextant.giscore.output.IGISOutputStream;
-import org.opensextant.giscore.output.esri.GdbOutputStream;
 import org.opensextant.giscore.output.remote.ClientOutputStream;
 import org.opensextant.giscore.output.remote.RemoteOutputStream;
 

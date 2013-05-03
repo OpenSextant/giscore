@@ -207,22 +207,6 @@ test.classpath=${classes};${netbeans-classpath.test}
 			</manifest>
 		</bundle>
 	</target>
-
-	<target name="war" depends="jar" description="make deployable war for remoting">
-		<war destfile="${rel}/giscore.war" webxml="${basedir}/web/WEB-INF/web.xml">
-			<webinf dir="${basedir}/web/WEB-INF">
-				<include name="application-config.xml" />
-			</webinf>
-			<lib dir="${lib}">
-				<include name="*.jar" />
-				<exclude name="junit*.jar" />
-				<exclude name="spring-test*.jar" />
-			</lib>
-			<lib dir="${rel}/jars">
-				<include name="giscore.jar" />
-			</lib>
-		</war>
-	</target>
 	
 	<macrodef name="package-library">
 		<attribute name="lib" />
@@ -248,11 +232,6 @@ test.classpath=${classes};${netbeans-classpath.test}
 			package="org/mitre/giscore/filegdb" os="linux64" ext="so" pre="lib" />
 	</target>
 	
-	<target name="testdeploy" depends="war">
-		<delete dir="${testdeploy}" failonerror="false" />
-		<unwar src="${rel}/giscore.war" dest="${testdeploy}" />
-	</target>
-	
 	<target name="test" depends="compileTests" description="Run JUnit tests">
 		<mkdir dir="${testoutput}" />
 		<junit printsummary="yes" haltonfailure="no" maxmemory="1024m" fork="yes">
@@ -275,7 +254,7 @@ test.classpath=${classes};${netbeans-classpath.test}
 		</junit>
 	</target>
 
-	<target name="pom" depends="war">
+	<target name="pom" depends="jar">
 		<ivy:resolve revision="${ivy.new.revision}" file="${basedir}/ivy.xml" 
 			resolveid="ivyres" />
 		<ivy:deliver revision="${ivy.new.revision}" resolveid="ivyres" 
