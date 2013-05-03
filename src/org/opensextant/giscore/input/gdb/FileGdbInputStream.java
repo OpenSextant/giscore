@@ -50,7 +50,7 @@ import org.opensextant.giscore.filegdb.Row;
 import org.opensextant.giscore.filegdb.Table;
 import org.opensextant.giscore.filegdb.Table.FieldInfo;
 import org.opensextant.giscore.input.GISInputStreamBase;
-import org.opensextant.giscore.output.esri.FileGdbConstants;
+import org.opensextant.giscore.output.gdb.FileGdbConstants;
 import org.opensextant.giscore.utils.Args;
 
 public class FileGdbInputStream extends GISInputStreamBase implements FileGdbConstants {

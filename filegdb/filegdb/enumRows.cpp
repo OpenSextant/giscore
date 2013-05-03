@@ -23,14 +23,14 @@ EnumRows* getEnumRows(JNIEnv *env, jobject self) {
 /*
  * Class:     org_opensextant_giscore_filegdb_EnumRows
  * Method:    next1
- * Signature: ()Lorg/mitre/giscore/filegdb/Row;
+ * Signature: ()Lorg/opensextant/giscore/filegdb/Row;
  */
 JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_EnumRows_next1(JNIEnv *env, jobject self) {
 	Row *row = new Row();
 	menv me(env);
 	EnumRows *e = (EnumRows*) getEnumRows(env, self);
 	if (S_OK == e->Next(*row)) {
-		return me.newObject("org.mitre.giscore.filegdb.Row", row);
+		return me.newObject("org.opensextant.giscore.filegdb.Row", row);
 	} else {
 		delete row;
 		return 0L;

@@ -21,18 +21,12 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.opensextant.giscore.data.DocumentTypeRegistration;
 import org.opensextant.giscore.data.FactoryDocumentTypeRegistry;
-import org.opensextant.giscore.input.GdbInputStream;
 import org.opensextant.giscore.input.IGISInputStream;
-import org.opensextant.giscore.output.GdbOutputStream;
-import org.opensextant.giscore.output.IContainerNameStrategy;
 import org.opensextant.giscore.output.IGISOutputStream;
-import org.opensextant.giscore.output.remote.ClientOutputStream;
-import org.opensextant.giscore.output.remote.RemoteOutputStream;
 
 /**
  * Factory class which creates concrete instantiations of input and output
@@ -48,8 +42,6 @@ public class GISFactory {
 	 * in memory. Right now this is a per feature class buffer size.
 	 */
 	public final static AtomicInteger inMemoryBufferSize = new AtomicInteger(2000);
-	
-	private static IRemoteGISService remoteService;
 	
 	/**
 	 * Input stream factory
@@ -183,157 +175,5 @@ public class GISFactory {
 		} catch (InstantiationException e) {
 			throw new IOException(e);
 		}
-	}
-	
-	/**
-	 * Output stream factory
-	 * 
-	 * @param type
-	 *            the type of the document to be written, never
-	 *            <code>null</code>.
-	 * @param outputStream
-	 *            the output stream used to save the generated GIS file or
-	 *            files. If target output is KMZ then <code>KmlWriter</code>
-	 *            should be used instead.
-	 * @param arguments
-	 *            the additional arguments needed by the constructor, the type
-	 *            or types depend on the constructor
-	 * @return a gis output stream, never <code>null</code>.
-	 * @throws IOException
-	 *             if an I/O error occurs
-	 * @see org.mitre.giscore.output.kml.KmlWriter
-	 */
-	public static IGISOutputStream getClientOutputStream(DocumentType type,
-			OutputStream outputStream, Object... arguments) 
-		throws IOException {
-		if (type == null) {
-			throw new IllegalArgumentException("type should never be null");
-		}
-		if (outputStream == null) {
-			throw new IllegalArgumentException(
-					"outputStream should never be null");
-		}
-		Long streamId = remoteService.makeGISOutputStream(type, arguments);
-		ClientOutputStream client = new ClientOutputStream(remoteService, streamId);
-		return new RemoteOutputStream(client, outputStream);
-	}	
-	
-	/**
-	 * Create an enterprise GDB output stream
-	 * 
-	 * <blockquote> <em>From the ESRI javadoc</em>
-	 * <p>
-	 * List of acceptable connection property names and a brief description of
-	 * each:
-	 * <table>
-	 * <tr><th align="left">SERVER</th><td>SDE server name you are connecting to.</td></tr>
-	 * <tr><th align="left">INSTANCE</th><td>Instance you are connection to.</td></tr>
-	 * <tr><th align="left">DATABASE</th><td>Database connected to.</td></tr>
-	 * <tr><th align="left">USER</th><td>Connected user.</td></tr>
-	 * <tr><th align="left">PASSWORD</th><td>Connected password.</td></tr>
-	 * <tr><th align="left">AUTHENTICATION_MODE</th><td>Credential authentication mode of the
-	 * connection. Acceptable values are "OSA" and "DBMS".</td></tr>
-	 * <tr><th align="left">VERSION</th><td>Transactional version to connect to. Acceptable value is
-	 * a string that represents a transaction version name.</td></tr>
-	 * <tr><th align="left">HISTORICAL_NAME</th><td>Historical version to connect to. Acceptable
-	 * value is a string type that represents a historical marker name.</td></tr>
-	 * <tr><th align="left">HISTORICAL_TIMESTAMP</th><td>Moment in history to establish an historical
-	 * version connection. Acceptable value is a date time that represents a
-	 * moment timestamp.</td></tr>
-	 * </table>
-	 * Notes:
-	 * <p>
-	 * The <Q>DATABASE</Q> property is optional and is required for ArcSDE instances
-	 * that manage multiple databases (for example, SQL Server).
-	 * <p>
-	 * If <Q>AUTHENTICATION_MODE</Q> is <Q>OSA</Q> then <Q>USER</Q> and <Q>PASSWORD</Q> are not
-	 * required. <Q>OSA</Q> represents operating system authentication and uses the
-	 * operating system credentials to establish a connection with the database.
-	 * <p>
-	 * Since the workspace connection can only represent one version only 1 of
-	 * the 3 version properties (<Q>VERSION</Q> or <Q>HISTORICAL_NAME</Q> or
-	 * <Q>HISTORICAL_TIMESTAMP</Q>) should be used. </blockquote>
-	 * 
-	 * @param properties
-	 * @param strategy
-	 * @return
-	 * @throws IOException
-	 *             if an I/O error occurs
-	 */
-	public static IGISOutputStream getSdeOutputStream(Properties properties, IContainerNameStrategy strategy) throws IOException {
-		if (properties == null) {
-			throw new IllegalArgumentException("properties should never be null");
-		}
-		return new GdbOutputStream(properties, strategy);
-	}
-	
-	/**
-	 * Create an enterprise GDB input stream
-	 * 
-	 * <blockquote> <em>From the ESRI javadoc</em>
-	 * <p>
-	 * List of acceptable connection property names and a brief description of
-	 * each:
-	 * <table>
-	 * <tr><th align="left">SERVER</th><td>SDE server name you are connecting to.</td></tr>
-	 * <tr><th align="left">INSTANCE</th><td>Instance you are connection to.</td></tr>
-	 * <tr><th align="left">DATABASE</th><td>Database connected to.</td></tr>
-	 * <tr><th align="left">USER</th><td>Connected user.</td></tr>
-	 * <tr><th align="left">PASSWORD</th><td>Connected password.</td></tr>
-	 * <tr><th align="left">AUTHENTICATION_MODE</th><td>Credential authentication mode of the
-	 * connection. Acceptable values are "OSA" and "DBMS".</td></tr>
-	 * <tr><th align="left">VERSION</th><td>Transactional version to connect to. Acceptable value is
-	 * a string that represents a transaction version name.</td></tr>
-	 * <tr><th align="left">HISTORICAL_NAME</th><td>Historical version to connect to. Acceptable
-	 * value is a string type that represents a historical marker name.</td></tr>
-	 * <tr><th align="left">HISTORICAL_TIMESTAMP</th><td>Moment in history to establish an historical
-	 * version connection. Acceptable value is a date time that represents a
-	 * moment timestamp.</td></tr>
-	 * </table>
-	 * Notes:
-	 * <p>
-	 * The <Q>DATABASE</Q> property is optional and is required for ArcSDE instances
-	 * that manage multiple databases (for example, SQL Server).
-	 * <p>
-	 * If <Q>AUTHENTICATION_MODE</Q> is <Q>OSA</Q> then <Q>USER</Q> and <Q>PASSWORD</Q> are not
-	 * required. <Q>OSA</Q> represents operating system authentication and uses the
-	 * operating system credentials to establish a connection with the database.
-	 * <p>
-	 * Since the workspace connection can only represent one version only 1 of
-	 * the 3 version properties (<Q>VERSION</Q> or <Q>HISTORICAL_NAME</Q> or
-	 * <Q>HISTORICAL_TIMESTAMP</Q>) should be used. </blockquote>
-	 * 
-	 * @param properties
-	 * @param accepter
-	 * @return
-	 * @throws IOException 
-	 */
-	public static IGISInputStream getSdeInputStream(Properties properties, IAcceptSchema accepter) throws IOException {
-		if (properties == null) {
-			throw new IllegalArgumentException("properties should never be null");
-		}
-		return new GdbInputStream(properties, accepter);
-	}
-
-	/**
-	 * @return <code>true</code> if the factory is configured to use a remote
-	 * service.
-	 */
-	public static boolean isRemotingConfigured() {
-		return remoteService != null;
-	}
-	
-	/**
-	 * @return the remoteService
-	 */
-	public IRemoteGISService getRemoteService() {
-		return remoteService;
-	}
-
-	/**
-	 * @param remoteService the remoteService to set
-	 */
-	public void setRemoteService(IRemoteGISService remoteService) {
-		GISFactory.remoteService = remoteService;
 	}
 }

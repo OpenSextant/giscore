@@ -28,9 +28,6 @@
 		<dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-version}" conf="compile->default"/>
 		<dependency org="stax" name="stax-api-osgi" rev="1.0.1" conf="compile->default"/>
 		<dependency org="findbugs" name="annotations" rev="1.0.0" conf="test->default"/>
-		<!--  <dependency org="org.geotools" name="gt-main" rev="2.5.7" />  -->
-		<!-- This dependency will break in OSGi land. -->
-		<dependency org="com.esri.arcgis" name="arcobjects" rev="9.3.1" />
 		<dependency org="log4j" name="log4j" rev="1.2.+" />
 		<dependency org="org.slf4j" name="slf4j-simple" rev="${slf4j-version}"
 			conf="test->default" />

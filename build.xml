@@ -29,9 +29,6 @@
 			<exclude name="**/*-sources.jar" />
 			<exclude name="**/*-javadoc.jar" />
 		</fileset>
-		<fileset dir="${basedir}/j2eelibs">
-			<include name="*.jar" />
-		</fileset>
 	</path>
 
 	<target name="init" unless="ivy.default.ivy.user.dir">

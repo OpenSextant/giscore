@@ -131,7 +131,7 @@ void menv::esriCheckedCall(fgdbError err, const char* message) throw(jni_check) 
  * a new instance of the passed in class.
  */
 void* menv::getPtr(jobject self, long ctor()) {
-	jclass clazz = findClass("org/mitre/giscore/filegdb/GDB");
+	jclass clazz = findClass("org/opensextant/giscore/filegdb/GDB");
 	jfieldID field = getField(clazz, "ptr", "J");
 	jlong ptr = env->GetLongField(self, field);
 	checkAndThrow();

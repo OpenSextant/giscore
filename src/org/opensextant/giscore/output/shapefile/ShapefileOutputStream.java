@@ -25,7 +25,7 @@ import org.opensextant.giscore.output.FeatureKey;
 import org.opensextant.giscore.output.FeatureSorter;
 import org.opensextant.giscore.output.IContainerNameStrategy;
 import org.opensextant.giscore.output.IGISOutputStream;
-import org.opensextant.giscore.output.esri.BasicContainerNameStrategy;
+import org.opensextant.giscore.output.gdb.BasicContainerNameStrategy;
 import org.opensextant.giscore.utils.Args;
 import org.opensextant.giscore.utils.ObjectBuffer;
 import org.opensextant.giscore.utils.ZipUtils;

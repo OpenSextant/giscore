@@ -46,7 +46,7 @@ import org.opensextant.giscore.geometry.Polygon;
 import org.opensextant.giscore.input.IGISInputStream;
 import org.opensextant.giscore.input.gdb.FileGdbInputStream;
 import org.opensextant.giscore.output.IGISOutputStream;
-import org.opensextant.giscore.output.esri.FileGdbOutputStream;
+import org.opensextant.giscore.output.gdb.FileGdbOutputStream;
 
 import static org.junit.Assert.assertTrue;
 
@@ -64,7 +64,7 @@ public class TestFileGDBSupport {
 		}
 		FileOutputStream fos = new FileOutputStream(new File(temp, "ftest" + System.currentTimeMillis() + ".zip"));
 		ZipOutputStream zos = new ZipOutputStream(fos);
-		IGISOutputStream os = new FileGdbOutputStream(zos, db, null);
+		IGISOutputStream os = new FileGdbOutputStream(zos, new Object[]{db});
 		Schema schema = new Schema();
 		SimpleField field = new SimpleField("speedLimit", SimpleField.Type.DOUBLE);
 		schema.put(field);

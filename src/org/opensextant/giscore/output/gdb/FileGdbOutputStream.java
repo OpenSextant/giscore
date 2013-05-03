@@ -16,7 +16,7 @@
  *  their occurrence.
  *
  ***************************************************************************************/
-package org.opensextant.giscore.output.esri;
+package org.opensextant.giscore.output.gdb;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -60,6 +60,7 @@ import org.opensextant.giscore.geometry.Polygon;
 import org.opensextant.giscore.output.FeatureKey;
 import org.opensextant.giscore.output.IContainerNameStrategy;
 import org.opensextant.giscore.output.IGISOutputStream;
+import org.opensextant.giscore.utils.Args;
 import org.opensextant.giscore.utils.ZipUtils;
 
 /**
@@ -117,11 +118,14 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	 * @throws IOException
 	 *             if an IO error occurs
 	 */
-	public FileGdbOutputStream(OutputStream stream, File path,
-			IContainerNameStrategy containerNameStrategy) throws IOException {
+	public FileGdbOutputStream(OutputStream stream, Object args[]) throws IOException {
 		if (stream == null) {
 			throw new IllegalArgumentException("stream should never be null");
 		}
+		Args argv = new Args(args);
+		File path = (File) argv.get(File.class, 0);
+		IContainerNameStrategy containerNameStrategy = (IContainerNameStrategy) argv.get(IContainerNameStrategy.class, 1);
+		
 		if (path == null || !path.getParentFile().exists()) {
 			path = null;
 			deleteOnClose = true;

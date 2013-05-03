@@ -31,7 +31,7 @@ import org.opensextant.giscore.geometry.Geometry;
 import org.opensextant.giscore.geometry.Line;
 import org.opensextant.giscore.geometry.Point;
 import org.opensextant.giscore.output.FeatureKey;
-import org.opensextant.giscore.output.esri.PatternContainerNameStrategy;
+import org.opensextant.giscore.output.gdb.PatternContainerNameStrategy;
 
 import static org.junit.Assert.assertEquals;
 

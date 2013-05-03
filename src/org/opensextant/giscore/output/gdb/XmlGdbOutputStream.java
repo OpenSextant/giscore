@@ -16,7 +16,7 @@
  *  their occurrence.
  *
  ***************************************************************************************/
-package org.opensextant.giscore.output.esri;
+package org.opensextant.giscore.output.gdb;
 
 import java.io.EOFException;
 import java.io.IOException;

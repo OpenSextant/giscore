@@ -159,7 +159,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_
 /*
  * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    openTable
- * Signature: (Ljava/lang/String;)Lorg/mitre/giscore/filegdb/Table;
+ * Signature: (Ljava/lang/String;)Lorg/opensextant/giscore/filegdb/Table;
  */
 JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_openTable(JNIEnv *env, jobject self, jstring path) {
 	Table *table = new Table();
@@ -168,7 +168,7 @@ JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_openT
 		Geodatabase* db = me.getGeodatabase(self);
 		convstr wpath(env, path);
 		me.esriCheckedCall(db->OpenTable(wpath.getWstr(), *table), "Opening table failed");
-		jclass tc = me.findClass("org.mitre.giscore.filegdb.Table");
+		jclass tc = me.findClass("org.opensextant.giscore.filegdb.Table");
 		jobject tobj = env->AllocObject(tc);
 		me.setPtr(tobj, table);
 		return tobj;
@@ -181,7 +181,7 @@ JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_openT
 /*
  * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    createTable
- * Signature: (Ljava/lang/String;Ljava/lang/String;)Lorg/mitre/giscore/filegdb/Table;
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)Lorg/opensextant/giscore/filegdb/Table;
  */
 JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_createTable(JNIEnv *env, jobject self, jstring parentpath, jstring descriptor) {
 	try {
@@ -191,7 +191,7 @@ JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_creat
 		convstr desc(env, descriptor);
 		convstr ppath(env, parentpath);
 		me.esriCheckedCall(db->CreateTable(desc.getStr(), ppath.getWstr(), *t), "Create table failed");
-		jclass tc = me.findClass("org.mitre.giscore.filegdb.Table");
+		jclass tc = me.findClass("org.opensextant.giscore.filegdb.Table");
 		jobject tobj = env->AllocObject(tc);
 		me.setPtr(tobj, t);
 		return tobj;
@@ -203,7 +203,7 @@ JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_creat
 /*
  * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    closeTable
- * Signature: (Lorg/mitre/giscore/filegdb/Table;)V
+ * Signature: (Lorg/opensextant/giscore/filegdb/Table;)V
  */
 JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_closeTable(JNIEnv *env, jobject self, jobject table) {
 	try {

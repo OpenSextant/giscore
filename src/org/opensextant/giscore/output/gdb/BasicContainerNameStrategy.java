@@ -1,4 +1,4 @@
-package org.opensextant.giscore.output.esri;
+package org.opensextant.giscore.output.gdb;
 
 import java.io.Serializable;
 import java.util.List;

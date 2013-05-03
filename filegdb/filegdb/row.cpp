@@ -12,8 +12,8 @@ extern "C" {
 
 jobject getRowTable(JNIEnv* env, jobject rowself) {
 	menv me(env);
-	jclass clazz = me.findClass("org.mitre.giscore.filegdb.Row");
-	jfieldID field = me.getField(clazz, "table", "Lorg.mitre.giscore.filegdb.Table;");
+	jclass clazz = me.findClass("org.opensextant.giscore.filegdb.Row");
+	jfieldID field = me.getField(clazz, "table", "Lorg.opensextant.giscore.filegdb.Table;");
 	jobject rval = env->GetObjectField(rowself, field);
 	me.checkAndThrow();
 	return rval;
@@ -139,7 +139,7 @@ void inputPoint(JNIEnv *env, int &ptr, jobjectArray iarr, Point *&p, double *&z,
 /*
  * Class:     org_opensextant_giscore_filegdb_Row
  * Method:    getGeometry
- * Signature: ()Lorg/mitre/giscore/geometry/Geometry;
+ * Signature: ()Lorg/opensextant/giscore/geometry/Geometry;
  */
 JNIEXPORT jobjectArray JNICALL Java_org_opensextant_giscore_filegdb_Row_getGeo(JNIEnv *env, jobject self) {
 	try {
@@ -215,7 +215,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_opensextant_giscore_filegdb_Row_getGeo(J
 /*
  * Class:     org_opensextant_giscore_filegdb_Row
  * Method:    setGeometry
- * Signature: (Lorg/mitre/giscore/filegdb/ShapeBuffer;)V
+ * Signature: (Lorg/opensextant/giscore/filegdb/ShapeBuffer;)V
  */
 JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Row_setGeometry(JNIEnv *env, jobject self, jobjectArray iarr) {
 	try {

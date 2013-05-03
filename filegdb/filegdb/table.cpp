@@ -13,7 +13,7 @@ extern "C" {
 /*
  * Class:     org_opensextant_giscore_filegdb_Table
  * Method:    initRow
- * Signature: (Lorg/mitre/giscore/filegdb/Row;)V
+ * Signature: (Lorg/opensextant/giscore/filegdb/Row;)V
  */
 JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Table_initRow(JNIEnv *env, jobject self, jobject robj) {
 	try {
@@ -29,7 +29,7 @@ JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Table_initRow(JNIEnv
 /*
  * Class:     org_opensextant_giscore_filegdb_Table
  * Method:    add
- * Signature: (Lorg/mitre/giscore/filegdb/Row;)V
+ * Signature: (Lorg/opensextant/giscore/filegdb/Row;)V
  */
 JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Table_add(JNIEnv *env, jobject self, jobject robj) {
 	try {
@@ -45,7 +45,7 @@ JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Table_add(JNIEnv *en
 /*
  * Class:     org_opensextant_giscore_filegdb_Table
  * Method:    enumerate
- * Signature: ()Lorg/mitre/giscore/filegdb/EnumRows;
+ * Signature: ()Lorg/opensextant/giscore/filegdb/EnumRows;
  */
 JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Table_enumerate1(JNIEnv *env, jobject self) {
 	try {
@@ -57,7 +57,7 @@ JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Table_enumerate1(
 		wstring fields(L"*");
 		wstring where(L"");
 		me.esriCheckedCall(t->Search(fields, where, envelope, true, *enumRows), "Search failed");
-		return me.newObject("org.mitre.giscore.filegdb.EnumRows", (void*) enumRows);
+		return me.newObject("org.opensextant.giscore.filegdb.EnumRows", (void*) enumRows);
 	} catch(jni_check) {
 		return 0l;
 	}
@@ -65,18 +65,18 @@ JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Table_enumerate1(
 
 FieldInfo* getFieldInfo(JNIEnv *env, jobject self, Table *t) {
 	menv me(env);
-	FieldInfo* fieldInfo = (FieldInfo*) me.getLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldinfo_holder");
+	FieldInfo* fieldInfo = (FieldInfo*) me.getLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldinfo_holder");
 	if (fieldInfo == 0L) {
 		fieldInfo = new FieldInfo();
 		me.esriCheckedCall(t->GetFieldInformation(*fieldInfo), "Field Info Retrieval Failed");
-		me.setLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldinfo_holder", fieldInfo);
+		me.setLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldinfo_holder", fieldInfo);
 	}
 	return fieldInfo;
 }
 
 map<string,FieldType>* getFieldMap(JNIEnv *env, jobject self, Table *t) {
 	menv me(env);
-	map<string,FieldType> *fieldtype_map = (map<string,FieldType> *) me.getLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldtype_map");
+	map<string,FieldType> *fieldtype_map = (map<string,FieldType> *) me.getLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldtype_map");
 	if (fieldtype_map == 0L) {
 		FieldInfo *info = getFieldInfo(env, self, t);
 		fieldtype_map = new map<string,FieldType>();
@@ -90,7 +90,7 @@ map<string,FieldType>* getFieldMap(JNIEnv *env, jobject self, Table *t) {
 				convstr fn(fieldName.c_str());
 				(*fieldtype_map)[fn.getStr()] = type;
 			}
-			me.setLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldtype_map", fieldtype_map);
+			me.setLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldtype_map", fieldtype_map);
 		}
 	}
 	return fieldtype_map;
@@ -141,11 +141,11 @@ JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Table_close1(JNIEnv 
 	try {
 		menv me(env);
 		Table *t = me.getTable(self);
-		FieldInfo* fieldInfo = (FieldInfo*) me.getLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldinfo_holder");
+		FieldInfo* fieldInfo = (FieldInfo*) me.getLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldinfo_holder");
 		if (fieldInfo != 0L) {
 			delete fieldInfo;
 		}
-		map<string,FieldType> *fieldtype_map = (map<string,FieldType> *) me.getLongFieldValue(self, "org.mitre.giscore.filegdb.Table", "fieldtype_map");
+		map<string,FieldType> *fieldtype_map = (map<string,FieldType> *) me.getLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldtype_map");
 		if (fieldtype_map != 0L) {
 			delete fieldtype_map;
 		}

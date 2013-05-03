@@ -16,7 +16,7 @@
  *  their occurrence.
  *
  ***************************************************************************************/
-package org.opensextant.giscore.output.esri;
+package org.opensextant.giscore.output.gdb;
 
 public interface FileGdbConstants {
 	final static short shapeNull = 0;
