@@ -1,6 +1,6 @@
 <?xml-stylesheet type="text/xsl" href="http://www.jayasoft.fr/org/ivyrep/ivy-doc.xsl"?>
 <ivy-module version="2.0">
-	<info organisation="org.mitre.itf" module="giscore" >
+	<info organisation="org.opensextant" module="giscore" >
 		<license name="Apache License" url="http://www.apache.org/licenses/LICENSE-2.0" />
 	</info>
 	<configurations>
@@ -21,17 +21,18 @@
 		<artifact name="giscore" type="javadoc" ext="jar" conf="pubextra" />
 	</publications>
 	<dependencies defaultconf="compile->default">
-		<dependency org="org.opensextant" name="geodesy" rev="2.0.0.snapshot-1" />
-		<dependency org="commons-lang" name="commons-lang" rev="2.5" />
-		<dependency org="commons-io" name="commons-io" rev="1.4" />
-		<dependency org="org.slf4j" name="slf4j-api" rev="1.5.6" />
-		<dependency org="stax" name="stax-api-osgi" rev="1.0.1" />
-		<dependency org="findbugs" name="annotations" rev="1.0.0" />
+		<dependency org="org.mitre.itf" name="geodesy" rev="1.9.24" conf="compile->default"/>
+		<!-- <dependency org="org.opensextant" name="geodesy" rev="2.0.0.snapshot-1" conf="compile->default"/> -->
+		<dependency org="commons-lang" name="commons-lang" rev="2.5" conf="compile->default"/>
+		<dependency org="commons-io" name="commons-io" rev="1.4" conf="compile->default"/>
+		<dependency org="org.slf4j" name="slf4j-api" rev="${slf4j-version}" conf="compile->default"/>
+		<dependency org="stax" name="stax-api-osgi" rev="1.0.1" conf="compile->default"/>
+		<dependency org="findbugs" name="annotations" rev="1.0.0" conf="test->default"/>
 		<!--  <dependency org="org.geotools" name="gt-main" rev="2.5.7" />  -->
 		<!-- This dependency will break in OSGi land. -->
 		<dependency org="com.esri.arcgis" name="arcobjects" rev="9.3.1" />
-		
-		<dependency org="org.slf4j" name="slf4j-simple" rev="1.5.6"
+		<dependency org="log4j" name="log4j" rev="1.2.+" />
+		<dependency org="org.slf4j" name="slf4j-simple" rev="${slf4j-version}"
 			conf="test->default" />
 		<!-- Spring is needed for the remote implementation only. The minimal
 			necessary modules are referenced here. Exclude spring if you don't
@@ -50,6 +51,5 @@
 		<exclude org="commons-logging" module="commons-logging" />
 		<exclude org="org.apache.xerces" module="com.springsource.org.apache.xerces" />
 		<exclude org="org.apache.xml" module="com.springsource.org.apache.xml.resolver" />
-		<exclude org="log4j" module="log4j" />
 	</dependencies>
 </ivy-module>

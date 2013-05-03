@@ -293,6 +293,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		}
 	}
 
+	public KmlInputStream(InputStream input) throws IOException {
+		this(input, new Object[0]);
+	}
+	
 	/**
 	 * Creates a <code>KmlInputStream</code>
 	 * and saves its argument, the input stream
@@ -302,7 +306,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @throws IOException              if an I/O or parsing error occurs
 	 * @throws IllegalArgumentException if input is null
 	 */
-	public KmlInputStream(InputStream input) throws IOException {
+	public KmlInputStream(InputStream input, Object[] args) throws IOException {
 		super(input);
 		DocumentStart ds = new DocumentStart(DocumentType.KML);
 		addLast(ds);

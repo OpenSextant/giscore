@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <jni.h>
-#include "org_mitre_giscore_filegdb_Table.h"
+#include "org_opensextant_giscore_filegdb_Table.h"
 
 using namespace std;
 using namespace FileGDBAPI;
@@ -11,11 +11,11 @@ using namespace FileGDBAPI;
 extern "C" {
 
 /*
- * Class:     org_mitre_giscore_filegdb_Table
+ * Class:     org_opensextant_giscore_filegdb_Table
  * Method:    initRow
  * Signature: (Lorg/mitre/giscore/filegdb/Row;)V
  */
-JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Table_initRow(JNIEnv *env, jobject self, jobject robj) {
+JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Table_initRow(JNIEnv *env, jobject self, jobject robj) {
 	try {
 		menv me(env);
 		Table *t = me.getTable(self);
@@ -27,11 +27,11 @@ JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Table_initRow(JNIEnv *env,
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Table
+ * Class:     org_opensextant_giscore_filegdb_Table
  * Method:    add
  * Signature: (Lorg/mitre/giscore/filegdb/Row;)V
  */
-JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Table_add(JNIEnv *env, jobject self, jobject robj) {
+JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Table_add(JNIEnv *env, jobject self, jobject robj) {
 	try {
 		menv me(env);
 		Table *t = me.getTable(self);
@@ -43,11 +43,11 @@ JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Table_add(JNIEnv *env, job
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Table
+ * Class:     org_opensextant_giscore_filegdb_Table
  * Method:    enumerate
  * Signature: ()Lorg/mitre/giscore/filegdb/EnumRows;
  */
-JNIEXPORT jobject JNICALL Java_org_mitre_giscore_filegdb_Table_enumerate1(JNIEnv *env, jobject self) {
+JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Table_enumerate1(JNIEnv *env, jobject self) {
 	try {
 		menv me(env);
 		Table *t = me.getTable(self);
@@ -97,11 +97,11 @@ map<string,FieldType>* getFieldMap(JNIEnv *env, jobject self, Table *t) {
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Table
+ * Class:     org_opensextant_giscore_filegdb_Table
  * Method:    getFieldInfo
  * Signature: ()[Ljava/lang/Object;
  */
-JNIEXPORT jobjectArray JNICALL Java_org_mitre_giscore_filegdb_Table_getFieldInfo(JNIEnv *env, jobject self) {
+JNIEXPORT jobjectArray JNICALL Java_org_opensextant_giscore_filegdb_Table_getFieldInfo(JNIEnv *env, jobject self) {
 	try {
 		menv me(env);
 		Table *t = me.getTable(self);
@@ -133,11 +133,11 @@ JNIEXPORT jobjectArray JNICALL Java_org_mitre_giscore_filegdb_Table_getFieldInfo
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Table
+ * Class:     org_opensextant_giscore_filegdb_Table
  * Method:    close1
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Table_close1(JNIEnv *env, jobject self) {
+JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Table_close1(JNIEnv *env, jobject self) {
 	try {
 		menv me(env);
 		Table *t = me.getTable(self);

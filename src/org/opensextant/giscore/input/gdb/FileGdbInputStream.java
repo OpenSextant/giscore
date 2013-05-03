@@ -51,6 +51,7 @@ import org.opensextant.giscore.filegdb.Table;
 import org.opensextant.giscore.filegdb.Table.FieldInfo;
 import org.opensextant.giscore.input.GISInputStreamBase;
 import org.opensextant.giscore.output.esri.FileGdbConstants;
+import org.opensextant.giscore.utils.Args;
 
 public class FileGdbInputStream extends GISInputStreamBase implements FileGdbConstants {
 	
@@ -180,13 +181,12 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 	private TableState feature;
 	private IAcceptSchema acceptor;
 
-	public FileGdbInputStream(InputStream stream, IAcceptSchema acceptor) {
+	public FileGdbInputStream(InputStream stream, Object[] args) {
 		if (stream == null) {
 			throw new IllegalArgumentException("stream should never be null");
 		}
-		//if (! (stream instanceof InputStream)) {
-		//	throw new IllegalArgumentException("stream must be an input stream");
-		//}
+		Args argv = new Args(args);
+		IAcceptSchema acceptor = (IAcceptSchema) argv.get(IAcceptSchema.class, 0);
 		deleteOnClose = true;
 		File temp = new File(System.getProperty("java.io.tmpdir"));
 		long t = System.currentTimeMillis();
@@ -219,13 +219,15 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 		init(acceptor);
 	}
 	
-	public FileGdbInputStream(File path, IAcceptSchema acceptor) {
+	public FileGdbInputStream(File path, Object[] args) {
 		if (path == null) {
 			throw new IllegalArgumentException("path should never be null");
 		}
 		if (path.exists() == false) {
 			throw new IllegalArgumentException("path must exist");
 		}
+		Args argv = new Args(args);
+		IAcceptSchema acceptor = (IAcceptSchema) argv.get(IAcceptSchema.class, 0);
 		inputPath = path;
 		database = new Geodatabase(inputPath);
 		

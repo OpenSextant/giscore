@@ -18,6 +18,7 @@
  ***************************************************************************************/
 package org.opensextant.giscore;
 
+import org.opensextant.giscore.data.DocType;
 import org.opensextant.giscore.output.IGISOutputStream;
 
 /**
@@ -51,12 +52,10 @@ public enum DocumentType {
 	WKT(false, false)
 	;
 	
-	private final boolean requiresZipStream;
-	private final boolean requiresZipEntry;
+	private final DocType dt;
 	
 	private DocumentType(boolean reqZip, boolean reqZipEntry) {
-		requiresZipStream = reqZip;
-		requiresZipEntry = reqZipEntry;
+		dt = new DocType(name(), reqZip, reqZipEntry);
 	}
 	
 	/**
@@ -64,7 +63,7 @@ public enum DocumentType {
 	 * stream for the {@link IGISOutputStream}. 
 	 */
 	public boolean requiresZipStream() {
-		return requiresZipStream;
+		return dt.requiresZipStream();
 	}
 	
 	/**
@@ -72,6 +71,13 @@ public enum DocumentType {
 	 * created before opening the {@link IGISOutputStream}. 
 	 */
 	public boolean requiresZipEntry() {
-		return requiresZipEntry;
+		return dt.requiresZipEntry();
+	}
+	
+	/**
+	 * @return the internal doc type object
+	 */
+	public DocType getDocType() {
+		return dt;
 	}
 }

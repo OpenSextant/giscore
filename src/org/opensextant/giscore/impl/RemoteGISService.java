@@ -30,6 +30,8 @@ import java.util.zip.ZipOutputStream;
 import org.opensextant.giscore.DocumentType;
 import org.opensextant.giscore.GISFactory;
 import org.opensextant.giscore.IRemoteGISService;
+import org.opensextant.giscore.data.DocType;
+import org.opensextant.giscore.data.DocumentTypeRegistration;
 import org.opensextant.giscore.events.IGISObject;
 import org.opensextant.giscore.output.IContainerNameStrategy;
 import org.opensextant.giscore.output.esri.GdbOutputStream;
@@ -53,9 +55,11 @@ public class RemoteGISService extends GISFactory implements IRemoteGISService  {
 		try {
 			IContainerNameStrategy strategy;
 			if(type == DocumentType.FileGDB) {
-				checkArguments(new Class[] { File.class,
-						IContainerNameStrategy.class }, arguments,
-						new boolean[] { false, false });
+				DocumentTypeRegistration reg = new DocumentTypeRegistration(new DocType("", false, false));
+				reg.setOutputStreamArgs(new Class[] { File.class,
+						IContainerNameStrategy.class });
+				reg.setOutputStreamArgsRequired(new boolean[] { false, false });
+				reg.checkArguments(false, arguments);
 				strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
 						: null);
 				BlockOutputStream bos = new BlockOutputStream();

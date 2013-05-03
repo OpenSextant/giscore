@@ -21,18 +21,6 @@
     <ClInclude Include="..\..\filegdb\resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\filegdb\org_mitre_giscore_filegdb_Table.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\filegdb\org_mitre_giscore_filegdb_Row.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\filegdb\org_mitre_giscore_filegdb_Geodatabase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\filegdb\org_mitre_giscore_filegdb_EnumRows.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\filegdb\menv.h">
       <Filter>Header Files</Filter>
     </ClInclude>

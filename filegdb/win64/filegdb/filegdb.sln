@@ -3,6 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "filegdb", "filegdb_library.vcxproj", "{C4E3E1B1-CE80-4E82-B7A4-3EC90630DD8C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{EFACAAC1-1155-4313-9185-AD470C565B9E}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\filegdb\org_opensextant_giscore_filegdb_EnumRows.h = ..\..\filegdb\org_opensextant_giscore_filegdb_EnumRows.h
+		..\..\filegdb\org_opensextant_giscore_filegdb_Geodatabase.h = ..\..\filegdb\org_opensextant_giscore_filegdb_Geodatabase.h
+		..\..\filegdb\org_opensextant_giscore_filegdb_Row.h = ..\..\filegdb\org_opensextant_giscore_filegdb_Row.h
+		..\..\filegdb\org_opensextant_giscore_filegdb_Table.h = ..\..\filegdb\org_opensextant_giscore_filegdb_Table.h
+		..\..\filegdb\org_opensextant_giscore_filegdb_Table_FieldInfo.h = ..\..\filegdb\org_opensextant_giscore_filegdb_Table_FieldInfo.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32

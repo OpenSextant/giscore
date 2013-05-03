@@ -21,11 +21,11 @@ EnumRows* getEnumRows(JNIEnv *env, jobject self) {
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_EnumRows
+ * Class:     org_opensextant_giscore_filegdb_EnumRows
  * Method:    next1
  * Signature: ()Lorg/mitre/giscore/filegdb/Row;
  */
-JNIEXPORT jobject JNICALL Java_org_mitre_giscore_filegdb_EnumRows_next1(JNIEnv *env, jobject self) {
+JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_EnumRows_next1(JNIEnv *env, jobject self) {
 	Row *row = new Row();
 	menv me(env);
 	EnumRows *e = (EnumRows*) getEnumRows(env, self);
@@ -38,11 +38,11 @@ JNIEXPORT jobject JNICALL Java_org_mitre_giscore_filegdb_EnumRows_next1(JNIEnv *
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_EnumRows
+ * Class:     org_opensextant_giscore_filegdb_EnumRows
  * Method:    close
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_EnumRows_close(JNIEnv *env, jobject self) {
+JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_EnumRows_close(JNIEnv *env, jobject self) {
 	try {
 		EnumRows *e = (EnumRows*) getEnumRows(env, self);
 		delete e;

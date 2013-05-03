@@ -39,6 +39,7 @@ import org.opensextant.giscore.events.IGISObject;
 import org.opensextant.giscore.events.Schema;
 import org.opensextant.giscore.input.GISInputStreamBase;
 import org.opensextant.giscore.input.dbf.DbfInputStream;
+import org.opensextant.giscore.utils.Args;
 
 /**
  * Read one or more shapefiles in from a directory or from a zip input stream.
@@ -97,12 +98,24 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * @param accepter a function that determines if a schema should be used, may be <code>null</code>
 	 * @throws IOException if an I/O error occurs
 	 */
-	public ShapefileInputStream(InputStream stream, IAcceptSchema accepter) throws IOException {
+	public ShapefileInputStream(InputStream stream, IAcceptSchema acceptor) throws IOException {
+		this(stream, new Object[]{acceptor});
+	}
+	
+	/**
+	 * Standard ctor for streams
+	 * @param stream
+	 * @param args
+	 * @throws IOException
+	 */
+	public ShapefileInputStream(InputStream stream, Object args[]) throws IOException {
 		if (stream == null) {
 			throw new IllegalArgumentException(
 					"stream should never be null");
 		}
-
+		
+		Args argv = new Args(args);
+		IAcceptSchema accepter = (IAcceptSchema) argv.get(IAcceptSchema.class, 0);
 		ZipInputStream zipstream = null;
 		InputStream shapestream = null;
 		if (!(stream instanceof ZipInputStream)) {
@@ -168,9 +181,19 @@ public class ShapefileInputStream extends GISInputStreamBase {
 	 * @throws IllegalArgumentException if file argument is <code>null</code>
 	 */
 	public ShapefileInputStream(File file, IAcceptSchema accepter) {
+		this(file, new Object[] {accepter});
+	}
+	
+	/**
+	 * Standard ctor for streams
+	 * @param file
+	 * @param args
+	 */
+	public ShapefileInputStream(File file, Object args[]) {
 		if (file == null) {
 			throw new IllegalArgumentException("file argument should never be null");
 		}
+		IAcceptSchema accepter = (IAcceptSchema) (args.length > 0 ? args[0] : null);
 		usingTemp = false;
 		initialize(file, accepter);
 	}

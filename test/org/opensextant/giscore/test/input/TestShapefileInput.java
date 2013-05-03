@@ -58,7 +58,7 @@ public class TestShapefileInput {
 	
 	@Test public void testReadShpDirectly() throws Exception {
 		FileInputStream is = new FileInputStream(new File(shpdir, "afghanistan.shp"));
-		ShapefileInputStream sis = new ShapefileInputStream(is, null);
+		ShapefileInputStream sis = new ShapefileInputStream(is, new Object[0]);
 		assertNotNull(sis);
 		IGISObject ob;
 		while((ob = sis.read()) != null) {
@@ -72,7 +72,7 @@ public class TestShapefileInput {
 
 	@Test public void testReadShpDirectly2() throws Exception {
 		FileInputStream is = new FileInputStream(new File(shpdir, "linez.shp"));
-		ShapefileInputStream sis = new ShapefileInputStream(is, null);
+		ShapefileInputStream sis = new ShapefileInputStream(is, new Object[0]);
 		assertNotNull(sis);
 		IGISObject ob;
 		while((ob = sis.read()) != null) {
@@ -86,12 +86,12 @@ public class TestShapefileInput {
 
 	@Test(expected=IOException.class)
 	public void testBadStream() throws Exception {
-		new ShapefileInputStream(new ByteArrayInputStream(new byte[0]), null);
+		new ShapefileInputStream(new ByteArrayInputStream(new byte[0]), new Object[0]);
 	}
 	
 	@Test(expected=IOException.class)
 	public void testBadStream2() throws Exception {
-		new ShapefileInputStream(new ByteArrayInputStream("not a shape file".getBytes()), null);
+		new ShapefileInputStream(new ByteArrayInputStream("not a shape file".getBytes()), new Object[0]);
 	}
 
 	@Test public void testErrorcase1() throws Exception {

@@ -100,7 +100,7 @@ public class Shape2Kml {
 			 };
 			*/
 			// note: if use InputStream in constructor cannot use .dbf file and no extended data
-			sis = new ShapefileInputStream(shapefile, null); // accepter);
+			sis = new ShapefileInputStream(shapefile, new Object[0]); // accepter);
 			// sis = GISFactory.getInputStream(DocumentType.Shapefile, shapefile, (IAcceptSchema)null);
 			/*
 			 // this preserves the extended schema data

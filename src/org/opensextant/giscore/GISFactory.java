@@ -24,31 +24,15 @@ import java.io.OutputStream;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.xml.stream.XMLStreamException;
-
-import org.opensextant.giscore.events.Schema;
+import org.opensextant.giscore.data.DocumentTypeRegistration;
+import org.opensextant.giscore.data.FactoryDocumentTypeRegistry;
 import org.opensextant.giscore.input.IGISInputStream;
-import org.opensextant.giscore.input.atom.GeoAtomInputStream;
-import org.opensextant.giscore.input.csv.CsvInputStream;
-import org.opensextant.giscore.input.gdb.FileGdbInputStream;
 import org.opensextant.giscore.input.gdb.GdbInputStream;
-import org.opensextant.giscore.input.kml.KmlInputStream;
-import org.opensextant.giscore.input.shapefile.ShapefileInputStream;
-import org.opensextant.giscore.input.wkt.WKTInputStream;
 import org.opensextant.giscore.output.IContainerNameStrategy;
 import org.opensextant.giscore.output.IGISOutputStream;
-import org.opensextant.giscore.output.atom.GeoAtomOutputStream;
-import org.opensextant.giscore.output.csv.CsvOutputStream;
-import org.opensextant.giscore.output.esri.FileGdbOutputStream;
 import org.opensextant.giscore.output.esri.GdbOutputStream;
-import org.opensextant.giscore.output.esri.XmlGdbOutputStream;
-import org.opensextant.giscore.output.kml.KmlOutputStream;
-import org.opensextant.giscore.output.kml.KmzOutputStream;
 import org.opensextant.giscore.output.remote.ClientOutputStream;
 import org.opensextant.giscore.output.remote.RemoteOutputStream;
-import org.opensextant.giscore.output.shapefile.PointShapeMapper;
-import org.opensextant.giscore.output.shapefile.ShapefileOutputStream;
-import org.opensextant.giscore.output.wkt.WKTOutputStream;
 
 /**
  * Factory class which creates concrete instantiations of input and output
@@ -57,6 +41,8 @@ import org.opensextant.giscore.output.wkt.WKTOutputStream;
  * @author DRAND
  */
 public class GISFactory {
+	
+	
 	/**
 	 * The size of the buffer that should be used when buffering content
 	 * in memory. Right now this is a per feature class buffer size.
@@ -84,7 +70,6 @@ public class GISFactory {
 	 *             if type or stream are null
 	 * @see org.mitre.giscore.input.kml.KmlReader
 	 */
-	@SuppressWarnings("unchecked")
 	public static IGISInputStream getInputStream(DocumentType type,
 			InputStream stream, Object... arguments) throws IOException {
 		if (type == null) {
@@ -93,37 +78,16 @@ public class GISFactory {
 		if (stream == null) {
 			throw new IllegalArgumentException("stream should never be null");
 		}
-
-		if (DocumentType.KML.equals(type)) {
-			return new KmlInputStream(stream);
-		} else if (DocumentType.Shapefile.equals(type)) {
-			checkArguments(new Class[] { IAcceptSchema.class }, arguments,
-					new boolean[] { false });
-			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
-					&& arguments.length > 0 ? arguments[0] : null);
-			return new ShapefileInputStream(stream, accepter);
-		} else if (DocumentType.FileGDB.equals(type)) {
-			checkArguments(new Class[] { IAcceptSchema.class }, arguments,
-					new boolean[] { false });
-			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
-					&& arguments.length > 0 ? arguments[0] : null);
-			return new FileGdbInputStream(stream, accepter);
-		} else if (DocumentType.CSV.equals(type)) {
-			checkArguments(new Class[] { Schema.class, String.class, 
-					Character.class, Character.class },
-					arguments,
-					new boolean[] { false, false, false, false });
-			return new CsvInputStream(stream, arguments);
-		} else if (DocumentType.GeoAtom.equals(type)) {
-			checkArguments(new Class[] { },
-					arguments,
-					new boolean[] {  });
-			return new GeoAtomInputStream(stream, arguments);
-		} else if (DocumentType.WKT.equals(type)) {
-			checkArguments(new Class[] {},
-					arguments, 
-					new boolean[] {});
-			return new WKTInputStream(stream, arguments);
+		
+		DocumentTypeRegistration docreg = FactoryDocumentTypeRegistry.get(type);
+		
+		if (docreg != null) {
+			docreg.checkArguments(true, arguments);		
+			try {
+				return docreg.getInputStream(stream, arguments);
+			} catch (InstantiationException e) {
+				throw new IOException(e);
+			}
 		} else {
 			throw new UnsupportedOperationException(
 					"Cannot create an input stream for type " + type);
@@ -149,7 +113,6 @@ public class GISFactory {
 	 *             if type or file are null or file does not exist
 	 * @see org.mitre.giscore.input.kml.KmlReader
 	 */
-	@SuppressWarnings("unchecked")
 	public static IGISInputStream getInputStream(DocumentType type, File file,
 			Object... arguments) throws IOException {
 		if (type == null) {
@@ -160,39 +123,24 @@ public class GISFactory {
 					"file should never be null and must exist");
 		}
 
-		if (DocumentType.KML.equals(type)) {
-			return new KmlInputStream(new FileInputStream(file));
-		} else if (DocumentType.Shapefile.equals(type)) {
-			checkArguments(new Class[] { IAcceptSchema.class }, arguments,
-					new boolean[] { false });
-			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
-					&& arguments.length > 0 ? arguments[0] : null);
-			return new ShapefileInputStream(file, accepter);
-		} else if (DocumentType.FileGDB.equals(type)) {
-			checkArguments(new Class[] { IAcceptSchema.class }, arguments,
-					new boolean[] { false });
-			IAcceptSchema accepter = (IAcceptSchema) (arguments != null
-					&& arguments.length > 0 ? arguments[0] : null);
-			return new FileGdbInputStream(file, accepter);
-		} else if (DocumentType.CSV.equals(type)) {
-			checkArguments(new Class[] { Schema.class, String.class, Character.class, Character.class },
-					arguments,
-					new boolean[] { false, false, false, false });
-			return new CsvInputStream(file, arguments);
-		} else if (DocumentType.GeoAtom.equals(type)) {
-			checkArguments(new Class[] { },
-					arguments,
-					new boolean[] {  });
-			return new GeoAtomInputStream(new FileInputStream(file), arguments);
-		} else if (DocumentType.WKT.equals(type)) {
-			checkArguments(new Class[] {},
-					arguments, 
-					new boolean[] {});
-			return new WKTInputStream(new FileInputStream(file), arguments);
-		} else {
-			throw new UnsupportedOperationException(
-					"Cannot create an input stream for type " + type);
+		DocumentTypeRegistration docreg = FactoryDocumentTypeRegistry.get(type);
+		
+		try {
+			if (docreg != null) {
+				if (docreg.hasFileCtor()) {
+					docreg.checkArguments(true, arguments);		
+					return docreg.getInputStream(file, arguments);
+				} else {
+					return docreg.getInputStream(new FileInputStream(file), arguments);
+				}
+			} else {
+				throw new UnsupportedOperationException(
+						"Cannot create an input stream for type " + type);
+			}
+		} catch(InstantiationException e) {
+			throw new IOException(e);
 		}
+
 	}
 
 	/**
@@ -213,7 +161,6 @@ public class GISFactory {
 	 *             if an I/O error occurs
 	 * @see org.mitre.giscore.output.kml.KmlWriter
 	 */
-	@SuppressWarnings("unchecked")
 	public static IGISOutputStream getOutputStream(DocumentType type,
 			OutputStream outputStream, Object... arguments) throws IOException {
 		if (type == null) {
@@ -224,68 +171,16 @@ public class GISFactory {
 					"outputStream should never be null");
 		}
 
+		DocumentTypeRegistration docreg = FactoryDocumentTypeRegistry.get(type);
+		
 		try {
-			IContainerNameStrategy strategy;
-            String encoding;
-			switch(type) {
-				case KML:
-					checkArguments(new Class[] { String.class }, arguments, new boolean[] { false });
-                    encoding = arguments.length != 0 ? (String)arguments[0] : null;
-					return new KmlOutputStream(outputStream, encoding);
-				case KMZ:
-					checkArguments(new Class[] { String.class }, arguments, new boolean[] { false });
-                     encoding = arguments.length != 0 ? (String)arguments[0] : null;
-					return new KmzOutputStream(outputStream, encoding);
-				case Shapefile:
-					checkArguments(new Class[] { File.class,
-							IContainerNameStrategy.class, PointShapeMapper.class },
-							arguments, new boolean[] { true, false, false });
-					strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
-							: null);
-					PointShapeMapper mapper = (PointShapeMapper) (arguments.length > 2 ? arguments[2]
-							: null);
-					return new ShapefileOutputStream(outputStream,
-							(File) arguments[0], strategy, mapper);
-				case FileGDB:
-					checkArguments(new Class[] { File.class,
-							IContainerNameStrategy.class }, arguments,
-							new boolean[] { false, false });
-					strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
-							: null);
-					return new FileGdbOutputStream(outputStream,
-							(File) arguments[0], strategy);
-				case XmlGDB:
-					checkArguments(new Class[] {}, arguments, new boolean[] {});
-					return new XmlGdbOutputStream(outputStream);
-				case PersonalGDB:
-					checkArguments(new Class[] { File.class,
-							IContainerNameStrategy.class }, arguments,
-							new boolean[] { true, false });
-					strategy = (IContainerNameStrategy) (arguments.length > 1 ? arguments[1]
-							: null);
-					return new GdbOutputStream(type, outputStream,
-							(File) arguments[0], strategy);
-				case CSV:
-					checkArguments(new Class[] { String.class, Character.class, 
-							Character.class, Boolean.class },
-							arguments,
-							new boolean[] { false, false, false, false });
-					return new CsvOutputStream(outputStream, arguments);
-				case GeoAtom:
-					checkArguments(new Class[] { },
-							arguments,
-							new boolean[] {  });
-					return new GeoAtomOutputStream(outputStream, arguments);
-				case WKT:
-					checkArguments(new Class[] { },
-							arguments,
-							new boolean[] { false });
-					return new WKTOutputStream(outputStream, arguments);
-				default:
-					throw new UnsupportedOperationException(
-							"Cannot create an output stream for type " + type);
+			if (docreg == null) {
+				throw new UnsupportedOperationException("Cannot create an output stream for type " + type);
+			} else {
+				docreg.checkArguments(false, arguments);	
+				return docreg.getOutputStream(outputStream, arguments);
 			}
-		} catch (XMLStreamException e) {
+		} catch (InstantiationException e) {
 			throw new IOException(e);
 		}
 	}
@@ -418,56 +313,6 @@ public class GISFactory {
 			throw new IllegalArgumentException("properties should never be null");
 		}
 		return new GdbInputStream(properties, accepter);
-	}
-
-	/**
-	 * Check the count and types of the arguments against the required types
-	 * 
-	 * @param types
-	 *            the required types, one per required argument
-	 * @param arguments
-	 *            the arguments
-	 * @param required
-	 *            for each argument, is it required? If required has fewer
-	 *            elements than types or arguments the remainder is treated as
-	 *            false. If a <code>false</code> element is found, any further
-	 *            <code>true</code> value is ignored, i.e. only leading
-	 *            arguments are considered required.
-	 */
-	protected static void checkArguments(Class<? extends Object> types[],
-			Object arguments[], boolean required[]) {
-		int nreq = 0;
-		for (boolean aRequired : required) {
-			if (!aRequired)
-				break;
-			nreq++;
-		}
-		if (arguments.length < nreq) {
-			throw new IllegalArgumentException(
-					"There are insufficient arguments, there should be at least "
-							+ types.length);
-		}
-		for (int i = 0; i < arguments.length; i++) {
-			boolean argreq = false;
-			Class<? extends Object> type = Object.class;
-			Object arg = arguments[i];
-			if (i < required.length) {
-				argreq = required[i];
-			}
-			if (i < types.length) {
-				type = types[i];
-			}
-			if (arg == null && argreq) {
-				throw new IllegalArgumentException("Missing argument " + i);
-			}
-			if (arg != null) {
-				Class<? extends Object> argtype = arg.getClass();
-				if (!type.isAssignableFrom(argtype)) {
-					throw new IllegalArgumentException("Argument #" + i
-							+ " should be of a class derived from " + type);
-				}
-			}
-		}
 	}
 
 	/**

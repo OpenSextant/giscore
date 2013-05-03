@@ -28,6 +28,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.ProxyOutputStream;
 import org.opensextant.giscore.events.IGISObject;
 import org.opensextant.giscore.output.IGISOutputStream;
+import org.opensextant.giscore.utils.Args;
 
 /**
  * The kmz output stream creates a result KMZ file using the given output
@@ -55,7 +56,25 @@ public class KmzOutputStream implements IGISOutputStream {
      * @throws XMLStreamException if error occurs creating output stream
      */
     public KmzOutputStream(final OutputStream stream) throws XMLStreamException {
-        this(stream, null);
+        this(stream, new Object[0]);
+    }
+    
+    /**
+     * Standard ctor
+     * @param stream
+     * @param args
+     * @throws XMLStreamException 
+     */
+    public KmzOutputStream(final OutputStream stream, Object args[]) throws XMLStreamException {
+    	Args argv = new Args(args);
+    	String encoding = (String) argv.get(String.class, 0);
+    	zipStream = new ZipOutputStream(stream);
+		try {
+			zipStream.putNextEntry(new ZipEntry("doc.kml"));
+		} catch (IOException e) {
+			throw new XMLStreamException("Could not add doc.kml entry to the zip file", e);
+		}
+		kmlStream = new KmlOutputStream(zipStream, encoding);
     }
 
     /**
@@ -65,13 +84,7 @@ public class KmzOutputStream implements IGISOutputStream {
      * @throws XMLStreamException if error occurs creating output stream
      */
 	public KmzOutputStream(final OutputStream stream, String encoding) throws XMLStreamException {
-		zipStream = new ZipOutputStream(stream);
-		try {
-			zipStream.putNextEntry(new ZipEntry("doc.kml"));
-		} catch (IOException e) {
-			throw new XMLStreamException("Could not add doc.kml entry to the zip file", e);
-		}
-		kmlStream = new KmlOutputStream(zipStream, encoding);
+		this(stream, new Object[]{encoding});
 	}
 
 	/**

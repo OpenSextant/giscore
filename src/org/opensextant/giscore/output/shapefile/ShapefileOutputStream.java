@@ -26,6 +26,7 @@ import org.opensextant.giscore.output.FeatureSorter;
 import org.opensextant.giscore.output.IContainerNameStrategy;
 import org.opensextant.giscore.output.IGISOutputStream;
 import org.opensextant.giscore.output.esri.BasicContainerNameStrategy;
+import org.opensextant.giscore.utils.Args;
 import org.opensextant.giscore.utils.ObjectBuffer;
 import org.opensextant.giscore.utils.ZipUtils;
 import org.slf4j.Logger;
@@ -103,15 +104,29 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
      * @param mapper				point to shape mapper
      * @throws IllegalArgumentException if outputStream is not a ZipOutputStream instance nor null  
      */
-    public ShapefileOutputStream(OutputStream stream, File path,
-                           IContainerNameStrategy containerNameStrategy,
-                           PointShapeMapper mapper) {
+	public ShapefileOutputStream(OutputStream stream, File path, IContainerNameStrategy containerNameStrategy, PointShapeMapper mapper) {
+		this(stream, new Object[]{path, containerNameStrategy, mapper});
+	}
+	
+	/**
+	 * Standard ctor
+	 * @param stream
+	 * @param args
+	 */
+    public ShapefileOutputStream(OutputStream stream, Object args[]) {
     	if (stream != null) {
             if (!(stream instanceof ZipOutputStream))
     		    throw new IllegalArgumentException("stream must be a zip output stream");
             outputStream = (ZipOutputStream) stream;
+    	} else {
+    		outputStream = null;
     	}
-        else outputStream = null;
+    	
+    	Args argv = new Args(args);
+    	File path = (File) argv.get(File.class, 0);
+        IContainerNameStrategy containerNameStrategy = (IContainerNameStrategy) argv.get(IContainerNameStrategy.class, 1);
+        PointShapeMapper mapper = (PointShapeMapper) argv.get(PointShapeMapper.class, 2);
+    	
         if (path == null || path.getParentFile() == null || !path.getParentFile().exists()) {
             throw new IllegalArgumentException(
                     "path should never be null, its parent should never be null and the parent must exist");

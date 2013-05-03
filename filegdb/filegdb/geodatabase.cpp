@@ -11,20 +11,20 @@ using namespace FileGDBAPI;
 extern "C" {
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    initialize
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_initialize(JNIEnv *env, jclass clazz) {
+JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_initialize(JNIEnv *env, jclass clazz) {
 	menv::initialize();
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    open
  * Signature: (Ljava/lang/String;)J
  */
-JNIEXPORT jlong JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_test(JNIEnv * env, jobject self) {
+JNIEXPORT jlong JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_test(JNIEnv * env, jobject self) {
 	try {
 		menv me(env);
 		// Uncomment if needed for the test
@@ -40,11 +40,11 @@ JNIEXPORT jlong JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_test(JNIEnv *
 };
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    open
  * Signature: (Ljava/lang/String;)J
  */
-JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_open(JNIEnv * env, jobject self, jstring path) {
+JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_open(JNIEnv * env, jobject self, jstring path) {
 	try {
 		menv me(env);
 		Geodatabase *geodatabase = new Geodatabase();
@@ -57,11 +57,11 @@ JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_open(JNIEnv * 
 };
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    closeAndDestroy
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_closeAndDestroy(JNIEnv * env, jobject self, jstring path) {
+JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_closeAndDestroy(JNIEnv * env, jobject self, jstring path) {
 	try {
 		menv me(env);
 		Geodatabase* db = (Geodatabase*) me.getPtr(self, 0L);
@@ -82,11 +82,11 @@ JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_closeAndDestro
 };
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    create
  * Signature: (Ljava/lang/String;)J
  */
-JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_create(JNIEnv *env, jobject self, jstring path) {
+JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_create(JNIEnv *env, jobject self, jstring path) {
 	try {
 		menv me(env);
 		Geodatabase* db = me.getGeodatabase(self);
@@ -99,11 +99,11 @@ JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_create(JNIEnv 
 }
 
 /*
- * Class:     Java_org_mitre_giscore_filegdb_Geodatabase
+ * Class:     Java_org_opensextant_giscore_filegdb_Geodatabase
  * Method:    getDatasetTypes
  * Signature: ()
  */
-JNIEXPORT jobjectArray JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_getDatasetTypes(JNIEnv *env, jobject self) {
+JNIEXPORT jobjectArray JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_getDatasetTypes(JNIEnv *env, jobject self) {
 	menv me(env);
 	Geodatabase* db = me.getGeodatabase(self);
 	vector<wstring> datasettypes(3);
@@ -116,11 +116,11 @@ JNIEXPORT jobjectArray JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_getDat
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    getChildDatasets
  * Signature: (Ljava/lang/String;)[Ljava/lang/String;
  */
-JNIEXPORT jobjectArray JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_getChildDatasets(JNIEnv *env, jobject self, jstring parent, jstring dataset) {
+JNIEXPORT jobjectArray JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_getChildDatasets(JNIEnv *env, jobject self, jstring parent, jstring dataset) {
 	menv me(env);
 	Geodatabase* db = me.getGeodatabase(self);
 	convstr parentPath(env, parent);
@@ -136,11 +136,11 @@ JNIEXPORT jobjectArray JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_getChi
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    getChildDatasetDefinitions
  * Signature: (Ljava/lang/String;)[Ljava/lang/String;
  */
-JNIEXPORT jobjectArray JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_getChildDatasetDefinitions(JNIEnv *env, jobject self, jstring parent, jstring dataset) {
+JNIEXPORT jobjectArray JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_getChildDatasetDefinitions(JNIEnv *env, jobject self, jstring parent, jstring dataset) {
 	menv me(env);
 	Geodatabase* db = me.getGeodatabase(self);
 	convstr parentPath(env, parent);
@@ -157,11 +157,11 @@ JNIEXPORT jobjectArray JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_getChi
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    openTable
  * Signature: (Ljava/lang/String;)Lorg/mitre/giscore/filegdb/Table;
  */
-JNIEXPORT jobject JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_openTable(JNIEnv *env, jobject self, jstring path) {
+JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_openTable(JNIEnv *env, jobject self, jstring path) {
 	Table *table = new Table();
 	try {
 		menv me(env);
@@ -179,11 +179,11 @@ JNIEXPORT jobject JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_openTable(J
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    createTable
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Lorg/mitre/giscore/filegdb/Table;
  */
-JNIEXPORT jobject JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_createTable(JNIEnv *env, jobject self, jstring parentpath, jstring descriptor) {
+JNIEXPORT jobject JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_createTable(JNIEnv *env, jobject self, jstring parentpath, jstring descriptor) {
 	try {
 		menv me(env);
 		Geodatabase *db = me.getGeodatabase(self);
@@ -201,11 +201,11 @@ JNIEXPORT jobject JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_createTable
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    closeTable
  * Signature: (Lorg/mitre/giscore/filegdb/Table;)V
  */
-JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_closeTable(JNIEnv *env, jobject self, jobject table) {
+JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_closeTable(JNIEnv *env, jobject self, jobject table) {
 	try {
 		menv me(env);
 		Geodatabase *db = me.getGeodatabase(self);
@@ -217,11 +217,11 @@ JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_closeTable(JNI
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    getDatasetDefinition
  * Signature: (Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;
  */
-JNIEXPORT jstring JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_getDatasetDefinition(JNIEnv *env, jobject self, jstring path, jstring type) {
+JNIEXPORT jstring JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_getDatasetDefinition(JNIEnv *env, jobject self, jstring path, jstring type) {
 	menv me(env);
 	convstr wpath(env, path);
 	convstr wtype(env, type);
@@ -234,11 +234,11 @@ JNIEXPORT jstring JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_getDatasetD
 }
 
 /*
- * Class:     org_mitre_giscore_filegdb_Geodatabase
+ * Class:     org_opensextant_giscore_filegdb_Geodatabase
  * Method:    createFeatureDataset
  * Signature: (Ljava/lang/String;)V
  */
-JNIEXPORT void JNICALL Java_org_mitre_giscore_filegdb_Geodatabase_createFeatureDataset(JNIEnv *env, jobject self, jstring def) {
+JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_createFeatureDataset(JNIEnv *env, jobject self, jstring def) {
 	try {
 		menv me(env);
 		convstr wdef(env, def);

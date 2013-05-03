@@ -82,6 +82,7 @@ import org.opensextant.giscore.input.kml.KmlInputStream;
 import org.opensextant.giscore.input.kml.UrlRef;
 import org.opensextant.giscore.output.XmlOutputStreamBase;
 import org.opensextant.giscore.output.atom.IAtomConstants;
+import org.opensextant.giscore.utils.Args;
 import org.opensextant.giscore.utils.Color;
 import org.opensextant.giscore.utils.SafeDateFormat;
 import org.slf4j.Logger;
@@ -175,8 +176,20 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @throws XMLStreamException if error occurs creating output stream
      */
     public KmlOutputStream(OutputStream stream, String encoding) throws XMLStreamException {
-        super(stream, encoding);
-        if (StringUtils.isBlank(encoding))
+       this(stream, new Object[]{encoding});        
+    }
+
+    /**
+     * Standard ctor
+     * @param stream
+     * @param args
+     * @throws XMLStreamException 
+     */
+    public KmlOutputStream(OutputStream stream, Object args[]) throws XMLStreamException {
+    	Args argv = new Args(args);
+    	String encoding = (String) argv.get(String.class, 0);
+    	init(stream, encoding);
+    	if (StringUtils.isBlank(encoding))
             writer.writeStartDocument();
         else
             writer.writeStartDocument(encoding, "1.0");
@@ -185,7 +198,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         writer.writeStartElement(KML);
         writer.writeDefaultNamespace(KML_NS);
     }
-
+    
     /**
      * Ctor
      *
@@ -193,7 +206,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * @throws XMLStreamException if error occurs creating output stream
      */
     public KmlOutputStream(OutputStream stream) throws XMLStreamException {
-        this(stream, null);
+        this(stream, new Object[0]);
     }
 
     /**

@@ -103,13 +103,19 @@
 		</copy>
 	</target>
 	
+	
+	
 	<target name="generate-jni" depends="compile">
 		<mkdir dir="${rel}/jni"/>
-		<javah destdir="${rel}/jni" classpath="${classes}">
-			<class name="org.mitre.giscore.filegdb.Geodatabase" />
-			<class name="org.mitre.giscore.filegdb.Table" />
-			<class name="org.mitre.giscore.filegdb.Row" />
-			<class name="org.mitre.giscore.filegdb.EnumRows" />
+		<javah destdir="${rel}/jni">
+			<classpath>
+				<path refid="project.classpath" />
+				<pathelement location="${classes}"/>
+			</classpath>
+			<class name="org.opensextant.giscore.filegdb.Geodatabase" />
+			<class name="org.opensextant.giscore.filegdb.Table" />
+			<class name="org.opensextant.giscore.filegdb.Row" />
+			<class name="org.opensextant.giscore.filegdb.EnumRows" />
 		</javah>
 	</target>
 
