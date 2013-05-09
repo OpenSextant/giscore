@@ -4,6 +4,7 @@
 #include <string>
 #include <jni.h>
 #include <time.h>
+#include <unordered_map>
 #include "org_opensextant_giscore_filegdb_Row.h"
 
 using namespace std;
@@ -396,7 +397,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_opensextant_giscore_filegdb_Row_getAttrA
 	}
 }
 
-map<string,FieldType>* getFieldMap(JNIEnv *env, jobject tableself, Table *t);
+unordered_map<string,FieldType>* getFieldMap(JNIEnv *env, jobject tableself, Table *t);
 
 /*
  * Class:     org_opensextant_giscore_filegdb_Row
@@ -409,7 +410,7 @@ JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Row_setAttrArray(JNI
 		Row *row = me.getRow(self);
 		jobject table = getRowTable(env, self); // Fields are stored with the table
 		Table *tobj = me.getTable(table);
-		map<string,FieldType> *fieldMap = getFieldMap(env, table, tobj);
+		unordered_map<string,FieldType> *fieldMap = getFieldMap(env, table, tobj);
 		jclass bclass = me.findClass("java.lang.Boolean");
 		jclass calclass = me.findClass("java.util.Calendar");
 		jmethodID ccgetTime = me.getMethod(calclass, "getTimeInMillis", "()J");
@@ -420,11 +421,11 @@ JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Row_setAttrArray(JNI
 			jstring name = (jstring) env->GetObjectArrayElement(newvals, i);
 			jobject val = env->GetObjectArrayElement(newvals, i+1);
 			convstr fieldname(env, name);
-			FieldType type = (*fieldMap)[fieldname.getStr()];
+			FieldType &type = (*fieldMap)[fieldname.getStr()];
 			if (val == 0L) {
 				row->SetNull(fieldname.getWstr());
 			} else {
-				switch(type) {
+				switch(type != 0L ? type : 9999999) {
 				case fieldTypeSmallInteger: {
 						// cerr << "type: si\n";
 						jclass vclass = me.getClass(val);

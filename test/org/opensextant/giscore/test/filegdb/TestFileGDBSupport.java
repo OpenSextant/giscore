@@ -19,6 +19,7 @@
 package org.opensextant.giscore.test.filegdb;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -52,6 +53,31 @@ import static org.junit.Assert.assertTrue;
 
 public class TestFileGDBSupport {
 
+	@Test
+	public void testCreateAndRemoveDB() throws IOException, URISyntaxException {
+		File temp = new File(System.getProperty("java.io.tmpdir"));
+		File db = new File(temp, "ftest0.gdb");
+		if (db.exists()) {
+			for(File f : db.listFiles()) {
+				f.delete();
+			}
+			db.delete();
+		}
+		FileOutputStream fos = new FileOutputStream(new File(temp, "ftest" + System.currentTimeMillis() + ".zip"));
+		ZipOutputStream zos = new ZipOutputStream(fos);
+		IGISOutputStream os = new FileGdbOutputStream(zos, new Object[]{db});
+		Schema schema = new Schema();
+		SimpleField field = new SimpleField("altitude", SimpleField.Type.LONG);
+		schema.put(field);
+		schema.setId(new URI("urn:org:mitre:111"));
+		os.write(schema);
+		
+		os.close();	
+
+	}
+	
+	
+	
 	@Test
 	public void testCreateFeatureAndRow() throws XMLStreamException, IOException, URISyntaxException {
 		File temp = new File(System.getProperty("java.io.tmpdir"));

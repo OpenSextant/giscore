@@ -52,6 +52,7 @@ public class ESRIErrorCodes {
 		add(-2147220655, "The table was not found");
 		add(-2147220733, "The dataset already exists");
 		add(-2147220985, "An invalid SQL statement was used");
+		add(-2147024894, "Failed to connect to datbase, GDB_SystemCatalog");
 	}
 	
 	/**

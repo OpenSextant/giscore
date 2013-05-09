@@ -8,6 +8,8 @@
 using namespace std;
 using namespace FileGDBAPI;
 
+#pragma warning( disable : 4290 ) // Because Visual C++ doesn't actually take the exception specification
+
 #if defined(_MSC_VER)
 HANDLE menv::mutex; 
 #else
@@ -238,7 +240,7 @@ bool menv::getBoolean(jobject val) {
 	jmethodID get = getMethod(tc, "booleanValue", "()Z");
 	jboolean rval = env->CallBooleanMethod(val, get);
 	checkAndThrow();
-	return rval;
+	return rval != 0;
 }
 
 short menv::getShort(jobject val) {
@@ -257,7 +259,7 @@ int menv::getInteger(jobject val) {
 	return rval;
 }
 
-long menv::getLong(jobject val) {
+jlong menv::getLong(jobject val) {
 	jclass tc = findClass("java.lang.Number");
 	jmethodID get = getMethod(tc, "longValue", "()I");
 	jlong rval = env->CallLongMethod(val, get);
@@ -318,15 +320,15 @@ jobjectArray menv::processJStringArray2(vector<string> strvector) {
 	return rval;
 }
 
-long makeGeodatabase() {
-	return (long) new Geodatabase();
-}
-
 /**
  * Get the geodatabase object from the self passed in.
  */
 Geodatabase* menv::getGeodatabase(jobject self) {
-	return (Geodatabase*) getPtr(self, makeGeodatabase);
+	Geodatabase *db = (Geodatabase*) getPtr(self, NULL);
+	if (db == NULL) {
+		throw jni_check();
+	}
+	return db;
 }
 
 long makeRow() {
@@ -357,5 +359,6 @@ bool menv::equals(jobject a, jobject b) {
 
 	jclass ac = getClass(a);
 	jmethodID eq = getMethod(ac, "equals", "(Ljava/lang/Object;)Z");
-	return env->CallBooleanMethod(a, eq, b);
+	jboolean rval = env->CallBooleanMethod(a, eq, b);
+	return rval != 0;
 }

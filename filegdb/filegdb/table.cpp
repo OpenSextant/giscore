@@ -3,6 +3,7 @@
 #include <iostream>
 #include <string>
 #include <jni.h>
+#include <unordered_map>
 #include "org_opensextant_giscore_filegdb_Table.h"
 
 using namespace std;
@@ -74,21 +75,20 @@ FieldInfo* getFieldInfo(JNIEnv *env, jobject self, Table *t) {
 	return fieldInfo;
 }
 
-map<string,FieldType>* getFieldMap(JNIEnv *env, jobject self, Table *t) {
+unordered_map<string,FieldType>* getFieldMap(JNIEnv *env, jobject self, Table *t) {
 	menv me(env);
-	map<string,FieldType> *fieldtype_map = (map<string,FieldType> *) me.getLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldtype_map");
+	unordered_map<string,FieldType> *fieldtype_map = (unordered_map<string,FieldType> *) me.getLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldtype_map");	
+	wstring fieldName;
 	if (fieldtype_map == 0L) {
 		FieldInfo *info = getFieldInfo(env, self, t);
-		fieldtype_map = new map<string,FieldType>();
+		fieldtype_map = new unordered_map<string,FieldType>();
 		int count;
 		if (info->GetFieldCount(count) == S_OK) {
 			for(int i = 0; i < count; i++) {
-				wstring fieldName;
-				FieldType type;
 				info->GetFieldName(i, fieldName);
-				info->GetFieldType(i, type);
-				convstr fn(fieldName.c_str());
-				(*fieldtype_map)[fn.getStr()] = type;
+				convstr fn(fieldName.data());
+				string *key = new string(fn.getStr());
+				info->GetFieldType(i, (*fieldtype_map)[*key]);
 			}
 			me.setLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldtype_map", fieldtype_map);
 		}

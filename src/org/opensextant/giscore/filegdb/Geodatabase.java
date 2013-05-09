@@ -57,6 +57,7 @@ public class Geodatabase extends GDB {
 		if (pathToGeodatabase == null) {
 			throw new IllegalArgumentException("Bad path");
 		}
+		// test();
 		if (pathToGeodatabase.exists()) {
 			open(pathToGeodatabase.getAbsolutePath());
 		} else {

@@ -105,6 +105,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>FileGDBAPID.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)filegdb.dll</OutputFile>
+      <IgnoreSpecificDefaultLibraries>
+      </IgnoreSpecificDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -137,7 +139,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\filegdb\convstr.h" />
-    <ClInclude Include="..\..\filegdb\jstring.h" />
     <ClInclude Include="..\..\filegdb\menv.h" />
     <ClInclude Include="..\..\filegdb\resource.h" />
     <ClInclude Include="..\..\filegdb\Stdafx.h" />
@@ -154,7 +155,6 @@
     <ClCompile Include="..\..\filegdb\convstr.cpp" />
     <ClCompile Include="..\..\filegdb\enumRows.cpp" />
     <ClCompile Include="..\..\filegdb\geodatabase.cpp" />
-    <ClCompile Include="..\..\filegdb\jstring.cpp" />
     <ClCompile Include="..\..\filegdb\menv.cpp" />
     <ClCompile Include="..\..\filegdb\row.cpp" />
     <ClCompile Include="..\..\filegdb\stdafx.cpp" />

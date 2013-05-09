@@ -25,18 +25,15 @@ JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_initiali
  * Signature: (Ljava/lang/String;)J
  */
 JNIEXPORT jlong JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_test(JNIEnv * env, jobject self) {
-	try {
-		menv me(env);
-		// Uncomment if needed for the test
-		// Geodatabase* db = me.getGeodatabase(env, self);
-		Geodatabase* db = me.getGeodatabase(self);
-		if (CreateGeodatabase(L"c:/temp/testgdb12345.gdb", *db) == S_OK)
-			return (long) db;
-		else
-			return (long) 0;
-	} catch (jni_check) {
-        return 0;
-    }
+	Geodatabase* db = new Geodatabase();
+	wchar_t *loc = L"c:/temp/testgdb12345.gdb";
+	if (CreateGeodatabase(loc, *db) == S_OK) {
+		CloseGeodatabase(*db);
+		delete db;
+		return (long) 1;
+	} else {
+		return (long) 0;
+	}
 };
 
 /*
@@ -89,7 +86,7 @@ JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_closeAnd
 JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Geodatabase_create(JNIEnv *env, jobject self, jstring path) {
 	try {
 		menv me(env);
-		Geodatabase* db = me.getGeodatabase(self);
+		Geodatabase *db = new Geodatabase();
 		convstr wpath(env, path);
 		me.esriCheckedCall(CreateGeodatabase(wpath.getWstr(), *db), "Creating database failed");
 		me.setPtr(self, db);

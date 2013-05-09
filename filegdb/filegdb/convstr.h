@@ -11,34 +11,41 @@
 // Intended for stack allocation and destruction
 class convstr {
 private:
-	void* buf;
 	std::wstring wstr;
 	std::string str;
 
+	void cleanup() {
+		wstr = L"";
+		str = "";
+	}
 public:
 	convstr(const char* cstr) {
-		buf = 0L;
-		str.append(cstr);
+		*this = cstr;
 	}
 
 	convstr(const wchar_t* wc) {
-		buf = 0L;
-		wstr.append(wc);
+		*this = wc;
 	}
 
 	convstr(JNIEnv *env, jstring jstr) {
-		buf = 0L;
-		jstring_holder strchars(env, jstr);
-		str.append(strchars.getStr());
+		assign(env, jstr);
 	}
 
 	~convstr() {
-		if (buf != 0L) {
-			delete (char*) buf;
-		}
+		cleanup();
 	}
 
-        std::wstring getWstr();
+	convstr& operator=(const char* &rhs);
+	
+	convstr& operator=(const wchar_t* &rhs);
+	
+	convstr& operator=(const std::string &rhs);
 
-        std::string getStr();
+	convstr& operator=(const std::wstring &rhs);
+
+	void assign(JNIEnv *env, const jstring &javastr);
+
+    std::wstring getWstr();
+
+    std::string getStr();
 };

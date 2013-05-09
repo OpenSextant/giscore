@@ -9,8 +9,11 @@
 #endif
 #include <vector>
 #include <iostream>
+
+#pragma warning( disable : 4251 ) // Warning about ESRI's library that we can't fix from VC++
 #include "FileGDBAPI.h"
 
+#pragma warning( disable : 4290 ) // Visual C++ doesn't implement exception specification
 
 using namespace std;
 using namespace FileGDBAPI;
@@ -117,7 +120,7 @@ public:
 
 	int getInteger(jobject val);
 
-	long getLong(jobject val);
+	jlong getLong(jobject val);
 
 	float getFloat(jobject val);
 
