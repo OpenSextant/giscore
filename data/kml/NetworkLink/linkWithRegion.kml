@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+    <NetworkLink>
+        <name>NetworkLink Region</name>
+        <Region>
+            <LatLonAltBox>
+                <north>2.7</north>
+                <south>-0.4</south>
+                <east>3.1</east>
+                <west>-0.96</west>
+            </LatLonAltBox>
+            <Lod>
+                <minLodPixels>128</minLodPixels>
+            </Lod>
+        </Region>
+        <Link>
+            <href>placemark.kml</href>
+			<!--
+            <viewRefreshMode>onRegion</viewRefreshMode>
+			-->
+        </Link>
+    </NetworkLink>
+</kml>

@@ -483,7 +483,7 @@ public class TestKmlReader extends TestCase implements IKml {
 
         // override the default Link settings for target Google Earth client
         KmlReader.setHttpQuery("clientVersion", "6.0.3.2197");
-        KmlReader.setViewFormat("lookatHeading", "5");
+        reader.setViewFormat("lookatHeading", "5");
         realTestLink(reader, new String[] { "href", href,
                 VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP, "viewFormat", "heading=[lookatHeading]",
                 "httpQuery", "clientVersion=[clientVersion]" }, "clientVersion=6.0.3.2197&heading=5", null);
