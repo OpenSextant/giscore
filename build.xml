@@ -16,13 +16,12 @@
 	<property name="test" value="${basedir}/test" />
 	<property name="lib" value="${basedir}/lib" />
 	<property name="rel" value="${basedir}/rel" />
-	<property name="build" value="${basedir}/build" />
 	<property name="classes" value="${rel}/classes" />
-	<property name="build.previous" value="${build}/previous" />
 	<property name="test.classes" value="${rel}/test" />
 	<property name="testoutput" value="${basedir}/testOutput" />
 	<property name="test.excludes" value="**/TestGISBase.java **/TestShapefileBase.java"/>
-
+	<property name="build.previous" value="${rel}/previous_build" />
+	
 	<path id="project.classpath">
 		<fileset dir="lib">
 			<include name="**/*.jar" />
@@ -53,9 +52,9 @@
 
 	<target name="clean">
 		<delete dir="${lib}" />
-		<delete dir="${rel}" />
-		<delete dir="${build}" />
-		<delete dir="${testoutput}" />
+		<delete includeEmptyDirs="true">
+			<fileset dir="${rel}" includes="**/*" />
+		</delete>
 	</target>
 
 	<!-- ================================= 
@@ -94,14 +93,11 @@
 					<replacestring from="${basedir}" to="" />
 					<replacestring from="\" to="/" />
 					<replacestring from="/lib" to="lib" />
-					<replacestring from="/j2eelibs" to="j2eelibs" />
 				</tokenfilter>
 			</filterchain>
 		</copy>
 	</target>
-	
-	
-	
+
 	<target name="generate-jni" depends="compile">
 		<mkdir dir="${rel}/jni"/>
 		<javah destdir="${rel}/jni">
@@ -161,48 +157,10 @@ test.classpath=${classes};${netbeans-classpath.test}
 		</javac>
 	</target>
 	
+	<!-- This had been an OSGI jar, but for now we're back to building just a regular jar -->
 	<target name="jar" depends="compile, package-filegdb">
-		<ivy:cachepath pathid="kf.path" organisation="org.knopflerfish"
-			module="knopflerfish-ant" revision="2.1.0-mitre-13"
-			conf="default" inline="true"/>
-
-		<!-- buildnumber isn't working correctly with artifactory -->
 		<!-- <ivy:buildnumber revision="0.4" organisation="org.mitre.itf" module="giscore" resolver="maven-proxy-local" /> -->		
-		<taskdef resource="org/knopflerfish/ant/antlib.xml" classpathref="kf.path"/>
-		<!-- This isn't perfect because the com.esri.arcgis classes haven't
-		     been bundled. However all of the native code makes bundling them
-		     tricky, we'll get to that later. -->
-		<delete file="${rel}/jars/giscore.jar"/>
-		<bundle file="${rel}/jars/giscore.jar"
-		        update="false"
-		        bundlename="ITF Giscore"
-		        bundledescription="GIS data interchange core library"
-		        bundlesymbolicname="org.mitre.giscore"
-		        bundleVersion="${ivy.new.revision}"
-		        activator="none"
-		        standardJVMPackages="1.6"
-		        bundleVendor="The MITRE Corp."
-		        contactAddress="202 Burlington Road, Bedford, MA 01730-1420"
-		        autoGenerateUses="true">
-			<importClasspath>
-				<path refid="project.classpath"/>
-			</importClasspath>
-
-			<fileset dir="${classes}" />
-			<zipfileset dir="resources" includes="license.txt" prefix="META-INF" />
-			<autoimportpackage prefix="javax.xml.stream"/>
-			<!-- The SimpleObjectInputStream may require this to read in class
-			     references from other bundles. -->
-			<dynamicImportPackage name="*"/>
-			<autoexportpackage prefix="org.mitre.giscore" version="${ivy.new.revision}"/>
-
-			<!-- Attributes can be added directly to the manifest
-			     of the generated jar. -->
-			<manifest>
-				<attribute name="Built-By" value="${user.name}" />
-				<attribute name="Build-Jdk" value="${ant.java.version}"/>
-			</manifest>
-		</bundle>
+		<jar destfile="${rel}/jars/giscore.jar" basedir="${classes}" />
 	</target>
 	
 	<macrodef name="package-library">
@@ -220,20 +178,20 @@ test.classpath=${classes};${netbeans-classpath.test}
 			<copy file="@{lib}" todir="${classes}/@{package}/@{os}" />
 		</sequential>
 	</macrodef>
-	
+
 	<target name="package-filegdb">
-		<package-library lib="${basedir}/filegdb/x64/x64/filegdb.dll" 
-			package="org/mitre/giscore/filegdb" os="win64" ext="dll" />
+		<package-library lib="${basedir}/filegdb/win64/filegdb/x64/Release/filegdb.dll" 
+			package="org/opensextant/giscore/filegdb" os="win64" ext="dll" />
 		<package-library 
 			lib="${basedir}/filegdb/linux/filegdb/dist/Release/GNU-Linux-x86/libfilegdb.so" 
-			package="org/mitre/giscore/filegdb" os="linux64" ext="so" pre="lib" />
+			package="org/opensextant/giscore/filegdb" os="linux64" ext="so" pre="lib" />
 	</target>
 	
 	<target name="test" depends="compileTests" description="Run JUnit tests">
 		<mkdir dir="${testoutput}" />
 		<junit printsummary="yes" haltonfailure="no" maxmemory="1024m" fork="yes">
 			<assertions>
-			  <enable package="org.mitre.giscore"/>
+			  <enable package="org.opensextant.giscore"/>
 			</assertions>
 			<jvmarg value="-DkeepTempFiles=false" />
 			<classpath>
@@ -296,7 +254,7 @@ test.classpath=${classes};${netbeans-classpath.test}
 
 	<target name="javadoc" depends="resolve">
 		<mkdir dir="${rel}/docs" />
-		<javadoc packagenames='org.mitre.giscore.*'
+		<javadoc packagenames='org.opensextant.giscore.*'
 	         additionalparam="-breakiterator"
 	         sourcepath="${src}" destdir='${rel}/docs'
 	         overview="${src}/javadocOverview.html"
@@ -317,8 +275,8 @@ test.classpath=${classes};${netbeans-classpath.test}
 		<taskdef resource="clirrtask.properties" classpathref="clirr.path" />
 
 		<fail unless="previous.revision" message="The previous.revision property was not set, could not load the last release for API comparison."/>
-		<ivy:retrieve inline="true" conf="default" organisation="org.mitre.itf" module="giscore" revision="${previous.revision}" sync="true" pattern="${build.previous}/[organization].[artifact]-[revision].[ext]" />
-		<property name="previous.jar" value="org.mitre.itf.giscore-${previous.revision}.jar"/>
+		<ivy:retrieve inline="true" conf="default" organisation="org.opensextant" module="giscore" revision="${previous.revision}" sync="true" pattern="${build.previous}/[organization].[artifact]-[revision].[ext]" />
+		<property name="previous.jar" value="org.opensextant.giscore-${previous.revision}.jar"/>
 		<fail message="Could not find previous revision at ${build.previous}/${previous.jar}">
 			<condition>
 				<not>
@@ -332,10 +290,6 @@ test.classpath=${classes};${netbeans-classpath.test}
 			<origclasspath>
 				<fileset dir="${build.previous}">
 					<exclude name="${previous.jar}"/>
-				</fileset>
-				<!-- This isn't quite kosher (i.e. if j2ee libs were different in the past, but hopefully it is good enough). -->
-				<fileset dir="${basedir}/j2eelibs">
-					<include name="*.jar" />
 				</fileset>
 			</origclasspath>
 			<newclasspath refid="project.classpath"/>

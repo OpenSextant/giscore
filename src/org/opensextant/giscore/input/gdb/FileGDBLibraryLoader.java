@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 
+import org.apache.commons.lang.StringUtils;
 import org.opensextant.giscore.utils.LibraryLoader;
 
 public class FileGDBLibraryLoader extends LibraryLoader {
@@ -32,10 +33,14 @@ public class FileGDBLibraryLoader extends LibraryLoader {
 
 	/* This method causes the debug library to be run while debugging. */
 	public void loadLibrary() throws IOException, ParseException {
-		boolean isDebug = java.lang.management.ManagementFactory.getRuntimeMXBean().
-			    getInputArguments().toString().indexOf("-agentlib:jdwp") > 0;
-		if (isDebug) {
-			loadDebug();
+		String prop = System.getenv("FILEGDB");
+		boolean isDebug = "DEBUG".equalsIgnoreCase(prop)
+				|| java.lang.management.ManagementFactory.getRuntimeMXBean()
+						.getInputArguments().toString()
+						.indexOf("-agentlib:jdwp") > 0;
+		boolean isRelease = "RELEASE".equalsIgnoreCase(prop);
+		if (isDebug || isRelease) {
+			loadFromDirectory(StringUtils.capitalize(prop));
 		} else {
 			super.loadLibrary();
 		}
@@ -45,13 +50,15 @@ public class FileGDBLibraryLoader extends LibraryLoader {
 	 * Method uses knowledge of the workspace layout to load the appropriate
 	 * library when testing and debugging
 	 */
-	protected void loadDebug() {
+	protected void loadFromDirectory(String dir) {
 		try {
 			if ("win64".equals(osarch)) {
-				File libpath = new File("filegdb/win64/filegdb/x64/Debug/filegdb.dll");
+				File libpath = new File("filegdb/win64/filegdb/x64/" + 
+						dir + "/filegdb.dll");
 				System.load(libpath.getAbsolutePath());
 			} else if ("linux64".equals(osarch)) {
-				File libpath = new File("filegdb/linux/filegdb/dist/Debug/GNU-Linux-x86/libfilegdb.so");
+				File libpath = new File("filegdb/linux/filegdb/dist/" +
+						dir + "/GNU-Linux-x86/libfilegdb.so");
 				System.load(libpath.getAbsolutePath());
 			} else {
 				throw new RuntimeException("Architecture " + osarch + " not supported for debugger until you configure this method");
