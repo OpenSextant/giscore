@@ -231,6 +231,8 @@ public class TestKmlReader extends TestCase implements IKml {
                 linkedFeatures.add(gisObj);
                 return false; // explicitly force import to abort
             }
+            public void handleError(URI uri, Exception ex) {
+            }
         });
         List<URI> networkLinks = reader.getNetworkLinks();
 		assertEquals(2, networkLinks.size());
@@ -280,6 +282,8 @@ public class TestKmlReader extends TestCase implements IKml {
             public boolean handleEvent(UrlRef ref, IGISObject gisObj) {
                 linkedFeatures.add(gisObj);
                 return true;
+            }
+            public void handleError(URI uri, Exception ex) {
             }
         });
 		List<URI> networkLinks = reader.getNetworkLinks();

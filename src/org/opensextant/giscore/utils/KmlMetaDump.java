@@ -427,6 +427,9 @@ public class KmlMetaDump implements IKml {
 						// if (writer != null && useStdout) writer.write(gisObj);
 						return true;
 					}
+					public void handleError(URI uri, Exception ex) {
+						// exceptions already logged -- no special handling needed
+					}
 				});
 				// following condition already intercepted via log4j handler
 				//if (reader.isMaxLinkCountExceeded())
