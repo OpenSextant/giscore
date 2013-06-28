@@ -8,3 +8,11 @@ lib
 /filegdb/linux/filegdb/dist/Debug/
 /filegdb/linux/filegdb/build/Release/
 /local.properties
+*.pdb
+*.idb
+*.*log
+*.obj
+*.exp
+*.lastbuildstate
+*.ilk
+hs_err*.mdmp

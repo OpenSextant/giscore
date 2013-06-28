@@ -72,16 +72,16 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <IncludePath>$(HOME)\giscore\FileGDB_1_2_vs10\include;$(SolutionDir)\..\..\filegdb\windows;$(IncludePath)</IncludePath>
-    <LibraryPath>$(HOME)\giscore\FileGDB_1_2_vs10\lib64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(HOME)\Documents\esri\FileGDB_API_VS2012_1_3\include;$(SolutionDir)\..\..\filegdb\windows;$(IncludePath)</IncludePath>
+    <LibraryPath>$(HOME)\Documents\esri\FileGDB_API_VS2012_1_3\lib64;$(LibraryPath)</LibraryPath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <SourcePath>$(SourcePath)</SourcePath>
     <ExcludePath>$(ExcludePath)</ExcludePath>
     <ExecutablePath>$(ExecutablePath)</ExecutablePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <IncludePath>$(HOME)\giscore\FileGDB_1_2_vs10\include;$(SolutionDir)\..\..\filegdb\windows;$(IncludePath)</IncludePath>
-    <LibraryPath>$(HOME)\giscore\FileGDB_1_2_vs10\lib64;$(LibraryPath)</LibraryPath>
+    <IncludePath>$(HOME)\Documents\esri\FileGDB_API_VS2012_1_3\include;$(SolutionDir)\..\..\filegdb\windows;$(IncludePath)</IncludePath>
+    <LibraryPath>$(HOME)\Documents\esri\FileGDB_API_VS2012_1_3\lib64;$(LibraryPath)</LibraryPath>
     <ReferencePath>$(ReferencePath)</ReferencePath>
     <SourcePath>$(SourcePath)</SourcePath>
     <ExcludePath>$(ExcludePath)</ExcludePath>
@@ -100,6 +100,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
