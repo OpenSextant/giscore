@@ -231,6 +231,8 @@ public class TestKmlReader extends TestCase implements IKml {
                 linkedFeatures.add(gisObj);
                 return false; // explicitly force import to abort
             }
+            public void handleError(URI uri, Exception ex) {
+            }
         });
         List<URI> networkLinks = reader.getNetworkLinks();
 		assertEquals(2, networkLinks.size());
@@ -280,6 +282,8 @@ public class TestKmlReader extends TestCase implements IKml {
             public boolean handleEvent(UrlRef ref, IGISObject gisObj) {
                 linkedFeatures.add(gisObj);
                 return true;
+            }
+            public void handleError(URI uri, Exception ex) {
             }
         });
 		List<URI> networkLinks = reader.getNetworkLinks();
@@ -483,7 +487,7 @@ public class TestKmlReader extends TestCase implements IKml {
 
         // override the default Link settings for target Google Earth client
         KmlReader.setHttpQuery("clientVersion", "6.0.3.2197");
-        KmlReader.setViewFormat("lookatHeading", "5");
+        reader.setViewFormat("lookatHeading", "5");
         realTestLink(reader, new String[] { "href", href,
                 VIEW_REFRESH_MODE, VIEW_REFRESH_MODE_ON_STOP, "viewFormat", "heading=[lookatHeading]",
                 "httpQuery", "clientVersion=[clientVersion]" }, "clientVersion=6.0.3.2197&heading=5", null);

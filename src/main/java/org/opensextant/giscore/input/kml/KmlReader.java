@@ -518,10 +518,13 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
                     }
                 } catch (java.net.ConnectException e) {
                     log.error("Failed to import from network link: " + uri + "\n" + e);
+					if (handler != null) handler.handleError(uri, e);
                 } catch (FileNotFoundException e) {
                     log.error("Failed to import from network link: " + uri + "\n" + e);
+					if (handler != null) handler.handleError(uri, e);
                 } catch (Exception e) {
                     log.error("Failed to import from network link: " + uri, e);
+					if (handler != null) handler.handleError(uri, e);
                 } finally {
 					IOUtils.closeQuietly(is);
                 }
@@ -634,6 +637,12 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
          *         false stops following NetworkLinks.
          */
 		boolean handleEvent(UrlRef ref, IGISObject gisObj);
+		/**
+		 * Error handler
+		 * @param uri URI for NetworkLink resource
+		 * @param e Exception thrown
+		 */
+		void handleError(URI uri, Exception e);
     }
 
 	@NonNull

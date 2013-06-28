@@ -64,7 +64,9 @@ public abstract class KmlBaseReader implements IKml {
 	 * viewFormat names unchanged as of April 2011 with Google Earth 6.0.2.2074.
 	 * see http://code.google.com/apis/kml/documentation/kmlreference.html#link
 	 */
-	private static final Map<String,String> viewFormatLabels = new HashMap<String,String>();
+	private static final Map<String,String> VIEW_FORMAT_LABELS = new HashMap<String,String>();
+
+	private final Map<String,String> viewFormatLabels = new HashMap<String,String>();
 
 	static {
 		final String[] labels = {
@@ -99,9 +101,12 @@ public abstract class KmlBaseReader implements IKml {
 			"vertPixels",       "853" };
 
         for (int i = 0; i < viewLabels.length; i += 2)
-			viewFormatLabels.put(viewLabels[i], viewLabels[i+1]);
+			VIEW_FORMAT_LABELS.put(viewLabels[i], viewLabels[i+1]);
 	}
 
+	KmlBaseReader() {
+		viewFormatLabels.putAll(VIEW_FORMAT_LABELS);
+	}
 	public boolean isCompressed() {
 		return compressed;
 	}
@@ -457,11 +462,11 @@ public abstract class KmlBaseReader implements IKml {
         httpQueryLabels.put(property, value);
     }
 
-    /**
+   /**
      * Override the default values for the ViewFormat parameters (e.g. bboxEast).
      * These are appended to URLs when importing NetworkLinks.
      * <P>
-     * Valid values to set are the following: <ul>
+     * Valid property names are the following: <ul>
      * <li>bboxEast
      * <li>bboxNorth
      * <li>bboxSouth
@@ -491,13 +496,47 @@ public abstract class KmlBaseReader implements IKml {
      * @param value, never null
      * @throws IllegalArgumentException if property is not valid or value is empty or null.
      */
-    public static void setViewFormat(String property, String value) {
-        if (!viewFormatLabels.containsKey(property))
+    public static void setDefaultViewFormat(String property, String value) {
+        if (!VIEW_FORMAT_LABELS.containsKey(property))
             throw new IllegalArgumentException("invalid property: " + property);
         if (StringUtils.isBlank(value))
             throw new IllegalArgumentException("invalid property value: " + value);
-        viewFormatLabels.put(property, value);
+        VIEW_FORMAT_LABELS.put(property, value);
     }
+
+	/**
+	 * Override the default ViewFormat parameters for this KmlReader instance.
+	 * Valid property names are the following: <ul>
+	 * <li>bboxEast
+	 * <li>bboxNorth
+	 * <li>bboxSouth
+	 * <li>bboxWest
+	 * <li>horizFov
+	 * <li>horizPixels
+	 * <li>lookatHeading
+	 * <li>lookatLat
+	 * <li>lookatLon
+	 * <li>lookatRange
+	 * <li>lookatTerrainAlt
+	 * <li>lookatTerrainLat
+	 * <li>lookatTerrainLon
+	 * <li>lookatTilt
+	 * <li>terrainEnabled
+	 * <li>vertFov
+	 * <li>vertPixels
+	 * </ul>
+	 * @param property Property name, not null
+	 * @param value if null removes the override and used global default value instead
+	 * @throws IllegalArgumentException if property is not valid or value is empty string
+	 */
+	public void setViewFormat(String property, String value) {
+		if (!VIEW_FORMAT_LABELS.containsKey(property))
+			throw new IllegalArgumentException("invalid property: " + property);
+		if (value == null) value = VIEW_FORMAT_LABELS.get(property);
+		if (StringUtils.isBlank(value))
+			throw new IllegalArgumentException("invalid property value: " + value);
+		viewFormatLabels.put(property, value);
+	}
 
     /**
      * Get base URL of KML resource. May be null if URL is not applicable to

@@ -85,10 +85,11 @@ unordered_map<string,FieldType>* getFieldMap(JNIEnv *env, jobject self, Table *t
 		int count;
 		if (info->GetFieldCount(count) == S_OK) {
 			for(int i = 0; i < count; i++) {
+				FieldType type;
 				info->GetFieldName(i, fieldName);
 				convstr fn(fieldName.data());
-				string *key = new string(fn.getStr());
-				info->GetFieldType(i, (*fieldtype_map)[*key]);
+				info->GetFieldType(i, type);
+				(*fieldtype_map)[fn.getStr()] = type;
 			}
 			me.setLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldtype_map", fieldtype_map);
 		}
