@@ -109,6 +109,9 @@ public class KmlRegionBox {
 						}
 						return true;
 					}
+					public void handleError(URI uri, Exception ex) {
+						// exceptions already logged -- no special handling needed
+					}
 				});
 			}
 		}
