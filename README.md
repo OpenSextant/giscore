@@ -10,21 +10,31 @@ More information on GIScore can be found in the project Wiki pages.
 
 ## Building ##
 
-Copy the file local.example.properties to local.properties and (if required) set the 
-proxy properties to appropriate values for your local environment. Setup an ivy.properties
-file in your home directory with an appropriate maven repository. We strongly encourage you
-to have a local maven proxy server to cache artifacts if you don't already have one. 
+The build uses gradle, which can be downloaded from www.gradle.org. Use properties 
+in your gradle.properties file to control the gradle build. gradle.properties is found at
+$HOME/.gradle/gradle.properties.
+
+### Configuring a proxy server ###
+
+`
+systemProp.http.proxyHost=proxy.example.org
+systemProp.http.proxyPort=80
+systemProp.http.proxyUser=
+systemProp.http.proxyPassword=
+systemProp.http.nonProxyHosts=*.example.org|localhost
+systemProp.https.proxyHost=proxy.example.org
+systemProp.https.proxyPort=80
+systemProp.https.proxyUser=
+systemProp.https.proxyPassword=
+systemProp.https.nonProxyHosts=*.example.org|localhost
+`
 
 The build is currently not finalized as this has just been pushed to GitHub and is still
-basically set up for our internal publishing. It will be converted to publish to 
-sonatype for central ASAP.  
-
-You *can* use this build to publish to a local repository as is by modifying the ivy.settings
-file. 
+basically set up for our internal publishing.   
 
 ### Versions and Packages ###
 
-Note that for the public release the version was bumped to 2.0.x and the java package
+Note that for the public release the version was bumped to 2.0.0 and the java package
 is now org.opensextant.giscore
 
 ## Other Information of note ##

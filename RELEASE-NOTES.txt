@@ -14,6 +14,15 @@ Changes
 
 - Packages are now under org.opensextant for the public release
 - Local repository references are removed
+- Build system is now using gradle in place of ant
+- Now uses the built in STaX implementation
+- Removed war file, remote implementation, SDE implementation and all ESRI 
+ArcObjects dependencies to a separate project for later triage
+
+Notes
+
+- The createJNI task for gradle is not currently working, fix the generated
+headers manually if necessary.
 
 ------------------------------------------------------------------------------
 

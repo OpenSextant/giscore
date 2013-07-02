@@ -244,7 +244,7 @@ public class TestBaseGeometry extends TestGISBase {
         assertEquals(1, geo.getNumParts());
         assertEquals(pts.size(), geo.getNumPoints());
         assertFalse(geo.is3D());
-        // center: (1° 0' 0" E, 1° 0' 0" N)
+        // center: (1.0' 0" E, 1.0' 0" N)
         Geodetic2DPoint center = geo.getCenter();
         assertEquals(1.0, center.getLatitudeAsDegrees(), EPSILON);
         assertEquals(1.0, center.getLongitudeAsDegrees(), EPSILON);
@@ -252,7 +252,7 @@ public class TestBaseGeometry extends TestGISBase {
         geo = new LinearRing(geo.getBoundingBox());
         assertEquals(1, geo.getNumParts());
         assertEquals(5, geo.getNumPoints());
-        // center: (1° 0' 0" E, 1° 0' 0" N)
+        // center: (1.0' 0" E, 1.0' 0" N)
         center = geo.getCenter();
         assertEquals(1.0, center.getLatitudeAsDegrees(), EPSILON);
         assertEquals(1.0, center.getLongitudeAsDegrees(), EPSILON);
@@ -275,7 +275,7 @@ public class TestBaseGeometry extends TestGISBase {
         assertEquals(pts.size(), geo.getNumPoints());
         assertFalse(geo.is3D());
         Geodetic2DPoint cp = geo.getCenter();
-        // center: (1° 0' 0" E, 1° 0' 0" N)
+        // center: (1.0' 0" E, 1.0' 0" N)
         assertEquals(1.0, cp.getLatitudeAsDegrees(), EPSILON);
         assertEquals(1.0, cp.getLongitudeAsDegrees(), EPSILON);
 
@@ -291,7 +291,7 @@ public class TestBaseGeometry extends TestGISBase {
         assertEquals(2, geo.getNumParts());
         assertEquals(ring.getNumPoints() + ir.getNumPoints(), geo.getNumPoints());
         cp = geo.getCenter();
-        // center: (1° 0' 0" E, 1° 0' 0" N)
+        // center: (1.0' 0" E, 1.0' 0" N)
         assertEquals(1.0, cp.getLatitudeAsDegrees(), EPSILON);
         assertEquals(1.0, cp.getLongitudeAsDegrees(), EPSILON);
     }
@@ -376,7 +376,7 @@ public class TestBaseGeometry extends TestGISBase {
         assertTrue(geo.contains(line));
         assertFalse(geo.isEmpty());
 
-        // center = (1° 15' 0" E, 1° 15' 0" N)
+        // center = (1ï¿½ 15' 0" E, 1ï¿½ 15' 0" N)
         final Geodetic2DPoint cp = geo.getCenter();
         assertEquals(1.0, cp.getLatitudeAsDegrees(), EPSILON);
         assertEquals(1.0, cp.getLongitudeAsDegrees(), EPSILON);
@@ -427,7 +427,7 @@ public class TestBaseGeometry extends TestGISBase {
         // bounding box of MultiLine must contain bounding box for each of its lines
         assertTrue(bounds.contains(line.getBoundingBox()));
 
-        // (0° 14' 24" E, 0° 14' 24" N) @ 0m
+        // (0ï¿½ 14' 24" E, 0ï¿½ 14' 24" N) @ 0m
         final Geodetic2DPoint cp = geo.getCenter();
         System.out.println("multiline center=" + cp);
         assertEquals(0.24, cp.getLatitudeAsDegrees(), EPSILON);
@@ -505,7 +505,7 @@ public class TestBaseGeometry extends TestGISBase {
         Line line = new Line(pts);
         assertTrue(line.clippedAtDateLine());
 
-        // (179° 57' 0" E, 16° 50' 49" S)
+        // (179ï¿½ 57' 0" E, 16ï¿½ 50' 49" S)
         Geodetic2DPoint cp = line.getCenter();
         // System.out.println("Fctr=" + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
         assertEquals(-16.846856667399592, cp.getLatitudeAsDegrees(), EPSILON);
@@ -529,7 +529,7 @@ public class TestBaseGeometry extends TestGISBase {
         Line line = new Line(pts);
         assertTrue(line.clippedAtDateLine());
 
-        // (179° 52' 30" W, 16° 50' 49" S)
+        // (179ï¿½ 52' 30" W, 16ï¿½ 50' 49" S)
         Geodetic2DPoint cp = line.getCenter();
         // System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
         assertEquals(-16.846856667399592, cp.getLatitudeAsDegrees(), EPSILON);
@@ -553,11 +553,11 @@ public class TestBaseGeometry extends TestGISBase {
         Line line = new Line(pts);
 
         Geodetic2DPoint cp = line.getCenter();
-        // (1° 45' 7" E, 68° 32' 31" S) -68.54190326905 1.7519062462999895
+        // (1ï¿½ 45' 7" E, 68ï¿½ 32' 31" S) -68.54190326905 1.7519062462999895
         // System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
 
         Geodetic2DBounds bbox = line.getBoundingBox();
-        // bbox=(125° 43' 52" W, 72° 50' 45" S) .. (129° 14' 6" E, 64° 14' 16" S)
+        // bbox=(125ï¿½ 43' 52" W, 72ï¿½ 50' 45" S) .. (129ï¿½ 14' 6" E, 64ï¿½ 14' 16" S)
         assertTrue(bbox != null && bbox.contains(cp));
 
         //LinearRing ring = new LinearRing(pts, true); // -> Error: LinearRing cannot self-intersect
@@ -569,8 +569,8 @@ public class TestBaseGeometry extends TestGISBase {
         List<Point> pts = new ArrayList<Point>(5);
 
         // 3km box that closely matches google earth lat/lon grids lines
-        // ctr=(65° 0' 0" E, 89° 54' 18" S) -89.905 65.0
-        // bbox=(60° 0' 0" E, 89° 54' 36" S) .. (70° 0' 0" E, 89° 54' 0" S)
+        // ctr=(65ï¿½ 0' 0" E, 89ï¿½ 54' 18" S) -89.905 65.0
+        // bbox=(60ï¿½ 0' 0" E, 89ï¿½ 54' 36" S) .. (70ï¿½ 0' 0" E, 89ï¿½ 54' 0" S)
         final Point firstPt = new Point(-89.90, 70.0);
         pts.add(firstPt);
         pts.add(new Point(-89.90, 60.0));

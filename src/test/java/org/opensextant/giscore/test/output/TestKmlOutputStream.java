@@ -1081,7 +1081,7 @@ public class TestKmlOutputStream extends TestGISBase {
          Line line = new Line(pts);
          assertTrue(line.clippedAtDateLine());
 
-         // (179° 52' 30" W, 16° 50' 49" S)
+         // (179d 52' 30" W, 16d 50' 49" S)
          // Geodetic2DPoint cp = line.getCenter();
 
          KmlOutputStream kos = new KmlOutputStream(new FileOutputStream("out.kml"));
@@ -1115,7 +1115,7 @@ public class TestKmlOutputStream extends TestGISBase {
 
          Geodetic2DPoint cp = line.getCenter();
 
-         // Fctr=(1° 45' 7" E, 68° 32' 31" S) -68.54190326905 1.7519062462999895
+         // Fctr=(1d 45' 7" E, 68d 32' 31" S) -68.54190326905 1.7519062462999895
          System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
 
          final Geodetic2DBounds bbox = line.getBoundingBox();
@@ -1135,7 +1135,7 @@ public class TestKmlOutputStream extends TestGISBase {
          kos.write(f);
 
          f = new Feature();
-         // bbox=(westLon=125° 43' 52" W, southLat=72° 50' 45" S) .. (129° 14' 6" E, northLat=64° 14' 16" S)
+         // bbox=(westLon=125d 43' 52" W, southLat=72d 50' 45" S) .. (129d 14' 6" E, northLat=64d 14' 16" S)
          // System.out.println("bbox=" + bbox);
          line = new Line(bbox);
 
@@ -1155,8 +1155,8 @@ public class TestKmlOutputStream extends TestGISBase {
 	public void testRegionAtPole() throws Exception {
 		List<Point> pts = new ArrayList<Point>(5);
 		// 3km box that closely matches google earth lat/lon grids lines
-		// ctr=(65° 0' 0" E, 89° 54' 18" S) -89.905 65.0
-		// bbox=(60° 0' 0" E, 89° 54' 36" S) .. (70° 0' 0" E, 89° 54' 0" S)
+		// ctr=(65d 0' 0" E, 89d 54' 18" S) -89.905 65.0
+		// bbox=(60d 0' 0" E, 89d 54' 36" S) .. (70d 0' 0" E, 89d 54' 0" S)
 		final Point firstPt = new Point(-89.90, 70.0);
 		pts.add(firstPt);
 		pts.add(new Point(-89.90, 60.0));
@@ -1165,8 +1165,8 @@ public class TestKmlOutputStream extends TestGISBase {
 		pts.add(firstPt);
 
 		// 68km box at poles wrap IDT
-		// Fctr=(143° 7' 27" E, 89° 35' 49" S) -89.59704336185 143.12414264670002
-		// bbox westLon/southLat = (11° 14' 23" E, 89° 38' 21" S) .. (84° 59' 29" W, 89° 33' 17" S)
+		// Fctr=(143d 7' 27" E, 89d 35' 49" S) -89.59704336185 143.12414264670002
+		// bbox westLon/southLat = (11d 14' 23" E, 89d 38' 21" S) .. (84d 59' 29" W, 89d 33' 17" S)
 		//final Point firstPt = new Point(-89.6392352247,94.8251951251);
 		//pts.add(firstPt);
 		//pts.add(new Point(-89.56,-156.6102625609));
@@ -1174,8 +1174,8 @@ public class TestKmlOutputStream extends TestGISBase {
 		//pts.add(new Point(-89.6060326809, 11.2396770593));
 
 		// ~500 km box
-		// Fctr=(2° 19' 3" E, 87° 10' 35" S) -87.17634638613053 2.317439417192705
-		// bbox=(westLon/southLat = 124° 21' 52" W, 87° 21' 40" S) .. (128° 59' 57" E, 86° 59' 30" S)
+		// Fctr=(2d 19' 3" E, 87d 10' 35" S) -87.17634638613053 2.317439417192705
+		// bbox=(westLon/southLat = 124d 21' 52" W, 87d 21' 40" S) .. (128d 59' 57" E, 86d 59' 30" S)
 		//final Point firstPt = new Point(-87.2332504991516, -51.52016400098244);
 		//pts.add(firstPt);
 		//pts.add(new Point(-86.99157891594791, 54.83615976433807));

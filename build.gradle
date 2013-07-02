@@ -1,0 +1,167 @@
+apply plugin: "java"
+apply plugin: "eclipse"
+apply plugin: "maven"
+apply plugin: "signing"
+
+group = "org.opensextant"
+version = "2.0.0-SNAPSHOT"
+
+// Publishing locations
+def oss_snapshot = "https://oss.sonatype.org/content/repositories/snapshots"
+def oss_staging = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+
+repositories {
+	[ mavenCentral(), maven { url oss_snapshot } ]
+}
+
+configurations {
+	compile { description = 'These modules are needed at compile time and runtime' }
+	runtime { extendsFrom compile
+			  description = 'These modules are only needed at runtime' }
+	test    { extendsFrom runtime
+			  description = 'Include these in addition when testing' }
+	jni		{ extendsFrom compile
+			  description = 'Output of compilation used for creating jni headers' }
+}
+
+eclipse {
+	project {
+		name = 'giscore'
+		natures 'org.springsource.ide.eclipse.gradle.core.nature',
+			'org.eclipse.jdt.groovy.core.groovyNature'
+	}
+	classpath {
+		plusConfigurations += configurations.test
+	}
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+	classifier = 'javadoc'
+	from 'build/docs/javadoc'
+}
+ 
+task sourcesJar(type: Jar) {
+	from sourceSets.main.allSource
+	classifier = 'sources'
+}
+
+/* This task is not yet working */  
+task createJni(dependsOn: jar) << {
+	ant.javah(destdir: "build/jni", classpath: configurations.jni.asPath) {
+		ant.class(name: 'org.opensextant.giscore.filegdb.Geodatabase')
+		ant.class(name: 'org.opensextant.giscore.filegdb.Table')
+		ant.class(name: 'org.opensextant.giscore.filegdb.Row')
+		ant.class(name: 'org.opensextant.giscore.filegdb.EnumRows')
+	}
+}
+
+/*
+	This needs to be converted to Gradle
+ 
+ 	<target name="api-compatibility" depends="jar" description="Compare the latest build to the previous version to detect API changes.">
+		<ivy:cachepath pathid="clirr.path" organisation="net.sf.clirr" module="clirr-core" revision="0.6-mitre" conf="default" inline="true"/>
+		<taskdef resource="clirrtask.properties" classpathref="clirr.path" />
+
+		<fail unless="previous.revision" message="The previous.revision property was not set, could not load the last release for API comparison."/>
+		<ivy:retrieve inline="true" conf="default" organisation="org.opensextant" module="giscore" revision="${previous.revision}" sync="true" pattern="${build.previous}/[organization].[artifact]-[revision].[ext]" />
+		<property name="previous.jar" value="org.opensextant.giscore-${previous.revision}.jar"/>
+		<fail message="Could not find previous revision at ${build.previous}/${previous.jar}">
+			<condition>
+				<not>
+					<available file="${build.previous}/${previous.jar}"/>
+				</not>
+			</condition>
+		</fail>
+
+		<delete file="${build}/clirr.xml"/>
+		<clirr failOnBinError="false" failOnSrcError="false">
+			<origclasspath>
+				<fileset dir="${build.previous}">
+					<exclude name="${previous.jar}"/>
+				</fileset>
+			</origclasspath>
+			<newclasspath refid="project.classpath"/>
+			<origFiles dir="${build.previous}" includes="${previous.jar}"/>
+			<newFiles dir="${rel}/jars/" includes="giscore.jar"/>
+			<formatter type="xml" outfile="${build}/clirr.xml"/>
+		</clirr>
+	</target>
+
+ */
+
+jar {
+	baseName = "giscore"
+}
+
+artifacts {
+	archives jar
+	archives javadocJar
+	archives sourcesJar
+}
+
+signing {
+	sign configurations.archives
+}
+
+dependencies {
+	def slf4j_version = '1.7.2'
+
+	compile group: 'org.opensextant', name: 'geodesy', version: '2.0.+'
+	compile group: 'commons-lang', name: 'commons-lang', version: '2.5'
+	compile group: 'commons-io', name: 'commons-io', version: '1.4'
+	// compile group: 'stax', name: 'stax-api-osgi', version: '1.0.1'	
+	compile group: 'org.slf4j', name: 'slf4j-api', version: slf4j_version
+	compile group: 'org.slf4j', name: 'slf4j-simple', version: slf4j_version 
+	compile group: 'log4j', name: "log4j", version: '1.2.+'
+	testCompile group: 'findbugs', name: 'annotations', version: "1.0.0"
+	testCompile('junit:junit:4.10')
+	jni files(dir: "build/libs", include: 'giscore-' + version + '.jar')
+}
+
+uploadArchives {
+	repositories {
+		mavenDeployer {
+			beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+ 
+			repository(url: oss_staging) {
+				authentication(userName: sonatypeUsername, password: sonatypePassword)
+			}
+			
+			snapshotRepository(url: oss_snapshot) {
+				authentication(userName: sonatypeUsername, password: sonatypePassword)
+			}
+			
+			pom.project {
+			   name 'giscore'
+			   packaging 'jar'
+			   description 'GIScore is a streaming IO library for geographic information system data formats'
+			   url 'https://github.com/OpenSextant/giscore'
+ 
+			   scm {
+				   url 'scm:git://github.com/OpenSextant/giscore.git'
+				   connection 'scm:git@github.com:OpenSextant/giscore.git'
+				   developerConnection 'scm:git@github.com:OpenSextant/giscore.git'
+			   }
+ 
+			   licenses {
+				   license {
+					   name 'The Apache Software License, Version 2.0'
+					   url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+					   distribution 'repo'
+				   }
+			   }
+ 
+			   developers {
+				   developer {
+					   id 'drand'
+					   name 'Doug Rand'
+				   }
+				   developer {
+				   		id 'docjason'
+						name 'Jason Mathews'
+				   }
+			   }
+		   }
+		}
+	}
+}
