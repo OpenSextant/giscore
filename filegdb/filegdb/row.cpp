@@ -4,7 +4,7 @@
 #include <string>
 #include <jni.h>
 #include <time.h>
-#include <unordered_map>
+#include <map>
 #include "org_opensextant_giscore_filegdb_Row.h"
 
 using namespace std;
@@ -397,7 +397,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_opensextant_giscore_filegdb_Row_getAttrA
 	}
 }
 
-unordered_map<string,FieldType>* getFieldMap(JNIEnv *env, jobject tableself, Table *t);
+map<string,FieldType>* getFieldMap(JNIEnv *env, jobject tableself, Table *t);
 
 /*
  * Class:     org_opensextant_giscore_filegdb_Row
@@ -410,7 +410,7 @@ JNIEXPORT void JNICALL Java_org_opensextant_giscore_filegdb_Row_setAttrArray(JNI
 		Row *row = me.getRow(self);
 		jobject table = getRowTable(env, self); // Fields are stored with the table
 		Table *tobj = me.getTable(table);
-		unordered_map<string,FieldType> *fieldMap = getFieldMap(env, table, tobj);
+		map<string,FieldType> *fieldMap = getFieldMap(env, table, tobj);
 		jclass bclass = me.findClass("java.lang.Boolean");
 		jclass calclass = me.findClass("java.util.Calendar");
 		jmethodID ccgetTime = me.getMethod(calclass, "getTimeInMillis", "()J");

@@ -6,7 +6,6 @@ lib
 /testOutput
 /filegdb/linux/filegdb/nbproject/private/
 /filegdb/linux/filegdb/build/Debug/
-/filegdb/linux/filegdb/dist/Debug/
 /filegdb/linux/filegdb/build/Release/
 /local.properties
 *.pdb

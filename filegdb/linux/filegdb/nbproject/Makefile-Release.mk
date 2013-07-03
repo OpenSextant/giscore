@@ -34,10 +34,10 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
-	${OBJECTDIR}/convstr.o \
 	${OBJECTDIR}/_ext/61665655/table.o \
 	${OBJECTDIR}/_ext/61665655/menv.o \
 	${OBJECTDIR}/_ext/61665655/stdafx.o \
+	${OBJECTDIR}/_ext/61665655/convstr.o \
 	${OBJECTDIR}/_ext/61665655/enumRows.o \
 	${OBJECTDIR}/_ext/61665655/jstring.o \
 	${OBJECTDIR}/_ext/61665655/row.o \
@@ -48,8 +48,8 @@ OBJECTFILES= \
 CFLAGS=
 
 # CC Compiler Flags
-CCFLAGS=-std=gnu++0x
-CXXFLAGS=-std=gnu++0x
+CCFLAGS=
+CXXFLAGS=
 
 # Fortran Compiler Flags
 FFLAGS=
@@ -58,7 +58,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-L../../filegdb/esri_linux64_dependencies -lfgdbunixrtl -lFileGDBAPI
+LDLIBSOPTIONS=-L${HOME}/FileGDB_API/lib -lfgdbunixrtl -lFileGDBAPI
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
@@ -66,47 +66,47 @@ LDLIBSOPTIONS=-L../../filegdb/esri_linux64_dependencies -lfgdbunixrtl -lFileGDBA
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libfilegdb.so: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.cc} -Wl -export-dynamic -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libfilegdb.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
-
-${OBJECTDIR}/convstr.o: convstr.cpp 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.cc) -O2 -I../../filegdb/esri_headers/linux -I../../filegdb/esri_headers -I../../filegdb -I../../../rel/jni -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/convstr.o convstr.cpp
+	${LINK.cc} -shared -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/libfilegdb.so -fPIC ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
 ${OBJECTDIR}/_ext/61665655/table.o: ../../filegdb/table.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/61665655
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I../../filegdb/esri_headers/linux -I../../filegdb/esri_headers -I../../filegdb -I../../../rel/jni -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/table.o ../../filegdb/table.cpp
+	$(COMPILE.cc) -O2 -I${HOME}/FileGDB_API/include -I../../filegdb -I../../filegdb/linux -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/table.o ../../filegdb/table.cpp
 
 ${OBJECTDIR}/_ext/61665655/menv.o: ../../filegdb/menv.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/61665655
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I../../filegdb/esri_headers/linux -I../../filegdb/esri_headers -I../../filegdb -I../../../rel/jni -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/menv.o ../../filegdb/menv.cpp
+	$(COMPILE.cc) -O2 -I${HOME}/FileGDB_API/include -I../../filegdb -I../../filegdb/linux -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/menv.o ../../filegdb/menv.cpp
 
 ${OBJECTDIR}/_ext/61665655/stdafx.o: ../../filegdb/stdafx.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/61665655
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I../../filegdb/esri_headers/linux -I../../filegdb/esri_headers -I../../filegdb -I../../../rel/jni -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/stdafx.o ../../filegdb/stdafx.cpp
+	$(COMPILE.cc) -O2 -I${HOME}/FileGDB_API/include -I../../filegdb -I../../filegdb/linux -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/stdafx.o ../../filegdb/stdafx.cpp
+
+${OBJECTDIR}/_ext/61665655/convstr.o: ../../filegdb/convstr.cpp 
+	${MKDIR} -p ${OBJECTDIR}/_ext/61665655
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -I${HOME}/FileGDB_API/include -I../../filegdb -I../../filegdb/linux -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/convstr.o ../../filegdb/convstr.cpp
 
 ${OBJECTDIR}/_ext/61665655/enumRows.o: ../../filegdb/enumRows.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/61665655
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I../../filegdb/esri_headers/linux -I../../filegdb/esri_headers -I../../filegdb -I../../../rel/jni -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/enumRows.o ../../filegdb/enumRows.cpp
+	$(COMPILE.cc) -O2 -I${HOME}/FileGDB_API/include -I../../filegdb -I../../filegdb/linux -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/enumRows.o ../../filegdb/enumRows.cpp
 
 ${OBJECTDIR}/_ext/61665655/jstring.o: ../../filegdb/jstring.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/61665655
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I../../filegdb/esri_headers/linux -I../../filegdb/esri_headers -I../../filegdb -I../../../rel/jni -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/jstring.o ../../filegdb/jstring.cpp
+	$(COMPILE.cc) -O2 -I${HOME}/FileGDB_API/include -I../../filegdb -I../../filegdb/linux -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/jstring.o ../../filegdb/jstring.cpp
 
 ${OBJECTDIR}/_ext/61665655/row.o: ../../filegdb/row.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/61665655
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I../../filegdb/esri_headers/linux -I../../filegdb/esri_headers -I../../filegdb -I../../../rel/jni -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/row.o ../../filegdb/row.cpp
+	$(COMPILE.cc) -O2 -I${HOME}/FileGDB_API/include -I../../filegdb -I../../filegdb/linux -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/row.o ../../filegdb/row.cpp
 
 ${OBJECTDIR}/_ext/61665655/geodatabase.o: ../../filegdb/geodatabase.cpp 
 	${MKDIR} -p ${OBJECTDIR}/_ext/61665655
 	${RM} $@.d
-	$(COMPILE.cc) -O2 -I../../filegdb/esri_headers/linux -I../../filegdb/esri_headers -I../../filegdb -I../../../rel/jni -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/geodatabase.o ../../filegdb/geodatabase.cpp
+	$(COMPILE.cc) -O2 -I${HOME}/FileGDB_API/include -I../../filegdb -I../../filegdb/linux -fPIC  -MMD -MP -MF $@.d -o ${OBJECTDIR}/_ext/61665655/geodatabase.o ../../filegdb/geodatabase.cpp
 
 # Subprojects
 .build-subprojects:

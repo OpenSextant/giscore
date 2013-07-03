@@ -3,7 +3,7 @@
 #include <iostream>
 #include <string>
 #include <jni.h>
-#include <unordered_map>
+#include <map>
 #include "org_opensextant_giscore_filegdb_Table.h"
 
 using namespace std;
@@ -75,13 +75,13 @@ FieldInfo* getFieldInfo(JNIEnv *env, jobject self, Table *t) {
 	return fieldInfo;
 }
 
-unordered_map<string,FieldType>* getFieldMap(JNIEnv *env, jobject self, Table *t) {
+map<string,FieldType>* getFieldMap(JNIEnv *env, jobject self, Table *t) {
 	menv me(env);
-	unordered_map<string,FieldType> *fieldtype_map = (unordered_map<string,FieldType> *) me.getLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldtype_map");	
+	map<string,FieldType> *fieldtype_map = (map<string,FieldType> *) me.getLongFieldValue(self, "org.opensextant.giscore.filegdb.Table", "fieldtype_map");	
 	wstring fieldName;
 	if (fieldtype_map == 0L) {
 		FieldInfo *info = getFieldInfo(env, self, t);
-		fieldtype_map = new unordered_map<string,FieldType>();
+		fieldtype_map = new map<string,FieldType>();
 		int count;
 		if (info->GetFieldCount(count) == S_OK) {
 			for(int i = 0; i < count; i++) {

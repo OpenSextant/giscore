@@ -14,17 +14,15 @@
 std::wstring convstr::getWstr() {
 	   if (wstr.length() == 0) {
 		   size_t slen = str.length();
-		   size_t max = MB_CUR_MAX;
-		   wchar_t wc[5];
+		   wchar_t wc[1];
 		   const char* istr = str.data();
 		   mbtowc(NULL, NULL, 0); // reset
 		   for(size_t i = 0; i < slen; ) {
 			   const char* seg = &istr[i];
-			   size_t clen = mblen(seg, max);
-			   int r = mbtowc(wc, seg, max);
-			   i += clen;
+			   int r = mbtowc(wc, seg, MB_CUR_MAX);
+			   i += r;
 			   if ( r > 0 ) {
-				   wstr.append(wc,r);
+				   wstr.append(wc,1);
 			   } else if ( r == 0 ) {
 				   break;
 			   }
@@ -35,7 +33,7 @@ std::wstring convstr::getWstr() {
 
 std::string convstr::getStr() {
 	   if (str.length() == 0) {
-		   char buf[5];
+		   char buf[MB_CUR_MAX];
 		   wctomb(NULL, 0L);
 		   size_t len = wstr.length();
 		   for(size_t i = 0; i < len; i++) {

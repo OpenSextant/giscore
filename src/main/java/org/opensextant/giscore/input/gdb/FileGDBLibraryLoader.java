@@ -39,8 +39,11 @@ public class FileGDBLibraryLoader extends LibraryLoader {
 						.getInputArguments().toString()
 						.indexOf("-agentlib:jdwp") > 0;
 		boolean isRelease = "RELEASE".equalsIgnoreCase(prop);
+		if (StringUtils.isBlank(prop)) {
+			prop = "debug";
+		}
 		if (isDebug || isRelease) {
-			loadFromDirectory(StringUtils.capitalize(prop));
+			loadFromDirectory(StringUtils.capitalize(prop.toLowerCase()));
 		} else {
 			super.loadLibrary();
 		}

@@ -4,19 +4,68 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
-      <logicalFolder name="esri_headers"
-                     displayName="esri_headers"
-                     projectFiles="true">
-        <itemPath>../../filegdb/esri_headers/FileGDBAPI.h</itemPath>
-        <itemPath>../../filegdb/esri_headers/FileGDBCore.h</itemPath>
-        <itemPath>../../filegdb/esri_headers/Geodatabase.h</itemPath>
-        <itemPath>../../filegdb/esri_headers/GeodatabaseManagement.h</itemPath>
-        <itemPath>../../filegdb/esri_headers/Raster.h</itemPath>
-        <itemPath>../../filegdb/esri_headers/Row.h</itemPath>
-        <itemPath>../../filegdb/esri_headers/Table.h</itemPath>
-        <itemPath>../../filegdb/esri_headers/Util.h</itemPath>
-        <itemPath>../../filegdb/esri_headers/jni.h</itemPath>
-        <itemPath>../../filegdb/esri_headers/linux/jni_md.h</itemPath>
+      <logicalFolder name="filegdb" displayName="filegdb" projectFiles="true">
+        <logicalFolder name="filegdb" displayName="filegdb" projectFiles="true">
+          <logicalFolder name="java_headers"
+                         displayName="java_headers"
+                         projectFiles="true">
+          </logicalFolder>
+          <logicalFolder name="linux" displayName="linux" projectFiles="true">
+          </logicalFolder>
+          <logicalFolder name="windows" displayName="windows" projectFiles="true">
+            <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/windows/jni.h</itemPath>
+            <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/windows/jni_md.h</itemPath>
+          </logicalFolder>
+          <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/Stdafx.h</itemPath>
+          <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/convstr.h</itemPath>
+          <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/jstring.h</itemPath>
+          <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/menv.h</itemPath>
+          <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/org_opensextant_giscore_filegdb_EnumRows.h</itemPath>
+          <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/org_opensextant_giscore_filegdb_Geodatabase.h</itemPath>
+          <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/org_opensextant_giscore_filegdb_Row.h</itemPath>
+          <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/org_opensextant_giscore_filegdb_Table.h</itemPath>
+          <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/org_opensextant_giscore_filegdb_Table_FieldInfo.h</itemPath>
+          <itemPath>/home/drand/Documents/workspace/giscore/filegdb/filegdb/resource.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="linux" displayName="linux" projectFiles="true">
+          <logicalFolder name="filegdb" displayName="filegdb" projectFiles="true">
+            <logicalFolder name="dist" displayName="dist" projectFiles="true">
+              <logicalFolder name="Debug" displayName="Debug" projectFiles="true">
+                <logicalFolder name="GNU-Linux-x86"
+                               displayName="GNU-Linux-x86"
+                               projectFiles="true">
+                </logicalFolder>
+              </logicalFolder>
+              <logicalFolder name="Release" displayName="Release" projectFiles="true">
+                <logicalFolder name="GNU-Linux-x86"
+                               displayName="GNU-Linux-x86"
+                               projectFiles="true">
+                </logicalFolder>
+              </logicalFolder>
+            </logicalFolder>
+            <itemPath>/home/drand/Documents/workspace/giscore/filegdb/linux/filegdb/Makefile</itemPath>
+          </logicalFolder>
+        </logicalFolder>
+        <logicalFolder name="win64" displayName="win64" projectFiles="true">
+          <logicalFolder name="filegdb" displayName="filegdb" projectFiles="true">
+            <logicalFolder name="x64" displayName="x64" projectFiles="true">
+              <logicalFolder name="Debug" displayName="Debug" projectFiles="true">
+              </logicalFolder>
+              <logicalFolder name="Release" displayName="Release" projectFiles="true">
+              </logicalFolder>
+            </logicalFolder>
+            <itemPath>/home/drand/Documents/workspace/giscore/filegdb/win64/filegdb/filegdb.sdf</itemPath>
+            <itemPath>/home/drand/Documents/workspace/giscore/filegdb/win64/filegdb/filegdb.sln</itemPath>
+            <itemPath>/home/drand/Documents/workspace/giscore/filegdb/win64/filegdb/filegdb.suo</itemPath>
+            <itemPath>/home/drand/Documents/workspace/giscore/filegdb/win64/filegdb/filegdb.v11.suo</itemPath>
+            <itemPath>/home/drand/Documents/workspace/giscore/filegdb/win64/filegdb/filegdb_library.sdf</itemPath>
+            <itemPath>/home/drand/Documents/workspace/giscore/filegdb/win64/filegdb/filegdb_library.vcxproj</itemPath>
+            <itemPath>/home/drand/Documents/workspace/giscore/filegdb/win64/filegdb/filegdb_library.vcxproj.filters</itemPath>
+            <itemPath>/home/drand/Documents/workspace/giscore/filegdb/win64/filegdb/filegdb_library.vcxproj.user</itemPath>
+          </logicalFolder>
+          <itemPath>/home/drand/Documents/workspace/giscore/filegdb/win64/README</itemPath>
+        </logicalFolder>
+        <itemPath>/home/drand/Documents/workspace/giscore/filegdb/README.txt</itemPath>
       </logicalFolder>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -27,19 +76,24 @@
                    displayName="Source Files"
                    projectFiles="true">
       <logicalFolder name="filegdb" displayName="filegdb" projectFiles="true">
+        <logicalFolder name="java_headers"
+                       displayName="java_headers"
+                       projectFiles="true">
+        </logicalFolder>
+        <logicalFolder name="linux" displayName="linux" projectFiles="true">
+          <itemPath>../../filegdb/linux/jni.h</itemPath>
+          <itemPath>../../filegdb/linux/jni_md.h</itemPath>
+        </logicalFolder>
+        <logicalFolder name="windows" displayName="windows" projectFiles="true">
+        </logicalFolder>
         <itemPath>../../filegdb/ReadMe.txt</itemPath>
-        <itemPath>../../filegdb/Stdafx.h</itemPath>
         <itemPath>../../filegdb/app.ico</itemPath>
         <itemPath>../../filegdb/app.rc</itemPath>
-        <itemPath>convstr.cpp</itemPath>
-        <itemPath>../../filegdb/convstr.h</itemPath>
+        <itemPath>../../filegdb/convstr.cpp</itemPath>
         <itemPath>../../filegdb/enumRows.cpp</itemPath>
         <itemPath>../../filegdb/geodatabase.cpp</itemPath>
         <itemPath>../../filegdb/jstring.cpp</itemPath>
-        <itemPath>../../filegdb/jstring.h</itemPath>
         <itemPath>../../filegdb/menv.cpp</itemPath>
-        <itemPath>../../filegdb/menv.h</itemPath>
-        <itemPath>../../filegdb/resource.h</itemPath>
         <itemPath>../../filegdb/row.cpp</itemPath>
         <itemPath>../../filegdb/stdafx.cpp</itemPath>
         <itemPath>../../filegdb/table.cpp</itemPath>
@@ -56,37 +110,36 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>Makefile</itemPath>
     </logicalFolder>
+    <itemPath>../../../../../../FileGDB_API/lib/libFileGDBAPI.so</itemPath>
+    <itemPath>../../../../../../FileGDB_API/lib/libfgdbunixrtl.so</itemPath>
   </logicalFolder>
   <sourceRootList>
-    <Elem>.</Elem>
-    <Elem>../../filegdb</Elem>
+    <Elem>/home/drand/Documents/workspace/giscore/filegdb</Elem>
+    <Elem>/home/drand/FileGDB_API/include</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>
     <conf name="Debug" type="2">
       <toolsSet>
         <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
-        <compilerSet>default</compilerSet>
+        <compilerSet>GNU|GNU</compilerSet>
       </toolsSet>
       <compileType>
         <ccTool>
           <incDir>
-            <pElem>../../filegdb/esri_headers/linux</pElem>
-            <pElem>../../filegdb/esri_headers</pElem>
+            <pElem>${HOME}/FileGDB_API/include</pElem>
             <pElem>../../filegdb</pElem>
-            <pElem>../../../rel/jni</pElem>
+            <pElem>../../filegdb/linux</pElem>
           </incDir>
-          <commandLine>-std=gnu++0x</commandLine>
         </ccTool>
         <linkerTool>
           <linkerAddLib>
-            <pElem>../../filegdb/esri_linux64_dependencies</pElem>
+            <pElem>${HOME}/FileGDB_API/lib</pElem>
           </linkerAddLib>
           <linkerLibItems>
             <linkerLibLibItem>fgdbunixrtl</linkerLibLibItem>
             <linkerLibLibItem>FileGDBAPI</linkerLibLibItem>
           </linkerLibItems>
-          <commandLine>-Wl -export-dynamic</commandLine>
         </linkerTool>
       </compileType>
     </conf>
@@ -102,12 +155,10 @@
         <ccTool>
           <developmentMode>5</developmentMode>
           <incDir>
-            <pElem>../../filegdb/esri_headers/linux</pElem>
-            <pElem>../../filegdb/esri_headers</pElem>
+            <pElem>${HOME}/FileGDB_API/include</pElem>
             <pElem>../../filegdb</pElem>
-            <pElem>../../../rel/jni</pElem>
+            <pElem>../../filegdb/linux</pElem>
           </incDir>
-          <commandLine>-std=gnu++0x</commandLine>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
@@ -117,13 +168,12 @@
         </asmTool>
         <linkerTool>
           <linkerAddLib>
-            <pElem>../../filegdb/esri_linux64_dependencies</pElem>
+            <pElem>${HOME}/FileGDB_API/lib</pElem>
           </linkerAddLib>
           <linkerLibItems>
             <linkerLibLibItem>fgdbunixrtl</linkerLibLibItem>
             <linkerLibLibItem>FileGDBAPI</linkerLibLibItem>
           </linkerLibItems>
-          <commandLine>-Wl -export-dynamic</commandLine>
         </linkerTool>
       </compileType>
     </conf>

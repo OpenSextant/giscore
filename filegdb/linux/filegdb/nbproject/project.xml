@@ -10,8 +10,8 @@
             <sourceEncoding>UTF-8</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>
-                <sourceRootElem>.</sourceRootElem>
-                <sourceRootElem>../../filegdb</sourceRootElem>
+                <sourceRootElem>/home/drand/Documents/workspace/giscore/filegdb</sourceRootElem>
+                <sourceRootElem>/home/drand/FileGDB_API/include</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>
