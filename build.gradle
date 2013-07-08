@@ -158,17 +158,34 @@ dependencies {
 	jni files(dir: "build/libs", include: 'giscore-' + version + '.jar')
 }
 
+uploadArchives.doFirst() {
+	if (hasProperty('sonatypeUsername')) {
+		ext.pubUser = sonatypeUsername
+	} else {
+		throw new Exception('sonatypeUsername and sonatypePassword must be defined when uploading ')
+	}
+	if (hasProperty('sonatypePassword')) {
+		ext.pubPass = sonatypePassword
+	} else {
+		throw new Exception('sonatypeUsername and sonatypePassword must be defined when uploading ')
+	}
+}
+
 uploadArchives {
+	// See above in the doFirst, these must be defined to actually publish
+	ext.pubUser = ''
+	ext.pubPass = ''
+		
 	repositories {
 		mavenDeployer {
 			beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
  
 			repository(url: oss_staging) {
-				authentication(userName: sonatypeUsername, password: sonatypePassword)
+				authentication(userName: pubUser, password: pubPass)
 			}
 			
 			snapshotRepository(url: oss_snapshot) {
-				authentication(userName: sonatypeUsername, password: sonatypePassword)
+				authentication(userName: pubUser, password: pubPass)
 			}
 			
 			pom.project {
