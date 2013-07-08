@@ -2,9 +2,12 @@
 #include "convstr.h"
 #if defined __APPLE__ || defined __unix__
 #include <stdlib.h>
+#define MB_CUR_MAX_SIZE MB_CUR_MAX
 #else
 // Because Microsoft defines this badly, not sure why it is screwed up
 #define MB_CUR_MAX ___mb_cur_max_func()
+// Silly big, but MS should really define MB_CUR_MAX as a constant
+#define MB_CUR_MAX_SIZE 20
 #include <mbstring.h>
 #endif
 #include <jni.h>
@@ -33,7 +36,7 @@ std::wstring convstr::getWstr() {
 
 std::string convstr::getStr() {
 	   if (str.length() == 0) {
-		   char buf[MB_CUR_MAX];
+		   char buf[MB_CUR_MAX_SIZE];
 		   wctomb(NULL, 0L);
 		   size_t len = wstr.length();
 		   for(size_t i = 0; i < len; i++) {

@@ -4,7 +4,7 @@ apply plugin: "maven"
 apply plugin: "signing"
 
 group = "org.opensextant"
-version = "2.0.0-SNAPSHOT"
+version = "2.0.1"
 
 // Publishing locations
 def oss_snapshot = "https://oss.sonatype.org/content/repositories/snapshots"
@@ -34,6 +34,46 @@ eclipse {
 		plusConfigurations += configurations.test
 	}
 }
+
+ext.IOUtils = Class.forName("org.apache.commons.io.IOUtils")
+def packageLibrary(name, libname, packagen, osn, extn, pre = "") {
+	def libdir = new java.io.File(sourceSets.main.output.classesDir, packagen)
+	libdir = new java.io.File(libdir, osn)
+	task "$name" << {
+		// Make output directory
+		if (! libdir.exists()) libdir.mkdirs()
+		// Create and write property file
+		def propfile = new java.io.File(libdir, "filegdb.properties")
+		def taskname = "$name"
+		def lib = "$libname"
+		def packageName = "$packagen"
+		def os = "$osn"
+		def extension = "$extn"
+		def prefix = "$pre"
+		def props = new java.util.Properties()
+		def writer = new java.io.FileWriter(propfile)
+		def libfile = prefix + "filegdb." + extension
+		def formatter = new java.text.SimpleDateFormat("yyyy/MM/dd")
+		props.setProperty("modified", formatter.format(new java.util.Date()))
+		props.setProperty("filename", libfile)
+		props.store(writer, "Automatically generated file, do not edit")
+		IOUtils.closeQuietly(writer)
+		// Copy library into place
+		def fromis = new java.io.FileInputStream(new File(projectDir, lib))
+		def toos = new java.io.FileOutputStream(new java.io.File(libdir, libfile))		
+		IOUtils.copy(fromis, toos)
+		IOUtils.closeQuietly(fromis)
+		IOUtils.closeQuietly(toos)
+	}
+}
+
+packageLibrary("packageWin64", "filegdb/win64/filegdb/x64/Release/filegdb.dll",
+	"org/opensextant/giscore/filegdb", "win64", "dll")
+
+packageLibrary("packageLinux", "filegdb/linux/filegdb/dist/Release/GNU-Linux-x86/libfilegdb.so",
+	"org/opensextant/giscore/filegdb", "linux64", "so", "lib")
+
+jar.dependsOn compileJava, packageWin64, packageLinux
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
 	classifier = 'javadoc'

@@ -13,6 +13,5 @@ the classpath for each test run.
 
 Library notes:
 * No current built Apple library
-* No current built Linux library (soon)
 * The current built Windows library is a debug version as the release version would not run
 without having severe errors.
