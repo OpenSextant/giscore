@@ -10,6 +10,9 @@ version = "2.0.1"
 def oss_snapshot = "https://oss.sonatype.org/content/repositories/snapshots"
 def oss_staging = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
 
+// Define var to avoid deref problem, will redefined normally
+ext.publish = [user: null, password: null]
+
 repositories {
 	[ mavenCentral(), maven { url oss_snapshot } ]
 }
@@ -158,34 +161,28 @@ dependencies {
 	jni files(dir: "build/libs", include: 'giscore-' + version + '.jar')
 }
 
-uploadArchives.doFirst() {
-	if (hasProperty('sonatypeUsername')) {
-		ext.pubUser = sonatypeUsername
-	} else {
-		throw new Exception('sonatypeUsername and sonatypePassword must be defined when uploading ')
-	}
-	if (hasProperty('sonatypePassword')) {
-		ext.pubPass = sonatypePassword
-	} else {
+uploadArchives.doFirst {
+	// Setup publishing variables
+	ext.publish = [user: (project.hasProperty('sonatypeUsername') ? sonatypeUsername : null),
+		password: (project.hasProperty('sonatypePassword') ? sonatypePassword : null)]
+	
+	// Check presets
+	if (publish.user == null || publish.password == null) {
 		throw new Exception('sonatypeUsername and sonatypePassword must be defined when uploading ')
 	}
 }
 
 uploadArchives {
-	// See above in the doFirst, these must be defined to actually publish
-	ext.pubUser = ''
-	ext.pubPass = ''
-		
 	repositories {
 		mavenDeployer {
 			beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
  
 			repository(url: oss_staging) {
-				authentication(userName: pubUser, password: pubPass)
+				authentication(userName: publish.user, password: publish.password)
 			}
 			
 			snapshotRepository(url: oss_snapshot) {
-				authentication(userName: pubUser, password: pubPass)
+				authentication(userName: publish.user, password: publish.password)
 			}
 			
 			pom.project {
