@@ -1183,6 +1183,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 // use circle hints to output as LinearRing, Polygon, etc.
                 Circle.HintType hint = circle.getHint();
                 Geodetic2DCircle c = new Geodetic2DCircle(circle.getCenter(), circle.getRadius());
+                final boolean is3D = circle.is3D();
+                double elev = is3D ? ((Geodetic3DPoint)circle.getCenter()).getElevation() : 0;
                 // store preference for # points in generated circles in System.property (default=32)
                 // note: number points is one more than count since first and last points must be the same
                 StringBuilder b = new StringBuilder();
@@ -1190,8 +1192,12 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 for (Geodetic2DPoint point : c.boundary(numberCirclePoints)) {
                     if (firstPt == null) firstPt = point;
                     handleSingleCoordinate(b, point);
+                    if (is3D) b.append(',').append(formatDouble(elev));
                 }
-                if (firstPt != null && numberCirclePoints > 2) handleSingleCoordinate(b, firstPt);
+                if (firstPt != null && numberCirclePoints > 2) {
+                    handleSingleCoordinate(b, firstPt);
+                    if (is3D) b.append(',').append(formatDouble(elev));
+                }
                 String coordinates = b.toString();
                 if (hint == Circle.HintType.LINE || numberCirclePoints == 2) {
                     writer.writeStartElement(LINE_STRING);
