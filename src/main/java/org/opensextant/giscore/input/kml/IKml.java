@@ -103,6 +103,7 @@ public interface IKml {
 	static final String PHONE_NUMBER = "phoneNumber";
 	static final String PHOTO_OVERLAY = "PhotoOverlay"; // new in KML 2.2
 	static final String PLACEMARK = "Placemark";
+	static final String PLACENAME = "placename";
 	static final String POINT = "Point";
 	static final String POLYGON = "Polygon";
 	static final String POLY_STYLE = "PolyStyle";

@@ -813,6 +813,16 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         try {
             String tag = feature.getType();
             writer.writeStartElement(tag);
+
+            // Add in placename as the PLACEMARK name
+            if(PLACEMARK.equals(tag)) {
+              for (SimpleField field : feature.getFields()) {
+                Object value = feature.getData(field);
+                if(PLACENAME.equals(field.getName())) 
+                  handleSimpleElement(NAME, value);
+              }
+            }
+
             List<Element> elements = handleAttributes(feature, tag);
             if (feature instanceof Overlay) {
                 handleOverlay((Overlay) feature);
