@@ -125,6 +125,22 @@ public class Point extends GeometryBase {
     }
 
 	/**
+	 * This constructor takes a Longitude, Latitude, and an elevation value in meters.
+	 *
+	 * @param lat       the latitude in degrees, never null
+	 * @param lon       the longitude in degrees, never null
+	 * @param elevation elevation in meters from the assumed reference point
+	 *                  if elevation is null then Geodetic2DPoint is created otherwise
+	 *                  Geodetic3DPoint is created with the elvation.
+	 * @throws NullPointerException if lat or lon are null
+	 */
+	public Point(Latitude lat, Longitude lon, Double elevation) {
+		this(elevation == null
+				? new Geodetic2DPoint(lon, lat)
+				: new Geodetic3DPoint(lon, lat, elevation));
+	}
+
+	/**
 	 * The Constructor takes a GeoPoint that is either a {@code Geodetic2DPoint} or a
 	 * {@code Geodetic3DPoint} and initializes a Geometry object for it.
      * <P>

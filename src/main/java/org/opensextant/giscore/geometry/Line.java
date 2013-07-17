@@ -96,27 +96,32 @@ public class Line extends GeometryBase implements Iterable<Point> {
             throw new IllegalArgumentException("box must be non-null");
 		boolean pointCheck = box.getEastLon().equals(box.getWestLon());
 		final List<Point> points;
+		final Double alt;
+		if (box instanceof Geodetic3DBounds) {
+			Geodetic3DBounds bbox = (Geodetic3DBounds) box;
+			alt = bbox.maxElev;
+		} else alt = null;
 		if (box.getNorthLat().equals(box.getSouthLat())) {
 			if (pointCheck) {
 				throw new IllegalArgumentException("Line must contain at least 2 Points");
 			}
 			log.debug("Bounding box is a line - north and south latitude are the same."); // east-west line
 			points = new ArrayList<Point>(2);
-			points.add(new Point(box.getSouthLat(), box.getWestLon()));
-			points.add(new Point(box.getSouthLat(), box.getEastLon()));
+			points.add(new Point(box.getSouthLat(), box.getWestLon(), alt));
+			points.add(new Point(box.getSouthLat(), box.getEastLon(), alt));
 		} else if (pointCheck) {
 			log.debug("Bounding box is a line - east and west longitude are the same."); // north-south line
 			points = new ArrayList<Point>(2);
-			points.add(new Point(box.getNorthLat(), box.getWestLon()));
-			points.add(new Point(box.getSouthLat(), box.getWestLon()));
+			points.add(new Point(box.getNorthLat(), box.getWestLon(), alt));
+			points.add(new Point(box.getSouthLat(), box.getWestLon(), alt));
 		} else {
 			points = new ArrayList<Point>(5);
 			// add points in clock-wise direction starting at the south-west corner
-			final Point firstPt = new Point(box.getSouthLat(), box.getWestLon());
+			final Point firstPt = new Point(box.getSouthLat(), box.getWestLon(), alt);
 			points.add(firstPt);
-			points.add(new Point(box.getNorthLat(), box.getWestLon()));
-			points.add(new Point(box.getNorthLat(), box.getEastLon()));
-			points.add(new Point(box.getSouthLat(), box.getEastLon()));
+			points.add(new Point(box.getNorthLat(), box.getWestLon(), alt));
+			points.add(new Point(box.getNorthLat(), box.getEastLon(), alt));
+			points.add(new Point(box.getSouthLat(), box.getEastLon(), alt));
 			points.add(firstPt);
 		}
         init(points);
