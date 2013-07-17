@@ -76,7 +76,7 @@ public class TestGISBase {
     public static SimpleDateFormat FMT = new SimpleDateFormat("dd-HH-mm-ss");
 
     protected String getTestDir() {
-    	String name = "test/" + getClass().getPackage().getName().replaceAll("\\.", "/");
+    	String name = "src/test/java/" + getClass().getPackage().getName().replaceAll("\\.", "/");
     	int last = name.lastIndexOf("/test");
     	return name.substring(0, last+5);
     }
