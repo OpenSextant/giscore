@@ -5,6 +5,7 @@ apply plugin: "signing"
 
 group = "org.opensextant"
 version = "2.0.1"
+sourceCompatibility = 1.6
 
 // Publishing locations
 def oss_snapshot = "https://oss.sonatype.org/content/repositories/snapshots"
