@@ -471,6 +471,15 @@ public final class UrlRef implements java.io.Serializable {
 		return kmzRelPath;
 	}
 
+	public int hashCode() {
+		return uri.hashCode();
+	}
+
+	public boolean equals(Object other) {
+		if (other == null) return false;
+		if (this == other) return true;
+		return uri.equals(other);
+	}
 	/**
 	 * Normalize and convert internal "URI" form to portable URL form.
 	 * For example <code>kmzfile:/C:/giscore/data/kml/content.kmz?file=kml/hi.kml</code>
