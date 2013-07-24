@@ -232,6 +232,7 @@ public class TestKmlReader extends TestCase implements IKml {
                 return false; // explicitly force import to abort
             }
             public void handleError(URI uri, Exception ex) {
+		//ignore
             }
         });
         List<URI> networkLinks = reader.getNetworkLinks();
@@ -284,6 +285,7 @@ public class TestKmlReader extends TestCase implements IKml {
                 return true;
             }
             public void handleError(URI uri, Exception ex) {
+		//ignore
             }
         });
 		List<URI> networkLinks = reader.getNetworkLinks();
@@ -525,6 +527,38 @@ public class TestKmlReader extends TestCase implements IKml {
 		checkIconStyle(new KmlReader(new File("data/kml/kmz/iconStyle/styled_placemark.kmz")));
 	}
 
+	@Test
+	public void testIgnoreRegions() throws IOException {
+		KmlReader reader = new KmlReader(new File("data/kml/Region/networkLink-regions.kmz"));
+		reader.setIgnoreInactiveRegionNetworkLinks(true);
+		assertTrue(reader.isIgnoreInactiveRegionNetworkLinks());
+		assertEquals(reader.readAll().size(), 8);
+		// NOTE: readAll() calls close() when done
+		assertEquals(reader.getSkipCount(), 0);
+		assertEquals(reader.getNetworkLinks().size(), 5);
+
+		reader = new KmlReader(new File("data/kml/Region/networkLink-regions.kmz"));
+		// define view around San Francisco which intersects all but one region
+		reader.setViewFormat(IKml.BBOX_NORTH, "37.83");
+		reader.setViewFormat(IKml.BBOX_SOUTH, "37.79");
+		reader.setViewFormat(IKml.BBOX_EAST, "-122.45");
+		reader.setViewFormat(IKml.BBOX_WEST, "-122.5");
+		reader.setIgnoreInactiveRegionNetworkLinks(true);
+		assertEquals(reader.readAll().size(), 8);
+		assertEquals(reader.getSkipCount(), 1);
+		assertEquals(reader.getNetworkLinks().size(), 4);
+
+		reader = new KmlReader(new File("data/kml/Region/networkLink-regions.kmz"));
+		// define view outside all regions
+		reader.setIgnoreInactiveRegionNetworkLinks(true);
+		reader.setViewFormat(IKml.BBOX_NORTH, "10");
+		reader.setViewFormat(IKml.BBOX_SOUTH, "-10");
+		reader.setViewFormat(IKml.BBOX_EAST, "10");
+		reader.setViewFormat(IKml.BBOX_WEST, "-10");
+		assertEquals(reader.readAll().size(), 8);
+		assertEquals(reader.getSkipCount(), 5);
+		assertEquals(reader.getNetworkLinks().size(), 0);
+	}
 	private void checkIconStyle(KmlReader reader) throws Exception {
 		List<IGISObject> features = new ArrayList<IGISObject>();
 		try {

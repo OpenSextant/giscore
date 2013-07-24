@@ -90,6 +90,9 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 
     private boolean rewriteStyleUrls;
 
+	private boolean ignoreInactiveRegionNetworkLinks;
+
+	private int skipCount;
     /**
 	 * Creates a <code>KmlStreamReader</code> and attempts to read
 	 * all GISObjects from a stream created from the <code>URL</code>.
@@ -292,6 +295,12 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		} else if (gisObj instanceof NetworkLink) {
 			// handle NetworkLink href
 			NetworkLink link = (NetworkLink) gisObj;
+			TaggedMap region = link.getRegion();
+			// check/ignore networklinks if region not in view
+			if (ignoreInactiveRegionNetworkLinks && checkRegion(region)) {
+				log.debug("ignore out of region NetworkLink");
+				skipCount++;
+			} else {
             checkStyleUrl(parent, link);
 			// adjust URL with httpQuery and viewFormat parameters
 			// if parent is compressed and URL is relative then rewrite URL
@@ -306,6 +315,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 			} else
 				log.debug("NetworkLink href is empty or missing");
 			// Note: NetworkLinks can have inline Styles & StyleMaps
+			}
 		} else if (gisObj instanceof Overlay) {
 			// handle GroundOverlay, ScreenOverlay or PhotoOverlay href
 			Overlay o = (Overlay) gisObj;
@@ -603,6 +613,29 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
     }
 
     /**
+	 * Flag to ignore networkLinks if the Region is inactive/out-of-view
+	 * as determined by checking view with BBOX values in viewFormatLabel.
+	 * @see #setViewFormat(String, String)
+	 */
+	public boolean isIgnoreInactiveRegionNetworkLinks() {
+		return ignoreInactiveRegionNetworkLinks;
+	}
+
+	public void setIgnoreInactiveRegionNetworkLinks(boolean value) {
+		this.ignoreInactiveRegionNetworkLinks = value;
+	}
+
+	/**
+	 * Returns number of features skipped including NetworkLinks that had regions
+	 * that were out of view. This is only applicable if {@link #isIgnoreInactiveRegionNetworkLinks}
+	 * returns a true value.
+	 * @return number of skipped features
+	 */
+	public int getSkipCount() {
+		return skipCount;
+	}
+
+	/**
      * ImportEventHandler interface used for callers to implement handling
      * of GISObjects encountered as NetworkLinks are parsed. If the callback
      * handleEvent() method returns false then recursion is aborted no more
@@ -620,6 +653,9 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
      *       {
      *            // do something with gisObj
      *            return true;
+     *       }
+     *       public void handleError(URI uri, Exception e) {
+     *           // optionally do something with exceptions
      *       }
      *    });</pre>
      *
