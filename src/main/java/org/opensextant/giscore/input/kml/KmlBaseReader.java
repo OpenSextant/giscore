@@ -27,6 +27,11 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.opensextant.giscore.events.NetworkLink;
 import org.opensextant.giscore.events.TaggedMap;
+import org.opensextant.geodesy.Angle;
+import org.opensextant.geodesy.Geodetic2DBounds;
+import org.opensextant.geodesy.Geodetic2DPoint;
+import org.opensextant.geodesy.Latitude;
+import org.opensextant.geodesy.Longitude;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,6 +58,7 @@ public abstract class KmlBaseReader implements IKml {
 
 	protected URL baseUrl;
 
+	private Geodetic2DBounds viewBounds;
 	/**
 	 * holder for names of supported httpQuery fields as of 2/19/09 in Google Earth 5.0.11337.1968 with KML 2.2
 	 * httpQuery names unchanged as of April 2011 with Google Earth 6.0.2.2074.
@@ -111,6 +117,70 @@ public abstract class KmlBaseReader implements IKml {
 		return compressed;
 	}
 
+	/**
+	 * Return true only if Region is out of view otherwise false
+	 * @param region
+	 * @return
+	 */
+	public boolean checkRegion(TaggedMap region) {
+		/*
+		<Region id="ID">
+		<LatLonAltBox>
+		 <north></north>                            <!-- required; kml:angle90 -->
+		 <south></south>                            <!-- required; kml:angle90 -->
+		 <east></east>                              <!-- required; kml:angle180 -->
+		 <west></west>                              <!-- required; kml:angle180 -->
+		 <minAltitude>0</minAltitude>               <!-- float -->
+		 <maxAltitude>0</maxAltitude>               <!-- float -->
+		 <altitudeMode>clampToGround</altitudeMode>
+		</LatLonAltBox>
+		*/
+		if (region == null || region.isEmpty())
+			return false;
+		Double north = region.getDoubleValue(NORTH);
+		if (north == null) return false;
+		Double south = region.getDoubleValue(SOUTH);
+		if (south == null) return false;
+		Double east = region.getDoubleValue(EAST);
+		if (east == null) return false;
+		Double west = region.getDoubleValue(WEST);
+		if (west == null) return false;
+		// invalidate bogus regions
+		// valid constraints:
+		// 1. kml:north > kml:south; lat range: +/- 90
+		// 2. kml:east > kml:west;   lon range: +/- 180
+		if (north <= south || east <= west) return false;
+		if (viewBounds == null) {
+			double viewNorth = getViewFormatValue(IKml.BBOX_NORTH, 90);
+			double viewSouth = getViewFormatValue(IKml.BBOX_SOUTH, -90);
+			double viewEast = getViewFormatValue(IKml.BBOX_EAST, 180);
+			double viewWest = getViewFormatValue(IKml.BBOX_WEST, -180);
+			viewBounds = new Geodetic2DBounds(
+				new Geodetic2DPoint(new Longitude(viewEast, Angle.DEGREES),
+						new Latitude(viewNorth, Angle.DEGREES)),	// north-east
+				new Geodetic2DPoint(new Longitude(viewWest, Angle.DEGREES),
+						new Latitude(viewSouth, Angle.DEGREES)));	// south-west
+		}
+		Geodetic2DBounds bbox = new Geodetic2DBounds(
+				new Geodetic2DPoint(new Longitude(east, Angle.DEGREES),
+						new Latitude(north, Angle.DEGREES)),	// north-east
+				new Geodetic2DPoint(new Longitude(west, Angle.DEGREES),
+						new Latitude(south, Angle.DEGREES)));	// south-west
+
+		return !viewBounds.intersects(bbox);
+	}
+
+	private double getViewFormatValue(String label, double defaultValue) {
+		String value = viewFormatLabels.get(label);
+		if (value != null) {
+			try {
+				return Double.parseDouble(value);
+			} catch(NumberFormatException nfe) {
+				log.debug(label, nfe);
+			}
+		}
+		return defaultValue;
+	}
 	/***
 	 * Adjust Link href URL if httpQuery and/or viewFormat parameters are defined.
 	 * Rewrites URL href if needed and returns URL as URI. Stores back href value in links
@@ -536,6 +606,10 @@ public abstract class KmlBaseReader implements IKml {
 		if (StringUtils.isBlank(value))
 			throw new IllegalArgumentException("invalid property value: " + value);
 		viewFormatLabels.put(property, value);
+		if (property.startsWith("bbox")) {
+			// if setting bbox property then must recalculate the viewBounds
+			viewBounds = null;
+		}
 	}
 
     /**
