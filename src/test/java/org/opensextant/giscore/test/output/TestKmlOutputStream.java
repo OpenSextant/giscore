@@ -506,6 +506,32 @@ public class TestKmlOutputStream extends TestGISBase {
 	}
 
 	@Test
+	public void createWithUnclosedContainers() throws IOException, XMLStreamException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		kos.write(new ContainerStart()); // Document
+		kos.write(new ContainerStart("Folder")); // Folder
+		kos.write(new Feature());
+		// omit writing Container Ends.
+		// underlying XML handling should close open elements to generate a well-formed XML document.
+		kos.close();
+
+		// make sure KML is parsable
+		//System.err.println("XXX: " + bos.toString("UTF-8"));
+		//assertTrue(bos.toString().contains("</Folder>"));
+		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+		//IGISObject obj;
+		int count = 0;
+		// objects: Document, ContainerStart, ContainerStart, Feature, ContainerEnd, ContainerEnd
+		while(kis.read() != null) {
+			//System.err.println("XXX: " + obj.getClass().getName());
+			count++;
+		}
+		kis.close();
+		assertEquals(6, count);
+	}
+
+	@Test
 	public void createGxTrack() throws IOException, XMLStreamException {
 		/*
 		Generate:
