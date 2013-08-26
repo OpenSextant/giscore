@@ -495,11 +495,22 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 				}
                 InputStream is = null;
 				try {
-                    UrlRef ref = new UrlRef(uri);
-                    // NOTE: if network link is a KML file with a .kmz extension or vice versa then it may fail.
-                    // Determination also uses the HTTP mime type for the resource.
-                    is = ref.getInputStream(proxy);
-                    if (is == null) continue;
+					UrlRef ref = new UrlRef(uri);
+					// NOTE: if network link is a KML file with a .kmz extension or vice versa then it may fail.
+					// Determination also uses the HTTP mime type for the resource.
+					try {
+						is = ref.getInputStream(proxy);
+						if (is == null) continue;
+					} catch(FileNotFoundException nfe) {
+						// If href does not exist in KMZ then try with respect to parent context.
+						// Check if target exists outside of KMZ file in same context (file system or URL root).
+						// e.g. http://kml-samples.googlecode.com/svn/trunk/kml/kmz/networklink/hier.kmz
+						final URL tempUrl = new URL(ref.getURL(), ref.getKmzRelPath());
+						//log.info("XXX: tryURL\n\t{}", tempUrl); // debug
+						is = UrlRef.getInputStream(tempUrl, proxy);
+						if (is == null) continue;
+						ref = new UrlRef(tempUrl, null);
+					}
                     int oldSize = networkLinks.size();
                     int oldFeatSize = linkedFeatures.size();
                     KmlInputStream kis = new KmlInputStream(is);

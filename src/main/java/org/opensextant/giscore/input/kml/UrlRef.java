@@ -182,6 +182,8 @@ public final class UrlRef implements java.io.Serializable {
 		// cleanup bad paths if needed
 		if (kmz_file_path.startsWith("/"))
 			kmz_file_path = kmz_file_path.substring(1);
+		if (kmz_file_path.startsWith("./"))
+			kmz_file_path = kmz_file_path.substring(2);
 		while (kmz_file_path.startsWith("../"))
 			kmz_file_path = kmz_file_path.substring(3);
 		if (kmz_file_path.length() == 0)
@@ -251,7 +253,6 @@ public final class UrlRef implements java.io.Serializable {
 	 *
 	 * @return an input stream for reading from the resource represented by the <code>UrlRef</code>.
 	 * @throws FileNotFoundException if referenced link was not found in the parent KMZ resource
-	 *                               nor outside the KMZ at the same base context.
 	 * @throws IOException		   if an I/O error occurs
 	 */
 	public InputStream getInputStream() throws IOException {
@@ -267,7 +268,6 @@ public final class UrlRef implements java.io.Serializable {
 	 *              <code>null</code> should be specified.
 	 * @return an input stream for reading from the resource represented by the <code>UrlRef</code>.
 	 * @throws FileNotFoundException if referenced link was not found in the parent KMZ resource
-	 *                               nor outside the KMZ at the same base context.
 	 * @throws IOException		   if an I/O error occurs
 	 */
 	public InputStream getInputStream(Proxy proxy) throws IOException {
@@ -305,11 +305,13 @@ public final class UrlRef implements java.io.Serializable {
 		// If href does not exist in KMZ then try with respect to parent context.
 		// check if target exists outside of KMZ file in same context (file system or URL root).
 		// e.g. http://kml-samples.googlecode.com/svn/trunk/kml/kmz/networklink/hier.kmz
+		/*
 		try {
 			return getInputStream(new URL(url, kmzRelPath), proxy);
 		} catch (IOException ioe) {
 			// attempt to find target at same context of parent failed
 		}
+		*/
 		throw new FileNotFoundException("Relative URL not found in KMZ: " + kmzPath);
 	}
 
