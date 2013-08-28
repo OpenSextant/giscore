@@ -19,3 +19,4 @@ hs_err*.mdmp
 .gdb
 .gradle
 .settings
+/.nb-gradle/profiles/private/
