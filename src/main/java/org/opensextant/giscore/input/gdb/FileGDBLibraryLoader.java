@@ -26,9 +26,9 @@ import org.apache.commons.lang.StringUtils;
 import org.opensextant.giscore.utils.LibraryLoader;
 
 public class FileGDBLibraryLoader extends LibraryLoader {
-	
+
 	public FileGDBLibraryLoader() throws IOException {
-		super(Package.getPackage("org.opensextant.giscore.filegdb"), "filegdb");
+		super(Package.getPackage("org.opensextant.giscore.filegdb"), "filegdb", true);
 	}
 
 	/* This method causes the debug library to be run while debugging. */
