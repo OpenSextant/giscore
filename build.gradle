@@ -6,7 +6,8 @@ apply plugin: "maven"
 apply plugin: "signing"
 
 group = "org.opensextant"
-version = "2.0.1"
+version = "2.0.2-SNAPSHOT"
+ext.isReleaseVersion = !version.endsWith('-SNAPSHOT')
 sourceCompatibility = 1.6
 
 
@@ -55,6 +56,7 @@ def packageLibrary(name, libname, packagen, osn, extn, pre = "") {
 	def lib = "$libname"
 	def inputFile = new File(projectDir, lib)
 	task "$name" {
+		description = "Packages the native code for $osn"
 		// Inputs and outputs
 		inputs.file inputFile
 		outputs.dir libdir
@@ -92,7 +94,9 @@ packageLibrary("packageWin64", "filegdb/win64/filegdb/x64/Release/filegdb.dll",
 packageLibrary("packageLinux", "filegdb/linux/filegdb/dist/Release/GNU-Linux-x86/libfilegdb.so",
 	"org/opensextant/giscore/filegdb", "linux64", "so", "lib")
 
-jar.dependsOn compileJava, packageWin64, packageLinux
+test.dependsOn packageWin64, packageLinux
+
+jar.dependsOn packageWin64, packageLinux
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
 	classifier = 'javadoc'
@@ -159,6 +163,7 @@ artifacts {
 }
 
 signing {
+	required isReleaseVersion
 	sign configurations.archives
 }
 
@@ -170,7 +175,7 @@ dependencies {
 	compile group: 'commons-io', name: 'commons-io', version: '1.4'
 	// compile group: 'stax', name: 'stax-api-osgi', version: '1.0.1'	
 	compile group: 'org.slf4j', name: 'slf4j-api', version: slf4j_version
-	compile group: 'org.slf4j', name: 'slf4j-simple', version: slf4j_version 
+	testRuntime group: 'org.slf4j', name: 'slf4j-simple', version: slf4j_version
 	compile group: 'log4j', name: "log4j", version: '[1.2.0,1.3)'
 	testCompile group: 'findbugs', name: 'annotations', version: "1.0.0"
 	testCompile('junit:junit:4.10')
