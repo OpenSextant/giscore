@@ -56,6 +56,7 @@ def packageLibrary(name, libname, packagen, osn, extn, pre = "") {
 	def lib = "$libname"
 	def inputFile = new File(projectDir, lib)
 	task "$name" {
+		description = "Packages the native code for $osn"
 		// Inputs and outputs
 		inputs.file inputFile
 		outputs.dir libdir
@@ -93,7 +94,9 @@ packageLibrary("packageWin64", "filegdb/win64/filegdb/x64/Release/filegdb.dll",
 packageLibrary("packageLinux", "filegdb/linux/filegdb/dist/Release/GNU-Linux-x86/libfilegdb.so",
 	"org/opensextant/giscore/filegdb", "linux64", "so", "lib")
 
-jar.dependsOn compileJava, packageWin64, packageLinux
+test.dependsOn packageWin64, packageLinux
+
+jar.dependsOn packageWin64, packageLinux
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
 	classifier = 'javadoc'
