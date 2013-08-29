@@ -19,6 +19,7 @@
 package org.opensextant.giscore.utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,6 +30,8 @@ import java.util.Properties;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Given a basic package where the libraries are stored, save the library
@@ -58,13 +61,16 @@ import org.apache.commons.lang.StringUtils;
  *
  */
 public class LibraryLoader {
+	private static final Logger log = LoggerFactory.getLogger(LibraryLoader.class);
+
 	private Properties props;
 	private String libPackage;
 	private SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd");
 	protected String osarch;
 	private String libname;
 	private Package parent;
-	
+	private boolean tryLibraryPath;
+
 	/**
 	 * Convert os.name from system property to something useful
 	 * @return
@@ -108,11 +114,12 @@ public class LibraryLoader {
 	 * @param libname
 	 * @throws IOException
 	 */
-	public LibraryLoader(Package parent, String libname) throws IOException {
+	public LibraryLoader(Package parent, String libname, boolean tryLibraryPath) throws IOException {
 		osarch = osName() + osArch();
 		libPackage = packagePath(parent) + "/" + osarch;
 		this.libname = libname;
 		this.parent = parent;
+		this.tryLibraryPath = tryLibraryPath;
 	}
 	
 	/**
@@ -121,8 +128,24 @@ public class LibraryLoader {
 	 * @throws ParseException
 	 */
 	public void loadLibrary() throws IOException, ParseException {
+		if(tryLibraryPath) {
+			try {
+				System.loadLibrary(libname);
+				return;
+			} catch(UnsatisfiedLinkError e) {
+				String message = "Could not find library " + libname + " on java.library.path.  Falling back to unpacking the built-in version.";
+				if(log.isDebugEnabled()) {
+					log.debug(message, e);
+				} else {
+					log.warn(message);
+				}
+			}
+		}
 		String propertiespath = libPackage + "/" + libname + ".properties";
 		InputStream is = getClass().getResourceAsStream(propertiespath);
+		if(is == null) {
+			throw new FileNotFoundException("Could not find the bundled native code properties file: " + propertiespath + " your platform: " + osarch + " may not be supported.");
+		}
 		props = new Properties();
 		props.load(is);
 		is.close();
@@ -156,6 +179,9 @@ public class LibraryLoader {
 		if (! skip) {
 			String libpath = libPackage + "/" + filename;
 			is = getClass().getResourceAsStream(libpath);
+			if(is == null) {
+				throw new IllegalStateException("Could not find the bundled native library file: " + libpath);
+			}
 			FileOutputStream os = new FileOutputStream(libFile);
 			IOUtils.copy(is, os);
 			is.close();
