@@ -19,6 +19,7 @@
 package org.opensextant.giscore.utils;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -142,6 +143,9 @@ public class LibraryLoader {
 		}
 		String propertiespath = libPackage + "/" + libname + ".properties";
 		InputStream is = getClass().getResourceAsStream(propertiespath);
+		if(is == null) {
+			throw new FileNotFoundException("Could not find the bundled native code properties file: " + propertiespath + " your platform: " + osarch + " may not be supported.");
+		}
 		props = new Properties();
 		props.load(is);
 		is.close();
@@ -175,6 +179,9 @@ public class LibraryLoader {
 		if (! skip) {
 			String libpath = libPackage + "/" + filename;
 			is = getClass().getResourceAsStream(libpath);
+			if(is == null) {
+				throw new IllegalStateException("Could not find the bundled native library file: " + libpath);
+			}
 			FileOutputStream os = new FileOutputStream(libFile);
 			IOUtils.copy(is, os);
 			is.close();
