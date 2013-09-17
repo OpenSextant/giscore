@@ -78,6 +78,14 @@ package org.opensextant.giscore.input.kml;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+
 import java.io.BufferedInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -89,6 +97,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.X509Certificate;
 import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
@@ -159,6 +170,10 @@ public final class UrlRef implements java.io.Serializable {
 	 * not be interpreted as a relative path either.
 	 */
 	private static final Pattern absUrlPattern = Pattern.compile("^[a-zA-Z]+:/");
+
+	private static SSLSocketFactory sslFactory;
+
+	private static volatile boolean httpsInit;
 
 	/**
 	 * Convert URL to internalized "kmz" URI with absolute URL of parent KMZ and the kmz
@@ -425,13 +440,23 @@ public final class UrlRef implements java.io.Serializable {
 		//  Accept: application/vnd.google-earth.kml+xml, application/vnd.google-earth.kmz, image/*, */*
 		//  Cache-Control: no-cache
 		//  User-Agent: GoogleEarth/4.3.7284.3916(Windows;Microsoft Windows XP (Service Pack 3);en-US;kml:2.2;client:Free;type:default)
+		//
+		//  Accept-Charset: iso-8859-1,*,utf-8
+		//  Accept-Encoding: gzip,deflate
+		//  Accept-Language: en-us,en,*
 		if (conn instanceof HttpURLConnection) {
 			HttpURLConnection httpConn = (HttpURLConnection) conn;
 			httpConn.setRequestProperty("Accept", ACCEPT_STRING);
 			httpConn.setRequestProperty("User-Agent", USER_AGENT);
-			//  Accept-Charset: iso-8859-1,*,utf-8
-			//  Accept-Encoding: gzip,deflate
-			//  Accept-Language: en-us,en,*
+			if (httpConn instanceof HttpsURLConnection) {
+				HttpsURLConnection conn1 = (HttpsURLConnection) httpConn;
+				conn1.setHostnameVerifier(new HostnameVerifier() {
+					public boolean verify(String hostname, SSLSession session) {
+						return true;
+					}
+				});
+				setDefaultSSLSocketFactory(conn1);
+			}
 		}
 
 		// Connect to get the response headers
@@ -1374,4 +1399,42 @@ public final class UrlRef implements java.io.Serializable {
 		return false;
 	}
 
+	/**
+	 * Allow HTTPS to URLs with self-signed certificates, etc.
+	 * @param conn
+	 */
+	private static void setDefaultSSLSocketFactory(HttpsURLConnection conn) {
+		if (!httpsInit) {
+			httpsInit = true; // only initialize once
+			try {
+				SSLContext sc = SSLContext.getInstance("SSL");
+
+				// Create a trust manager that does not validate certificate chains
+				TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+					public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+						return null;
+					}
+
+					public void checkClientTrusted(X509Certificate[] certs, String authType) {
+					}
+
+					public void checkServerTrusted(X509Certificate[] certs, String authType) {
+					}
+				}
+				};
+
+				sc.init(null, trustAllCerts, new java.security.SecureRandom());
+				UrlRef.sslFactory = sc.getSocketFactory();
+				log.trace("XXX: initialize SSLSocketFactory");
+			} catch (NoSuchAlgorithmException e) {
+				log.debug("", e);
+			} catch (KeyManagementException e) {
+				log.debug("", e);
+			}
+		}
+		if (sslFactory != null) {
+			// Install the all-trusting trust manager
+			conn.setSSLSocketFactory(sslFactory);
+		}
+	}
 }
