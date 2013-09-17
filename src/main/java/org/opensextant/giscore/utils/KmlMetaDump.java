@@ -1604,7 +1604,7 @@ public class KmlMetaDump implements IKml {
 
 		for (String arg : sources) {
 			try {
-				if (arg.startsWith("http:") || arg.startsWith("file:")) {
+				if (arg.startsWith("http:") || arg.startsWith("https:") || arg.startsWith("file:")) {
 					URL url = new URL(arg);
 					app.checkSource(url);
 				} else {
