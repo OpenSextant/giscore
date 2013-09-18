@@ -24,20 +24,55 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.io.IOUtils;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.opensextant.giscore.input.kml.UrlRef;
+import org.opensextant.giscore.test.utils.SslTestServer;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * @author Jason Mathews, MITRE Corp.
  * Created: Mar 23, 2009 4:17:15 PM
  */
-public class TestUrlRef extends TestCase {
+public class TestUrlRef {
+
+	private static SslTestServer server;
+
+	@BeforeClass
+	public static void oneTimeSetUp() throws IOException {
+		try {
+			server = new SslTestServer(new File("data"), "/");
+			server.start();
+			// System.out.println("start http server: " + server.isStarted());
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@AfterClass
+	public static void oneTimeTearDown() {
+		if (server != null) {
+			try {
+				server.stop();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			server = null;
+		}
+	}
 
 	/**
 	 * Test UrlRef with normal non-KMZ URLs
 	 */
+	@Test
 	public void testSimpleURL() {
         try {
 			// uri=file:/C:/projects/giscore/data/kml/Placemark/placemark.kml
@@ -68,6 +103,7 @@ public class TestUrlRef extends TestCase {
 	/**
 	 * Test UrlRef with KMZ resources for links to entries inside the KMZ
 	 */
+	@Test
 	public void testKmzURL() {
 		InputStream is = null;
 		try {
@@ -117,20 +153,18 @@ public class TestUrlRef extends TestCase {
 	/**
 	 * Test UrlRef with relative URI
 	 */
-	public void testRelativeURI() throws URISyntaxException {
+	@Test(expected = MalformedURLException.class)
+	public void testRelativeURI() throws URISyntaxException, MalformedURLException {
 		URI uri = new URI("images/overlay.png");
-		try {
-			new UrlRef(uri);
-			fail("Method should fail with MalformedURLException");
-		} catch (MalformedURLException e) {
-			// expected. URI must be absolute
-		}
+		new UrlRef(uri);
+		// expect MalformedURLException: URI must be absolute
 	}
 
 	/**
 	 * Test UrlRef with KMZ resources for links that don't exist
 	 */
-	public void testKmzBadHref() throws URISyntaxException, MalformedURLException {
+	@Test(expected = FileNotFoundException.class)
+	public void testKmzBadHref() throws URISyntaxException, IOException {
 		File file = new File("data/kml/kmz/dir/content.kmz");
 		if (!file.exists()) fail("file not found: " + file);
 		URL url = file.toURI().toURL();
@@ -138,16 +172,12 @@ public class TestUrlRef extends TestCase {
 		InputStream is = null;
 		try {
 			is = ref.getInputStream();
-			fail("Method should fail with FileNotFoundException");
-		} catch (FileNotFoundException e) {
-			// this should fail and get here
-		} catch (IOException e) {
-			fail("Expected to throw FileNotFoundException but threw IOException instead");
 		} finally {
 			IOUtils.closeQuietly(is);
 		}
 	}
 
+	@Test
 	public void testDynamicURL() {
         try {
             URL url = new URL("http://localhost:8081/genxml.php?year=2008");
@@ -176,4 +206,34 @@ public class TestUrlRef extends TestCase {
         }
     }
 
+	/**
+	 * Test UrlRef with Https URL
+	 */
+	@Test
+	public void testUrlRefHttps() throws IOException, URISyntaxException {
+
+		URL url = getHttpsUrl("kml/kmz/dir/content.kmz");
+		if (url == null) {
+			System.err.println("test testUrlRefHttps skipped");
+			return; // skip test
+		}
+
+		//System.out.println("testUrlRefHttps");
+		//System.out.println("url=" + url);
+		UrlRef ref = new UrlRef(url, "kml/hi.kml");
+		//System.out.println("urlRef=" + ref);
+		String kml = IOUtils.toString(ref.getInputStream());
+		//System.out.println("urlRef=" + kml);
+		assertTrue(kml.contains("<Placemark>"));
+	}
+
+	private static URL getHttpsUrl(String file) throws MalformedURLException {
+		if (server == null || !server.isStarted()) return null;
+
+		int port = server.getPort();
+		if (port <= 0) return null;
+		return new URL(String.format("https://localhost:%d/%s", port, file));
+	}
+
 }
+
