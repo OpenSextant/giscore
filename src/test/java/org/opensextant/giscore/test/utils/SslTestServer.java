@@ -54,7 +54,7 @@ public class SslTestServer extends Server {
 		connector.setKeystore(keystoreUrl.getFile());
 		// System.out.println("storeUrl=" + keystoreUrl);
 		connector.setTruststore(connector.getKeystore());
-		connector.setKeyPassword("test");
+		connector.setKeyPassword("test123");
 		connector.setTrustPassword("test123");
 		return connector;
 	}
