@@ -2,6 +2,7 @@ bin
 build
 rel
 lib
+.idea/
 .classpath
 /testOutput
 /filegdb/linux/filegdb/nbproject/private/
