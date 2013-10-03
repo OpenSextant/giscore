@@ -63,11 +63,14 @@ public class FileGDBLibraryLoader extends LibraryLoader {
 				File libpath = new File("filegdb/linux/filegdb/dist/" +
 						dir + "/GNU-Linux-x86/libfilegdb.so");
 				System.load(libpath.getAbsolutePath());
+			} else if ("mac64".equals(osarch)) {
+				File libpath = new File("filegdb/osx/build/" +
+						dir + "/libfilegdb.dylib");
+				System.load(libpath.getAbsolutePath());
 			} else {
 				throw new RuntimeException("Architecture " + osarch + " not supported for debugger until you configure this method");
 			}
 		} catch(UnsatisfiedLinkError e) {
-			System.err.println(e.toString());
 			e.printStackTrace(System.err);
 		}
 	}

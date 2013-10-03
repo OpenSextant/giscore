@@ -93,9 +93,12 @@ packageLibrary("packageWin64", "filegdb/win64/filegdb/x64/Release/filegdb.dll",
 packageLibrary("packageLinux", "filegdb/linux/filegdb/dist/Release/GNU-Linux-x86/libfilegdb.so",
 	"org/opensextant/giscore/filegdb", "linux64", "so", "lib")
 
-test.dependsOn packageWin64, packageLinux
+packageLibrary("packageMacOS", "filegdb/osx/build/Release/libfilegdb.dylib",
+	"org/opensextant/giscore/filegdb", "mac64", "dylib", "lib")
 
-jar.dependsOn packageWin64, packageLinux
+test.dependsOn packageWin64, packageLinux, packageMacOS
+
+jar.dependsOn packageWin64, packageLinux, packageMacOS
 
 task javadocJar(type: Jar, dependsOn: javadoc) {
 	classifier = 'javadoc'
