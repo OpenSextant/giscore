@@ -29,13 +29,12 @@ systemProp.https.proxyPassword=
 systemProp.https.nonProxyHosts=*.example.org|localhost
 `
 
-The build is currently not finalized as this has just been pushed to GitHub and is still
-basically set up for our internal publishing.   
-
 ### Versions and Packages ###
 
 Note that for the public release the version was bumped to 2.0.0 and the java package
 is now org.opensextant.giscore
+
+The current public release is 2.0.1
 
 ## Other Information of note ##
 
