@@ -93,7 +93,7 @@ packageLibrary("packageWin64", "filegdb/win64/filegdb/x64/Release/filegdb.dll",
 packageLibrary("packageLinux", "filegdb/linux/filegdb/dist/Release/GNU-Linux-x86/libfilegdb.so",
 	"org/opensextant/giscore/filegdb", "linux64", "so", "lib")
 
-packageLibrary("packageMacOS", "filegdb/osx/build/Release/libfilegdb.dylib",
+packageLibrary("packageMacOS", "filegdb/osx/filegdb/x64/Release/libfilegdb.dylib",
 	"org/opensextant/giscore/filegdb", "mac64", "dylib", "lib")
 
 test.dependsOn packageWin64, packageLinux, packageMacOS
