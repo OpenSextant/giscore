@@ -14,23 +14,30 @@
  ***************************************************************************************/
 package org.opensextant.giscore.test.output;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URI;
 import java.util.List;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import java.util.zip.ZipInputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opensextant.giscore.DocumentType;
 import org.opensextant.giscore.events.DocumentStart;
+import org.opensextant.giscore.events.Feature;
 import org.opensextant.giscore.events.GroundOverlay;
 import org.opensextant.giscore.events.IGISObject;
 import org.opensextant.giscore.events.NetworkLink;
 import org.opensextant.giscore.events.TaggedMap;
 import org.opensextant.giscore.input.kml.IKml;
 import org.opensextant.giscore.input.kml.KmlReader;
+import org.opensextant.giscore.output.XmlOutputStreamBase;
 import org.opensextant.giscore.output.kml.KmlOutputStream;
 import org.opensextant.giscore.output.kml.KmlWriter;
 import org.opensextant.giscore.output.kml.KmzOutputStream;
@@ -42,6 +49,34 @@ import org.opensextant.giscore.output.kml.KmzOutputStream;
  * @author jgibson
  */
 public class TestKmzOutputStream {
+
+	@Test
+	public void test_Xml_Encoding_Kmz() throws Exception {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmzOutputStream kmzos = new KmzOutputStream(bos, XmlOutputStreamBase.ISO_8859_1);
+		kmzos.write(new Feature());
+		kmzos.close();
+
+		/*
+		expected output:
+
+		<?xml version="1.0" encoding="ISO-8859-1"?>
+		<kml xmlns="http://www.opengis.net/kml/2.2"><Placemark></Placemark>
+		</kml>
+		 */
+
+		ZipInputStream zis = new ZipInputStream(new ByteArrayInputStream(bos.toByteArray()));
+		ZipEntry entry;
+		String content = null;
+		while ((entry = zis.getNextEntry()) != null) {
+			if ("doc.kml".equals(entry.getName())) {
+				content = IOUtils.toString(zis);
+				break;
+			}
+		}
+		Assert.assertNotNull(content);
+		Assert.assertTrue(content.contains("encoding=\"ISO-8859-1\""));
+	}
 
 	@Test
 	public void test_NetworkLink_Kmz() throws Exception {
@@ -112,7 +147,7 @@ public class TestKmzOutputStream {
 		} finally {
 			if (zf != null) zf.close();
 			// delete temp file
-			if (temp != null && temp.exists()) temp.delete();
+			if (temp != null && temp.exists() && !temp.delete()) temp.deleteOnExit();
 		}
 	}
 }
