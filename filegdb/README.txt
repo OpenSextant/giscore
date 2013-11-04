@@ -10,8 +10,3 @@ A second mechanism is defining the environment property FILEGDB to have the valu
 DEBUG or RELEASE. This will cause the respective library to get loaded for the appropriate
 OS that you're running under and avoid the need to build and place the giscore jar on 
 the classpath for each test run.
-
-Library notes:
-* No current built Apple library
-* The current built Windows library is a debug version as the release version would not run
-without having severe errors.
