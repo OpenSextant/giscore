@@ -34,7 +34,7 @@ systemProp.https.nonProxyHosts=*.example.org|localhost
 Note that for the public release the version was bumped to 2.0.0 and the java package
 is now org.opensextant.giscore
 
-The current public release is 2.0.1
+The current public release is 2.0.2
 
 ## Other Information of note ##
 
