@@ -4,17 +4,13 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.SocketAddress;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
-
-import junit.framework.TestCase;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
@@ -31,11 +27,16 @@ import org.opensextant.giscore.input.kml.KmlReader;
 import org.opensextant.giscore.input.kml.UrlRef;
 import org.opensextant.giscore.test.output.TestKmlOutputStream;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
 /**
  * @author Jason Mathews, MITRE Corp.
  * Date: Mar 30, 2009 1:12:51 PM
  */
-public class TestKmlReader extends TestCase implements IKml {
+public class TestKmlReader implements IKml {
 
 	/**
      * Test loading KMZ file with network link containing embedded KML
@@ -98,35 +99,6 @@ public class TestKmlReader extends TestCase implements IKml {
 		assertEquals(2, networkLinks.size());
 	}
 
-    @Test
-	public void testUrlNetworkLink() throws IOException {
-		// test NetworkLink that contains viewFormat + httpQuery elements which get populated in URL
-		// via KmlBaseReader.getLinkHref().
-        // Note: this test must use a non-file URL otherwise the viewFormat/httpQuery are not appended
-		URL url;
-		InputStream is;
-        try {
-			url = new URL("http://jason-stage.mitre.org:8080/kmlWeb/youAreHere.gsp");
-			is = UrlRef.getInputStream(url);
-        } catch(Exception e) {
-            // host/service not available - skip test
-			System.err.println("WARN: kmlWeb service not available: skip test");
-            return;
-		}
-		KmlReader reader = new KmlReader(is, false, url, null);
-		// networkLink URL encoded as http://xxx/youAreHere.gsp?clientVersion=5.2.1.1588&kmlVersion=2.2&clientName=Google+Earth&lang=en&BBOX=0,0,0,0&CAMERA=0,0,0&LookatHeading=0&LookatTilt=0&LookAt=0,0,0&Fov=0,0&width=0&height=0&terrain=0
-        List<IGISObject> features = reader.readAll(); // implicit close
-        //System.out.println("features=" + features);
-        assertFalse(features.isEmpty());
-        List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
-        //System.out.println("XXX: linkedFeatures=" + linkedFeatures);
-        assertFalse(linkedFeatures.isEmpty());
-		List<URI> networkLinks = reader.getNetworkLinks();
-        // System.out.println("links=" + networkLinks);
-        assertEquals(1, networkLinks.size());
-		//assertEquals(2, linkedFeatures.size());
-    }
-
     /**
      * Test loading compressed byte stream for KMZ via InputStream
      *
@@ -134,17 +106,8 @@ public class TestKmlReader extends TestCase implements IKml {
      */
 	@Test
 	public void testKmzUrl() throws IOException {
-		URL url;
-		InputStream is;
-        try {
-			url = new URL("http://jason-stage.mitre.org/kml/kmz/networklink/hier.kmz");
-			is = UrlRef.getInputStream(url);
-        } catch(Exception e) {
-            // host/service not available - skip test
-			System.err.println("WARN: kmlWeb service not available: use local file for test");
-            url = new File("data/kml/kmz/networklink/hier.kmz").toURI().toURL();
-            is = UrlRef.getInputStream(url);
-		}
+		URL url = new File("data/kml/kmz/networklink/hier.kmz").toURI().toURL();
+		InputStream is = UrlRef.getInputStream(url);
 		KmlReader reader = new KmlReader(is, true, url, null);
 		List<IGISObject> features = reader.readAll(); // implicit close
 		assertFalse(features.isEmpty());
@@ -155,24 +118,36 @@ public class TestKmlReader extends TestCase implements IKml {
         assertEquals(4, linkedFeatures.size());
 	}
 
+	/**
+	 * Test loading compressed byte stream for KMZ with NonProxy Proxy via InputStream
+	 *
+	 * @throws IOException if an I/O error occurs
+	 */
 	@Test
 	public void testUrlProxy() throws IOException {
-		URL url;
-		InputStream is;
-		Proxy proxy;
-        try {
-			SocketAddress addr = new InetSocketAddress("gatekeeper.mitre.org", 80);
-			proxy = new Proxy(Proxy.Type.HTTP, addr);
-			url = new URL("http://kml-samples.googlecode.com/svn/trunk/kml/Placemark/placemark.kml");
-			is = UrlRef.getInputStream(url, proxy);
-        } catch(Exception e) {
-            // host/service not available - skip test
-			System.err.println("WARN: remote content not accessible: skip test");
-            return;
-		}
-		KmlReader reader = new KmlReader(is, false, url, proxy);
+		/*
+		<kml xmlns="http://www.opengis.net/kml/2.2">
+		 <Document>
+		  <NetworkLink>
+			<Link>
+			  <href>within.kml</href>
+			</Link>
+		  </NetworkLink>
+		  <NetworkLink>
+			<Link>
+			  <href>outside.kml</href>
+			</Link>
+		  </NetworkLink>
+		 </Document>
+		</kml>
+		*/
+		URL url = new File("data/kml/kmz/networklink/hier.kmz").toURI().toURL();
+		InputStream is = UrlRef.getInputStream(url, Proxy.NO_PROXY);
+		KmlReader reader = new KmlReader(is, true, url, Proxy.NO_PROXY);
 		List<IGISObject> features = reader.readAll(); // implicit close
 		assertFalse(features.isEmpty());
+		List<URI> networkLinks = reader.getNetworkLinks();
+		assertEquals(2, networkLinks.size());
 	}
 
     /**
