@@ -8,6 +8,22 @@ high-level overview of the features added in each release.
 This product includes software developed by the JDOM Project (http://www.jdom.org/).
 
 ------------------------------------------------------------------------------
+Release 2.0.2
+
+Changes
+
+- Support was added for FileGDB on the Mac platform
+
+Notes
+
+Please note that on the Windows platform the ESRI library is dependent on the 
+platform redistributable library (also true for Release 2.0.0). We statically link, 
+but ESRI does not. You therefore must grab the redistributable library to use the 
+built dynamic libraries.
+
+As of release 2.0.2 the dependency is on version 110 of the redistributable package.
+
+------------------------------------------------------------------------------
 Release 2.0.0
 
 Changes
