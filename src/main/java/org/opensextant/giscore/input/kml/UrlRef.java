@@ -418,7 +418,7 @@ public final class UrlRef implements java.io.Serializable {
 			// if here then did not find any ZipEntries so can probably assume stream is mis-categorized
 			// and not KMZ so try again as raw KML bytes...
 			conn = getConnection(url, proxy);
-			return new BufferedInputStream(conn.getInputStream());
+			//return new BufferedInputStream(conn.getInputStream());
 		}
 
 		// Else read the raw bytes.
