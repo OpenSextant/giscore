@@ -20,11 +20,13 @@ import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PushbackInputStream;
 import java.net.Proxy;
 import java.net.URI;
 import java.net.URL;
@@ -153,11 +155,7 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 				}
 			}
 			if (iStream == null) {
-				try {
-					zis.close();
-				} catch (IOException ioe) {
-					// ignore
-				}
+				IOUtils.closeQuietly(zis);
 				throw new FileNotFoundException("Failed to find KML content in file: " + file);
 			}
 		} else {
@@ -206,6 +204,66 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 		this.proxy = proxy;
 		compressed = isCompressed || is instanceof ZipInputStream;
 		iStream = is;
+		this.baseUrl = baseUrl;
+	}
+
+	/**
+	 * Create KmlReader using provided InputStream.
+	 *
+	 * @param is  input stream for the kml/kmz content, never <code>null</code>
+	 * @param baseUrl the base URL context from which relative links are resolved
+	 * @param proxy the Proxy through which URL connections
+	 *             will be made. If direct connection is desired,
+	 *             <code>null</code> should be specified.
+	 * @throws IOException if an I/O error occurs
+	 */
+	public KmlReader(InputStream is, URL baseUrl, Proxy proxy) throws IOException {
+		ZipInputStream zis = null;
+		if (is instanceof ZipInputStream) {
+			zis = (ZipInputStream)is;
+		} else {
+			PushbackInputStream pbis = new PushbackInputStream(is, 2);
+			byte[] hdr = new byte[2];
+			if (pbis.read(hdr) < 2) throw new EOFException();
+			pbis.unread(hdr);
+			// KMZ/ZIP source must start with bytes "PK" or 0x504b
+			// expected ZIP header: PK\003\004 (common), PK\005\006 (empty archive), or PK\007\008 (spanned archive)
+			if (hdr[0] == 0x50 && hdr[1] == 0x4b) {
+				// compressed input stream - handle as KMZ source
+				zis = new ZipInputStream(pbis);
+			} else {
+				// source not valid KMZ so treat as ASCII KML source
+				iStream = pbis;
+			}
+		}
+
+		if (zis != null) {
+			ZipEntry entry;
+			while ((entry = zis.getNextEntry()) != null) {
+				// System.out.println("zip entry: " + entry.getName());
+				// simply find first kml file in the archive
+				// see note on KMZ in UrlRef.getInputStream() method for more detail
+				if (entry.getName().toLowerCase().endsWith(".kml")) {
+					iStream = zis;
+					// indicate that the stream is for a KMZ compressed file
+					compressed = true;
+					break;
+				}
+			}
+			if (iStream == null) {
+				IOUtils.closeQuietly(zis);
+				throw new FileNotFoundException("Failed to find KML content in stream");
+			}
+		}
+
+		try {
+			kis = new KmlInputStream(iStream);
+		} catch (IOException e) {
+			IOUtils.closeQuietly(iStream);
+			throw e;
+		}
+
+		this.proxy = proxy;
 		this.baseUrl = baseUrl;
 	}
 

@@ -1,6 +1,8 @@
 package org.opensextant.giscore.test.input;
 
 import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +16,10 @@ import javax.imageio.ImageIO;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
+import org.opensextant.geodesy.Angle;
+import org.opensextant.geodesy.Geodetic2DPoint;
+import org.opensextant.geodesy.Latitude;
+import org.opensextant.geodesy.Longitude;
 import org.opensextant.giscore.events.Feature;
 import org.opensextant.giscore.events.GroundOverlay;
 import org.opensextant.giscore.events.IGISObject;
@@ -25,6 +31,7 @@ import org.opensextant.giscore.geometry.Point;
 import org.opensextant.giscore.input.kml.IKml;
 import org.opensextant.giscore.input.kml.KmlReader;
 import org.opensextant.giscore.input.kml.UrlRef;
+import org.opensextant.giscore.output.kml.KmlOutputStream;
 import org.opensextant.giscore.test.output.TestKmlOutputStream;
 
 import static org.junit.Assert.assertEquals;
@@ -80,6 +87,26 @@ public class TestKmlReader implements IKml {
 		assertEquals(2, linkedFeatures2.size());
 		// NetworkLinked Feature -> DocumentStart + Feature
 		TestKmlOutputStream.checkApproximatelyEquals(ptFeat, linkedFeatures2.get(1));
+	}
+
+	@Test
+	public void testInputStream() throws Exception {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		Feature f = new Feature();
+		f.setName("test");
+		f.setGeometry(new Point(new Geodetic2DPoint(
+				new Longitude(2, Angle.DEGREES),
+				new Latitude(48, Angle.DEGREES))));
+		kos.write(f);
+		kos.close();
+		byte[] bytes = bos.toByteArray();
+		KmlReader reader = new KmlReader(new ByteArrayInputStream(bytes),
+				new URL("http://localhost/test.kml"), null);
+		List<IGISObject> features = reader.readAll(); // implicit close
+		assertFalse(features.isEmpty());
+		assertEquals(2, features.size());
+		assertEquals(f, features.get(1));
 	}
 
 	@Test
@@ -534,6 +561,7 @@ public class TestKmlReader implements IKml {
 		assertEquals(reader.getSkipCount(), 5);
 		assertEquals(reader.getNetworkLinks().size(), 0);
 	}
+
 	private void checkIconStyle(KmlReader reader) throws Exception {
 		List<IGISObject> features = new ArrayList<IGISObject>();
 		try {

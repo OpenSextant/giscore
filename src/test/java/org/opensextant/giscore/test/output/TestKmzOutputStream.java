@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -28,6 +29,10 @@ import java.util.zip.ZipInputStream;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.opensextant.geodesy.Angle;
+import org.opensextant.geodesy.Geodetic2DPoint;
+import org.opensextant.geodesy.Latitude;
+import org.opensextant.geodesy.Longitude;
 import org.opensextant.giscore.DocumentType;
 import org.opensextant.giscore.events.DocumentStart;
 import org.opensextant.giscore.events.Feature;
@@ -35,6 +40,7 @@ import org.opensextant.giscore.events.GroundOverlay;
 import org.opensextant.giscore.events.IGISObject;
 import org.opensextant.giscore.events.NetworkLink;
 import org.opensextant.giscore.events.TaggedMap;
+import org.opensextant.giscore.geometry.Point;
 import org.opensextant.giscore.input.kml.IKml;
 import org.opensextant.giscore.input.kml.KmlReader;
 import org.opensextant.giscore.output.XmlOutputStreamBase;
@@ -150,4 +156,25 @@ public class TestKmzOutputStream {
 			if (temp != null && temp.exists() && !temp.delete()) temp.deleteOnExit();
 		}
 	}
+
+	@Test
+	public void testKmzStream() throws Exception {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmzOutputStream kmzos = new KmzOutputStream(bos);
+		Feature f = new Feature();
+		f.setName("test");
+		f.setGeometry(new Point(new Geodetic2DPoint(
+				new Longitude(2, Angle.DEGREES),
+				new Latitude(48, Angle.DEGREES))));
+		kmzos.write(f);
+		kmzos.close();
+		final byte[] bytes = bos.toByteArray();
+		KmlReader reader = new KmlReader(new ByteArrayInputStream(bytes),
+				new URL("http://localhost/test.kmz"), null);
+		List<IGISObject> features = reader.readAll(); // implicit close
+		Assert.assertFalse(features.isEmpty());
+		Assert.assertEquals(2, features.size());
+		Assert.assertEquals(f, features.get(1));
+	}
+
 }
