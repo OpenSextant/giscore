@@ -208,10 +208,12 @@ public class KmlReader extends KmlBaseReader implements IGISInputStream {
 	}
 
 	/**
-	 * Create KmlReader using provided InputStream.
+	 * Create KmlReader using provided InputStream. Automatically determines
+	 * if source is KMZ or KML stream by checking the content.
 	 *
 	 * @param is  input stream for the kml/kmz content, never <code>null</code>
-	 * @param baseUrl the base URL context from which relative links are resolved
+	 * @param baseUrl the base URL context from which relative links are resolved.
+	 * 				If <code>null</code> then reader will not be able to resolve relative links.
 	 * @param proxy the Proxy through which URL connections
 	 *             will be made. If direct connection is desired,
 	 *             <code>null</code> should be specified.
