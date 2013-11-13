@@ -64,6 +64,10 @@ public final class StringHelper {
 		// but fail to load using mapbojects API so we restrict to the simple set of alpha numerics chars only
 		fieldname = fieldname.trim().replaceAll("[^A-Za-z0-9_]+", "");
 		if (fieldname.length() > 10) {
+			if ("description".equals(fieldname) && attrNames != null && !attrNames.contains("desc")) {
+				// shorten 'description' to 'desc'
+				fieldname = "desc";
+			} else {
 			// quick fix 'Error' suffix -> 'Err'
 			if (fieldname.endsWith("Error")) fieldname = fieldname.substring(0, fieldname.length() - 2);
 			// first try to remove lower-case vowels from the name
@@ -78,8 +82,9 @@ public final class StringHelper {
 				}
 			}
 		}
+		}
 		else {
-			if (fieldname.length() == 0) {
+			if (fieldname.isEmpty()) {
 				// if fieldname entirely composed of non-alphanumeric chars then just use current timestamp
 				fieldname = Long.toHexString(System.currentTimeMillis() & 0xffffffffffL);
 			}
