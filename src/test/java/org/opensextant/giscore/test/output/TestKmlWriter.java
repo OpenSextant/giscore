@@ -52,24 +52,6 @@ public class TestKmlWriter extends TestGISBase {
             System.out.println("Created temp output directory: " + tempKmlDir);
     }
 
-/*
-  @Test
-  public void test_xxx() throws IOException {
-    // add user-kml
-    checkKml(new KmlReader(new java.net.URL("http://jason-stage.mitre.org/kml/kmz/networklink/hier.kmz")), "hier.kmz");
-//	checkKmlFile(new File("C:/temp/kml/BalloonStyle/entity-two-level-photooverlay.kml"));
-//	checkKmlFile(new File("C:/projects/GoogleEarth/kml/PhotoOverlay/ImagePyramid/space-needle.kml"));
-//  checkKmlUrl(new URL("http://jason-stage.mitre.org:8080/kmlWeb/youAreHere.gsp"));
-  }
-
-    private void checkKmlUrl(java.net.URL url) throws IOException {
-        System.out.println("Testing " + url);
-        KmlReader reader = new KmlReader(url);
-        checkKml(reader, url.getFile());
-    }
-
-*/
-
     private void checkDir(File dir) {
 		for (File file : dir.listFiles()) {
 			if (file.isDirectory()) checkDir(file);
