@@ -39,14 +39,16 @@ public class TestKmlRegionBox {
 			url, "-o" + file.toString(), "-f"
 		});
 		assertTrue(file.isFile());
-		assertTrue(file.length() > 0);
-		KmlReader reader = new KmlReader(file);
+		KmlReader reader = null;
 		try {
+			assertTrue(file.length() > 0);
+			reader = new KmlReader(file);
 			List<IGISObject> features = reader.readAll();
 			assertEquals(features.size(), 5);
 			// features = DocumentStart + ContainerStart  + 2 placemarks + ContainerEnd
 		} finally {
-			reader.close();
+			if (file.exists() && !file.delete()) file.deleteOnExit();
+			if (reader != null) reader.close();
 		}
 	}
 
@@ -61,6 +63,7 @@ public class TestKmlRegionBox {
 			    app.checkSource(dir);
 			    assertFalse(app.getRegions().isEmpty());
             } finally {
+				if (file.exists() && !file.delete()) file.deleteOnExit();
                 app.close();
             }
 		}
