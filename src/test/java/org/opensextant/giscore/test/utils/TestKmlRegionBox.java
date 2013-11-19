@@ -31,7 +31,7 @@ public class TestKmlRegionBox {
 	}
 
 	@Test
-	public void testMain() throws IOException {
+	public void testNetworkLinkRegions() throws IOException {
         // test remote NetworkLink with Region definition
         String url = "http://kml-samples.googlecode.com/svn/trunk/kml/Region/d/1030.kml";
 		File file = new File(outDir, "bbox1.kml");
