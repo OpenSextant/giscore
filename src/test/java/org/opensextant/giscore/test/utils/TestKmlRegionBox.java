@@ -33,7 +33,8 @@ public class TestKmlRegionBox {
 	@Test
 	public void testNetworkLinkRegions() throws IOException {
         // test remote NetworkLink with Region definition
-        String url = "http://kml-samples.googlecode.com/svn/trunk/kml/Region/d/1030.kml";
+        // String url = "http://kml-samples.googlecode.com/svn/trunk/kml/Region/d/1030.kml";
+		String url = new File("data/kml/Region/networkLink-regions.kmz").toURI().toURL().toExternalForm();
 		File file = new File(outDir, "bbox1.kml");
         KmlRegionBox.main(new String[]{
 			url, "-o" + file.toString(), "-f"
@@ -44,7 +45,8 @@ public class TestKmlRegionBox {
 			assertTrue(file.length() > 0);
 			reader = new KmlReader(file);
 			List<IGISObject> features = reader.readAll();
-			assertEquals(features.size(), 5);
+			assertEquals(8, features.size()); // local test file
+			// assertEquals(5, features.size()); // external file
 			// features = DocumentStart + ContainerStart  + 2 placemarks + ContainerEnd
 		} finally {
 			if (file.exists() && !file.delete()) file.deleteOnExit();
