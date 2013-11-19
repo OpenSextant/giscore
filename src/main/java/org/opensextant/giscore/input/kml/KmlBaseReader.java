@@ -150,6 +150,7 @@ public abstract class KmlBaseReader implements IKml {
 		// 1. kml:north > kml:south; lat range: +/- 90
 		// 2. kml:east > kml:west;   lon range: +/- 180
 		if (north <= south || east <= west) return false;
+		try {
 		if (viewBounds == null) {
 			double viewNorth = getViewFormatValue(IKml.BBOX_NORTH, 90);
 			double viewSouth = getViewFormatValue(IKml.BBOX_SOUTH, -90);
@@ -168,6 +169,10 @@ public abstract class KmlBaseReader implements IKml {
 						new Latitude(south, Angle.DEGREES)));	// south-west
 
 		return !viewBounds.intersects(bbox);
+		} catch (IllegalArgumentException e ) {
+			log.debug("", e);
+			return false;
+		}
 	}
 
 	private double getViewFormatValue(String label, double defaultValue) {
