@@ -87,6 +87,7 @@ import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -236,7 +237,20 @@ public final class UrlRef implements java.io.Serializable {
 		if (!urlStr.startsWith("kmz")) {
 			// if uri is not absolute then URI.toURL() throws IllegalArgumentException
 			if (!uri.isAbsolute()) throw new MalformedURLException("URI is not absolute");
-			url = uri.toURL();
+			URL urlPart;
+			try {
+				urlPart = uri.toURL();
+			} catch(MalformedURLException e) {
+				// sometimes URLs in KML are expressed as absolute file paths (e.g. C:/path/file.kml)
+				File file = new File(uri.toString());
+				if (file.isFile()) {
+					urlPart = file.toURI().toURL();
+					log.warn("Absolute file path in URL: {}", urlPart);
+				} else {
+					throw e;
+				}
+			}
+			url = urlPart;
 			kmzRelPath = null;
 			return;
 		}
