@@ -84,6 +84,15 @@ public class SafeDateFormat {
 	public String format(Date value) {
 		return getInstance().format(value);
 	}
+
+	/**
+	 * Format the value
+	 * @param value the value
+	 * @return the formatted value, never <code>null</code> or empty
+	 */
+	public String format(long value) {
+		return getInstance().format(value);
+	}
 	
 	/**
 	 * Parse the value
