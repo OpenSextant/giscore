@@ -35,7 +35,7 @@ import org.opensextant.giscore.events.SimpleField.Type;
 import org.opensextant.giscore.input.kml.KmlInputStream;
 import org.opensextant.giscore.output.IGISOutputStream;
 import org.opensextant.giscore.output.StreamVisitorBase;
-import org.opensextant.giscore.utils.SafeDateFormat;
+import org.opensextant.geodesy.SafeDateFormat;
 
 /**
  * A tabular output stream that creates a csv file given a single schema and a

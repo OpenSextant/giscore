@@ -51,7 +51,7 @@ import org.opensextant.giscore.geometry.Point;
 import org.opensextant.giscore.geometry.Polygon;
 import org.opensextant.giscore.input.kml.IKml;
 import org.opensextant.giscore.output.XmlOutputStreamBase;
-import org.opensextant.giscore.utils.SafeDateFormat;
+import org.opensextant.geodesy.SafeDateFormat;
 
 /**
  * Output ATOM 1.0 format with OGC and other extensions to contain information

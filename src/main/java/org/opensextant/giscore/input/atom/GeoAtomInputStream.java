@@ -64,7 +64,7 @@ import org.opensextant.giscore.geometry.Point;
 import org.opensextant.giscore.input.XmlInputStream;
 import org.opensextant.giscore.input.kml.IKml;
 import org.opensextant.giscore.output.atom.IAtomConstants;
-import org.opensextant.giscore.utils.SafeDateFormat;
+import org.opensextant.geodesy.SafeDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -84,7 +84,7 @@ import org.opensextant.giscore.output.XmlOutputStreamBase;
 import org.opensextant.giscore.output.atom.IAtomConstants;
 import org.opensextant.giscore.utils.Args;
 import org.opensextant.giscore.utils.Color;
-import org.opensextant.giscore.utils.SafeDateFormat;
+import org.opensextant.geodesy.SafeDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -30,8 +30,11 @@ import java.util.TimeZone;
  * needed functionality.
  * 
  * @author DRAND
+ * @deprecated (2.0.2) use {@link org.opensextant.geodesy.SafeDateFormat}.
  */
+@Deprecated
 public class SafeDateFormat {
+
 	private final ThreadLocal<SimpleDateFormat> ms_dateFormatter =
 		new ThreadLocal<SimpleDateFormat>();
 	
