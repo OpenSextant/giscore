@@ -184,7 +184,7 @@ import org.opensextant.giscore.output.kml.KmlWriter;
  * Reference OGC 07-134r2 available at http://www.opengeospatial.org/standards/kml
  *
  * @author Jason Mathews, MITRE Corp.
- *         Created: May 20, 2009 12:05:04 PM
+ * Created: May 20, 2009 12:05:04 PM
  */
 public class KmlMetaDump implements IKml {
 
@@ -427,8 +427,9 @@ public class KmlMetaDump implements IKml {
 						// if (writer != null && useStdout) writer.write(gisObj);
 						return true;
 					}
-					public void handleError(URI uri, Exception ex) {
-						// exceptions already logged -- no special handling needed
+					public void handleError(URI uri, Exception e) {
+						if (verbose) e.printStackTrace();
+						// ignore
 					}
 				});
 				// following condition already intercepted via log4j handler
@@ -1643,12 +1644,12 @@ public class KmlMetaDump implements IKml {
 			String className = location.getClassName();
 			// log only KML classes (e.g. org.mitre.giscore.input.kml.KmlInputStream)
 			if (className == null) return;
-			if ("org.mitre.giscore.geometry.LinearRing".equals(className)) {
+			if ("org.opensextant.giscore.geometry.LinearRing".equals(className)) {
 				// LinearRing should start and end with the same point, closing the ring
 				if (msg.startsWith("LinearRing should start"))
 					addTag(":LinearRing should start and end with the same point");
-			} else if (className.startsWith("org.mitre.giscore.events.") ||
-					className.startsWith("org.mitre.giscore.input.kml.")) {
+			} else if (className.startsWith("org.opensextant.giscore.events.") ||
+					className.startsWith("org.opensextant.giscore.input.kml.")) {
 				// TODO: log XmlInputStream errors/warnings if keeping counts
 				// truncate long error message in KmlInputStream.handleGeometry()
 				if (msg.startsWith("comma found instead of whitespace between tuples before"))
@@ -1679,7 +1680,6 @@ public class KmlMetaDump implements IKml {
 				}
 				addTag(":" + msg);
 			}
-			// event.getThrowableStrRep();
 		}
 
 		private String getFormattedMsg(LoggingEvent event) {
