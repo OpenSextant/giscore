@@ -14,12 +14,12 @@ import static org.junit.Assert.assertNull;
 
 /**
  * @author Jason Mathews
- *         Date: 6/1/12 2:44 PM
+ * Date: 6/1/12 2:44 PM
  */
 public class TestDateParser {
 
     private static final TimeZone tz = TimeZone.getTimeZone("UTC");
-    private final SafeDateFormat dateFormat = new SafeDateFormat("yyyyMMdd");
+    private final SafeDateFormat dateFormat = new SafeDateFormat("yyyyMMdd"); // default to UTC time zone
 
     @Test
     public void testParser() {
