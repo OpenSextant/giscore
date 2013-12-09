@@ -65,7 +65,7 @@ public class LibraryLoader {
 
 	private Properties props;
 	private String libPackage;
-	private SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd");
+	private final SimpleDateFormat fmt = new SimpleDateFormat("yyyy/MM/dd");
 	protected String osarch;
 	private String libname;
 	private Package parent;
@@ -151,7 +151,7 @@ public class LibraryLoader {
 		is.close();
 		File tempDir = new File(System.getProperty("java.io.tmpdir"));
 		File libDir = new File(tempDir, "libraryLoader");
-		if (libDir.exists() == false) {
+		if (! libDir.exists()) {
 			if (! libDir.mkdir()) {
 				throw new IOException("Could not create library directory");
 			}
@@ -182,10 +182,14 @@ public class LibraryLoader {
 			if(is == null) {
 				throw new IllegalStateException("Could not find the bundled native library file: " + libpath);
 			}
-			FileOutputStream os = new FileOutputStream(libFile);
-			IOUtils.copy(is, os);
-			is.close();
-			os.close();
+			FileOutputStream os = null;
+			try {
+				os = new FileOutputStream(libFile);
+				IOUtils.copy(is, os);
+			} finally {
+				IOUtils.closeQuietly(is);
+				IOUtils.closeQuietly(os);
+			}
 		}
 		System.load(libFile.getAbsolutePath());
 	}
