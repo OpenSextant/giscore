@@ -160,10 +160,11 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 			} catch (URISyntaxException e) {
 				throw new RuntimeException("Unexpected failure due to URI exception", e);
 			}
-			for(String name : fieldInfo.keySet()) {
-				SimpleField field = new SimpleField(name);
-				FieldInfo info = fieldInfo.get(name);
+			for(Map.Entry<String,FieldInfo> entry : fieldInfo.entrySet()) {
+				final FieldInfo info = entry.getValue();
 				if (info.type == 7) continue; // Geometry
+				final String name = entry.getKey();
+				SimpleField field = new SimpleField(name);
 				field.setLength(info.length);
 				field.setType(convertFieldTypeToSQLType(info.type));
 				field.setRequired(! info.nullable);
