@@ -12,7 +12,6 @@
     </Style>
     <Placemark>
       <name>Absolute Extruded LineString</name>
-      <visibility>0</visibility>
       <description>Transparent green wall with yellow outlines</description>
       <LookAt>
         <longitude>-112.2643334742529</longitude>
