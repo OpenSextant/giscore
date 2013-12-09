@@ -41,8 +41,9 @@ import org.opensextant.giscore.geometry.Polygon;
  * @author DRAND
  */
 public class Row extends GDB {
-	private Map<String, Object> attrs = null;
-	private Geometry geo = null;
+
+	private Map<String, Object> attrs;
+	private Geometry geo;
 	protected Table table;
 	
 	/**
@@ -230,8 +231,9 @@ public class Row extends GDB {
 		attrs = data; // Replace old data
 		Object[] darray = new Object[attrs.size() * 2];
 		int i = 0;
-		for(String field : data.keySet()) {
-			Object val = data.get(field);
+		for(Map.Entry<String,Object>entry : data.entrySet()) {
+			final String field = entry.getKey();
+			final Object val = entry.getValue();
 			darray[i++] = field;
 			if (val == GDB.NULL_OBJECT) {
 				darray[i++] = null;
