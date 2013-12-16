@@ -1,12 +1,12 @@
 import java.security.cert.Extension;
 
-apply plugin: "java"
-apply plugin: "eclipse"
-apply plugin: "maven"
-apply plugin: "signing"
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'maven'
+apply plugin: 'signing'
 
-group = "org.opensextant"
-version = "2.0.2-SNAPSHOT"
+group = 'org.opensextant'
+version = '2.0.2-SNAPSHOT'
 ext.isReleaseVersion = !version.endsWith('-SNAPSHOT')
 sourceCompatibility = 1.6
 
@@ -28,13 +28,19 @@ repositories {
 }
 
 configurations {
-	compile { description = 'These modules are needed at compile time and runtime' }
+	provided
+	compile { compile.extendsFrom provided 
+			  description = 'These modules are needed at compile time and runtime' }
 	runtime { extendsFrom compile
 			  description = 'These modules are only needed at runtime' }
 	test    { extendsFrom runtime
 			  description = 'Include these in addition when testing' }
 	jni		{ extendsFrom compile
 			  description = 'Output of compilation used for creating jni headers' }
+}
+
+sourceSets { 
+	main { compileClasspath += configurations.provided  } 
 }
 
 eclipse {
@@ -178,7 +184,7 @@ dependencies {
 	// compile group: 'stax', name: 'stax-api-osgi', version: '1.0.1'	
 	compile group: 'org.slf4j', name: 'slf4j-api', version: slf4j_version
 	testRuntime group: 'org.slf4j', name: 'slf4j-simple', version: slf4j_version
-	compile group: 'log4j', name: "log4j", version: '[1.2.0,1.3)'
+	provided group: 'log4j', name: 'log4j', version: '[1.2.0,1.3)'
 	testCompile group: 'findbugs', name: 'annotations', version: "1.0.0"
 	testCompile 'org.mortbay.jetty:jetty:6.1.26'	
 	testCompile 'junit:junit:4.10'
