@@ -54,7 +54,7 @@ public class Element implements IGISObject, IDataSerializable, Serializable {
     private transient Namespace namespace;
 
 	@CheckForNull
-	private Set<Namespace> namespaces;
+	private transient Set<Namespace> namespaces;
 
 	/**
 	 * The name of the element

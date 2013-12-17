@@ -53,7 +53,7 @@ public class AtomHeader implements IGISObject, IDataSerializable, Serializable {
 	private AtomLink selflink;
 	@NonNull private List<AtomLink> relatedlinks = new ArrayList<AtomLink>();
 	@NonNull private List<AtomAuthor> authors = new ArrayList<AtomAuthor>();
-	@NonNull private List<Namespace> namespaces = new ArrayList<Namespace>();
+	@NonNull private transient List<Namespace> namespaces = new ArrayList<Namespace>();
 	@NonNull private List<Element> elements = new ArrayList<Element>();
 	private String title;
 	private Date updated;
