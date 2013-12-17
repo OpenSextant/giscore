@@ -146,9 +146,12 @@ public class LibraryLoader {
 		if(is == null) {
 			throw new FileNotFoundException("Could not find the bundled native code properties file: " + propertiespath + " your platform: " + osarch + " may not be supported.");
 		}
-		props = new Properties();
-		props.load(is);
-		is.close();
+		try {
+			props = new Properties();
+			props.load(is);
+		} finally {
+			IOUtils.closeQuietly(is);
+		}
 		File tempDir = new File(System.getProperty("java.io.tmpdir"));
 		File libDir = new File(tempDir, "libraryLoader");
 		if (! libDir.exists()) {
