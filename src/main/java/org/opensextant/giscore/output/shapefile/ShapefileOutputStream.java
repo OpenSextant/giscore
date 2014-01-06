@@ -112,6 +112,7 @@ public class ShapefileOutputStream extends ShapefileBaseClass implements IGISOut
 	 * Standard ctor
 	 * @param stream
 	 * @param args
+         * @throws IllegalArgumentException if args are invalid
 	 */
     public ShapefileOutputStream(OutputStream stream, Object args[]) {
     	if (stream != null) {

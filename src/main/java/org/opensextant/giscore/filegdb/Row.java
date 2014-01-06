@@ -174,7 +174,7 @@ public class Row extends GDB {
 	 * feature class or <code>null</code> if no geometry is set on the row. The
 	 * geometry information is directly derived from the shape buffer returned
 	 * from the row. The information is serialized into a series of java 
-	 * primitives. 
+	 * primitives.
 	 * 
 	 * The first object returned is a Short representing the Shape Type. The
 	 * rest of the objects are dependent on the type.
@@ -183,7 +183,7 @@ public class Row extends GDB {
 	 */
 	 
 	//	  Line:
-	//	  Integer: npoints	
+	//	  Integer: npoints
 	//	  point array
 	//	  
 	//	  PolyLine:
@@ -195,11 +195,11 @@ public class Row extends GDB {
 	//	  Polygon:
 	//	  Integer: npoints
 	//	  Integer: nparts
-	//	  part array 
+	//	  part array
 	//	  point array
 	// 
 	// part arrays are filled with ints
-	//	   
+	//
 	//	  Other shapes are not supported at this time
 	 
 	private native Object[] getGeo();
