@@ -202,7 +202,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * Output the data.
 	 *
-	 * @throws IOException            if an error occurs
+	 * @throws IOException            if an I/O error occurs.
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
@@ -220,7 +220,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 *                 isCanceled()} returns true then processing is aborted and
 	 *                 CancellationException is thrown. If {@code null} then no
 	 *                 cancellation checks are done.
-	 * @throws IOException            if an error occurs
+	 * @throws IOException            if an I/O error occurs.
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
@@ -360,7 +360,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * features are written we reopen the shapefile to output the header.
 	 *
 	 * @param callback
-	 * @throws IOException            if an error occurs
+	 * @throws IOException            if an I/O error occurs.
 	 * @throws IllegalAccessException
 	 * @throws InstantiationException
 	 * @throws ClassNotFoundException
@@ -773,7 +773,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * first point into the list again.
 	 *
 	 * @param geom
-	 * @throws IOException if an error occurs
+	 * @throws IOException            if an I/O error occurs.
 	 */
 	private void putPolyPointsZ(Geometry geom) throws IOException {
 		double zmax = 0.0, zmin = 0.0;
@@ -954,7 +954,6 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	/**
 	 * private helper method to write out X-Y bounding box
 	 *
-	 * @param
 	 * @param bbox
 	 */
 	private void putBBox(Geodetic2DBounds bbox) {
@@ -984,7 +983,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * @param shapeType
 	 * @param is3D
 	 * @param bbox
-	 * @throws IOException if an error occurs
+	 * @throws IOException            if an I/O error occurs.
 	 */
 	private void putShapeHeader(FileChannel channel, int fileLen,
 								int shapeType, boolean is3D, Geodetic2DBounds bbox)
