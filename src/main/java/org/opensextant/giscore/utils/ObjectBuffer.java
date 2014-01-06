@@ -119,7 +119,7 @@ public class ObjectBuffer {
 	/**
 	 * Close any and all streams, delete any temporary file 
 	 * and dispose of buffered data.
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void close() throws IOException {
 		try {
@@ -133,15 +133,17 @@ public class ObjectBuffer {
 			readIndex = 0;
 			storeIndex = 0;
 			if (secondaryStore != null) {
-				secondaryStore.delete();
-                secondaryStore = null;
+				if (secondaryStore.exists() && !secondaryStore.delete()) {
+					secondaryStore.deleteOnExit();
+				}
+				secondaryStore = null;
 			}
 		}
 	}
 	
 	/**
 	 * Close any open output streams but leave the data alone
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void closeOutputStream() throws IOException {
 		if (outputStream != null) {
@@ -155,7 +157,7 @@ public class ObjectBuffer {
 	 * if memory already has used the available storage.
 	 * @param object the non-<code>null</code> value to store in 
 	 * the buffer.
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void write(IDataSerializable object) throws IOException {
 		if (object == null) {
