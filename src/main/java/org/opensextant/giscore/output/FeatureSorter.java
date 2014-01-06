@@ -49,7 +49,7 @@ import org.opensextant.giscore.utils.ObjectBuffer;
  */
 public class FeatureSorter {
 	private static final String OID = "OID";
-	private static SimpleField oid = null;
+	private static SimpleField oid;
 	
 	static {
 		oid = new SimpleField(OID);
@@ -291,24 +291,35 @@ public class FeatureSorter {
 
 	/**
 	 * Close any open streams.
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void close() throws IOException {
 		if (bufferMap != null) {
+			IOException exception = null;
 			for (ObjectBuffer buffer : bufferMap.values()) {
-				buffer.closeOutputStream();
+				try {
+					buffer.closeOutputStream();
+				} catch(IOException ioe) {
+					exception = ioe;
+				}
 			}
+			if (exception != null) throw exception;
 		}
 	}
 
 	/**
 	 * Cleanup deletes the temporary files and resets all the data structures.
-	 * @throws IOException 
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void cleanup() throws IOException {
+		IOException exception = null;
 		if (bufferMap != null) {
 			for (ObjectBuffer buffer : bufferMap.values()) {
-				buffer.close();
+				try {
+					buffer.close();
+				} catch(IOException ioe) {
+					exception = ioe;
+				}
 			}
 		}
 		schemata = new HashMap<URI, Schema>();
@@ -316,5 +327,6 @@ public class FeatureSorter {
 		bufferMap = new HashMap<FeatureKey, ObjectBuffer>();
 		boundingBoxes = new HashMap<FeatureKey, Geodetic2DBounds>();
 		currentKey = null;
+		if (exception != null) throw exception;
 	}
 }
