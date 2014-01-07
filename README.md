@@ -16,7 +16,7 @@ $HOME/.gradle/gradle.properties.
 
 Note FileGDB support is implemented using a thin JNI layer on top of an ESRI C++ File Geodatabase API,
 which if FileGDB is desired then the ESRI library must be downloaded separately.
-Details at https://github.com/OpenSextant/giscore/wiki/FileGDB-Dependencies
+Details can be found here [FileGDB-Dependencies].
 
 ### Configuring a proxy server ###
 
