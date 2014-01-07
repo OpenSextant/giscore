@@ -30,9 +30,10 @@ import java.util.regex.Pattern;
  * @author DRAND
  */
 public class ESRIErrorCodes {
-	private static Pattern regex = null;
-	private static Map<Integer, String> mm = Collections.synchronizedMap(new HashMap<Integer, String>());
-	private static int E_FAIL = 0x80004005;
+
+	private static final Pattern regex;
+	private static final Map<Integer, String> mm = Collections.synchronizedMap(new HashMap<Integer, String>());
+	private static final int E_FAIL = 0x80004005;
 	
 	static {
 		regex = Pattern.compile("message is\\s+([\\p{Alpha}\\s])\\s+error number is\\s+(\\d+)");
@@ -75,7 +76,7 @@ public class ESRIErrorCodes {
 		Matcher m = regex.matcher(message);
 		
 		if (m.find()) {
-			String orig = m.group(1);
+			//String orig = m.group(1);
 			int code = Integer.parseInt(m.group(2));
 			String newm = mm.get(code);
 			if (newm != null) {
@@ -91,6 +92,7 @@ public class ESRIErrorCodes {
 	 * message. The thrown exception will be a RuntimeException.
 	 * 
 	 * @param ex
+	 * @throws RuntimeException
 	 */
 	public void rethrow(Exception ex) {
 		String message = ex.getLocalizedMessage();
