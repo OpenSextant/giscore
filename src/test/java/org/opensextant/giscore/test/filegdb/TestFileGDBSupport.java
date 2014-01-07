@@ -73,10 +73,7 @@ public class TestFileGDBSupport {
 		os.write(schema);
 		
 		os.close();	
-
 	}
-	
-	
 	
 	@Test
 	public void testCreateFeatureAndRow() throws XMLStreamException, IOException, URISyntaxException {
@@ -245,7 +242,7 @@ public class TestFileGDBSupport {
 		os.close();
 	}
 
-	private LinearRing makeRing(int count, double radius, double xoffset, double yoffset) {
+	private static LinearRing makeRing(int count, double radius, double xoffset, double yoffset) {
 		List<Point> pts = new ArrayList<Point>(count);
 		double denominator = count;
 		for(int i = 0; i <= count; i++) {
@@ -262,8 +259,8 @@ public class TestFileGDBSupport {
 		File path = new File("data/gdb/ftest1.gdb");
 		IGISInputStream os = new FileGdbInputStream(path, null);
 		IGISObject ob = os.read();
-		int featurecount = 0;
-		while(ob != null) {		
+		int featureCount = 0;
+		while (ob != null) {
 			assertTrue(ob instanceof Schema);
 			ob = os.read(); // CS
 			assertTrue(ob instanceof ContainerStart);
@@ -272,11 +269,11 @@ public class TestFileGDBSupport {
 			ob = os.read(); // Feature or Row
 			while(ob != null && (ob instanceof Row)) {
 				ob = os.read(); // Feature or Row
-				featurecount++;
+				featureCount++;
 			}
 			assertTrue(ob instanceof ContainerEnd);
-			System.err.println("Close container - " + featurecount + " features");
-			featurecount = 0;
+			System.err.println("Close container - " + featureCount + " features");
+			featureCount = 0;
 			ob = os.read();
 		}
 		os.close();
