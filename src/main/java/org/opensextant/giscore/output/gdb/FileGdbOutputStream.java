@@ -80,7 +80,8 @@ import org.opensextant.giscore.utils.ZipUtils;
  */
 public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		IGISOutputStream, FileGdbConstants {	
-	private ESRIErrorCodes codes = new ESRIErrorCodes();
+
+	private final ESRIErrorCodes codes = new ESRIErrorCodes();
 	private boolean deleteOnClose;
 	private IContainerNameStrategy containerNameStrategy;
 	private OutputStream outputStream;
@@ -93,13 +94,13 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	 * defined schemata as well as implied or inline schemata that are defined
 	 * with their data.
 	 */
-	private Map<URI, Schema> schemata = new HashMap<URI, Schema>();
+	//private Map<URI, Schema> schemata = new HashMap<URI, Schema>();
 	/**
 	 * Maps a set of simple fields, derived from inline data declarations to a
 	 * schema. This is used to gather like features together. THe assumption is
 	 * that we will see consistent elements between features.
 	 */
-	private Map<Set<SimpleField>, Schema> internalSchema = null;
+	//private Map<Set<SimpleField>, Schema> internalSchema;
 	private ArrayList<Object> outputList;
 
 	/**
@@ -127,7 +128,6 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		IContainerNameStrategy containerNameStrategy = (IContainerNameStrategy) argv.get(IContainerNameStrategy.class, 1);
 		
 		if (path == null || !path.getParentFile().exists()) {
-			path = null;
 			deleteOnClose = true;
 			File temp = new File(System.getProperty("java.io.tmpdir"));
 			long t = System.currentTimeMillis();
@@ -161,23 +161,25 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 			}
 			// close geodatabase
 			database.close();
+
+			// zip and stream
+			ZipUtils.outputZipComponents(outputPath.getName(), outputPath,
+					(ZipOutputStream) outputStream);
+
 		} catch(Exception ex) { 
 			codes.rethrow(ex);
-		}
-		
-		// zip and stream
-		ZipUtils.outputZipComponents(outputPath.getName(), outputPath,
-				(ZipOutputStream) outputStream);
+		} finally {
 
-		if (deleteOnClose) {
-			deleteDirContents(outputPath);
-			outputPath.delete();
-		}
-		
-		// Close original outputStream
-		if (outputStream != null) {
-			IOUtils.closeQuietly(outputStream);
-			outputStream = null;
+			if (deleteOnClose && outputPath.exists()) {
+				deleteDirContents(outputPath);
+				if (!outputPath.delete()) outputPath.deleteOnExit();
+			}
+
+			// Close original outputStream
+			if (outputStream != null) {
+				IOUtils.closeQuietly(outputStream);
+				outputStream = null;
+			}
 		}
 	}
 
