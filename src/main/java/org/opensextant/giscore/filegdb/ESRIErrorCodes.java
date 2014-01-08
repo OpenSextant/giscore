@@ -73,14 +73,16 @@ public class ESRIErrorCodes {
 	 * @return
 	 */
 	public String translate(String message) {
-		Matcher m = regex.matcher(message);
-		
-		if (m.find()) {
-			//String orig = m.group(1);
-			int code = Integer.parseInt(m.group(2));
-			String newm = mm.get(code);
-			if (newm != null) {
-				return "problem: " + newm + " [code: " + m.group(2) + "]";
+		if (message != null && !message.isEmpty()) {
+			Matcher m = regex.matcher(message);
+
+			if (m.find()) {
+				//String orig = m.group(1);
+				int code = Integer.parseInt(m.group(2));
+				String newm = mm.get(code);
+				if (newm != null) {
+					return "problem: " + newm + " [code: " + m.group(2) + "]";
+				}
 			}
 		}
 		
@@ -89,15 +91,18 @@ public class ESRIErrorCodes {
 	
 	/**
 	 * Rethrows the passed exception after translating the contained
-	 * message. The thrown exception will be a RuntimeException.
+	 * message. The thrown exception will be a IllegalStateException.
 	 * 
-	 * @param ex
-	 * @throws RuntimeException
+	 * @param ex Original Exception, never null
+	 * @throws java.lang.NullPointerException
+	 * 				if ex argument is null
+	 * @throws java.lang.IllegalStateException
+	 * 				wrapping original ESRI exception
 	 */
 	public void rethrow(Exception ex) {
 		String message = ex.getLocalizedMessage();
 		message = translate(message);
-		throw new RuntimeException(message);
+		throw new IllegalStateException(message, ex);
 	}
 
 }
