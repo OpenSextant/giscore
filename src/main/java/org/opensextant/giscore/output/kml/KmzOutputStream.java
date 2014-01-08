@@ -60,11 +60,11 @@ public class KmzOutputStream implements IGISOutputStream {
     }
     
     /**
-     * Standard ctor
-     * @param stream
+	 * Creates a <code>KmzOutputStream</code> by opening a ZipOutputStream on the output stream.
+	 * @param stream OutputStream to decorate as a KmzOutputStream
      * @param args
-     * @throws XMLStreamException 
-     */
+	 * @throws XMLStreamException if error occurs creating output stream
+	 */
     public KmzOutputStream(final OutputStream stream, Object args[]) throws XMLStreamException {
     	Args argv = new Args(args);
     	String encoding = (String) argv.get(String.class, 0);
@@ -93,8 +93,7 @@ public class KmzOutputStream implements IGISOutputStream {
 	 * @throws IllegalStateException if the underlying stream has already
 	 *  been closed. (By adding additional file entries, for example).
 	 */
-	@Override
-	public void write(IGISObject object) throws IllegalStateException {
+	public void write(IGISObject object) {
 		if(kmlStream == null) {
 			throw new IllegalStateException("GISStream has already been closed, no further GIS output is possible.");
 		}

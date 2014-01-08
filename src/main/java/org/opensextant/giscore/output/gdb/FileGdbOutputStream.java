@@ -118,6 +118,10 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	 * 
 	 * @throws IOException
 	 *             if an IO error occurs
+	 * @throws IllegalArgumentException
+	 * 				if stream argument is null
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API is not present or misconfigured
 	 */
 	public FileGdbOutputStream(OutputStream stream, Object args[]) throws IOException {
 		if (stream == null) {
@@ -147,10 +151,11 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see java.io.Closeable#close()
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void close() throws IOException {
@@ -183,24 +188,22 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.IGISOutputStream#write(org.mitre.giscore.events
-	 * .IGISObject)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void write(IGISObject object) {
 		object.accept(this);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
-	 * .Row)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void visit(Row row) {
@@ -264,13 +267,12 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	//		  Integer: nparts
 	//		  part array (may be empty if nparts == 0)
 	//		  Double long, lat, zelev 
-	
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
-	 * .Feature)
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void visit(Feature feature) {
@@ -352,12 +354,11 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		stream.close();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
-	 * .Point)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void visit(Point point) {
@@ -365,12 +366,11 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		outputPartsAndPoints(shapePoint, shapePointZ, point);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
-	 * .MultiPoint)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void visit(MultiPoint multiPoint) {
@@ -385,12 +385,11 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		return points.isEmpty();
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
-	 * .Line)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void visit(Line line) {
@@ -398,24 +397,22 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		outputPartsAndPoints(shapePolyline, shapePolylineZ, line);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
-	 * .GeometryBag)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void visit(GeometryBag geobag) {
 		throw new UnsupportedOperationException("Geometry Bag is not supported by FileGDB (at least at this time)"); 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
-	 * .MultiLine)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void visit(MultiLine multiLine) {
@@ -452,12 +449,11 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
-	 * .LinearRing)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void visit(LinearRing ring) {
@@ -465,12 +461,11 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		outputPartsAndPoints(shapePolygon, shapePolygonZ, ring);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
-	 * .MultiLinearRings)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void visit(MultiLinearRings rings) {
@@ -479,12 +474,11 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
-	 * .Polygon)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void visit(Polygon polygon) {
@@ -492,12 +486,11 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		outputPartsAndPoints(shapePolygon, shapePolygonZ, polygon);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry
-	 * .MultiPolygons)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException
+	 * 				if underlying ESRI FileGDB API throws an exception
 	 */
 	@Override
 	public void visit(MultiPolygons polygons) {

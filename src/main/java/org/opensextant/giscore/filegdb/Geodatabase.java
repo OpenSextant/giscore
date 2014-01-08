@@ -52,6 +52,7 @@ public class Geodatabase extends GDB {
 	 * 
 	 * @param pathToGeodatabase the geodatabase, must not be <code>null</code>
 	 * and must exist
+	 * @throws IllegalArgumentException if pathToGeodatabase is null
 	 */
 	public Geodatabase(File pathToGeodatabase) {
 		if (pathToGeodatabase == null) {
