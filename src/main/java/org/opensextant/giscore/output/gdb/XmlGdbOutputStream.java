@@ -55,6 +55,8 @@ import org.opensextant.giscore.output.FeatureKey;
 import org.opensextant.giscore.output.FeatureSorter;
 import org.opensextant.giscore.output.XmlOutputStreamBase;
 import org.opensextant.giscore.utils.ObjectBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The organization of the gdb xml exchange document is divided in two sections.
@@ -104,6 +106,9 @@ import org.opensextant.giscore.utils.ObjectBuffer;
  * @author DRAND
  */
 public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
+
+	private static final Logger log = LoggerFactory.getLogger(XmlGdbOutputStream.class);
+
 	protected enum ElementType {
 		FEATURE_DATASET, FEATURE_CLASS, TABLE;
 
@@ -343,7 +348,8 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * 
 	 * @param featureKey
 	 * @param geometryField 
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML
+	 * @throws IllegalStateException if buffer is null or non-XMLStreamException exception is thrown during writing
 	 */
 	private void writeRecords(FeatureKey featureKey, String geometryField)
 			throws XMLStreamException {
@@ -352,7 +358,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		ObjectBuffer buffer = sorter.getBuffer(featureKey);
 		Schema schema = featureKey.getSchema();
 		if (buffer == null) {
-			throw new RuntimeException("Couldn't find temp file for schema "
+			throw new IllegalStateException("Couldn't find temp file for schema "
 					+ schema.getName());
 		}
 		try {
@@ -366,8 +372,10 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			}
 		} catch (EOFException e) {
 			// Done reading, just ignore
+		} catch (XMLStreamException e) {
+			throw e;
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 
 		writer.writeEndElement(); // RECORDS
@@ -470,19 +478,17 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		}
 		writer.writeEndElement();
 	}
-	
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.GeometryBag)
-	 */
+
+	/** {@inheritDoc} */
 	@Override
 	public void visit(GeometryBag geobag) {
-		throw new UnsupportedOperationException("Geometry Bag is not supported by XML GDB");
+		log.debug("Geometry Bag is not supported by XML GDB");
 	}
 	
-	
-
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.Line)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException if there is an error with the underlying XML
 	 */
 	@Override
 	public void visit(Line line) {
@@ -500,12 +506,14 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			writer.writeEndElement();
 			writer.writeEndElement();
 		} catch (XMLStreamException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.LinearRing)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException if there is an error with the underlying XML
 	 */
 	@Override
 	public void visit(LinearRing ring) {
@@ -522,12 +530,14 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			}
 			writer.writeEndElement();
 		} catch (XMLStreamException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.Point)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException if there is an error with the underlying XML
 	 */
 	@Override
 	public void visit(Point point) {
@@ -535,13 +545,14 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			writeEsriType(POINT_N);
 			writePoint(point);
 		} catch (XMLStreamException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.MultiPoint)
+
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException if there is an error with the underlying XML
 	 */
 	@Override
 	public void visit(MultiPoint mp) {
@@ -560,12 +571,14 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			}
 			writer.writeEndElement(); // Point array
 		} catch (XMLStreamException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}		
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.geometry.Polygon)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException if there is an error with the underlying XML
 	 */
 	@Override
 	public void visit(Polygon polygon) {
@@ -585,7 +598,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			}
 			writer.writeEndElement();
 		} catch (XMLStreamException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 
@@ -864,6 +877,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * key isn't in the collection then record the key.
 	 * @param fullpath
 	 * @param key
+	 * @throws IllegalStateException if encounters more than 100 different geometries for the same feature path
 	 */
 	protected void checkAndRegisterKey(String fullpath, FeatureKey key) {
 		if (datasets.get(key) == null) {
@@ -884,7 +898,13 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 			datasets.put(key, datasetname);
 		}
 	}
-	
+
+	/**
+	 *
+	 * @param setname
+	 * @return
+	 * @throws IllegalStateException if encounters more than 100 different geometries for the same feature path
+	 */
 	private StringBuilder makeUniqueSetname(StringBuilder setname) {
 		String basename = setname.toString();
 		StringBuilder rval = new StringBuilder();
@@ -895,7 +915,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 				return rval;
 			}
 		}
-		throw new RuntimeException("Something's wrong, we've encountered more than 100 different geometries for the same feature path");
+		throw new IllegalStateException("Something's wrong, we've encountered more than 100 different geometries for the same feature path");
 	}
 
 	protected String getFullPath() {
