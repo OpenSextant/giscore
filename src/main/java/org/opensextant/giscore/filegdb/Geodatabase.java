@@ -108,7 +108,7 @@ public class Geodatabase extends GDB {
 	 */
 	private native void closeAndDestroy(String path);
 	
-	public native long test();
+	//public native long test();
 	
 	public native String[] getDatasetTypes();
 	
