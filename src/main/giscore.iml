@@ -10,6 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/../../docs" />
       <excludeFolder url="file://$MODULE_DIR$/../../filegdb" />
       <excludeFolder url="file://$MODULE_DIR$/../../rel" />
+      <excludeFolder url="file://$MODULE_DIR$/../../testOutput" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
