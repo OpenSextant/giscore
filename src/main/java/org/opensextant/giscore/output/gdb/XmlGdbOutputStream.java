@@ -284,6 +284,8 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 					writeDataSetDef(key, datasetname, ElementType.FEATURE_CLASS);
 				} catch (XMLStreamException e) {
 					throw new IOException(e);
+				} catch (UnsupportedOperationException e) {
+					throw new IOException(e);
 				}
 			}
 			sorter.close();
@@ -817,6 +819,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	/**
 	 * @param geoclass
 	 * @return the esri type from the schema
+	 * @throws UnsupportedOperationException if geometry type is unknown
 	 */
 	private String getEsriGeoType(Class<? extends Geometry> geoclass) {
 		if (geoclass == null) return "";
@@ -934,8 +937,10 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	 * @param key
 	 * @param datasetname
 	 * @throws XMLStreamException if there is an error with the underlying XML
+	 * @throws IllegalArgumentException is geo class is null
+	 * @throws UnsupportedOperationException if geometry type is unknown
 	 */
-	protected void writeDataSetDef(FeatureKey key, String datasetname, 
+	protected void writeDataSetDef(FeatureKey key, String datasetname,
 			ElementType elementType) throws XMLStreamException {
 		if (elementType.isFeatureClass() && key.getGeoclass() == null) {
 			throw new IllegalArgumentException("Must have a geo class");
