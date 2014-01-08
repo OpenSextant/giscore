@@ -89,18 +89,21 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 	private Geodatabase database;
 	private final Map<String, Table> tables = new HashMap<String, Table>();
 	private final AtomicInteger nid = new AtomicInteger();
-	/**
+
+	/*
 	 * Maps the schema name to the schema. The schemata included are both
 	 * defined schemata as well as implied or inline schemata that are defined
 	 * with their data.
 	 */
 	//private Map<URI, Schema> schemata = new HashMap<URI, Schema>();
-	/**
+
+	/*
 	 * Maps a set of simple fields, derived from inline data declarations to a
 	 * schema. This is used to gather like features together. THe assumption is
 	 * that we will see consistent elements between features.
 	 */
 	//private Map<Set<SimpleField>, Schema> internalSchema;
+
 	private ArrayList<Object> outputList;
 
 	/**
@@ -167,9 +170,11 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 			// close geodatabase
 			database.close();
 
-			// zip and stream
-			ZipUtils.outputZipComponents(outputPath.getName(), outputPath,
-					(ZipOutputStream) outputStream);
+			if (outputStream != null) {
+				// zip and stream
+				ZipUtils.outputZipComponents(outputPath.getName(), outputPath,
+						(ZipOutputStream) outputStream);
+			}
 
 		} catch(Exception ex) { 
 			codes.rethrow(ex);
