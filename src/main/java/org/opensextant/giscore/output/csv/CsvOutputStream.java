@@ -47,6 +47,7 @@ import org.opensextant.geodesy.SafeDateFormat;
  */
 public class CsvOutputStream extends StreamVisitorBase implements
         IGISOutputStream {
+
     private static final String ISO_DATE_FMT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
     private SafeDateFormat dateFormatter;
 
@@ -138,9 +139,11 @@ public class CsvOutputStream extends StreamVisitorBase implements
         visit((Row) feature);
     }
 
-    /* (non-Javadoc)
-      * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.Row)
-      */
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException if there is an error with the underlying CSV file/structure
+	 */
     @Override
     public void visit(Row row) {
         if (row == null) {
@@ -152,7 +155,7 @@ public class CsvOutputStream extends StreamVisitorBase implements
         if (schema != null && row.getSchema() != null) {
             URI schemauri = row.getSchema();
             if (schemauri == null || !schemauri.equals(schema.getId())) {
-                throw new RuntimeException("Row schema doesn't match schema given");
+                throw new IllegalStateException("Row schema doesn't match schema given");
             }
             try {
                 for (String fieldname : schema.getKeys()) {
@@ -162,7 +165,7 @@ public class CsvOutputStream extends StreamVisitorBase implements
                 }
                 writer.write(lineDelimiter);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         } else {
             try {
@@ -172,7 +175,7 @@ public class CsvOutputStream extends StreamVisitorBase implements
                 }
                 writer.write(lineDelimiter);
             } catch (IOException e) {
-                throw new RuntimeException(e);
+                throw new IllegalStateException(e);
             }
         }
     }
@@ -279,16 +282,18 @@ public class CsvOutputStream extends StreamVisitorBase implements
         }
     }
 
-    /* (non-Javadoc)
-      * @see org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events.Schema)
-      */
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException if there is an error with the underlying CSV file/structure
+	 */
     @Override
     public void visit(Schema s) {
         if (writtenRow) {
-            throw new RuntimeException("Can't set the schema after a row has been written");
+            throw new IllegalStateException("Can't set the schema after a row has been written");
         }
         if (schema != null) {
-            throw new RuntimeException("Can't set the schema after a schema has already been set");
+            throw new IllegalStateException("Can't set the schema after a schema has already been set");
         }
         schema = s;
         if (skipHeader) return;
@@ -304,7 +309,7 @@ public class CsvOutputStream extends StreamVisitorBase implements
             }
 			writer.write(lineDelimiter);
 		} catch (IOException e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 }

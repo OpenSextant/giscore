@@ -68,12 +68,14 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 	 * derived from the first row. Things will be funky if we don't anticipate
 	 * this right.
 	 */
-	private Schema schema = null;
+	private Schema schema;
 	
 	/**
 	 * @param file
 	 * @param arguments
-	 * @throws FileNotFoundException 
+	 * @throws FileNotFoundException
+	 * @throws IllegalArgumentException if file argument is null or does not exist
+	 * @throws IllegalStateException if encoding or I/O exception occurs
 	 */
 	public CsvInputStream(File file, Object[] arguments) throws FileNotFoundException {
 		if (file == null) {
@@ -89,6 +91,21 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 	/**
 	 * @param stream
 	 * @param arguments
+	 * @throws IllegalArgumentException if stream is null
+	 * @throws IllegalStateException if encoding or I/O exception occurs
+	 */
+	public CsvInputStream(InputStream stream, Object[] arguments) {
+		if (stream == null) {
+			throw new IllegalArgumentException(
+					"stream should never be null");
+		}
+		init(stream, arguments);
+	}
+
+	/**
+	 * @param stream
+	 * @param arguments
+	 * @throws IllegalStateException if encoding or I/O exception occurs
 	 */
 	private void init(InputStream stream, Object[] arguments) {
 		try {
@@ -132,22 +149,10 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 				}
 			}
 		} catch (UnsupportedEncodingException e) {
-			throw new RuntimeException("Problem in ctor", e);
+			throw new IllegalStateException("Problem in ctor", e);
 		} catch (IOException e) {
-			throw new RuntimeException("Problem in ctor", e);
+			throw new IllegalStateException("Problem in ctor", e);
 		}
-	}
-
-	/**
-	 * @param stream
-	 * @param arguments
-	 */
-	public CsvInputStream(InputStream stream, Object[] arguments) {
-		if (stream == null) {
-			throw new IllegalArgumentException(
-					"stream should never be null");
-		}
-		init(stream, arguments);
 	}
 
 	/* (non-Javadoc)
@@ -157,8 +162,11 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 		IOUtils.closeQuietly(reader);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.input.IGISInputStream#read()
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @exception  IOException  If an I/O error occurs
+	 * @exception  IllegalStateException
 	 */
 	public IGISObject read() throws IOException {
 		if (hasSaved()) {
@@ -171,8 +179,9 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 	}
 
 	/**
-	 * @return
-	 * @throws IOException 
+	 * @return row
+	 * @exception  IOException  If an I/O error occurs
+	 * @exception  IllegalStateException
 	 */
 	private IGISObject readRow() throws IOException {
 		List<String> tokens = new ArrayList<String>();
@@ -212,7 +221,8 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 
 	/**
 	 * @return
-	 * @throws IOException 
+	 * @throws  IOException  If an I/O error occurs
+	 * @throws  IllegalStateException
 	 */
 	private Object[] readNextToken() throws IOException {
 		StringBuilder b = new StringBuilder();
@@ -239,14 +249,14 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 						} else if (checkLineDelimiter(ch)) {
 							return new Object[] {b.toString(), EOL};
 						} else {
-							throw new RuntimeException("Found unexpected char " + ch);
+							throw new IllegalStateException("Found unexpected char " + ch);
 						}
 					}
 				}
 				b.append(ch);
 				ch = (char) reader.read();
 			}
-			throw new RuntimeException("Quoted string did not end as expected");
+			throw new IllegalStateException("Quoted string did not end as expected");
 		} else {
 			while(reader.ready() && ch >= 0 && ch != valueDelimiter) {
 				b.append(ch);
@@ -257,7 +267,7 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 					return new Object[] {b.toString(), EOF};
 				}
 			}
-			return new Object[] {b.toString(), null}; 
+			return new Object[] { b.toString(), null };
 		}
 	}
 
@@ -267,7 +277,7 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 	 * character.
 	 * @param ch the current character
 	 * @return <code>true</code> if we've found a delimiter
-	 * @throws IOException 
+	 * @throws  IOException  If an I/O error occurs
 	 */
 	private boolean checkLineDelimiter(char ch) throws IOException {
 		if (ch != lineDelimiter.charAt(0)) 

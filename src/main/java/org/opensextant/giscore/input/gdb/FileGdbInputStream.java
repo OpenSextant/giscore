@@ -66,8 +66,8 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 		 * of the table we'll set it back to null to trigger the next schema or
 		 * to move on to the next set.
 		 */
-		private Table currentTable = null;
-		private EnumRows rows = null;
+		private Table currentTable;
+		private EnumRows rows;
 		private Schema currentSchema;
 		
 		public TableState(boolean hasGeo, List<String> paths) {
@@ -97,6 +97,11 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 					|| (ipo < paths.size() && currentTable == null);	
 		}
 
+		/**
+		 *
+		 * @return
+		 * @throws IllegalStateException
+		 */
 		private IGISObject next() {
 			String fcPath;
 			if (currentTable == null) {
@@ -106,7 +111,7 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 				if (acceptor != null && !acceptor.accept(currentSchema)) {
 					currentSchema = null;
 					return next();
-				} 
+				}
 				currentTable = database.openTable(fcPath);
 				rows = currentTable.enumerate();
 				ContainerStart cs = new ContainerStart("Folder");
@@ -149,7 +154,14 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 				}
 			}
 		}
-		
+
+		/**
+		 *
+		 * @param path
+		 * @return
+		 * @throws IllegalStateException
+		 * 			If the given path violates RFC&nbsp;2396 for URI construction
+		 */
 		private Schema getSchema(String path) {
 			currentTable = database.openTable(path);
 			Map<String, FieldInfo> fieldInfo = currentTable.getFieldTypes();
@@ -158,7 +170,7 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 				String name = path.replaceAll("\\\\", "/");
 				schema = new Schema(new URI("uri:" + name));
 			} catch (URISyntaxException e) {
-				throw new RuntimeException("Unexpected failure due to URI exception", e);
+				throw new IllegalStateException("Unexpected failure due to URI exception", e);
 			}
 			for(Map.Entry<String,FieldInfo> entry : fieldInfo.entrySet()) {
 				final FieldInfo info = entry.getValue();
@@ -182,7 +194,16 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 	private TableState feature;
 	private IAcceptSchema acceptor;
 
-	public FileGdbInputStream(InputStream stream, Object[] args) {
+	/**
+	 *
+	 * @param stream
+	 * @param args
+	 * @throws IOException
+	 *             if an IO error occurs
+	 * @throws IllegalArgumentException if stream argument is null
+
+	 */
+	public FileGdbInputStream(InputStream stream, Object[] args) throws IOException {
 		if (stream == null) {
 			throw new IllegalArgumentException("stream should never be null");
 		}
@@ -204,27 +225,29 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 		}
 		
 		ZipEntry entry;
-		try {
-			while((entry = zis.getNextEntry()) != null) {
-				File entryPath = new File(entry.getName()); 
-				File path = new File(inputPath, entryPath.getName());
-				OutputStream os = new FileOutputStream(path);
-				IOUtils.copy(zis, os);
-				os.close();
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
+		while((entry = zis.getNextEntry()) != null) {
+			File entryPath = new File(entry.getName());
+			File path = new File(inputPath, entryPath.getName());
+			OutputStream os = new FileOutputStream(path);
+			IOUtils.copy(zis, os);
+			os.close();
 		}
-		
+
 		database = new Geodatabase(inputPath);
 		init(acceptor);
 	}
-	
+
+	/**
+	 *
+	 * @param path
+	 * @param args
+	 * @throws IllegalArgumentException if path argument is null or path does not exist
+	 */
 	public FileGdbInputStream(File path, Object[] args) {
 		if (path == null) {
 			throw new IllegalArgumentException("path should never be null");
 		}
-		if (path.exists() == false) {
+		if (!path.exists()) {
 			throw new IllegalArgumentException("path must exist");
 		}
 		Args argv = new Args(args);
@@ -328,7 +351,6 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 		if (deleteOnClose) {
 			inputPath.delete();
 		}
-		
 	}
 
 }
