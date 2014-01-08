@@ -70,7 +70,7 @@ public class ESRIErrorCodes {
 	 * To "Error code ####: esri message" if we find a match. Otherwise leave alone.
 	 * 
 	 * @param message
-	 * @return
+	 * @return translated message
 	 */
 	public String translate(String message) {
 		if (message != null && !message.isEmpty()) {
