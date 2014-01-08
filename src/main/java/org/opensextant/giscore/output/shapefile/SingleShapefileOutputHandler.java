@@ -116,7 +116,7 @@ public class SingleShapefileOutputHandler extends ShapefileBaseClass {
 	 * just before the current geometry's accept method is called and is set
 	 * back to <code>null</code> just afterward.
 	 */
-	private ByteBuffer obuf = null;
+	private ByteBuffer obuf;
 
 	/*
 	 * Pointers to the four required files. Setup in the ctor and never modified

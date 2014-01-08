@@ -604,6 +604,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 
 	/**
 	 * Output the bounding box as an extent
+	 *
 	 * @param bbox the bounding box, assumed not <code>null</code>.
 	 * @param includeReference if <code>true</code>, include a spatial reference
 	 * @throws XMLStreamException 
@@ -626,6 +627,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 
 	/**
 	 * Write an array of points
+	 *
 	 * @param points the points, assumed not <code>null</code>
 	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
@@ -786,6 +788,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	
 	/**
 	 * Write the given spatial reference
+	 *
 	 * @param wkt
 	 * @param wkid
 	 * @throws XMLStreamException if there is an error with the underlying XML
@@ -857,7 +860,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
 	 * .Feature)
@@ -875,6 +878,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 	/**
 	 * Check the known keys in the datasets collection and if this 
 	 * key isn't in the collection then record the key.
+	 *
 	 * @param fullpath
 	 * @param key
 	 * @throws IllegalStateException if encounters more than 100 different geometries for the same feature path
@@ -1072,16 +1076,10 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 		writer.writeEndElement(); // Index
 	}
 
-	/*
-	 * (non-Javadoc)
-	 * 
-	 * @see
-	 * org.mitre.giscore.output.StreamVisitorBase#visit(org.mitre.giscore.events
-	 * .Schema)
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void visit(Schema schema) {
 		sorter.add(schema);
 	}
-}
 
+}
