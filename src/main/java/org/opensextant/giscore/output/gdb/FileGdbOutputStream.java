@@ -62,6 +62,8 @@ import org.opensextant.giscore.output.IContainerNameStrategy;
 import org.opensextant.giscore.output.IGISOutputStream;
 import org.opensextant.giscore.utils.Args;
 import org.opensextant.giscore.utils.ZipUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class is using some mechanics form the parent class which was written
@@ -79,7 +81,9 @@ import org.opensextant.giscore.utils.ZipUtils;
  *
  */
 public class FileGdbOutputStream extends XmlGdbOutputStream implements
-		IGISOutputStream, FileGdbConstants {	
+		IGISOutputStream, FileGdbConstants {
+
+	private static final Logger log = LoggerFactory.getLogger(FileGdbOutputStream.class);
 
 	private final ESRIErrorCodes codes = new ESRIErrorCodes();
 	private boolean deleteOnClose;
@@ -359,24 +363,14 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		stream.close();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @throws IllegalStateException
-	 * 				if underlying ESRI FileGDB API throws an exception
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void visit(Point point) {
 		if (hasNoPoints(point)) return;
 		outputPartsAndPoints(shapePoint, shapePointZ, point);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @throws IllegalStateException
-	 * 				if underlying ESRI FileGDB API throws an exception
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void visit(MultiPoint multiPoint) {
 		if (hasNoPoints(multiPoint)) return;
@@ -390,35 +384,20 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		return points.isEmpty();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @throws IllegalStateException
-	 * 				if underlying ESRI FileGDB API throws an exception
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void visit(Line line) {
 		if (hasNoPoints(line)) return;
 		outputPartsAndPoints(shapePolyline, shapePolylineZ, line);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @throws IllegalStateException
-	 * 				if underlying ESRI FileGDB API throws an exception
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void visit(GeometryBag geobag) {
-		throw new UnsupportedOperationException("Geometry Bag is not supported by FileGDB (at least at this time)"); 
+		log.debug("Geometry Bag is not supported by FileGDB (at least at this time)");
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @throws IllegalStateException
-	 * 				if underlying ESRI FileGDB API throws an exception
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void visit(MultiLine multiLine) {
 		if (hasNoPoints(multiLine)) return;
@@ -454,24 +433,14 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @throws IllegalStateException
-	 * 				if underlying ESRI FileGDB API throws an exception
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void visit(LinearRing ring) {
 		if (hasNoPoints(ring)) return;
 		outputPartsAndPoints(shapePolygon, shapePolygonZ, ring);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @throws IllegalStateException
-	 * 				if underlying ESRI FileGDB API throws an exception
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void visit(MultiLinearRings rings) {
 		for(LinearRing r : rings.getLinearRings()) {
@@ -479,24 +448,14 @@ public class FileGdbOutputStream extends XmlGdbOutputStream implements
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @throws IllegalStateException
-	 * 				if underlying ESRI FileGDB API throws an exception
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void visit(Polygon polygon) {
 		if (hasNoPoints(polygon)) return;
 		outputPartsAndPoints(shapePolygon, shapePolygonZ, polygon);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 *
-	 * @throws IllegalStateException
-	 * 				if underlying ESRI FileGDB API throws an exception
-	 */
+	/** {@inheritDoc} */
 	@Override
 	public void visit(MultiPolygons polygons) {
 		for(Polygon p : polygons.getPolygons()) {
