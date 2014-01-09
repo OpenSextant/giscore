@@ -89,8 +89,8 @@ public class SimpleObjectInputStream implements Closeable {
 	/**
 	 * Creates an SimpleObjectInputStream that reads from the specified InputStream.
 	 * 
-	 * @param	in input stream to read from, never null
-	 * @throws IllegalArgumentException if in is null
+	 * @param	in  input stream to read from, never null
+	 * @throws  IllegalArgumentException if <code>in</code> is <code>null</code>
 	 */
 	public SimpleObjectInputStream(InputStream in) {
 		if (in == null) {
@@ -122,6 +122,8 @@ public class SimpleObjectInputStream implements Closeable {
      *               an interface, an array class, a primitive type, or void;
      *               or if the class has no nullary constructor;
      *               or if the instantiation fails for some other reason.
+	 * @exception IllegalStateException
+	 * 				if cannot determine the class to instantiate
 	 */
     @Nullable
 	public Object readObject() throws ClassNotFoundException, IOException,
@@ -264,6 +266,7 @@ public class SimpleObjectInputStream implements Closeable {
 	/**
 	 * @return the next scalar object from the stream
 	 * @throws IOException if an I/O error occurs
+	 * @throws UnsupportedOperationException if encounters an unknown type
 	 */
 	@Nullable
 	public Object readScalar() throws IOException {

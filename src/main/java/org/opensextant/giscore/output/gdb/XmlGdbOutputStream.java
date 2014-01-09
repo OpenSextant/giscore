@@ -818,7 +818,7 @@ public class XmlGdbOutputStream extends XmlOutputStreamBase implements IXmlGdb {
 
 	/**
 	 * @param geoclass
-	 * @return the esri type from the schema
+	 * @return the ESRI type from the schema
 	 * @throws UnsupportedOperationException if geometry type is unknown
 	 */
 	private String getEsriGeoType(Class<? extends Geometry> geoclass) {
