@@ -65,6 +65,7 @@ import org.slf4j.LoggerFactory;
  *
  */
 public class TaggedMap extends HashMap<String, String> implements IDataSerializable {
+
 	private static final long serialVersionUID = 1L;
 
     private static final Logger log = LoggerFactory.getLogger(TaggedMap.class);
@@ -79,11 +80,13 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
      * to initialize the object instance otherwise object is invalid.
 	 */
 	public TaggedMap() {
-		// must set tag otherwise object is invalid 
+		// caller must explicitly set tag otherwise object is invalid
+		tag = ""; // must be non-null
 	}
 	
 	/**
-	 * Ctor
+	 * Default constructor.
+	 *
 	 * @param tag the tag for the collection, never <code>null</code> or empty
      * @throws IllegalArgumentException if tag is null or empty 
 	 */
@@ -116,17 +119,21 @@ public class TaggedMap extends HashMap<String, String> implements IDataSerializa
         return value == null ? defaultValue : value;
     }
 
-	/* (non-Javadoc)
-	 * @see org.mitre.giscore.utils.IDataSerializable#readData(org.mitre.giscore.utils.SimpleObjectInputStream)
+	/**
+	 * {@inheritDoc}
+	 *
+	 * @throws IllegalStateException if serialized tag is null
 	 */
 	public void readData(SimpleObjectInputStream in) throws IOException,
 			ClassNotFoundException, InstantiationException,
 			IllegalAccessException {
-		tag = in.readString();
+		String value = in.readString();
+		if (value == null) throw new IllegalStateException("tag cannot be null");
+		tag = value;
 		int count = in.readInt();
 		for(int i = 0; i < count; i++) {
 			String key = in.readString();
-			String value = in.readString();
+			value = in.readString();
 			put(key, value);
 		}
 		
