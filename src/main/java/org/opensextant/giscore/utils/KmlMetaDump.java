@@ -20,14 +20,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import javax.xml.stream.XMLStreamException;
 
@@ -107,6 +100,7 @@ import org.opensextant.giscore.output.kml.KmlWriter;
  * <li> Invalid LookAt values (error)
  * <li> Invalid tilt value in LookAt [ATC 38.2] (error)
  * <li> LookAt has invalid tilt: out of range value [ATC 38.2] (error)
+ * <li> SimpleField has an invalid type attribute value [ATC 26] (error)
  * <li> Invalid time range: start > end [ATC 4] (error)
  * <li> Invalid TimeSpan if begin later than end value (warning)
  * <li> Invalid ViewGroup tag: XXX (warn)
@@ -126,8 +120,11 @@ import org.opensextant.giscore.output.kml.KmlWriter;
  * <li> Region has invalid LatLonAltBox: out of range value (error)
  * <li> Region has invalid Lod: non-numeric value (error)
  * <li> Region has invalid Lod: out of range value (error)
+ * <li> SchemaData contains a SimpleData value that does not correspond to the declared type [ATC 27] (warning)
+ * <li> SchemaData has a schemaUrl attribute that is missing the required fragment identifier ("#") [ATC 27] (error)
  * <li> Shared styles in Folder not allowed [ATC 7] (warning)
  * <li> Shared styles must have 'id' attribute [ATC 7] (warning)
+ * <li> SimpleData name not found in Schema [ATC 27] (warning)
  * <li> Starting container tag with no matching end container (error)
  * <li> StyleUrl has absolute URL (info)
  * <li> StyleUrl has relative URL (info)
@@ -203,6 +200,18 @@ public class KmlMetaDump implements IKml {
 
 	private Set<String> simpleFieldSet;
 
+	private static final Set<String> SIMPLE_FIELD_TYPES;
+
+	static {
+		// all possible valid values for kml:SimpleType/type attribute
+		// https://developers.google.com/kml/documentation/kmlreference#simplefield
+		final String[] types = {
+			"string", "int", "uint", "short", "ushort", "float", "double", "bool"
+		};
+		SIMPLE_FIELD_TYPES = new HashSet<String>(types.length);
+		SIMPLE_FIELD_TYPES.addAll(Arrays.asList(types));
+	}
+
 	/**
 	 * count of number of KML resources were processed and stats were tallied
 	 * this means the number of times the tagSet keys were dumped into the totals set
@@ -217,6 +226,8 @@ public class KmlMetaDump implements IKml {
 	private final long startTime;
 
 	private static final String CLAMP_TO_GROUND = "clampToGround";
+
+	private final Map<String, Schema> schemas = new HashMap<String, Schema>();
 
 	public KmlMetaDump() {
 		try {
@@ -448,6 +459,7 @@ public class KmlMetaDump implements IKml {
 
 	private void resetSourceState() {
 		containers.clear();
+		schemas.clear();
 		inheritsTime = false;
 		containerStartDate = null;
 		containerEndDate = null;
@@ -709,21 +721,33 @@ public class KmlMetaDump implements IKml {
 			addTag(name);
 		} else if (cl == Schema.class) {
 			addTag(cl);
-			Schema schema = (Schema) gisObj;
-			String uri = schema.getId().toString();  // getId never null value
-			if (!UrlRef.isIdentifier(uri)) {
-				addTag(":Suspicious Schema id characters");
-				if (verbose) System.out.println(" Warning: Schema id appears to contain invalid characters: " + uri);
-			}
-			String name = schema.getName(); // name never null or blank value
-			if (!UrlRef.isIdentifier(name)) {
-				addTag(":Suspicious Schema name characters");
-				if (verbose) System.out.println(" Warning: Schema name may contain invalid characters: " + name);
-			}
+			checkSchema((Schema) gisObj);
 		} else if (cl != Comment.class) {
 			// ignore: Comment objects but capture others
 			addTag(cl); // e.g. NetworkLinkControl
 		}
+	}
+
+	private void checkSchema(Schema schema) {
+		String uri = schema.getId().toString();  // getId never null value
+		if (!UrlRef.isIdentifier(uri)) {
+			addTag(":Suspicious Schema id characters");
+			if (verbose) System.out.println(" Warning: Schema id appears to contain invalid characters: " + uri);
+		}
+		String name = schema.getName(); // name never null or blank value
+		if (!UrlRef.isIdentifier(name)) {
+			addTag(":Suspicious Schema name characters");
+			if (verbose) System.out.println(" Warning: Schema name may contain invalid characters: " + name);
+		}
+		for (SimpleField sf : schema.getFields()) {
+			String type = sf.getType().name();
+			// giscore SimpleField has a subset of types that is allowed in KML so check if type is not part of the KML standard
+			if (!SIMPLE_FIELD_TYPES.contains(type.toLowerCase())) {
+				addTag(":SimpleField has an invalid type attribute value [ATC 26]");
+				if (verbose) System.out.println(" Error: SimpleField has an invalid type attribute value: " + type);
+			}
+		}
+		schemas.put(uri, schema);
 	}
 
 	private void checkOverlay(Overlay ov) {
@@ -1268,12 +1292,7 @@ public class KmlMetaDump implements IKml {
 
 		if (f.hasExtendedData()) {
 			addTag(EXTENDED_DATA);
-			if (simpleFieldSet != null)
-				for (SimpleField sf : f.getFields()) {
-					simpleFieldSet.add(sf.getName());
-				}
-			// TODO: check external namespace elements?
-			// if (!f.getExtendedElements().isEmpty())...
+			checkExtendedData(f);
 		}
 
 		TaggedMap viewGroup = f.getViewGroup();
@@ -1375,6 +1394,126 @@ public class KmlMetaDump implements IKml {
 			} else if (style != null) {
 				String styleClass = getClassName(style.getClass());
 				addTag(":Feature uses inline " + styleClass, true); // Style | StyleMap
+			}
+		}
+	}
+
+	private void checkExtendedData(Common f) {
+
+		if (simpleFieldSet != null)
+			for (SimpleField sf : f.getFields()) {
+				simpleFieldSet.add(sf.getName());
+			}
+		// TODO: check external namespace elements?
+		// if (!f.getExtendedElements().isEmpty())...
+
+		// check if field name is not defined in schema
+		// KmlInputStream impl assumes only one SchemaData/schemaUrl instance per ExtendedData
+		// and either Data or SchemaData/SimpleData elements not both so if ExtendedData for given
+		// Feature has mixed types Data and SchemaData elements and/or multiple schemas referenced
+		// then this check may give a false alarm.
+		URI schemaURI = f.getSchema();
+		if (schemaURI != null) {
+			String path = schemaURI.toASCIIString();
+			Schema schema;
+			if (path.startsWith("#")) {
+				schema = schemas.get(path.substring(1));
+			} else {
+				schema = schemas.get(path);
+				if (path != null && !path.contains("#")) {
+					addTag(":SchemaData has a schemaUrl attribute that is missing the required fragment identifier (\"#\") [ATC 27]");
+					// ATC 27: ExtendedData - SchemaData
+					// 1. the 'schemaUrl' attribute value is a URL with a fragment component that refers to a kml:Schema element;
+					// Reference: http://service.kmlvalidator.com/ets/ogc-kml/2.2/#ExtendedData-SchemaData
+					if (verbose) System.out.println(" Warn: SchemaData has a schemaUrl attribute that is missing the required fragment identifier (\"#\")");
+				}
+			}
+			if (schema != null) {
+				// System.out.printf("%nXXX: schema uri=%s : path=%s%n", schemaURI, path);
+				for(Map.Entry<SimpleField,Object> entry : f.getEntrySet()) {
+					SimpleField sf = entry.getKey();
+					//for (SimpleField sf : f.getFields()) {
+					// System.out.printf("\t%-10s %s %s [%s]%n", sf.getName(), sf.getType(), entry.getValue(), entry.getValue().getClass().getName());
+					final String name = sf.getName();
+					// The type and name of this SchemaData/SimpleData field must match that declared in the associated <Schema> element
+					final SimpleField schemaTypeField = schema.get(name);
+					if (schemaTypeField == null) {
+						// Galados kml-validator error: SchemaData contains a SimpleData value that does not correspond to the declared type
+						// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#ExtendedData-SchemaData
+						// ATC 27: ExtendedData - SchemaData
+						// 2. all kml:SimpleData child elements have a 'name' attribute that matches the name of a declared kml:SimpleField element in the corresponding Schema;
+						addTag(":SimpleData name not found in Schema [ATC 27]");
+						if (verbose) System.out.println(" Warn: SimpleData name not found in Schema: " + name);
+					} else if (entry.getValue() instanceof String) {
+						// check if type is correct
+						// ATC 27: ExtendedData - SchemaData
+						// 3. the values of all kml:SimpleData child elements conform to their declared types.
+						final SimpleField.Type type = schemaTypeField.getType();
+						// String can contain any value so ignore it
+						if (type == SimpleField.Type.STRING) continue;
+						String value = ((String)entry.getValue()).trim();
+						boolean valid = true;
+						if (type == SimpleField.Type.BOOL) {
+							// is 1|0 valid boolean in kml/xml schema context ??
+							if (!value.equalsIgnoreCase("true") && !value.equalsIgnoreCase("false")
+									&& !value.equals("1") && !value.equals("0"))
+							{
+								valid = false;
+							}
+						} else if (type == SimpleField.Type.INT) {
+							try {
+								Integer.parseInt(value);
+							} catch(NumberFormatException e) {
+								valid = false;
+							}
+						}
+						else if (type == SimpleField.Type.UINT) {
+							try {
+								long val = Long.parseLong(value);
+								if (val < 0 || val > 4294967295L)
+									valid = false;
+							} catch(NumberFormatException e) {
+								valid = false;
+							}
+						}
+						else if (type == SimpleField.Type.USHORT) {
+							try {
+								int val = Integer.parseInt(value);
+								if (val < 0 || val > 65535)
+									valid = false;
+							} catch(NumberFormatException e) {
+								valid = false;
+							}
+						}
+						else if (type == SimpleField.Type.SHORT) {
+							try {
+								Short.parseShort(value);
+							} catch(NumberFormatException e) {
+								valid = false;
+							}
+						}
+						else if (type == SimpleField.Type.FLOAT) {
+							try {
+								Float.parseFloat(value);
+							} catch(NumberFormatException e) {
+								valid = false;
+							}
+						}
+						else if (type == SimpleField.Type.DOUBLE) {
+							try {
+								Double.parseDouble(value);
+							} catch(NumberFormatException e) {
+								valid = false;
+							}
+						}
+
+						if(!valid) {
+							addTag(":SchemaData contains a SimpleData value that does not correspond to the declared type [ATC 27]");
+							if (verbose) System.out.printf(" Warn: SchemaData contains a SimpleData value (%s) that does not correspond to the declared type: %s%n",
+									value, type.name().toLowerCase());
+						}
+					}
+				}
 			}
 		}
 	}
@@ -1677,6 +1816,10 @@ public class KmlMetaDump implements IKml {
 						msg = ti.getThrowable().getMessage();
 					else
 						msg = "Bad geometry";
+				} else if ( /* className.endsWith("KmlInputStream") && */ msg.startsWith("Invalid SimpleField type in field")) {
+					// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#Schema-SimpleField
+					// Invalid SimpleField type in field [name=Foo type=foobar] / [ATC 26]
+					msg = "SimpleField has an invalid type attribute value [ATC 26]";
 				}
 				addTag(":" + msg);
 			}
