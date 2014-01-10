@@ -162,6 +162,9 @@ import org.slf4j.LoggerFactory;
  * <li>ATC 16: LinearRing - control points:
  * LinearRing geometry must contain at least 4 coordinate tuples, where the first and last are identical.
  * </li>
+ * <li>ATC 26: Schema - SimpleField:
+ * Verify the SimpleField value of the 'type' attribute is one of the allowable data types
+ * </li>
  * </ul>
  * <p/>
  * <h4>Notes/Limitations:</h4>
@@ -1633,36 +1636,56 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				if (foundStartTag(se, SIMPLE_FIELD)) {
 					Attribute fname = se.getAttributeByName(new QName(NAME));
 					String fieldname = fname != null ? fname.getValue() : "gen" + gen++;
-					// http://code.google.com/apis/kml/documentation/kmlreference.html#simplefield
-					// If either the type or the name is omitted, the field is ignored.
-					try {
+					/*
+					  https://developers.google.com/kml/documentation/kmlreference#simplefield
+					  If either the type or the name is omitted, the field is ignored.
+
+					<element name="SimpleField" type="kml:SimpleFieldType"/>
+					<complexType name="SimpleFieldType" final="#all">
+						<sequence>
+							<element ref="kml:displayName" minOccurs="0"/>
+							<element ref="kml:SimpleFieldExtension" minOccurs="0" maxOccurs="unbounded"/>
+						</sequence>
+						<attribute name="type" type="string"/>
+						<attribute name="name" type="string"/>
+					</complexType>
+
+					NOTE: allowed type values (per-spec): string, int, uint, short, ushort, float, double, bool
+					*/
 						SimpleField field = new SimpleField(fieldname);
 						Attribute type = se.getAttributeByName(new QName(TYPE));
 						SimpleField.Type ttype = SimpleField.Type.STRING; // default
 						if (type != null) {
 							String typeValue = type.getValue();
 							// old-style "wstring" is just a string type
-							if (StringUtils.isNotBlank(typeValue) && !"wstring".equalsIgnoreCase(typeValue))
-								ttype = SimpleField.Type.valueOf(typeValue.toUpperCase());
+							if (StringUtils.isNotBlank(typeValue) && !"wstring".equalsIgnoreCase(typeValue)) {
+								try {
+									ttype = SimpleField.Type.valueOf(typeValue.toUpperCase());
+								} catch (IllegalArgumentException e) {
+									// ATC 26: Schema - SimpleField
+									// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#Schema-SimpleField
+									// type value must map to enumerations defined in SimpleField.Type which is a super-set
+									// of those defined in KML 2.2 spec for kml:SimpleField/type
+									log.warn("Invalid SimpleField type in field [name=" + fieldname + " type=" + typeValue+"]");
+									// if invalid type then default to string
+								}
+							}
 						}
 						field.setType(ttype);
 						String displayName = parseDisplayName(SIMPLE_FIELD);
 						field.setDisplayName(displayName);
 						s.put(fieldname, field);
-					} catch (IllegalArgumentException e) {
-						log.warn("Invalid schema field " + fieldname + ": " + e.getMessage());
-					}
 				} else if (foundStartTag(se, PARENT)) {
 					// parent should only appear as Schema child element in KML 2.0 or 2.1
-/*
-        <Schema>
-            <name>S_FOBS_USA_ISAF_NATO_DSSSSSSDDDD</name>
-            <parent>Placemark</parent>
-            <SimpleField name="NAME" type="string"/>
-            <SimpleField name="DATE" type="string"/>
-            <SimpleField name="MGRS" type="string"/>
-        </Schema>
-*/
+					/*
+					        <Schema>
+					            <name>S_FOBS_USA_ISAF_NATO_DSSSSSSDDDD</name>
+					            <parent>Placemark</parent>
+					            <SimpleField name="NAME" type="string"/>
+					            <SimpleField name="DATE" type="string"/>
+					            <SimpleField name="MGRS" type="string"/>
+					        </Schema>
+					*/
 					String parentVal = getNonEmptyElementText();
 					if (parentVal != null) parent = parentVal;
 				} else if (foundStartTag(se, NAME)) {
@@ -1712,7 +1735,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	/**
 	 * @param tag
 	 * @return
-	 * @throws XMLStreamException
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	@Nullable
 	private String parseDisplayName(String tag) throws XMLStreamException {
