@@ -157,8 +157,19 @@ public class TestXmlGdbSupport extends TestGISBase  {
 	}
 	
 	public void doXmlTest(InputStream is) throws IOException {
-		IGISInputStream gisis = GISFactory.getInputStream(DocumentType.KML, is);
-		doTest(gisis);
+		IGISInputStream gisis = null;
+		try {
+			gisis = GISFactory.getInputStream(DocumentType.KML, is);
+			doTest(gisis);
+		} finally {
+			if (gisis != null)
+				try {
+					gisis.close();
+				} catch (IOException e) {
+					// ignore
+				}
+			IOUtils.closeQuietly(is);
+		}
 	}
 	
 	public void doTest(IGISInputStream is) throws IOException {
