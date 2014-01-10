@@ -162,12 +162,9 @@ public class TestXmlGdbSupport extends TestGISBase  {
 			gisis = GISFactory.getInputStream(DocumentType.KML, is);
 			doTest(gisis);
 		} finally {
-			if (gisis != null)
-				try {
-					gisis.close();
-				} catch (IOException e) {
-					// ignore
-				}
+			if (gisis != null) {
+				gisis.close();
+			}
 			IOUtils.closeQuietly(is);
 		}
 	}
