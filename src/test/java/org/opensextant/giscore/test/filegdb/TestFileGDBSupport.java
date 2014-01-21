@@ -19,7 +19,6 @@
 package org.opensextant.giscore.test.filegdb;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -55,39 +54,45 @@ public class TestFileGDBSupport {
 
 	@Test
 	public void testCreateAndRemoveDB() throws IOException, URISyntaxException {
-		File temp = new File(System.getProperty("java.io.tmpdir"));
-		File db = new File(temp, "ftest0.gdb");
-		if (db.exists()) {
-			for(File f : db.listFiles()) {
-				f.delete();
-			}
-			db.delete();
+		final File temp = new File(System.getProperty("java.io.tmpdir"));
+		final File db = new File(temp, "ftest0.gdb");
+		final File gdbZipFile = new File(temp, "ftest" + System.currentTimeMillis() + ".zip");
+		try {
+			FileOutputStream fos = new FileOutputStream(gdbZipFile);
+			ZipOutputStream zos = new ZipOutputStream(fos);
+			IGISOutputStream os = new FileGdbOutputStream(zos, new Object[]{db});
+			Schema schema = new Schema();
+			SimpleField field = new SimpleField("altitude", SimpleField.Type.LONG);
+			schema.put(field);
+			schema.setId(new URI("urn:org:mitre:111"));
+			os.write(schema);
+
+			os.close();
+		} finally {
+			deleteGdbFolder(db);
+			if (gdbZipFile.exists() && !gdbZipFile.delete())
+				gdbZipFile.deleteOnExit();
 		}
-		FileOutputStream fos = new FileOutputStream(new File(temp, "ftest" + System.currentTimeMillis() + ".zip"));
-		ZipOutputStream zos = new ZipOutputStream(fos);
-		IGISOutputStream os = new FileGdbOutputStream(zos, new Object[]{db});
-		Schema schema = new Schema();
-		SimpleField field = new SimpleField("altitude", SimpleField.Type.LONG);
-		schema.put(field);
-		schema.setId(new URI("urn:org:mitre:111"));
-		os.write(schema);
-		
-		os.close();	
 	}
 	
 	@Test
 	public void testCreateFeatureAndRow() throws XMLStreamException, IOException, URISyntaxException {
-		File temp = new File(System.getProperty("java.io.tmpdir"));
+		final File temp = new File(System.getProperty("java.io.tmpdir"));
 		File db = new File(temp, "ftest1.gdb");
-		if (db.exists()) {
-			for(File f : db.listFiles()) {
-				f.delete();
-			}
-			db.delete();
+		File gdbZipFile = new File("ftest" + System.currentTimeMillis() + ".zip");
+		try {
+			realTestCreateFeatureAndRow(db, gdbZipFile);
+		} finally {
+			deleteGdbFolder(db);
+			if (gdbZipFile.exists() && !gdbZipFile.delete())
+				gdbZipFile.deleteOnExit();
 		}
-		FileOutputStream fos = new FileOutputStream(new File(temp, "ftest" + System.currentTimeMillis() + ".zip"));
+	}
+
+	private void realTestCreateFeatureAndRow(File db, File gdbZipFile) throws XMLStreamException, IOException, URISyntaxException {
+		FileOutputStream fos = new FileOutputStream(gdbZipFile);
 		ZipOutputStream zos = new ZipOutputStream(fos);
-		IGISOutputStream os = new FileGdbOutputStream(zos, new Object[]{db});
+		IGISOutputStream os = new FileGdbOutputStream(zos, new Object[]{ db });
 		Schema schema = new Schema();
 		SimpleField field = new SimpleField("speedLimit", SimpleField.Type.DOUBLE);
 		schema.put(field);
@@ -257,26 +262,43 @@ public class TestFileGDBSupport {
 	@Test
 	public void testReadFeatureGdb() throws IOException {
 		File path = new File("data/gdb/ftest1.gdb");
-		IGISInputStream os = new FileGdbInputStream(path, null);
-		IGISObject ob = os.read();
-		int featureCount = 0;
-		while (ob != null) {
-			assertTrue(ob instanceof Schema);
-			ob = os.read(); // CS
-			assertTrue(ob instanceof ContainerStart);
-			String cname = ((ContainerStart) ob).getName();
-			System.err.println("Open container " + cname);
-			ob = os.read(); // Feature or Row
-			while(ob != null && (ob instanceof Row)) {
+		IGISInputStream os = null;
+		try {
+			os = new FileGdbInputStream(path, null);
+			IGISObject ob = os.read();
+			int featureCount = 0;
+			while (ob != null) {
+				assertTrue(ob instanceof Schema);
+				ob = os.read(); // CS
+				assertTrue(ob instanceof ContainerStart);
+				String cname = ((ContainerStart) ob).getName();
+				System.err.println("Open container " + cname);
 				ob = os.read(); // Feature or Row
-				featureCount++;
+				while(ob != null && (ob instanceof Row)) {
+					ob = os.read(); // Feature or Row
+					featureCount++;
+				}
+				assertTrue(ob instanceof ContainerEnd);
+				System.err.println("Close container - " + featureCount + " features");
+				featureCount = 0;
+				ob = os.read();
 			}
-			assertTrue(ob instanceof ContainerEnd);
-			System.err.println("Close container - " + featureCount + " features");
-			featureCount = 0;
-			ob = os.read();
+		} finally {
+			if (os != null)
+				os.close();
 		}
-		os.close();
+	}
+
+	private static void deleteGdbFolder(File db) {
+		if (db.exists()) {
+			for(File f : db.listFiles()) {
+				if (!f.delete())
+					f.deleteOnExit();
+			}
+			if (!db.delete()) {
+				db.deleteOnExit();
+			}
+		}
 	}
 
 }

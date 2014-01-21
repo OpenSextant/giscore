@@ -53,6 +53,7 @@ import static org.junit.Assert.assertTrue;
  *
  */
 public class TestDbfOutputStream {
+
     private final Random rand = new Random();
 
     private static final String[] DATE_STRINGS = {
@@ -79,66 +80,72 @@ public class TestDbfOutputStream {
         s.put(s3);
 
         File temp = File.createTempFile("test", ".dbf");
-        FileOutputStream os = new FileOutputStream(temp);
-        DbfOutputStream dbfos = new DbfOutputStream(os, null);
-        dbfos.write(s);
-        List<Row> data = new ArrayList<Row>(50);
-        for (int i = 0; i < 50; i++) {
-            Row r = new Row();
-            r.putData(s1, randomString(s1));
-            r.putData(s2, randomString(s2));
-            r.putData(s3, randomString(s3));
-            data.add(r);
-            dbfos.write(r);
-        }
+		FileInputStream is = null;
+		FileOutputStream os = null;
+		try {
+			os = new FileOutputStream(temp);
+			DbfOutputStream dbfos = new DbfOutputStream(os, null);
+			dbfos.write(s);
+			List<Row> data = new ArrayList<Row>(50);
+			for (int i = 0; i < 50; i++) {
+				Row r = new Row();
+				r.putData(s1, randomString(s1));
+				r.putData(s2, randomString(s2));
+				r.putData(s3, randomString(s3));
+				data.add(r);
+				dbfos.write(r);
+			}
 
-        // generate large string that will be truncated in output
-        Row r = new Row();
-        String largeString = randomString(256);
-        r.putData(s1, largeString);
-        r.putData(s2, largeString);
-        r.putData(s3, largeString);
-        dbfos.write(r);
+			// generate large string that will be truncated in output
+			Row r = new Row();
+			String largeString = randomString(256);
+			r.putData(s1, largeString);
+			r.putData(s2, largeString);
+			r.putData(s3, largeString);
+			dbfos.write(r);
 
-        // write row with all fields set as null values
-        r = new Row();
-        for (SimpleField sf : r.getFields()) {
-            r.putData(sf, null);
-        }
-        dbfos.write(r);
+			// write row with all fields set as null values
+			r = new Row();
+			for (SimpleField sf : r.getFields()) {
+				r.putData(sf, null);
+			}
+			dbfos.write(r);
 
-        dbfos.close();
-        os.close();
+			dbfos.close();
+			os.close();
+			os = null;
 
-        FileInputStream is = new FileInputStream(temp);
-        try {
-            DbfInputStream dbfis = new DbfInputStream(is, null);
-            Schema readschema = (Schema) dbfis.read();
-            assertNotNull(readschema);
-            assertEquals(3, readschema.getKeys().size());
-            compare(s1, readschema.get("s1"));
-            compare(s2, readschema.get("s2"));
-            compare(s3, readschema.get("s3"));
-            for (int i = 0; i < 50; i++) {
-                Row readrow = (Row) dbfis.read();
-                Row origrow = data.get(i);
-                compare(s, readschema, origrow, readrow);
-            }
+			is = new FileInputStream(temp);
+			DbfInputStream dbfis = new DbfInputStream(is, null);
+			Schema readschema = (Schema) dbfis.read();
+			assertNotNull(readschema);
+			assertEquals(3, readschema.getKeys().size());
+			compare(s1, readschema.get("s1"));
+			compare(s2, readschema.get("s2"));
+			compare(s3, readschema.get("s3"));
+			for (int i = 0; i < 50; i++) {
+				Row readrow = (Row) dbfis.read();
+				Row origrow = data.get(i);
+				compare(s, readschema, origrow, readrow);
+			}
 
-            Row readrow = (Row) dbfis.read();
-            assertNotNull(readrow);
-            assertEquals(5, StringUtils.length((String) readrow.getData(s1)));
-            assertEquals(10, StringUtils.length((String) readrow.getData(s2)));
-            assertEquals(253, StringUtils.length((String) readrow.getData(s3)));
+			Row readrow = (Row) dbfis.read();
+			assertNotNull(readrow);
+			assertEquals(5, StringUtils.length((String) readrow.getData(s1)));
+			assertEquals(10, StringUtils.length((String) readrow.getData(s2)));
+			assertEquals(253, StringUtils.length((String) readrow.getData(s3)));
 
-            readrow = (Row) dbfis.read();
-            assertNotNull(readrow);
-            for (Map.Entry<SimpleField, Object> e : readrow.getEntrySet()) {
-                assertTrue(ObjectUtils.NULL == e.getValue());
-            }
-        } finally {
-            IOUtils.closeQuietly(is);
-        }
+			readrow = (Row) dbfis.read();
+			assertNotNull(readrow);
+			for (Map.Entry<SimpleField, Object> e : readrow.getEntrySet()) {
+				assertTrue(ObjectUtils.NULL == e.getValue());
+			}
+		} finally {
+			IOUtils.closeQuietly(os);
+			IOUtils.closeQuietly(is);
+			if (temp.exists() && !temp.delete())
+				temp.deleteOnExit();
+		}
     }
 
     @Test
@@ -148,24 +155,26 @@ public class TestDbfOutputStream {
         s.put(b);
         File temp = File.createTempFile("test-bool", ".dbf");
         FileOutputStream os = new FileOutputStream(temp);
-        DbfOutputStream dbfos = new DbfOutputStream(os, null);
-        dbfos.write(s);
+		FileInputStream is = null;
+		try {
+			DbfOutputStream dbfos = new DbfOutputStream(os, null);
+			dbfos.write(s);
 
-        Object[] objs = {Boolean.TRUE, Boolean.FALSE, "?", "T", "t", "F", "f", "1", "0", null, "abc"};
+			Object[] objs = {Boolean.TRUE, Boolean.FALSE, "?", "T", "t", "F", "f", "1", "0", null, "abc"};
 
-        List<Row> data = new ArrayList<Row>(objs.length);
-        for (Object o : objs) {
-            Row r = new Row();
-            r.putData(b, o);
-            data.add(r);
-            dbfos.write(r);
-        }
-        dbfos.close();
-        os.close();
+			List<Row> data = new ArrayList<Row>(objs.length);
+			for (Object o : objs) {
+				Row r = new Row();
+				r.putData(b, o);
+				data.add(r);
+				dbfos.write(r);
+			}
+			dbfos.close();
+			os.close();
+			os = null;
 
-        FileInputStream is = new FileInputStream(temp);
-        try {
-            DbfInputStream dbfis = new DbfInputStream(is, null);
+			is = new FileInputStream(temp);
+			DbfInputStream dbfis = new DbfInputStream(is, null);
             Schema readschema = (Schema) dbfis.read();
             assertNotNull(readschema);
             assertEquals(1, readschema.getKeys().size());
@@ -175,7 +184,10 @@ public class TestDbfOutputStream {
                 compare(s, readschema, origrow, readrow);
             }
         } finally {
+			IOUtils.closeQuietly(os);
             IOUtils.closeQuietly(is);
+			if (temp.exists() && !temp.delete())
+				temp.deleteOnExit();
         }
     }
 
@@ -191,8 +203,9 @@ public class TestDbfOutputStream {
 
         File temp = File.createTempFile("testLong", ".dbf");
         FileOutputStream os = new FileOutputStream(temp);
-        List<Row> data = new ArrayList<Row>(50);
+		FileInputStream is = null;
         try {
+			List<Row> data = new ArrayList<Row>(50);
             DbfOutputStream dbfos = new DbfOutputStream(os, null);
             dbfos.write(s);
             for (int i = 0; i < 50; i++) {
@@ -203,14 +216,11 @@ public class TestDbfOutputStream {
                 data.add(r);
                 dbfos.write(r);
             }
-
             dbfos.close();
-        } finally {
-            IOUtils.closeQuietly(os);
-        }
+			os.close();
+			os = null;
 
-        FileInputStream is = new FileInputStream(temp);
-        try {
+			is = new FileInputStream(temp);
             DbfInputStream dbfis = new DbfInputStream(is, null);
             Schema readschema = (Schema) dbfis.read();
             assertNotNull(readschema);
@@ -224,7 +234,10 @@ public class TestDbfOutputStream {
             }
             dbfis.close();
         } finally {
+			IOUtils.closeQuietly(os);
             IOUtils.closeQuietly(is);
+			if (temp.exists() && !temp.delete())
+				temp.deleteOnExit();
         }
     }
 
@@ -258,89 +271,98 @@ public class TestDbfOutputStream {
 
         File temp = File.createTempFile("test", ".dbf");
         FileOutputStream os = new FileOutputStream(temp);
-        DbfOutputStream dbfos = new DbfOutputStream(os, null);
-        dbfos.write(s);
-        List<Row> data = new ArrayList<Row>(50);
-        for (int i = 0; i < 50; i++) {
-            Row r = new Row();
-            r.putData(b, RandomUtils.nextBoolean());
-            r.putData(f, RandomUtils.nextFloat());
-            r.putData(db, RandomUtils.nextFloat());
-            long rndLong = RandomUtils.nextLong();
-            r.putData(li, rndLong % 10000000);
-            r.putData(it, RandomUtils.nextInt(10000000));
-            r.putData(sh, (short) RandomUtils.nextInt(10000));
-            r.putData(ui, Math.abs(RandomUtils.nextInt(10000000)));
-            r.putData(us, (short) Math.abs(RandomUtils.nextInt(2000)));
-            r.putData(oid, Math.abs(RandomUtils.nextInt(10000000)));
-            data.add(r);
-            dbfos.write(r);
-        }
+		FileInputStream is = null;
+		try {
+			DbfOutputStream dbfos = new DbfOutputStream(os, null);
+			dbfos.write(s);
+			List<Row> data = new ArrayList<Row>(50);
+			for (int i = 0; i < 50; i++) {
+				Row r = new Row();
+				r.putData(b, RandomUtils.nextBoolean());
+				r.putData(f, RandomUtils.nextFloat());
+				r.putData(db, RandomUtils.nextFloat());
+				long rndLong = RandomUtils.nextLong();
+				r.putData(li, rndLong % 10000000);
+				r.putData(it, RandomUtils.nextInt(10000000));
+				r.putData(sh, (short) RandomUtils.nextInt(10000));
+				r.putData(ui, Math.abs(RandomUtils.nextInt(10000000)));
+				r.putData(us, (short) Math.abs(RandomUtils.nextInt(2000)));
+				r.putData(oid, Math.abs(RandomUtils.nextInt(10000000)));
+				data.add(r);
+				dbfos.write(r);
+			}
 
-        // create values larger than most field lengths
-        Row r = new Row();
-        r.putData(b, Boolean.FALSE);
-        r.putData(f, Float.MAX_VALUE);
-        r.putData(db, Double.MAX_VALUE);
-        r.putData(li, Long.MIN_VALUE);
-        r.putData(it, Integer.MIN_VALUE);
-        r.putData(sh, Short.MIN_VALUE);
-        r.putData(ui, Integer.MAX_VALUE);
-        r.putData(us, Short.MAX_VALUE);
-        r.putData(oid, Long.MAX_VALUE);
-        dbfos.write(r);
+			// create values larger than most field lengths
+			Row r = new Row();
+			r.putData(b, Boolean.FALSE);
+			r.putData(f, Float.MAX_VALUE);
+			r.putData(db, Double.MAX_VALUE);
+			r.putData(li, Long.MIN_VALUE);
+			r.putData(it, Integer.MIN_VALUE);
+			r.putData(sh, Short.MIN_VALUE);
+			r.putData(ui, Integer.MAX_VALUE);
+			r.putData(us, Short.MAX_VALUE);
+			r.putData(oid, Long.MAX_VALUE);
+			dbfos.write(r);
 
-        // write row with all null values
-        r = new Row();
-        for (SimpleField sf : r.getFields()) {
-            r.putData(sf, null);
-        }
-        dbfos.write(r);
+			// write row with all null values
+			r = new Row();
+			for (SimpleField sf : r.getFields()) {
+				r.putData(sf, null);
+			}
+			dbfos.write(r);
 
-        dbfos.close();
-        os.close();
+			dbfos.close();
+			os.close();
+			os = null;
 
-        FileInputStream is = new FileInputStream(temp);
-        DbfInputStream dbfis = new DbfInputStream(is, null);
-        Schema readschema = (Schema) dbfis.read();
-        assertNotNull(readschema);
-        assertEquals(9, readschema.getKeys().size());
-        compare(b, readschema.get("b"));
-        compare(f, readschema.get("f"));
-        compare(db, readschema.get("db"));
-        compare(li, readschema.get("li"));
-        compare(it, readschema.get("it"));
-        compare(sh, readschema.get("sh"));
-        compare(ui, readschema.get("ui"));
-        compare(us, readschema.get("us"));
-        compare(oid, readschema.get("oid"));
+			is = new FileInputStream(temp);
+			DbfInputStream dbfis = new DbfInputStream(is, null);
+			Schema readschema = (Schema) dbfis.read();
+			assertNotNull(readschema);
+			assertEquals(9, readschema.getKeys().size());
+			compare(b, readschema.get("b"));
+			compare(f, readschema.get("f"));
+			compare(db, readschema.get("db"));
+			compare(li, readschema.get("li"));
+			compare(it, readschema.get("it"));
+			compare(sh, readschema.get("sh"));
+			compare(ui, readschema.get("ui"));
+			compare(us, readschema.get("us"));
+			compare(oid, readschema.get("oid"));
 
-        for (int i = 0; i < 50; i++) {
-            Row readrow = (Row) dbfis.read();
-            Row origrow = data.get(i);
-            compare(s, readschema, origrow, readrow);
-        }
+			for (int i = 0; i < 50; i++) {
+				Row readrow = (Row) dbfis.read();
+				Row origrow = data.get(i);
+				compare(s, readschema, origrow, readrow);
+			}
 
-        Row readrow = (Row) dbfis.read();
-        assertNotNull(readrow);
-        assertTrue(readrow.hasExtendedData());
-        assertFalse((Boolean) readrow.getData(b));
-        for (Map.Entry<SimpleField, Object> e : readrow.getEntrySet()) {
-            assertNotNull(e.getValue());
-        }
+			Row readrow = (Row) dbfis.read();
+			assertNotNull(readrow);
+			assertTrue(readrow.hasExtendedData());
+			assertFalse((Boolean) readrow.getData(b));
+			for (Map.Entry<SimpleField, Object> e : readrow.getEntrySet()) {
+				assertNotNull(e.getValue());
+			}
 
-        readrow = (Row) dbfis.read();
-        assertNotNull(readrow);
-        assertTrue(readrow.hasExtendedData());
-        for (Map.Entry<SimpleField, Object> e : readrow.getEntrySet()) {
-            // System.out.println(e.getKey() + " " + e.getValue());
-            if (e.getKey().getType() == Type.BOOL)
-                assertFalse((Boolean) e.getValue());
-            else
-                assertTrue(ObjectUtils.NULL == e.getValue());
-        }
-        dbfis.close();
-    }
+			readrow = (Row) dbfis.read();
+			assertNotNull(readrow);
+			assertTrue(readrow.hasExtendedData());
+			for (Map.Entry<SimpleField, Object> e : readrow.getEntrySet()) {
+				// System.out.println(e.getKey() + " " + e.getValue());
+				if (e.getKey().getType() == Type.BOOL)
+					assertFalse((Boolean) e.getValue());
+				else
+					assertTrue(ObjectUtils.NULL == e.getValue());
+			}
+			dbfis.close();
+		} finally {
+			IOUtils.closeQuietly(os);
+			IOUtils.closeQuietly(is);
+			if (temp.exists() && !temp.delete())
+				temp.deleteOnExit();
+		}
+	}
 
     @Test
     public void testDbfOutputStreamDate() throws Exception {
@@ -350,41 +372,43 @@ public class TestDbfOutputStream {
 
         File temp = File.createTempFile("test", ".dbf");
         FileOutputStream os = new FileOutputStream(temp);
-        DbfOutputStream dbfos = new DbfOutputStream(os, null);
-        dbfos.write(s);
-        List<Row> data = new ArrayList<Row>(50 + DATE_STRINGS.length);
-        for (int i = 0; i < 50; i++) {
-            Row r = new Row();
-            Date d = new Date(System.currentTimeMillis()
-                    - (200L * RandomUtils.nextInt()));
-            // System.out.println("Date: " + d);
-            r.putData(date, d);
-            data.add(r);
-            dbfos.write(r);
-        }
+		FileInputStream is = null;
+		try {
+			DbfOutputStream dbfos = new DbfOutputStream(os, null);
+			dbfos.write(s);
+			List<Row> data = new ArrayList<Row>(50 + DATE_STRINGS.length);
+			for (int i = 0; i < 50; i++) {
+				Row r = new Row();
+				Date d = new Date(System.currentTimeMillis()
+						- (200L * RandomUtils.nextInt()));
+				// System.out.println("Date: " + d);
+				r.putData(date, d);
+				data.add(r);
+				dbfos.write(r);
+			}
 
-        // multiple date formats
-        for (String dateString : DATE_STRINGS) {
-            Row r = new Row();
-            r.putData(date, dateString);
-            data.add(r);
-            dbfos.write(r);
-        }
+			// multiple date formats
+			for (String dateString : DATE_STRINGS) {
+				Row r = new Row();
+				r.putData(date, dateString);
+				data.add(r);
+				dbfos.write(r);
+			}
 
-        Row r = new Row();
-        r.putData(date, null); // null date value
-        dbfos.write(r);
+			Row r = new Row();
+			r.putData(date, null); // null date value
+			dbfos.write(r);
 
-        r = new Row();
-        r.putData(date, "May-2014"); // incomplete date
-        dbfos.write(r);
+			r = new Row();
+			r.putData(date, "May-2014"); // incomplete date
+			dbfos.write(r);
 
-        dbfos.close();
-        os.close();
+			dbfos.close();
+			os.close();
+			os = null;
 
-        FileInputStream is = new FileInputStream(temp);
-        try {
-            DbfInputStream dbfis = new DbfInputStream(is, null);
+			is = new FileInputStream(temp);
+			DbfInputStream dbfis = new DbfInputStream(is, null);
             Schema readschema = (Schema) dbfis.read();
             assertNotNull(readschema);
             assertEquals(1, readschema.getKeys().size());
@@ -404,7 +428,10 @@ public class TestDbfOutputStream {
             assertNull(readrow.getData(date));
 
         } finally {
+			IOUtils.closeQuietly(os);
             IOUtils.closeQuietly(is);
+			if (temp.exists() && !temp.delete())
+				temp.deleteOnExit();
         }
     }
 

@@ -45,12 +45,12 @@ import org.opensextant.giscore.test.TestGISBase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
-
 /**
  * @author DRAND
  *
  */
 public class TestCSVOutputStream extends TestGISBase {
+
 	@Test
 	public void testStreamOutput1() throws Exception {
 		doTest(null, "csv_example.csv", "\r\n");
@@ -72,57 +72,61 @@ public class TestCSVOutputStream extends TestGISBase {
 		IGISInputStream is = GISFactory
 				.getInputStream(DocumentType.CSV, stream, s, lineDel);
 		File temp = File.createTempFile("test", ".csv");
-		OutputStream outputStream = new FileOutputStream(temp);
-		IGISOutputStream os = GISFactory.getOutputStream(DocumentType.CSV, 
-				outputStream, lineDel);
-		List<IGISObject> data = new ArrayList<IGISObject>();
-		while (true) {
-			IGISObject obj = is.read();
-			if (obj == null)
-				break;
-			os.write(obj);
-			data.add(obj);
-		}
-		os.close();
-		IOUtils.closeQuietly(outputStream);
-		
-		stream = new FileInputStream(temp);
-		is = GISFactory
-			.getInputStream(DocumentType.CSV, stream, s, lineDel);
-		Iterator<IGISObject> iter = data.iterator();
-		while (true) {
-			IGISObject obj = is.read();
-			if (obj == null)
-				break;
-			if (obj instanceof Schema) {
-				Schema a = (Schema) iter.next();
-				// review logic here: instanceof will always return true
-				//if (obj instanceof Schema) {
-					Schema b = (Schema) obj;
-					assertEquals(a.getKeys(), b.getKeys());
-				//} else {
-					//is.read(); // Need to even off the stream - we had a schema in only one
-				//}
-			} else {
-				Row a = (Row) iter.next();
-				Row b = (Row) obj;
-				Collection<SimpleField> afields = a.getFields();
-				Collection<SimpleField> bfields = b.getFields();
-				Iterator<SimpleField> aiter = afields.iterator();
-				Iterator<SimpleField> biter = bfields.iterator();
-				while(aiter.hasNext()) {
-					SimpleField af = aiter.next();
-					SimpleField bf = biter.next();
-					assertNotNull(af);
-					assertNotNull(bf);
-					Object av = a.getData(af);
-					Object bv = b.getData(bf);
-					assertEquals(av, bv);
+		try {
+			OutputStream outputStream = new FileOutputStream(temp);
+			IGISOutputStream os = GISFactory.getOutputStream(DocumentType.CSV,
+					outputStream, lineDel);
+			List<IGISObject> data = new ArrayList<IGISObject>();
+			while (true) {
+				IGISObject obj = is.read();
+				if (obj == null)
+					break;
+				os.write(obj);
+				data.add(obj);
+			}
+			os.close();
+			IOUtils.closeQuietly(outputStream);
+
+			stream = new FileInputStream(temp);
+			is = GISFactory
+				.getInputStream(DocumentType.CSV, stream, s, lineDel);
+			Iterator<IGISObject> iter = data.iterator();
+			while (true) {
+				IGISObject obj = is.read();
+				if (obj == null)
+					break;
+				if (obj instanceof Schema) {
+					Schema a = (Schema) iter.next();
+					// review logic here: instanceof will always return true
+					//if (obj instanceof Schema) {
+						Schema b = (Schema) obj;
+						assertEquals(a.getKeys(), b.getKeys());
+					//} else {
+						//is.read(); // Need to even off the stream - we had a schema in only one
+					//}
+				} else {
+					Row a = (Row) iter.next();
+					Row b = (Row) obj;
+					Collection<SimpleField> afields = a.getFields();
+					Collection<SimpleField> bfields = b.getFields();
+					Iterator<SimpleField> aiter = afields.iterator();
+					Iterator<SimpleField> biter = bfields.iterator();
+					while(aiter.hasNext()) {
+						SimpleField af = aiter.next();
+						SimpleField bf = biter.next();
+						assertNotNull(af);
+						assertNotNull(bf);
+						Object av = a.getData(af);
+						Object bv = b.getData(bf);
+						assertEquals(av, bv);
+					}
 				}
 			}
+			is.close();
+		} finally {
+			if (temp.exists() && !temp.delete())
+				temp.deleteOnExit();
 		}
-		
-		temp.delete();
 	}
 	
 	private InputStream getStream(String filename) throws FileNotFoundException {
@@ -131,5 +135,6 @@ public class TestCSVOutputStream extends TestGISBase {
 			return new FileInputStream(file);
 		System.out.println("File does not exist: " + file);
 		return getClass().getResourceAsStream(filename);
-	}	
+	}
+
 }
