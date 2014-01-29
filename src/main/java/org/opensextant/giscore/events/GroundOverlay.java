@@ -153,6 +153,7 @@ public class GroundOverlay extends Overlay {
      *
      * @return bounding box for image, null if missing either north, south, east,
      *          or west edge from LatLonBox.
+     * @throws IllegalArgumentException   if coordinate values are out of range
      */
     @CheckForNull
     public Geodetic2DBounds getBoundingBox() {
