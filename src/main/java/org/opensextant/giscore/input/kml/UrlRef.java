@@ -416,6 +416,7 @@ public final class UrlRef implements java.io.Serializable {
 					}
 				}
 				if (hasEntries) {
+					// valid ZIP stream found but only with non-kml entries
 					throw new FileNotFoundException("Failed to find KML content in KMZ file: " + url);
 				}
 				// otherwise if stream is mis-categorized and not KMZ then may want to try again as raw KML bytes...
@@ -519,7 +520,9 @@ public final class UrlRef implements java.io.Serializable {
 	public boolean equals(Object other) {
 		if (other == null) return false;
 		if (this == other) return true;
-		return uri.equals(other);
+		if (getClass() != other.getClass())
+			return false;
+		return uri.equals(((UrlRef)other).uri);
 	}
 	/**
 	 * Normalize and convert internal "URI" form to portable URL form.
