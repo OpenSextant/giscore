@@ -93,6 +93,7 @@ public class Style extends StyleSelector {
 
 	private boolean hasPolyStyle; // false
 	private Color polyColor;
+	private ColorMode polyColorMode; // default: normal
 	private Boolean polyfill;
 	private Boolean polyoutline;
 
@@ -596,6 +597,16 @@ public class Style extends StyleSelector {
 		return polyoutline;
 	}
 
+	public ColorMode getPolyColorMode() {
+		return polyColorMode;
+	}
+
+	public void setPolyColorMode(ColorMode polyColorMode) {
+		this.polyColorMode = polyColorMode;
+		if (!hasPolyStyle && polyColorMode != null)
+			hasPolyStyle = true;
+	}
+
 	public void accept(IStreamVisitor visitor) {
 		visitor.visit(this);
 	}
@@ -661,6 +672,7 @@ public class Style extends StyleSelector {
 			polyColor = (Color) in.readScalar();
 			polyfill = (Boolean) in.readScalar();
 			polyoutline = (Boolean) in.readScalar();
+			polyColorMode = in.readBoolean() ? ColorMode.RANDOM : null;
 		}
 	}
 
@@ -708,6 +720,7 @@ public class Style extends StyleSelector {
 			out.writeScalar(polyColor);
 			out.writeScalar(polyfill);
 			out.writeScalar(polyoutline);
+			out.writeBoolean(polyColorMode == ColorMode.RANDOM);
 		}
 	}
 

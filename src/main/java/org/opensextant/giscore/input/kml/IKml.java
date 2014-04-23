@@ -42,6 +42,7 @@ public interface IKml {
 	static final String BG_COLOR = "bgColor";
 	static final String CAMERA = "Camera";
 	static final String COLOR = "color";
+	static final String COLOR_MODE =  "colorMode";
 	static final String COORDINATES = "coordinates";
 	static final String DATA = "Data";
 	static final String DESCRIPTION = "description";

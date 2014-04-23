@@ -1629,6 +1629,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     private void handlePolyStyleElement(Style style) throws XMLStreamException {
         writer.writeStartElement(POLY_STYLE);
         handleColor(COLOR, style.getPolyColor());
+		if(style.getPolyColorMode() == Style.ColorMode.RANDOM)
+			handleSimpleElement(COLOR_MODE, "random");
         if (style.getPolyfill() != null)
             handleSimpleElement(FILL, style.getPolyfill() ? "1" : "0"); // default 1
         if (style.getPolyoutline() != null)
