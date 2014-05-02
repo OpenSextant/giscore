@@ -950,6 +950,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	@NonNull
 	public static Date parseDate(String datestr) throws ParseException {
 		if (StringUtils.isBlank(datestr)) throw new ParseException("Empty or null date string", 0);
+		String message;
+		Exception ex;
 		try {
 			if (fact == null) fact = DatatypeFactory.newInstance();
 			XMLGregorianCalendar o = fact.newXMLGregorianCalendar(datestr);
@@ -987,9 +989,18 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			}
 			return cal.getTime();
 		} catch (IllegalArgumentException iae) {
-			// try individual date formats
-			int ind = datestr.indexOf('T');
-			int i;
+			message = "Failed to parse date with DatatypeFactory";
+			ex = iae;
+		} catch (DatatypeConfigurationException ce) {
+			// NOTE: maybe JODA time would be be better generic time parser but would be a new dependency
+			// if unable to create factory then try brute force
+			message = "Failed to get DatatypeFactory";
+			ex = ce;
+		}
+
+		// try individual date formats
+		int ind = datestr.indexOf('T');
+		int i;
             /*
                    date formats:
                    0: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
@@ -1009,6 +1020,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				// definition but Google Earth has lax parsing for such cases so we attempt
 				// to parse as such.
 				// This will NOT handle alternate time zones format with missing second field: e.g. 2009-03-14T16:10-05:00
+			// note: this does not correctly handle dateTime (YYYY-MM-DDThh:mm:sszzzzzz) format
 				if (!datestr.endsWith("Z") && datestr.indexOf(':', ind + 1) > 0
 						&& datestr.indexOf('-', ind + 1) == -1
 						&& datestr.indexOf('+', ind + 1) == -1) {
@@ -1016,36 +1028,23 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					datestr += 'Z'; // append 'Z' to date
 				}
 			}
-			while (i < ms_dateFormats.size()) {
+		final int fmtCount = ms_dateFormats.size();
+		while (i < fmtCount) {
 				SimpleDateFormat fmt = ms_dateFormats.get(i++);
 				try {
 					Date date = fmt.parse(datestr);
-					log.debug("Failed to parse date {} with DatatypeFactory. Parsed using dateFormat: {}",
-							datestr, fmt.toPattern());
+				log.warn(message);
+				log.debug("Parsed using dateFormat: {}", fmt.toPattern());
 					return date;
 				} catch (ParseException pe) {
 					// ignore
 				}
-			}
-			// give up
-			final ParseException e2 = new ParseException(iae.getMessage(), 0);
-			e2.initCause(iae);
-			throw e2;
-		} catch (DatatypeConfigurationException ce) {
-			// NOTE: maybe JODA time would be be better generic time parser but would be a new dependency
-			// if unable to create factory then try brute force
-			log.error("Failed to get DatatypeFactory", ce);
-			// note: this does not correctly handle dateTime (YYYY-MM-DDThh:mm:sszzzzzz) format
-			ParseException e = null;
-			for (DateFormat fmt : ms_dateFormats) {
-				try {
-					return fmt.parse(datestr);
-				} catch (ParseException pe) {
-					e = pe;
-				}
-			}
-			throw e;
 		}
+
+		// give up
+		final ParseException e2 = new ParseException(message, 0);
+		e2.initCause(ex);
+		throw e2;
 	}
 
 	/**
