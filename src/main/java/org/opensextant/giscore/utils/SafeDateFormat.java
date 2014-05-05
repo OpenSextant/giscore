@@ -126,4 +126,8 @@ public class SafeDateFormat {
 	public TimeZone getTimeZone() {
 		return timeZone;
 	}
+
+	public String toPattern() {
+		return pattern;
+	}
 }
