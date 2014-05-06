@@ -1088,14 +1088,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleGeometryAttributes(poly);
                 writer.writeStartElement(OUTER_BOUNDARY_IS);
                 writer.writeStartElement(LINEAR_RING);
-                handleSimpleElement(COORDINATES, handleCoordinates(poly
-                        .getOuterRing().iterator()));
+				handleSimpleElement(COORDINATES, handlePolygonCoordinates(poly
+						.getOuterRing().getPoints()));
                 writer.writeEndElement();
                 writer.writeEndElement();
 				for (LinearRing lr : poly.getLinearRings()) {
 					writer.writeStartElement(INNER_BOUNDARY_IS);
 					writer.writeStartElement(LINEAR_RING);
-					handleSimpleElement(COORDINATES, handleCoordinates(lr
+					handleSimpleElement(COORDINATES, handlePolygonCoordinates(lr
 							.getPoints()));
 					writer.writeEndElement();
 					writer.writeEndElement();
@@ -1190,6 +1190,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 // note: number points is one more than count since first and last points must be the same
                 StringBuilder b = new StringBuilder();
                 Geodetic2DPoint firstPt = null;
+                // NOTE: if circle crosses IDL then shape is incorrectly drawn in Google Earth
                 for (Geodetic2DPoint point : c.boundary(numberCirclePoints)) {
                     if (firstPt == null) firstPt = point;
                     handleSingleCoordinate(b, point);
@@ -1433,6 +1434,36 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             b.append(',');
             b.append(formatDouble(p3d.getElevation()));
         }
+    }
+
+    private String handlePolygonCoordinates(Collection<Point> coordinateList) {
+		StringBuilder b = new StringBuilder();
+		Double lastLonValue = null;
+		for (Point point : coordinateList) {
+			if (b.length() > 0) {
+				b.append(' ');
+			}
+			final Geodetic2DPoint p2d = point.getCenter();
+			double lonDegrees = p2d.getLongitudeAsDegrees();
+			// NOTE: geodesy normalizes longitude +180 to -180 so polygons from west with longitude >= 0
+			// and east longitude at 180 must be clamped to +180 otherwise Google Earth wraps polygons
+			// other way around the world. Lines and LinearRings are drawn correctly.
+			// TODO: if first point at -180 longitude and next point >= 0 then will not appear correct in Google Earth
+			if (lastLonValue != null && lastLonValue >= 0 && Math.abs(lonDegrees + 180) < 1e-8) {
+				log.debug("swap the longitude sign -180 > +180");
+				lonDegrees = -lonDegrees; // switch the sign
+			}
+			b.append(formatDouble(lonDegrees));
+			b.append(',');
+			b.append(formatDouble(p2d.getLatitudeAsDegrees()));
+			if (p2d instanceof Geodetic3DPoint) {
+				Geodetic3DPoint p3d = (Geodetic3DPoint) p2d;
+				b.append(',');
+				b.append(formatDouble(p3d.getElevation()));
+			}
+			lastLonValue = lonDegrees;
+		}
+		return b.toString();
     }
 
     /**
