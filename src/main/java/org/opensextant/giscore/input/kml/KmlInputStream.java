@@ -212,6 +212,9 @@ import org.slf4j.LoggerFactory;
  * Limited support for {@code NetworkLinkControl} which creates an object wrapper for the link
  * with the top-level info but the update details (i.e. Create, Delete, and Change) are discarded.</a>
  * <p/></li>
+ * <li> IconStyle and LineStyle are fully supported except for colorMode = random which is ignored.
+ *   Only PolyStyle has support for the random colorMode.
+ * <p/></li>
  * <li> Allows timestamps to omit seconds field as does Google Earth. Strict XML schema validation requires
  * seconds field in the dateTime ({@code YYYY-MM-DDThh:mm:ssZ}) format but Google Earth is lax in its
  * parsing rules. Likewise allows the 'Z' suffix to be omitted in which case it defaults to UTC.
@@ -1762,7 +1765,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @param e
 	 * @param type
 	 * @return
-	 * @throws XMLStreamException if there is an error with the underlying XML.
+	 * @throws XMLStreamException if there is an error with the underlying XML
 	 */
 	@NonNull
 	private IGISObject handleFeature(XMLEvent e, String type) throws XMLStreamException {
