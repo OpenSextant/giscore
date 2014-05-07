@@ -126,6 +126,8 @@ import org.slf4j.LoggerFactory;
  * {@code Metadata}.
  * <li> Limited support for NetworkLinkControl.
  * <li> Partial support for PhotoOverlay. Omits ViewVolume, ImagePyramid, and shape properties.
+ * <li> IconStyle and LineStyle are fully supported except for colorMode = random which is not represented
+ * in the Style class. Only PolyStyle has support for the random colorMode.
  * <li> Warns if shared styles appear in Folders. According to OGC KML specification
  * shared styles shall only appear within a Document [OGC 07-147r2 section 6.4].
  * </ul>
@@ -1117,7 +1119,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             try {
                 writer.writeStartElement(LINEAR_RING);
                 handleGeometryAttributes(r);
-                handleSimpleElement(COORDINATES, handleCoordinates(r.iterator()));
+                handleSimpleElement(COORDINATES, handleCoordinates(r.getPoints()));
                 writer.writeEndElement();
             } catch (XMLStreamException e) {
                 throw new IllegalStateException(e);
@@ -1373,22 +1375,6 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 //writer.writeComment("gx:altitudeMode>" + altitudeMode + "</gx:altitudeMode");
             }
         }
-    }
-
-    /**
-     * output the coordinates. The coordinates are output as lon,lat[,altitude]
-     * and are separated by spaces
-     *
-     * @param coordinates an iterator over the points, never <code>null</code>
-     * @return the coordinates as a string
-     */
-    private String handleCoordinates(Iterator<Point> coordinates) {
-        StringBuilder b = new StringBuilder();
-        while (coordinates.hasNext()) {
-            Point point = coordinates.next();
-            handleSingleCoordinate(b, point);
-        }
-        return b.toString();
     }
 
     /**
