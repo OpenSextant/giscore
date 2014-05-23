@@ -31,6 +31,8 @@ import org.opensextant.geodesy.Geodetic2DBounds;
 import org.opensextant.geodesy.Geodetic3DBounds;
 import org.opensextant.giscore.input.kml.IKml;
 import org.opensextant.giscore.input.kml.UrlRef;
+import org.opensextant.giscore.utils.DateTime;
+import org.opensextant.giscore.utils.DateTime.DateTimeType;
 import org.opensextant.giscore.utils.SimpleObjectInputStream;
 import org.opensextant.giscore.utils.SimpleObjectOutputStream;
 import org.slf4j.Logger;
@@ -51,8 +53,8 @@ public abstract class Common extends Row {
 	protected String description;
 	private String snippet;
 	private Boolean visibility;
-	protected Date startTime;
-	protected Date endTime;
+	protected DateTime startTime;
+	protected DateTime endTime;
 	protected String styleUrl;
 	private TaggedMap viewGroup;
 	private TaggedMap region;
@@ -125,32 +127,66 @@ public abstract class Common extends Row {
 	 * @return the startTime
 	 */
 	@CheckForNull
-	public Date getStartTime() {
+	public DateTime getStartDate() {
 		// note this exposes the internal representation by returning reference to mutable object
 		return startTime;
+	}
+
+	/**
+	 * @return the startTime as Date
+	 * @deprecated Use {@link #getStartDate()}
+	 */
+	@CheckForNull
+	@Deprecated
+	public Date getStartTime() {
+		return startTime == null ? null : startTime.toDate();
+	}
+
+	/**
+	 * @param startTime the startTime to set
+	 */
+	public void setStartTime(DateTime startTime) {
+		this.startTime = startTime;
 	}
 
 	/**
 	 * @param startTime the startTime to set
 	 */
 	public void setStartTime(Date startTime) {
-		this.startTime = startTime == null ? null : (Date) startTime.clone();
+		this.startTime = startTime == null ? null : new DateTime(startTime.getTime());
 	}
 
 	/**
 	 * @return the endTime
 	 */
 	@CheckForNull
-	public Date getEndTime() {
+	public DateTime getEndDate() {
 		// note this exposes the internal representation by returning reference to mutable object
 		return endTime;
+	}
+
+	/**
+	 * @return the endTime as Date
+	 * @deprecated Use {@link #getEndDate()}
+	 */
+	@CheckForNull
+	@Deprecated
+	public Date getEndTime() {
+		return endTime == null ? null : endTime.toDate();
+	}
+
+	/**
+	 * @param endTime the endTime to set
+	 */
+	public void setEndTime(DateTime endTime) {
+		this.endTime = endTime;
 	}
 
 	/**
 	 * @param endTime the endTime to set
 	 */
 	public void setEndTime(Date endTime) {
-		this.endTime = endTime == null ? null : (Date) endTime.clone();
+		this.endTime = endTime == null ? null : new DateTime(endTime.getTime());
 	}
 
 	/**
@@ -363,22 +399,30 @@ public abstract class Common extends Row {
 		name = in.readString();
 		description = in.readString();
 		styleUrl = in.readString();
-		long val = in.readLong();
-		if (val > -1) {
-			startTime = new Date(val);
-		} else {
-			startTime = null;
-		}
-		val = in.readLong();
-		if (val > -1) {
-			endTime = new Date(val);
-		} else {
-			endTime = null;
-		}
+		startTime = readDateTime(in);
+		endTime = readDateTime(in);
 		viewGroup = (TaggedMap) in.readObject();
 		region = (TaggedMap) in.readObject();
 		visibility = (Boolean) in.readScalar();
 		elements = in.readNonNullObjectCollection();
+	}
+
+	/**
+	 *
+	 * @param in the input stream, never <code>null</code>
+	 * @return DateTime
+	 * @throws IOException if an I/O error occurs
+	 * @throws IllegalArgumentException if DateTime type code is invalid
+	 */
+	private static DateTime readDateTime(SimpleObjectInputStream in) throws IOException {
+		int typeCode = in.readByte();
+		if (typeCode == -1) {
+			return null;
+		} else {
+			DateTimeType type = DateTimeType.valueOf(typeCode);
+			long val = in.readLong();
+			return new DateTime(val, type);
+		}
 	}
 
 	/**
@@ -392,14 +436,18 @@ public abstract class Common extends Row {
 		out.writeString(name);
 		out.writeString(description);
 		out.writeString(styleUrl);
-		if (startTime != null)
+		if (startTime != null) {
+			out.writeByte(startTime.getType().ordinal()); // 0=gYear, ..., 3=dateTime
 			out.writeLong(startTime.getTime());
-		else
-			out.writeLong(-1);
-		if (endTime != null)
+		} else {
+			out.writeByte(-1);
+		}
+		if (endTime != null) {
+			out.writeByte(endTime.getType().ordinal());
 			out.writeLong(endTime.getTime());
-		else
-			out.writeLong(-1);
+		} else {
+			out.writeByte(-1);
+		}
 		out.writeObject(viewGroup);
 		out.writeObject(region);
 		out.writeScalar(visibility);

@@ -24,14 +24,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,12 +35,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.TimeZone;
 import java.util.regex.Pattern;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
@@ -95,6 +87,7 @@ import org.opensextant.giscore.geometry.Point;
 import org.opensextant.giscore.geometry.Polygon;
 import org.opensextant.giscore.input.XmlInputStream;
 import org.opensextant.giscore.utils.Color;
+import org.opensextant.giscore.utils.DateTime;
 import org.opensextant.giscore.utils.NumberStreamTokenizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -248,9 +241,6 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	private static final Set<String> ms_attributes = new HashSet<String>(2); // open, metadata
 	private static final Set<String> ms_geometries = new HashSet<String>(6); // Point, LineString, etc.
 
-	private static final List<SimpleDateFormat> ms_dateFormats = new ArrayList<SimpleDateFormat>(6);
-	private static final TimeZone UTC = TimeZone.getTimeZone("UTC");
-	private static DatatypeFactory fact;
 	private static final Longitude COORD_ERROR = new Longitude();
 	private static final QName ID_ATTR = new QName(ID);
 
@@ -282,21 +272,6 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		ms_geometries.add(MULTI_GEOMETRY);
 		ms_geometries.add(MODEL);
 
-		// Reference states: dateTime (YYYY-MM-DDThh:mm:ssZ) in KML states that T is the separator
-		// between the calendar and the hourly notation of time, and Z indicates UTC. (Seconds are required.)
-		// however, we will also check time w/o seconds since it is accepted by Google Earth.
-		// Thus allowing the form: YYYY-MM-DDThh:mm[:ss][Z]
-		// http://code.google.com/apis/kml/documentation/kmlreference.html#timestamp
-
-		ms_dateFormats.add(new SimpleDateFormat(ISO_DATE_FMT)); // default: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'"));
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'")); // dateTime format w/o seconds
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM-dd")); // date (YYYY-MM-DD)
-		ms_dateFormats.add(new SimpleDateFormat("yyyy-MM"));    // gYearMonth (YYYY-MM)
-		ms_dateFormats.add(new SimpleDateFormat("yyyy"));       // gYear (YYYY)
-		for (DateFormat fmt : ms_dateFormats) {
-			fmt.setTimeZone(UTC);
-		}
 	}
 
 	public KmlInputStream(InputStream input) throws IOException {
@@ -919,16 +894,18 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					if (foundStartTag(se, WHEN)) {
 						time = getNonEmptyElementText();
 						if (time != null) {
-							Date date = parseDate(time);
+							DateTime date = new DateTime(time);
 							cs.setStartTime(date);
 							cs.setEndTime(date);
 						}
 					} else if (foundStartTag(se, BEGIN)) {
 						time = getNonEmptyElementText();
-						cs.setStartTime(parseDate(time));
+						if (time != null)
+							cs.setStartTime(new DateTime(time));
 					} else if (foundStartTag(se, END)) {
 						time = getNonEmptyElementText();
-						cs.setEndTime(parseDate(time));
+						if (time != null)
+							cs.setEndTime(new DateTime(time));
 					}
 				} catch (IllegalArgumentException e) {
 					log.warn("Ignoring bad time: " + time + ": " + e);
@@ -951,103 +928,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 * @throws ParseException If the <code>lexicalRepresentation</code> is not a valid <code>Date</code>.
 	 */
 	@NonNull
+	@Deprecated
 	public static Date parseDate(String datestr) throws ParseException {
-		if (StringUtils.isBlank(datestr)) throw new ParseException("Empty or null date string", 0);
-		String message;
-		Exception ex;
-		try {
-			if (fact == null) fact = DatatypeFactory.newInstance();
-			XMLGregorianCalendar o = fact.newXMLGregorianCalendar(datestr);
-			GregorianCalendar cal = o.toGregorianCalendar();
-			String type = o.getXMLSchemaType().getLocalPart();
-			boolean useUTC = true;
-			if ("dateTime".equals(type)) {
-				// dateTime (YYYY-MM-DDThh:mm:ssZ)
-				// dateTime (YYYY-MM-DDThh:mm:sszzzzzz)
-				// Second form gives the local time and then the +/- conversion to UTC.
-				// Set timezone to UTC if other than dateTime formats with explicit timezones
-				int ind = datestr.lastIndexOf('T') + 1; // index should never be -1 if type is dateTime
-				if (ind > 0 && (datestr.indexOf('+', ind) > 0 || datestr.indexOf('-', ind) > 0)) {
-					// e.g. 2009-03-14T18:10:46+03:00 or 2009-03-14T18:10:46-05:00
-					useUTC = false;
-				}
-				// if timeZone is missing (e.g. 2009-03-14T21:10:50) then 'Z' is assumed and UTC is used
-			}
-			if (useUTC) cal.setTimeZone(UTC);
-			//else datestr += "*";
-			//System.out.format("%-10s\t%s%n", type, datestr);
-			/*
-                 possible dateTime types: { dateTime, date, gYearMonth, gYear }
-                 if other than dateTime then must adjust the time to 0
-
-                 1997                      gYear        (YYYY)						1997-01-01T00:00:00.000Z
-                 1997-07                   gYearMonth   (YYYY-MM)					1997-07-01T00:00:00.000Z
-                 1997-07-16                date         (YYYY-MM-DD)				1997-07-16T00:00:00.000Z
-                 1997-07-16T07:30:15Z      dateTime (YYYY-MM-DDThh:mm:ssZ)			1997-07-16T07:30:15.000Z
-                 1997-07-16T07:30:15.30Z   dateTime     							1997-07-16T07:30:15.300Z
-                 1997-07-16T10:30:15+03:00 dateTime (YYYY-MM-DDThh:mm:sszzzzzz)	1997-07-16T07:30:15.000Z
-                */
-			if (!"dateTime".equals(type)) {
-				cal.set(Calendar.HOUR_OF_DAY, 0);
-			}
-			return cal.getTime();
-		} catch (IllegalArgumentException iae) {
-			message = "Failed to parse date with DatatypeFactory";
-			ex = iae;
-		} catch (DatatypeConfigurationException ce) {
-			// NOTE: maybe JODA time would be be better generic time parser but would be a new dependency
-			// if unable to create factory then try brute force
-			message = "Failed to get DatatypeFactory";
-			ex = ce;
-		}
-
-		// try individual date formats
-		int ind = datestr.indexOf('T');
-		int i;
-            /*
-                   date formats:
-                   0: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
-                   1: yyyy-MM-dd'T'HH:mm:ss'Z'
-                   2: yyyy-MM-dd'T'HH:mm'Z' (dateTime format w/o seconds)
-                   3: yyyy-MM-dd
-                   4: yyyy-MM  (gYearMonth)
-                   5: yyyy		(gYear)
-               */
-			if (ind == -1) {
-				i = 3; // if no 'T' in date then skip to date (YYYY-MM-DD) format @ index=3
-			} else {
-				i = 0;
-				// Sloppy KML might drop the 'Z' suffix or for dates. Google Earth defaults to UTC.
-				// Likewise KML might drop the seconds field in timestamp.
-				// Note these forms are not valid with respect to KML Schema and kml:dateTimeType
-				// definition but Google Earth has lax parsing for such cases so we attempt
-				// to parse as such.
-				// This will NOT handle alternate time zones format with missing second field: e.g. 2009-03-14T16:10-05:00
-			// note: this does not correctly handle dateTime (YYYY-MM-DDThh:mm:sszzzzzz) format
-				if (!datestr.endsWith("Z") && datestr.indexOf(':', ind + 1) > 0
-						&& datestr.indexOf('-', ind + 1) == -1
-						&& datestr.indexOf('+', ind + 1) == -1) {
-					log.debug("Append Z suffix to date");
-					datestr += 'Z'; // append 'Z' to date
-				}
-			}
-		final int fmtCount = ms_dateFormats.size();
-		while (i < fmtCount) {
-				SimpleDateFormat fmt = ms_dateFormats.get(i++);
-				try {
-					Date date = fmt.parse(datestr);
-				log.warn(message);
-				log.debug("Parsed using dateFormat: {}", fmt.toPattern());
-					return date;
-				} catch (ParseException pe) {
-					// ignore
-				}
-		}
-
-		// give up
-		final ParseException e2 = new ParseException(message, 0);
-		e2.initCause(ex);
-		throw e2;
+		return new DateTime(datestr).toDate();
 	}
 
 	/**
@@ -1560,7 +1443,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						String expires = getNonEmptyElementText();
 						if (expires != null)
 							try {
-								c.setExpires(parseDate(expires));
+								c.setExpires(new DateTime(expires).toDate());
+							} catch (IllegalArgumentException e) {
+								log.warn("Ignoring bad expires value: " + expires + ": " + e);
 							} catch (ParseException e) {
 								log.warn("Ignoring bad expires value: " + expires + ": " + e);
 							}

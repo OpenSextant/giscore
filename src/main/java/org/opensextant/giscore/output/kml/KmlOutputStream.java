@@ -84,6 +84,7 @@ import org.opensextant.giscore.output.XmlOutputStreamBase;
 import org.opensextant.giscore.output.atom.IAtomConstants;
 import org.opensextant.giscore.utils.Args;
 import org.opensextant.giscore.utils.Color;
+import org.opensextant.giscore.utils.DateTime;
 import org.opensextant.geodesy.SafeDateFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -591,30 +592,30 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
             handleNonNullSimpleElement(DESCRIPTION, feature.getDescription());
             handleAbstractView(feature.getViewGroup()); // LookAt or Camera AbstractViewGroup
-            Date startTime = feature.getStartTime();
-            Date endTime = feature.getEndTime();
+			DateTime startTime = feature.getStartDate();
+			DateTime endTime = feature.getEndDate();
             if (startTime != null) {
                 if (endTime == null) {
                     // start time with no end time
                     writer.writeStartElement(TIME_SPAN);
-                    handleSimpleElement(BEGIN, formatDate(startTime));
+					handleSimpleElement(BEGIN, startTime.toString());
                 } else if (endTime.equals(startTime)) {
                     // start == end represents a Timestamp
                     // note that having feature with a timeSpan with same begin and end time
                     // is identical to one with a timestamp of same time in Google Earth client.
                     writer.writeStartElement(TIME_STAMP);
-                    handleSimpleElement(WHEN, formatDate(startTime));
+					handleSimpleElement(WHEN, startTime.toString());
                 } else {
                     // start != end represents a TimeSpan
                     writer.writeStartElement(TIME_SPAN);
-                    handleSimpleElement(BEGIN, formatDate(startTime));
-                    handleSimpleElement(END, formatDate(endTime));
+					handleSimpleElement(BEGIN, startTime.toString());
+					handleSimpleElement(END, endTime.toString());
                 }
                 writer.writeEndElement();
             } else if (endTime != null) {
                 // end time with no start time
                 writer.writeStartElement(TIME_SPAN);
-                handleSimpleElement(END, formatDate(endTime));
+				handleSimpleElement(END, endTime.toString());
                 writer.writeEndElement();
             }
 
@@ -765,8 +766,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             if (val instanceof String) {
                 try {
                     // Try converting to ISO?
-                    // NOTE: alternate date forms (date gYearMonth gYear) will all be converted to full ISO dateTime
-                    val = KmlInputStream.parseDate((String) data);
+		// alternate date forms (date gYearMonth gYear) will be preserved
+		// but non-standard dateTime variations will be normalized to YYYY-MM-DD'T'HH:MM:SS.SSS'Z'
+		val = new DateTime((String)data).toString();
                 } catch (ParseException e) {
                     // Fall through
                 } catch (RuntimeException e) {
@@ -943,8 +945,10 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 if (go.crossDateLine()) {
                     log.debug("GroundOverlay crosses IDL");
                     if (west > 0) west -= 360;
-                    // TODO: this works in GE 6.0 but violates schema validation constraint kml:west value >= -180
-                    // Must be consistent with handling in KmlInputStream.handleLatLonBox()
+                    // Address bug in GE https://code.google.com/p/earth-issues/issues/detail?id=1145
+                    // TODO: this workaround works in GE 6.0 through 7.1 but intentionally violates
+                    // the schema validation constraint kml:west value >= -180.
+                    // This hack must be consistent with handling in KmlInputStream.handleLatLonBox()
                     // e.g. west = 125 (Korea), east = -117 (San Francisco) then hack in Google subtracts 360 from west (e.g. -235)
                 } else {
                     Double t = east;
