@@ -8,6 +8,7 @@ import org.opensextant.giscore.utils.DateTime;
 import java.text.ParseException;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for DateTime
@@ -41,9 +42,9 @@ public class TestDateTime {
 			}
 			assertEquals(timestamps[i+1], date.toString());
 			if (date.getType() == DateTimeType.gYear) {
-				Assert.assertTrue(date.toString(DateTimeType.dateTime).endsWith("-01-01T00:00:00.000Z"));
+				assertTrue(date.toString(DateTimeType.dateTime).endsWith("-01-01T00:00:00.000Z"));
 			} else if (date.getType() != DateTimeType.dateTime) {
-				Assert.assertTrue(date.toString(DateTimeType.dateTime).endsWith("T00:00:00.000Z"));
+				assertTrue(date.toString(DateTimeType.dateTime).endsWith("T00:00:00.000Z"));
 			}
 			System.out.format("DEBUG %s => %s%n", timestamps[i], timestamps[i + 1]);
 		}
@@ -54,13 +55,22 @@ public class TestDateTime {
 		DateTime date = new DateTime();
 		String utc1 = date.toString(DateTimeType.dateTime);
 		String utc2 = date.toUTCString();
-		Assert.assertEquals(utc1, utc2);
+		assertEquals(utc1, utc2);
+	}
+
+	@Test
+	public void testCompareTo() {
+		DateTime date = new DateTime();
+		assertEquals(0, date.compareTo(date));
+		DateTime dateLater = new DateTime(date.getTime() + 1);
+		assertEquals(-1, date.compareTo(dateLater));
+		assertEquals(1, dateLater.compareTo(date));
 	}
 
 	@Test
 	public void testClone() {
 		DateTime date = new DateTime(0);
-		Assert.assertEquals(date, date.clone());
+		assertEquals(date, date.clone());
 	}
 
 	@Test(expected = ParseException.class)
