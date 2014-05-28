@@ -194,8 +194,8 @@ public class KmlMetaDump implements IKml {
 
 	private boolean inheritsTime;
 	private boolean autoGenerateUniqueNames;
-	private Date containerStartDate;
-	private Date containerEndDate;
+	private DateTime containerStartDate;
+	private DateTime containerEndDate;
 	private final LinkedList<ContainerStart> containers = new LinkedList<ContainerStart>();
 
 	private Set<String> simpleFieldSet;
@@ -615,8 +615,8 @@ public class KmlMetaDump implements IKml {
 			for (StyleSelector s : cs.getStyles()) {
 				checkStyle(s, true, true);
 			}
-			Date startTime = cs.getStartTime();
-			Date endTime = cs.getEndTime();
+			DateTime startTime = cs.getStartDate();
+			DateTime endTime = cs.getEndDate();
 			if (startTime != null || endTime != null) {
 				//
 				// Features override TimePrimitives if defined in ancestor containers.
@@ -690,8 +690,8 @@ public class KmlMetaDump implements IKml {
 				if any nested parent container still defines time from which is inheritable.
 				 */
 				for (ContainerStart cs : containers) {
-					Date startDate = cs.getStartTime();
-					Date endDate = cs.getEndTime();
+					DateTime startDate = cs.getStartDate();
+					DateTime endDate = cs.getEndDate();
 					if (startDate != null || endDate != null) {
 						containerStartDate = startDate;
 						containerEndDate = endDate;
@@ -1264,8 +1264,8 @@ public class KmlMetaDump implements IKml {
 				}
 			}
 		}
-		Date startTime = f.getStartTime();
-		Date endTime = f.getEndTime();
+		DateTime startTime = f.getStartDate();
+		DateTime endTime = f.getEndDate();
 		if (startTime != null || endTime != null) {
 			if (startTime != null && startTime.equals(endTime)) {
 				// if start == stop then assume timestamp/when -- no way to determine if TimeSpan was used with start=end=timestamp
@@ -1420,7 +1420,7 @@ public class KmlMetaDump implements IKml {
 				schema = schemas.get(path.substring(1));
 			} else {
 				schema = schemas.get(path);
-				if (path != null && !path.contains("#")) {
+				if (schema != null && !path.contains("#")) {
 					addTag(":SchemaData has a schemaUrl attribute that is missing the required fragment identifier (\"#\") [ATC 27]");
 					// ATC 27: ExtendedData - SchemaData
 					// 1. the 'schemaUrl' attribute value is a URL with a fragment component that refers to a kml:Schema element;
