@@ -8,8 +8,7 @@ Valid KML documents wrt XML Schema
  badTime.kml
  badform2.kml
 
-Well-formed XML documents (fail schema validation)
- bluedevil20080812-short2.kml
+Well-formed XML documents (fail schema validation) 
  n.kml
  pred.kml
  police.kml

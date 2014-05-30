@@ -1325,35 +1325,6 @@ data\kml\sloppy\badTrack.kml
 	gx:Track             1
 	# features=1
 
-data\kml\sloppy\bluedevil20080812-short2.kml
-	DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
-	DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
-	DEBUG [main] (KmlInputStream.java:1235) - Out of order element: Style
-	WARN [main] (KmlInputStream.java:1255) - Skip unexpected element: name
-	INFO [main] (AltitudeModeEnumType.java:40) - Ignoring invalid altitudeMode value: clampedToGround
-	--
-	Feature uses inline Style
-	Ignoring invalid altitudeMode value: clampedToGround
-	Line has duplicate consecutive points
-	Out of order elements
-	Overlay missing icon
-	Shared styles in Folder not allowed [ATC 7]
-	Skip unexpected element: name
-	--
-	Document             1
-	Folder               2
-	IconStyle            3
-	LabelStyle           3
-	Line                 1
-	LineStyle            1
-	Placemark            2
-	Point                1
-	ScreenOverlay        1
-	Style                4
-	TimeSpan             1
-	TimeStamp            1
-	# features=14
-
 data\kml\sloppy\n.kml
 	 WARN [main] (KmlInputStream.java:446) - Unable to parse description as text element: javax.xml.stream.XMLStreamException: ParseError at [row,col]:[24,49]
 	Message: elementGetText() function expects text only elment but START_ELEMENT was encountered.
@@ -1415,6 +1386,19 @@ data\kml\sloppy\pred.kml
 	Point                1
 	Style                2
 	# features=3
+	
+data\kml\sloppy\schemaData.kml
+
+	SchemaData contains a SimpleData value that does not correspond to the declared type [ATC 27]
+	SchemaData has a schemaUrl attribute that is missing the required fragment identifier ("#") [ATC 27]
+	SimpleData name not found in Schema [ATC 27]
+	SimpleField has an invalid type attribute value [ATC 26]
+	--
+	ExtendedData         1
+	Placemark            1
+	Point                1
+	Schema               1
+	# features=1
 
 data\kml\Style\iconStyle.kmz
 
