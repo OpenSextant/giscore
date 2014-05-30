@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+KML that is valid with respect to the KML XML Schema
+but invalid with respect to KML specification.
+
+XML Schema data type info:
+http://www.w3.org/TR/xmlschema-2/#built-in-primitive-datatypes
+http://www.w3.org/TR/xmlschema-2/#short
+http://www.w3.org/TR/xmlschema-2/#boolean
+etc.
+
+Contains following errors:
+
+ * SchemaData contains a SimpleData value that does not correspond to the declared type [ATC 27]
+   e.g. Int1 and Int2 fields declared as int but non-int value are present.
+   
+ * SimpleData name not found in Schema [ATC 27]   
+   e.g. "foo" field is not defined in Schema but found in SchemaData
+   
+ * SimpleField has an invalid type attribute value [ATC 26]
+   e.g. Date field declared as "date" which is not part of KML spec.
+   
+ * SchemaData has a schemaUrl attribute that is missing the required fragment identifier ("#") [ATC 27]
+ -->
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>ExtendedData+SchemaData</name>
+
+	<Schema id="DataId" name="MyData">
+		<SimpleField name="Latitiude" type="double"/>
+		<SimpleField name="Longitude" type="double"/>		
+		<SimpleField name="Date" type="date"/>		
+		<SimpleField name="Int1" type="int"/>
+		<SimpleField name="Int2" type="int"/>
+		<SimpleField name="Bool" type="bool"/>
+		<SimpleField name="Short" type="short"/>
+		<SimpleField name="UShort" type="ushort"/>
+		<SimpleField name="Double" type="double"/>
+
+	</Schema>
+
+	<Placemark>
+		<ExtendedData>
+			<SchemaData schemaUrl="#DataId">
+				<SimpleData name="Date">2006-01-20T15:03:08.457Z</SimpleData>
+				<SimpleData name="Longitude">-112.0025</SimpleData>
+				<SimpleData name="Double">Unk</SimpleData>
+				<SimpleData name="Int1">Nan</SimpleData>
+				<SimpleData name="Bool">null</SimpleData>
+				<SimpleData name="Short">32768</SimpleData>
+				<SimpleData name="UShort">-1</SimpleData>
+				<SimpleData name="Int2">1.5</SimpleData>
+				<SimpleData name="Foo">-1</SimpleData>
+			</SchemaData>
+			<SchemaData schemaUrl="DataId">
+				<SimpleData name="Latitiude">32.9703</SimpleData>
+			</SchemaData>
+		</ExtendedData>
+		<Point>
+			<coordinates>-112.0025,32.97039</coordinates>
+		</Point>
+	</Placemark>	
+  </Document>
+</kml>
