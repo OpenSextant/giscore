@@ -47,7 +47,11 @@ Summary of tags and properties used in KML collection
 	Outer ring has duplicate consecutive points
 	Overlay missing icon
 	Region has invalid LatLonAltBox [ATC 8]
+	SchemaData contains a SimpleData value that does not correspond to the declared type [ATC 27]
+	SchemaData has a schemaUrl attribute that is missing the required fragment identifier ("#") [ATC 27]
 	Shared styles in Folder not allowed [ATC 7]
+	SimpleData name not found in Schema [ATC 27]
+	SimpleField has an invalid type attribute value [ATC 26]
 	StyleMap Pair must contain StyleUrl or Style
 	StyleMap Pair with relative StyleUrl
 	StyleMap has inline Style
@@ -103,12 +107,6 @@ data\kml\atom\sevenWonders-atom-link.kml
 	atom:link            1
 	# features=7
 
-data\kml\Baghdad.kml
-
-	LinearRing           1
-	Placemark            1
-	# features=1
-
 data\kml\balloon\balloonstyle-color-inline.kml
 
 	Feature uses inline Style
@@ -158,6 +156,26 @@ data\kml\BalloonStyle\displayMode.kml
 	Style                4
 	# features=8
 
+data\kml\BalloonStyle\entity-two-level-photooverlay.kml
+
+	Feature uses shared Style
+	--
+	BalloonStyle         1
+	Camera               2
+	PhotoOverlay         1
+	Style                1
+	# features=1
+
+data\kml\BalloonStyle\entity-two-level-placemark.kml
+
+	Feature uses shared Style
+	--
+	BalloonStyle         1
+	Placemark            1
+	Point                1
+	Style                1
+	# features=1
+
 data\kml\BalloonStyle\simpleBalloonStyles.kml
 
 	Feature uses shared Style
@@ -175,6 +193,30 @@ data\kml\Camera\golden-gate.kml
 	Camera               11
 	Placemark            10
 	# features=10
+
+data\kml\Document\doc-with-id.kml
+
+	Document             1
+	Folder               3
+
+data\kml\Document\doc-without-id.kml
+
+	Document             1
+	Folder               3
+
+data\kml\ExtendedData\data-ext-atom.kml
+
+	ExtendedData         1
+	Placemark            1
+	Point                1
+	# features=1
+
+data\kml\ExtendedData\data-ext-ddms.kml
+
+	ExtendedData         1
+	Placemark            1
+	Point                1
+	# features=1
 
 data\kml\ExtendedData\data-ext-ns.kml
 	DEBUG [main] (KmlInputStream.java:548) - skip {http://campsites.com}number
@@ -216,6 +258,7 @@ data\kml\ExtendedData\mti-data.kmz
 data\kml\ExtendedData\mti-schema-data.kmz
 
 	Feature uses shared Style
+	SchemaData contains a SimpleData value that does not correspond to the declared type [ATC 27]
 	Shared styles in Folder not allowed [ATC 7]
 	--
 	BalloonStyle         1
@@ -598,8 +641,10 @@ data\kml\ListStyle\radio-folder.kml
 
 data\kml\ListStyle\radio-hide-children.kml
 
-	url=file:/C:/projects/giscore/data/kml/ListStyle/more-stuff.kml
-	url=file:/C:/projects/giscore/data/kml/ListStyle/other-stuff.kml
+	Feature uses shared Style
+	url=file:/C:/Temp/openSextant/giscore/data/kml/ListStyle/more-stuff.kml
+	url=file:/C:/Temp/openSextant/giscore/data/kml/ListStyle/other-stuff.kml
+	--
 	Document             1
 	Folder               2
 	ListStyle            2
@@ -905,7 +950,7 @@ data\kml\Placemark\LinearRing\polygon-tessellate-lr.kml
 
 	Placemark            1
 	Polygon              1
-	# features=2
+	# features=1
 
 data\kml\Placemark\LineString\absolute-extruded.kml
 
@@ -1064,6 +1109,22 @@ data\kml\Region\minlodpixels.kmz
 	ScreenOverlay        8
 	# features=9
 
+data\kml\Region\networkLink-regions.kmz
+
+	url=california.kml
+	url=north_america.kml
+	url=san_francisco.kml
+	url=usa.kml
+	url=washington.kml
+	--
+	Line                 5
+	MultiGeometry        5
+	NetworkLink          5
+	Placemark            5
+	Point                5
+	Region               5
+	# features=10
+
 data\kml\Region\polygon-fade.kml
 
 	Feature uses inline Style
@@ -1164,6 +1225,8 @@ data\kml\Region\simple-lod-demo.kml
 
 data\kml\Schema\AllTypes.kml
 
+	SimpleData name not found in Schema [ATC 27]
+	--
 	ExtendedData         1
 	Placemark            1
 	Point                1
@@ -1207,6 +1270,9 @@ data\kml\Schema\SchemaOldStyle2.kml
 
 data\kml\Schema\sigint.kmz
 
+	Feature uses shared Style
+	Shared styles in Folder not allowed [ATC 7]
+	--
 	BalloonStyle         1
 	Document             1
 	ExtendedData         42
@@ -1556,13 +1622,14 @@ data\kml\time\dates.kml
 data\kml\time\multiNestedInherits.kml
 
 	Container end date is later than that of its ancestors
+	Feature inherits container time
 	Feature uses inline Style
 	--
 	IconStyle            2
 	Placemark            2
 	Point                2
 	Style                2
-	TimeSpan             4
+	TimeSpan             3
 	# features=2
 
 data\kml\time\multiNestedInheritsUnboundedSpans.kml
@@ -1676,6 +1743,7 @@ data\kml\xal\gaddr.kml
 
 	Placemark            1
 	Point                1
+	address              1
 	xal:AddressDetails   1
 	# features=1
 

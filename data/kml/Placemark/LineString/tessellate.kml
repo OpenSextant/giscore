@@ -2,7 +2,6 @@
 <kml xmlns="http://www.opengis.net/kml/2.2">
   <Placemark>
     <name>Tessellated paths</name>
-    <visibility>0</visibility>
     <description>
       <![CDATA[
       If the <tessellate> tag has a value of 1, the line will contour
