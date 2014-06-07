@@ -71,7 +71,7 @@ Example shows how temporal visibility is inherited.
                     </IconStyle>
                 </Style>
                 <Point>
-                    <coordinates>-122.537116,37.85961000000001,0</coordinates>
+                    <coordinates>-122.537116,37.85961</coordinates>
                 </Point>
             </Placemark>
         </Folder>

@@ -38,14 +38,18 @@ Summary of tags and properties used in KML collection
 	Latitude value exceeds pole value
 	Line clipped at DateLine
 	Line has duplicate consecutive points
+	LineString geometry fails constraint to contain at least two coordinate tuples [ATC 15]
 	LinearRing cannot self-intersect
-	LinearRing must start and end with the same point
+	LinearRing geometry fails constraint to contain at least 4 coordinate tuples [ATC 16]
+	LinearRing should start and end with the same point
 	Nested MultiGeometries
 	NetworkLink missing Link
 	NetworkLink uses inline Style
 	Out of order elements
 	Outer ring has duplicate consecutive points
 	Overlay missing icon
+	Point geometry fails constraint to contain exactly one coordinate tuple [ATC 14]
+	Polygon/LinearRing geometry fails constraint to contain at least 4 coordinate tuples [ATC 16]
 	Region has invalid LatLonAltBox [ATC 8]
 	SchemaData contains a SimpleData value that does not correspond to the declared type [ATC 27]
 	SchemaData has a schemaUrl attribute that is missing the required fragment identifier ("#") [ATC 27]
@@ -63,6 +67,7 @@ Summary of tags and properties used in KML collection
 	Suspicious StyleMap id characters
 	Suspicious StyleMap normal URL characters
 	Suspicious styleUrl characters
+	Whitespace found within coordinate tuple [ATC 3]
 	comma found instead of whitespace between tuples
 	gx:SimpleArrayData has incorrect length
 	gx:Track coord-when mismatch
@@ -1268,24 +1273,6 @@ data\kml\Schema\SchemaOldStyle2.kml
 	Schema               1
 	# features=3
 
-data\kml\Schema\sigint.kmz
-
-	Feature uses shared Style
-	Shared styles in Folder not allowed [ATC 7]
-	--
-	BalloonStyle         1
-	Document             1
-	ExtendedData         42
-	Folder               4
-	IconStyle            8
-	LineStyle            8
-	Placemark            42
-	Point                42
-	Schema               1
-	Style                9
-	TimeSpan             42
-	# features=42
-
 data\kml\ScreenOverlay\centered-icon.kml
 
 	ScreenOverlay        1
@@ -1353,7 +1340,10 @@ java.lang.IllegalArgumentException: Angle 52.35987755982989 radians is too big
 	Feature uses inline Style
 	Feature uses shared Style
 	Latitude value exceeds pole value
+	LinearRing geometry fails constraint to contain at least 4 coordinate tuples [ATC 16]
 	LinearRing must start and end with the same point
+	Point geometry fails constraint to contain exactly one coordinate tuple [ATC 14]
+	Polygon/LinearRing geometry fails constraint to contain at least 4 coordinate tuples [ATC 16
 	comma found instead of whitespace between tuples
 	ignore invalid character in coordinate string
 	ignore invalid string in coordinate
@@ -1436,10 +1426,12 @@ data\kml\sloppy\police.kml
 	StyleMap             1
 	# features=1
 
-data\kml\sloppy\pred.kml
+data\kml\sloppy\track.kml
+ WARN [main] (KmlInputStream.java:2563) - Whitespace found within coordinate tuple [ATC 3]
  WARN [main] (KmlInputStream.java:2160) - comma found instead of whitespace between tuples before -81.9980316162109
 
 	Feature uses inline Style
+	Whitespace found within coordinate tuple [ATC 3]
 	comma found instead of whitespace between tuples
 	--
 	BalloonStyle         1

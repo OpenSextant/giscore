@@ -10,11 +10,11 @@ Valid KML documents wrt XML Schema
 
 Well-formed XML documents (fail schema validation) 
  n.kml
- pred.kml
+ track.kml
  police.kml
 	ERROR: cvc-datatype-valid.1.2.1: invalid value for 'NCName' <Style id="***default+icon=http://maps.google.com/mapfiles/kml/shapes/poi.png***">
 	<altitudeMode>***clampToGround***</altitudeMode>
- udop-bigpull.kmz
+ dupids.kmz
 	This demonstrates duplicate ids for styles in given KML document.
 	ERROR: cvc-attribute.3: The value 'normalState' of attribute 'id' on element 'Style' is not valid with respect to its type, 'ID'.
 	 <Style id="***normalState***">
@@ -40,4 +40,3 @@ Non-standard ZIP file
      Works using java.util.zip.ZipInputStream
      for file entry doc.kml, time stamp in the central/local directory is invalid
      original source: http://www.rensovonk.com/huis.kmz
-
