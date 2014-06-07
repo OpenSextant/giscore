@@ -9,7 +9,7 @@ This file contains styleUrls to external KML files with relative and absolute UR
         <name>garbage-styleurl</name>
         <styleUrl>complete garbage</styleUrl>
         <Point>
-          <coordinates>-122.536226,37.86047,0</coordinates>
+          <coordinates>-122.536226,37.86047</coordinates>
         </Point>
     </Placemark>
 
@@ -17,7 +17,7 @@ This file contains styleUrls to external KML files with relative and absolute UR
         <name>dangling-local</name>
         <styleUrl>#no-such-style-in-this-file</styleUrl>
         <Point>
-          <coordinates>-122.536688,37.860072,0</coordinates>
+          <coordinates>-122.536688,37.860072</coordinates>
         </Point>
     </Placemark>
 
@@ -25,7 +25,7 @@ This file contains styleUrls to external KML files with relative and absolute UR
         <name>dangling-relative</name>
         <styleUrl>style.kml#no-such-style-in-that-file-either</styleUrl>
         <Point>
-          <coordinates>-122.537116,37.85961000000001,0</coordinates>
+          <coordinates>-122.537116,37.85961</coordinates>
         </Point>
     </Placemark>
 
@@ -43,19 +43,17 @@ This file contains styleUrls to external KML files with relative and absolute UR
         <description>styleUrl is relative</description>
         <styleUrl>styles.kml#msn_blue</styleUrl>
         <Point>
-          <coordinates>-122.5372753338203,37.85932697802468</coordinates>
+          <coordinates>-122.537275,37.859327</coordinates>
         </Point>
     </Placemark>
 
     <Placemark id="absolute">
         <name>absolute-styleurl</name>
         <description>styleUrl is absolute</description>
-        <styleUrl>http://jason-stage.mitre.org/kml/samples/Style/styles.kml#blueIcons</styleUrl>
-	<!--styleUrl>http://kml-samples.googlecode.com/svn/trunk/kml/Style/styles.kml#blueIcons</styleUrl-->
+        <styleUrl>http://kml-samples.googlecode.com/svn/trunk/kml/Style/styles.kml#blueIcons</styleUrl>
         <Point>
           <coordinates>-122.537848,37.858526</coordinates>
         </Point>
     </Placemark>
   </Document>
 </kml>
-

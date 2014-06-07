@@ -7,7 +7,7 @@
             <name>Test data</name>
             <ExtendedData xmlns:ddms="http://metadata.dod.mil/mdr/ns/DDMS/1.4/">
                 <ddms:Resource xmlns:ICISM="urn:us:gov:ic:ism:v2">
-                    <ddms:identifier ddms:qualifier="URL" ddms:value="http://picard.mitre.org:8090/archives/analysis-cell-list/2007-05-13/0000000001.html"/>
+                    <ddms:identifier ddms:qualifier="URL" ddms:value="http://webhost.org/archives/report/2007-05-13/0000000001.html"/>
                     <ddms:title ICISM:classification="U" ICISM:ownerProducer="USA">Sample Title</ddms:title>
                     <ddms:description ICISM:classification="U" ICISM:ownerProducer="USA">This is the description</ddms:description>
                     <ddms:dates ddms:posted="2008-04-14T14:57:55.93Z"/>
@@ -25,7 +25,7 @@
                     </ddms:format>
                     <ddms:subjectCoverage>
                         <ddms:Subject>
-                            <ddms:category ddms:label="SIGACT"/>
+                            <ddms:category ddms:label="Local"/>
                         </ddms:Subject>
                     </ddms:subjectCoverage>
                     <ddms:temporalCoverage>
