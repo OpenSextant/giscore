@@ -243,43 +243,6 @@ data\kml\ExtendedData\data-golf.kml
 	Style                2
 	# features=2
 
-data\kml\ExtendedData\mti-data.kmz
-
-	Feature uses shared Style
-	Shared styles in Folder not allowed [ATC 7]
-	--
-	Document             1
-	ExtendedData         33
-	Folder               3
-	IconStyle            2
-	LineStyle            1
-	LinearRing           2
-	Placemark            33
-	Point                31
-	Style                3
-	TimeStamp            33
-	# features=33
-
-data\kml\ExtendedData\mti-schema-data.kmz
-
-	Feature uses shared Style
-	SchemaData contains a SimpleData value that does not correspond to the declared type [ATC 27]
-	Shared styles in Folder not allowed [ATC 7]
-	--
-	BalloonStyle         1
-	Document             1
-	ExtendedData         33
-	Folder               3
-	IconStyle            2
-	LineStyle            1
-	LinearRing           2
-	Placemark            33
-	Point                31
-	Schema               1
-	Style                3
-	TimeStamp            33
-	# features=33
-
 data\kml\feature-anchor\eat-at-google.kml
 
 	LookAt               2
