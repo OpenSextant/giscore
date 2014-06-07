@@ -67,7 +67,7 @@ public class TestCSVOutputStream extends TestGISBase {
 		doTest(schema, "Lab software with versions.csv", null);
 	}	
 
-	private void doTest(Schema s, String testfile, String lineDel) throws FileNotFoundException, IOException {
+	private void doTest(Schema s, String testfile, String lineDel) throws IOException {
 		InputStream stream = getStream(testfile);
 		IGISInputStream is = GISFactory
 				.getInputStream(DocumentType.CSV, stream, s, lineDel);

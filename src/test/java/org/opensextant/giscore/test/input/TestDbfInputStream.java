@@ -60,18 +60,17 @@ public class TestDbfInputStream {
 
     @Test
     public void testDbfInputStream2() throws Exception {
-        checkDbf(new File("data/shape/tl_2008_us_metdiv.dbf"));
+        checkDbf(new File("data/notyetvalidshape/tl_2008_us_metdiv.dbf"));
     }
 
     @Test
     public void testDbfInputStream3() throws Exception {
-        checkDbf(new File("data/shape/AlleghenyCounty_Floodplain2000.dbf"));
+        checkDbf(new File("data/notyetvalidshape/AlleghenyCounty_Floodplain2000.dbf"));
     }
 
     private void checkDbf(File file) throws IOException {
         if (!file.exists()) {
-            System.err.println("file not found: " + file);
-            return;
+            throw new IllegalArgumentException("file not found: " + file);
         }
         DbfInputStream dbfs = new DbfInputStream(file, new Object[0]);
         try {

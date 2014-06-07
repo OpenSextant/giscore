@@ -330,7 +330,7 @@ public class TestKmlReader implements IKml {
 
     @Test
     public void testRelativeKmzStyles() throws Exception {
-        System.out.println("*** testRelativeKmzStyles");
+        //System.out.println("*** testRelativeKmzStyles");
         KmlReader reader = new KmlReader(new File("data/kml/Style/rel-styles.kmz"));
         reader.setRewriteStyleUrls(true);
         List<IGISObject> features = reader.readAll(); // implicit close

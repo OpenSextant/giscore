@@ -75,7 +75,7 @@ public class TestKmlWriter extends TestGISBase {
 
     private void checkKml(KmlReader reader, String name) throws IOException {
         List<IGISObject> objs = reader.readAll(); // implicit close
-        System.out.format("features = %d%n", objs.size());
+        //System.out.format("features = %d%n", objs.size());
         normalizeUrls(objs);
         List<IGISObject> linkedFeatures = reader.importFromNetworkLinks();
         List<URI> links = reader.getNetworkLinks();

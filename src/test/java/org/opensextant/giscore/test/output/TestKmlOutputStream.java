@@ -498,7 +498,7 @@ public class TestKmlOutputStream extends TestGISBase {
 			assertTrue(obj2 instanceof Feature);
 			checkApproximatelyEquals(lineFeature, obj2);
 			assertEquals(lineFeature.getGeometry(), ((Feature) obj2).getGeometry());
-			System.out.println(bos.toString("UTF-8")); // debug
+			// System.out.println(bos.toString("UTF-8")); // debug
 		} catch (AssertionError ae) {
 			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
 			throw ae;
@@ -1142,7 +1142,7 @@ public class TestKmlOutputStream extends TestGISBase {
          Geodetic2DPoint cp = line.getCenter();
 
          // Fctr=(1d 45' 7" E, 68d 32' 31" S) -68.54190326905 1.7519062462999895
-         System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
+         // System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
 
          final Geodetic2DBounds bbox = line.getBoundingBox();
          assertTrue(bbox != null && bbox.contains(cp));
@@ -1212,19 +1212,19 @@ public class TestKmlOutputStream extends TestGISBase {
 		line.setTessellate(true);
 		Geodetic2DPoint cp = line.getCenter();
 
-		System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
+		//System.out.println("Fctr=" + cp + " " + cp.getLatitudeAsDegrees() + " " + cp.getLongitudeAsDegrees());
 
 		final Geodetic2DBounds bbox = line.getBoundingBox();
 		assertTrue(bbox != null && bbox.contains(cp));
 
-		System.out.println("bbox=" + bbox);
+		//System.out.println("bbox=" + bbox);
 		assertTrue(bbox.getNorthLat().inDegrees() > bbox.getSouthLat().inDegrees());
-		System.out.println("north=" + bbox.getNorthLat().inDegrees() + " south=" + bbox.getSouthLat().inDegrees());
+		//System.out.println("north=" + bbox.getNorthLat().inDegrees() + " south=" + bbox.getSouthLat().inDegrees());
 		// north=-89.90 south=-89.91
 		//west=60.0 east=70.03
 
-		System.out.println(bbox.getWestLon().inDegrees() + " " + bbox.getEastLon().inDegrees()); // west=60.0 east=70.0 degs
-		System.out.println(bbox.getWestLon().inRadians() + " " + bbox.getEastLon().inRadians()); // west=1.0 1.2
+		//System.out.println(bbox.getWestLon().inDegrees() + " " + bbox.getEastLon().inDegrees()); // west=60.0 east=70.0 degs
+		//System.out.println(bbox.getWestLon().inRadians() + " " + bbox.getEastLon().inRadians()); // west=1.0 1.2
 		// assertTrue(bbox.getEastLon().inDegrees() > bbox.getWestLon().inDegrees()); // fails with 68 km box
 
 		Geodetic2DBounds bounds = new Geodetic2DBounds(bbox);
@@ -1263,7 +1263,7 @@ public class TestKmlOutputStream extends TestGISBase {
 		kos.write(f);
 
 		MGRS mgrs = new MGRS(new MGRS(cp).toString(2)); // BAN0904
-		System.out.println(mgrs);
+		// System.out.println(mgrs);
 		bounds = mgrs.getBoundingBox();
 		line = new Line(bounds);
 		assertTrue(bounds.intersects(bbox));
