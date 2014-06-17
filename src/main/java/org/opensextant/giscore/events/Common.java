@@ -321,8 +321,18 @@ public abstract class Common extends Row {
 				 */
 		region.put(IKml.NORTH, String.valueOf(bbox.getNorthLat().inDegrees()));
 		region.put(IKml.SOUTH, String.valueOf(bbox.getSouthLat().inDegrees()));
-		region.put(IKml.EAST, String.valueOf(bbox.getEastLon().inDegrees()));
-		region.put(IKml.WEST, String.valueOf(bbox.getWestLon().inDegrees()));
+		// +180 is normalized to -180 in the Longitude class
+		// handle east/west as special case
+		// If east = -180 and west >=0 then Google Earth invalidate the Region and never be active
+		// in that case normalize east longitude to +180
+		double west = bbox.getWestLon().inDegrees();
+		double east = bbox.getEastLon().inDegrees();
+		if (west >= 0 && Double.compare(east, -180) == 0) {
+			region.put(IKml.EAST, "180");
+		} else {
+			region.put(IKml.EAST, String.valueOf(east));
+		}
+		region.put(IKml.WEST, String.valueOf(west));
 		if (allowAltitude && bbox instanceof Geodetic3DBounds) {
 			Geodetic3DBounds bounds = (Geodetic3DBounds) bbox;
 			double minElev = bounds.minElev;

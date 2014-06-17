@@ -363,9 +363,22 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 waitingList.add(LAT_LON_ALT_BOX);
                 handleTaggedElement(NORTH, region, waitingList);
                 handleTaggedElement(SOUTH, region, waitingList);
-                handleTaggedElement(EAST, region, waitingList);
-                handleTaggedElement(WEST, region, waitingList);
-                handleTaggedElement(MIN_ALTITUDE, region, waitingList);
+				// handle east/west as special case
+				// +180 might be normalized to -180.
+				// If east = -180 and west >=0 then Google Earth invalidate the Region and never be active.
+				Double east = region.getDoubleValue(EAST);
+				Double west = region.getDoubleValue(WEST);
+				if (east != null && west != null && west >= 0 && Double.compare(east, -180) == 0) {
+					while (!waitingList.isEmpty()) {
+						writer.writeStartElement(waitingList.removeFirst());
+					}
+					handleSimpleElement(EAST, "180");
+					handleSimpleElement(WEST, formatDouble(west));
+				} else {
+					handleTaggedElement(EAST, region, waitingList);
+					handleTaggedElement(WEST, region, waitingList);
+				}
+				handleTaggedElement(MIN_ALTITUDE, region, waitingList);
                 handleTaggedElement(MAX_ALTITUDE, region, waitingList);
                 // if altitudeMode is invalid then it will be omitted
                 AltitudeModeEnumType altMode = AltitudeModeEnumType.getNormalizedMode(region.get(ALTITUDE_MODE));

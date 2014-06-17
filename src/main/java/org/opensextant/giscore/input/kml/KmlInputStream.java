@@ -748,7 +748,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	private void handleRegion(Common feature, QName name)
 			throws XMLStreamException {
-		TaggedMap region = new TaggedMap(LAT_LON_ALT_BOX);
+		TaggedMap region = new TaggedMap(REGION);
 		while (true) {
 			XMLEvent next = stream.nextEvent();
 			if (foundEndTag(next, name)) {
@@ -1900,7 +1900,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		return map.isEmpty() ? null : map;
 	}
 
-	@NonNull
+	@Nullable
 	private TaggedMap handleTaggedData(QName name) throws XMLStreamException {
 		// handle Camera, LookAt, Icon, Link, and Url elements
 		return handleTaggedData(name, new TaggedMap(name.getLocalPart()));

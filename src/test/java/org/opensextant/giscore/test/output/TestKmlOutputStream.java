@@ -898,7 +898,7 @@ public class TestKmlOutputStream extends TestGISBase {
 		f.setGeometry(new Point(42.504733587704, -71.238861602674));
 		f.setName("test");
 		f.setDescription("this is a test placemark");
-		TaggedMap region = new TaggedMap(IKml.LAT_LON_ALT_BOX);
+		TaggedMap region = new TaggedMap(IKml.REGION);
 		for (int i = 0; i < props.length; i += 2) {
 			region.put(props[i], props[i + 1]);
 		}
@@ -1178,6 +1178,62 @@ public class TestKmlOutputStream extends TestGISBase {
      */
 
 	@Test
+    public void testRegionAtIDL() throws IOException, XMLStreamException {
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        KmlOutputStream kos = new KmlOutputStream(bos);
+        kos.write(new ContainerStart());
+        Feature f = new Feature();
+        Geodetic2DPoint nw = new Point(45, 90).asGeodetic2DPoint();
+        Geodetic2DPoint se = new Point(0, 180).asGeodetic2DPoint();
+        Geodetic2DBounds bounds = new Geodetic2DBounds(nw, se);
+        f.setRegion(bounds);
+        TaggedMap region = f.getRegion();
+        region.put("minLodPixels", "128");
+        region.put("maxLodPixels", "1024");
+        assertEquals(45.0, region.getDoubleValue(IKml.NORTH), 1e-8);
+        assertEquals(0.0, region.getDoubleValue(IKml.SOUTH), 1e-8);
+        assertEquals(180.0, region.getDoubleValue(IKml.EAST), 1e-8);
+        assertEquals(90.0, region.getDoubleValue(IKml.WEST), 1e-8);
+        kos.write(f); // Feature1
+
+        f = new Feature();
+        TaggedMap region2 = new TaggedMap("Region");
+        // east will be normalized to +180 in KML output
+        region2.put("east", "-180");
+        region2.put("west", "90");
+        region2.put("north", "45");
+        region2.put("south", "0");
+        region2.put("minLodPixels", "128");
+        region2.put("maxLodPixels", "1024");
+        f.setRegion(region2);
+        kos.write(f); // Feature2
+        kos.write(new ContainerEnd());
+        kos.close();
+
+        KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+        IGISObject o = kis.read();
+        assertTrue(o instanceof DocumentStart);
+        o = kis.read(); // ContainerStart
+        assertNotNull(o);
+        o = kis.read(); // Feature1
+        //System.out.println(o);
+        assertTrue(o instanceof Feature);
+        TaggedMap region3 = ((Feature)o).getRegion();
+        //System.out.println("region3="+region3);
+        assertEquals(region, region3);
+        o = kis.read(); // Feature2
+        //System.out.println(o);
+        assertTrue(o instanceof Feature);
+        region = ((Feature)o).getRegion();
+        assertNotNull(region);
+        assertEquals(45.0, region.getDoubleValue(IKml.NORTH), 1e-8);
+        assertEquals(0.0, region.getDoubleValue(IKml.SOUTH), 1e-8);
+        assertEquals(180.0, region.getDoubleValue(IKml.EAST), 1e-8);
+        assertEquals(90.0, region.getDoubleValue(IKml.WEST), 1e-8);
+        kis.close();
+    }
+
+    @Test
 	public void testRegionAtPole() throws Exception {
 		List<Point> pts = new ArrayList<Point>(5);
 		// 3km box that closely matches google earth lat/lon grids lines
