@@ -228,6 +228,7 @@ public class KmlMetaDump implements IKml {
 	private static final String CLAMP_TO_GROUND = "clampToGround";
 
 	private final Map<String, Schema> schemas = new HashMap<String, Schema>();
+	private final DecimalFormat decFmt = new DecimalFormat("0.0#####");
 
 	public KmlMetaDump() {
 		try {
@@ -1038,7 +1039,9 @@ public class KmlMetaDump implements IKml {
 		if (verbose && geom.getNumPoints() > 1) {
 			Geodetic2DPoint c = geom.getCenter();
 			if (c != null) {
-				System.out.format("Center point: %f,%f%n", c.getLongitudeAsDegrees(), c.getLatitudeAsDegrees());
+				System.out.format(" Center point: %s, %s%n",
+					decFmt.format(c.getLongitudeAsDegrees()),
+					decFmt.format(c.getLatitudeAsDegrees()));
 			}
 		}
 		if (geom instanceof Polygon) {
