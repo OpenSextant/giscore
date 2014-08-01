@@ -45,22 +45,7 @@ import org.opensextant.geodesy.MGRS;
 import org.opensextant.giscore.DocumentType;
 import org.opensextant.giscore.GISFactory;
 import org.opensextant.giscore.Namespace;
-import org.opensextant.giscore.events.AltitudeModeEnumType;
-import org.opensextant.giscore.events.Comment;
-import org.opensextant.giscore.events.ContainerEnd;
-import org.opensextant.giscore.events.ContainerStart;
-import org.opensextant.giscore.events.DocumentStart;
-import org.opensextant.giscore.events.Element;
-import org.opensextant.giscore.events.Feature;
-import org.opensextant.giscore.events.IGISObject;
-import org.opensextant.giscore.events.NetworkLink;
-import org.opensextant.giscore.events.Row;
-import org.opensextant.giscore.events.Schema;
-import org.opensextant.giscore.events.ScreenLocation;
-import org.opensextant.giscore.events.ScreenOverlay;
-import org.opensextant.giscore.events.SimpleField;
-import org.opensextant.giscore.events.TaggedMap;
-import org.opensextant.giscore.events.WrappedObject;
+import org.opensextant.giscore.events.*;
 import org.opensextant.giscore.geometry.Circle;
 import org.opensextant.giscore.geometry.Geometry;
 import org.opensextant.giscore.geometry.GeometryBag;
@@ -79,11 +64,8 @@ import org.opensextant.giscore.output.atom.IAtomConstants;
 import org.opensextant.giscore.output.kml.KmlOutputStream;
 import org.opensextant.giscore.test.TestGISBase;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static junit.framework.Assert.fail;
+import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertFalse;
 
 /**
  * Test the KML output stream.
@@ -1331,6 +1313,43 @@ public class TestKmlOutputStream extends TestGISBase {
 
 		kos.write(new ContainerEnd());
 		kos.close();
+	}
+
+	@Test
+	public void testNegation() throws IOException, XMLStreamException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+
+		ContainerStart cs = new ContainerStart();
+		cs.setVisibility(false);
+		cs.setOpen(false);
+		kos.write(cs);
+
+		NetworkLink nl = new NetworkLink();
+		nl.setVisibility(false);
+		nl.setOpen(false);
+		kos.write(nl);
+
+		kos.write(new ContainerEnd());
+		kos.close();
+
+		//System.out.println(bos.toString());
+
+		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+		IGISObject o = kis.read();
+		assertTrue(o instanceof DocumentStart);
+		for(int i=0; i < 2; i++) {
+			o = kis.read();
+			assertTrue(o instanceof Common);
+			Common c = (Common)o;
+			Boolean visibility = c.getVisibility();
+			assertNotNull(visibility);
+			assertFalse(visibility);
+			if (c instanceof ContainerStart)
+				assertFalse(((ContainerStart)c).isOpen());
+			else if (c instanceof NetworkLink)
+				assertFalse(((NetworkLink)c).isOpen());
+		}
 	}
 
 }

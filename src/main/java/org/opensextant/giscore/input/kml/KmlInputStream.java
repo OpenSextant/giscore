@@ -464,8 +464,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				StartElement sl = ee.asStartElement();
 				QName qname = sl.getName();
 				if (OPEN.equals(qname.getLocalPart())) {
-					if (isTrue(getElementText(qname)))
-						cs.setOpen(true);
+					Boolean bool = getBooleanValue(qname);
+					if (bool != null) cs.setOpen(bool); // default = true
 				} else if (!handleProperties(cs, ee, qname)) {
 					// Ignore other container elements
 					log.debug("ignore {}", qname);
@@ -498,8 +498,14 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				feature.setDescription(getElementText(name));
 				return true;
 			} else if (localname.equals(VISIBILITY)) {
-				if (isTrue(stream.getElementText()))
+				String val = stream.getElementText();
+				if (val != null) {
+					val = val.trim();
+					if ("1".equals(val) || val.equalsIgnoreCase("true"))
 					feature.setVisibility(Boolean.TRUE);
+					else if ("0".equals(val) || val.equalsIgnoreCase("false"))
+						feature.setVisibility(Boolean.FALSE);
+				}
 				return true;
 			} else if (localname.equals(STYLE)) {
 				handleStyle(feature, ee, name);
@@ -1796,10 +1802,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					} else if (network) {
 						if (REFRESH_VISIBILITY.equals(localname)) {
 							((NetworkLink) fs).setRefreshVisibility(isTrue(stream
-									.getElementText()));
+									.getElementText())); // default=false
 						} else if (FLY_TO_VIEW.equals(localname)) {
 							((NetworkLink) fs).setFlyToView(isTrue(stream
-									.getElementText()));
+									.getElementText())); // default=false
 						} else if (LINK.equals(localname)) {
 							((NetworkLink) fs).setLink(handleTaggedData(qName)); // Link
 						} else if (URL.equals(localname)) {
@@ -2357,10 +2363,10 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			}
 		} else if (EXTRUDE.equals(localPart)) {
 			if (isTrue(stream.getElementText()))
-				geom.extrude = Boolean.TRUE;
+				geom.extrude = Boolean.TRUE; // default=false
 		} else if (TESSELLATE.equals(localPart)) {
 			if (isTrue(stream.getElementText()))
-				geom.tessellate = Boolean.TRUE;
+				geom.tessellate = Boolean.TRUE; // default=false
 		} else if (DRAW_ORDER.equals(localPart)) {
 			// handle gx:drawOrder (default=0)
 			if (NS_GOOGLE_KML_EXT.equals(name.getNamespaceURI())) {
@@ -2438,7 +2444,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					}
 				} else if (EXTRUDE.equals(localPart)) {
 					if (isTrue(stream.getElementText()))
-						extrude = Boolean.TRUE;
+						extrude = Boolean.TRUE; // default=false
 				}
 				// Note tessellate tag is not applicable to Point
 			}
@@ -2669,6 +2675,18 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			return new ContainerEnd();
 		}
 
+		return null;
+	}
+
+	private Boolean getBooleanValue(QName qname) throws XMLStreamException {
+		String val = getElementText(qname);
+		if (val != null) {
+			val = val.trim();
+			if ("1".equals(val) || val.equalsIgnoreCase("true"))
+				return Boolean.TRUE;
+			else if ("0".equals(val) || val.equalsIgnoreCase("false"))
+				return Boolean.FALSE;
+		}
 		return null;
 	}
 
