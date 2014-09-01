@@ -67,12 +67,10 @@ public class TestGeoAtomStream {
 
 	@Test
 	public void testInput3() throws Exception {
-		testObjectDataSerialization("http://www.us-cert.gov/channels/techalerts.atom");
+		testObjectDataSerialization("https://www.us-cert.gov/ncas/alerts.xml");
 	}
 	
 	private void testObjectDataSerialization(String feedurl) throws Exception {
-		System.setProperty("http.proxyHost", "gatekeeper.mitre.org");
-		System.setProperty("http.proxyPort", "80");
 		URL url = new URL(feedurl);
 		URLConnection connection = url.openConnection();
 		IGISInputStream gis = GISFactory.getInputStream(DocumentType.GeoAtom, connection.getInputStream());
