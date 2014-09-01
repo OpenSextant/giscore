@@ -464,8 +464,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				StartElement sl = ee.asStartElement();
 				QName qname = sl.getName();
 				if (OPEN.equals(qname.getLocalPart())) {
-					Boolean bool = getBooleanValue(qname);
-					if (bool != null) cs.setOpen(bool); // default = true
+					if (isTrue(getElementText(qname)))
+						cs.setOpen(true); // default = 0
 				} else if (!handleProperties(cs, ee, qname)) {
 					// Ignore other container elements
 					log.debug("ignore {}", qname);
@@ -502,7 +502,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				if (val != null) {
 					val = val.trim();
 					if ("1".equals(val) || val.equalsIgnoreCase("true"))
-					feature.setVisibility(Boolean.TRUE);
+						feature.setVisibility(Boolean.TRUE); // default: 1 (true)
 					else if ("0".equals(val) || val.equalsIgnoreCase("false"))
 						feature.setVisibility(Boolean.FALSE);
 				}
@@ -536,7 +536,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				return true;
 			} else if (localname.equals("Snippet")) { // kml:Snippet (deprecated)
 				// http://service.kmlvalidator.com/ets/ogc-kml/2.2/#Snippet
-				feature.setSnippet(getElementText(name));
+				feature.setSnippet(getElementEmptyText(name)); // allow empty string to be preserved
 				return true;
 			} else if (localname.equals("snippet")) { // kml:snippet
 				// http://code.google.com/apis/kml/documentation/kmlreference.html#snippet
@@ -1045,11 +1045,11 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				StartElement se = e.asStartElement();
 				String localPart = se.getName().getLocalPart();
 				if (localPart.equals(FILL)) {
-					fill = isTrue(stream.getElementText());
+					fill = isTrue(stream.getElementText()); // default=true
 				} else if (localPart.equals(OUTLINE)) {
-					outline = isTrue(stream.getElementText());
+					outline = isTrue(stream.getElementText()); // default=true
 				} else if (localPart.equals(COLOR)) {
-					color = parseColor(stream.getElementText());
+					color = parseColor(stream.getElementText()); // default=WHITE
 				}
 			}
 		}
@@ -1708,7 +1708,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				// could treat as ExtendedData if want to preserve this data.
 				if (network && OPEN.equals(localname)) {
 					if (isTrue(getElementText(qName)))
-						((NetworkLink) fs).setOpen(true);
+						((NetworkLink) fs).setOpen(true); // default = 0
 				} else if (!handleProperties(fs, ee, qName)) {
 					// Deal with specific feature elements
 					if (ms_geometries.contains(localname)) {
@@ -2649,6 +2649,15 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		return list;
 	}
 
+	/**
+	 * Reads the content of a text-only element allowing empty string to be preserved.
+	 * Attempts to skip element if throws XMLStreamException.
+	 * @param name
+	 *            the qualified name of this event
+	 * @return String
+	 * @throws XMLStreamException
+	 *             if there is an error with the underlying XML.
+	 */
 	@Nullable
 	private String getElementEmptyText(QName name) throws XMLStreamException {
 		try {
@@ -2675,18 +2684,6 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			return new ContainerEnd();
 		}
 
-		return null;
-	}
-
-	private Boolean getBooleanValue(QName qname) throws XMLStreamException {
-		String val = getElementText(qname);
-		if (val != null) {
-			val = val.trim();
-			if ("1".equals(val) || val.equalsIgnoreCase("true"))
-				return Boolean.TRUE;
-			else if ("0".equals(val) || val.equalsIgnoreCase("false"))
-				return Boolean.FALSE;
-		}
 		return null;
 	}
 
