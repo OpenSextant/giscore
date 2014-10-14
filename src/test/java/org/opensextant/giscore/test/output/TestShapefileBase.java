@@ -73,8 +73,11 @@ public abstract class TestShapefileBase extends TestGISBase {
 
 		SingleShapefileOutputHandler soh = new SingleShapefileOutputHandler(
 				schema, null, buffer, shapeOutputDir, file, null);
-		soh.process();
-
+		try {
+			soh.process();
+		} finally {
+			buffer.close();
+		}
 		// System.out.println("Verify " + file);
 		SingleShapefileInputHandler handler = new SingleShapefileInputHandler(
 				shapeOutputDir, file);

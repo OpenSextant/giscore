@@ -86,13 +86,13 @@ public class TestShapefileOutputPerformance extends TestGISBase {
 			r.putData(lat, RandomUtils.nextDouble() * 5.0 + 30.0);
 			r.putData(lon, RandomUtils.nextDouble() * 5.0 + 30.0);
 			r.setSchema(schema.getId());
-			for(int j = 0; j < charFields.length; j++) {
+			for (SimpleField charField : charFields) {
 				if (RandomUtils.nextInt(3) == 1) continue; // null value
-				r.putData(charFields[j], getRandomText(charFields[j]));
+				r.putData(charField, getRandomText(charField));
 			}
-			for(int j = 0; j < intFields.length; j++) {
+			for (SimpleField intField : intFields) {
 				if (RandomUtils.nextInt(3) == 1) continue; // null value
-				r.putData(intFields[j], RandomUtils.nextInt());
+				r.putData(intField, RandomUtils.nextInt());
 			}
 			csvout.write(r);
 		}
@@ -101,6 +101,7 @@ public class TestShapefileOutputPerformance extends TestGISBase {
 		
 		IGISInputStream csvin = GISFactory.getInputStream(DocumentType.CSV, tempcsv, schema);
 		FieldCachingObjectBuffer buffer = new FieldCachingObjectBuffer();
+		try {
 		long readstart = System.currentTimeMillis();
 		System.out.println("Writing csv took " + (writestart - readstart) + "ms");
 		while(true) {
@@ -126,11 +127,15 @@ public class TestShapefileOutputPerformance extends TestGISBase {
 		}
 		long start = System.currentTimeMillis();
 		System.out.println("Reading into buffer took " + (readstart - start) + "ms");
-		SingleShapefileOutputHandler handler = new SingleShapefileOutputHandler(schema, null, buffer, tempdir, "largepoints", null);
+		SingleShapefileOutputHandler handler = new SingleShapefileOutputHandler(schema,
+				null, buffer, tempdir, "largepoints", null);
 		handler.process();
 		long delta = System.currentTimeMillis() - start;
 		
 		System.out.println("Writing " + totsize + " records took " + delta + " ms");
+		} finally {
+			buffer.close();
+		}
 	}
 
 	private Object getRandomText(SimpleField simpleTextField) {
