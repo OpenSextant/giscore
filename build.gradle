@@ -27,6 +27,15 @@ repositories {
 	[ mavenCentral(), maven { url oss_snapshot } ]
 }
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {        
+		classpath 'commons-io:commons-io:1.4'
+    }
+}
+
 configurations {
 	provided
 	compile { compile.extendsFrom provided 
