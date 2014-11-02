@@ -196,7 +196,7 @@ dependencies {
 	provided group: 'log4j', name: 'log4j', version: '[1.2.0,1.3)'
 	testCompile group: 'findbugs', name: 'annotations', version: "1.0.0"
 	testCompile 'org.mortbay.jetty:jetty:6.1.26'	
-	testCompile 'junit:junit:4.10'
+	testCompile 'junit:junit:4.11'
 	jni files(dir: "build/libs", include: 'giscore-' + version + '.jar')
 }
 
