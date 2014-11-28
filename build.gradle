@@ -175,7 +175,8 @@ jar {
 
 artifacts {
 	archives jar
-	archives javadocJar
+	//this fails with many errors & warnings using gradle 2.2.1
+	//archives javadocJar
 	archives sourcesJar
 }
 
