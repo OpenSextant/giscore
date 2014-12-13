@@ -304,7 +304,8 @@ JNIEXPORT jobjectArray JNICALL Java_org_opensextant_giscore_filegdb_Row_getAttrA
 		int count;
 		fieldInfo->GetFieldCount(count);
 		jclass oclass = me.findClass("java.lang.Object");
-		jclass calclass = me.findClass("java.util.GregorianCalendar");
+		jclass calclass = me.findClass("java.util.Calendar");
+		jmethodID ccgetinstance = env->GetStaticMethodID(calclass, "getInstance", "()Ljava/util/Calendar;");
 		jmethodID ccsetTime = me.getMethod(calclass, "setTimeInMillis", "(J)V");
 		jobjectArray rval = env->NewObjectArray(count * 2, oclass, 0L);
 		int ptr = 0;
@@ -361,7 +362,7 @@ JNIEXPORT jobjectArray JNICALL Java_org_opensextant_giscore_filegdb_Row_getAttrA
 						tm date;
 						row->GetDate(fieldName, date);
 						time_t dtm = mktime(&date);
-						jobject cal = env->AllocObject(calclass);
+						jobject cal = env->CallStaticObjectMethod(calclass, ccgetinstance);
 						env->CallVoidMethod(cal, ccsetTime, me.newLong(1000 * dtm));
 						val = cal;
 						break;

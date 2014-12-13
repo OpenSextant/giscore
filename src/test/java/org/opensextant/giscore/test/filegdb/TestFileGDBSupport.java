@@ -261,7 +261,11 @@ public class TestFileGDBSupport {
 	
 	@Test
 	public void testReadFeatureGdb() throws IOException {
-		File path = new File("data/gdb/ftest1.gdb");
+		readGdb("data/gdb/ftest1.gdb");
+	}
+
+	private void readGdb(String pathname) throws IOException {
+		File path = new File(pathname);
 		IGISInputStream os = null;
 		try {
 			os = new FileGdbInputStream(path, null);
@@ -287,6 +291,20 @@ public class TestFileGDBSupport {
 			if (os != null)
 				os.close();
 		}
+	}
+
+	@Test
+	public void testReadCrashGdb() throws IOException {
+		/**
+		 * this test fails with stack trace
+		 * Exception in thread "main" java.lang.NullPointerException
+		 at java.util.GregorianCalendar.computeFields(GregorianCalendar.java:2342)
+		 at java.util.GregorianCalendar.computeFields(GregorianCalendar.java:2312)
+		 at java.util.Calendar.setTimeInMillis(Calendar.java:1804)
+		 at org.opensextant.giscore.filegdb.Row.getAttrArray(Native Method)
+		 at org.opensextant.giscore.filegdb.Row.getAttributes(Row.java:215)
+		 */
+		readGdb("data/gdb/TestCrash.gdb");
 	}
 
 	private static void deleteGdbFolder(File db) {
