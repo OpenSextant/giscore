@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.mutable.MutableInt;
+import org.opengis.referencing.operation.MathTransform;
+import org.opengis.referencing.operation.TransformException;
 import org.opensextant.giscore.geometry.Geometry;
 import org.opensextant.giscore.geometry.Line;
 import org.opensextant.giscore.geometry.LinearRing;
@@ -159,15 +161,20 @@ public class Row extends GDB {
 		ptr.increment();
 		Double lat = (Double) shapeInfo[ptr.intValue()];
 		ptr.increment();
-		//todo - gfm - do CRS transform here
-		if (hasz) {
-			Double elev = (Double) shapeInfo[ptr.intValue()];
-			ptr.increment();
-			return new Point(lat, lon, elev);
-		} else {
-			return new Point(lat, lon, 0.0);
+		MathTransform transform = table.getTransform();
+		double [] longLat = {lon, lat};
+		double [] transformedLongLat = {lon, lat};
+		try {
+			transform.transform(longLat, 0, transformedLongLat, 0, 1);
+		} catch (TransformException e) {
+			e.printStackTrace();
 		}
-		
+		Double elev = 0.0;
+		if (hasz) {
+			elev = (Double) shapeInfo[ptr.intValue()];
+			ptr.increment();
+		}
+		return new Point(transformedLongLat[1], transformedLongLat[0], elev);
 	}
 
 	/**

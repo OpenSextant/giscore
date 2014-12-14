@@ -18,11 +18,14 @@ public class DatasetDefinition {
     private String definition;
 
     public DatasetDefinition(String definition) {
+        if (null == definition) {
+            return;
+        }
         this.definition = definition;
         setCRS();
     }
 
-    public CoordinateReferenceSystem getCoordinateReferenceSystem() {
+    public CoordinateReferenceSystem getCRS() {
         return coordinateReferenceSystem;
     }
 

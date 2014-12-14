@@ -70,8 +70,7 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 		private Table currentTable;
 		private EnumRows rows;
 		private Schema currentSchema;
-		private DatasetDefinition currentDatasetDefinition;
-		
+
 		public TableState(boolean hasGeo, List<String> paths) {
 			this.hasGeo = hasGeo;
 			this.paths = paths;
@@ -110,15 +109,13 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 				index++;
 				fcPath = paths.get(index);
 				currentSchema = getSchema(fcPath);
-				//todo - gfm -
-				currentDatasetDefinition = getDatasetDefinition(fcPath);
 
-				//todo - gfm -
 				if (acceptor != null && !acceptor.accept(currentSchema)) {
 					currentSchema = null;
 					return next();
 				}
 				currentTable = database.openTable(fcPath);
+				currentTable.loadDatasetDefinition(database.getDatasetDefinition(fcPath, Geodatabase.FEATURE_CLASS));
 				rows = currentTable.enumerate();
 				ContainerStart cs = new ContainerStart("Folder");
 				cs.setSchema(currentSchema.getId());
@@ -159,11 +156,6 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 					return new ContainerEnd();
 				}
 			}
-		}
-
-		private DatasetDefinition getDatasetDefinition(String fcPath) {
-			String definition = database.getDatasetDefinition(fcPath, Geodatabase.FEATURE_CLASS);
-			return new DatasetDefinition(definition);
 		}
 
 		/**
