@@ -46,6 +46,9 @@ public class DatasetDefinition {
         InputSource inputSource = new InputSource(new StringReader(definition));
         try {
             Node node = (Node) xpath.evaluate(path, inputSource, XPathConstants.NODE);
+            if (node == null) {
+                return null;
+            }
             return node.getTextContent();
         } catch (Exception e) {
             e.printStackTrace();
