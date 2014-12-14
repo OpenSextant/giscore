@@ -159,6 +159,7 @@ public class Row extends GDB {
 		ptr.increment();
 		Double lat = (Double) shapeInfo[ptr.intValue()];
 		ptr.increment();
+		//todo - gfm - do CRS transform here
 		if (hasz) {
 			Double elev = (Double) shapeInfo[ptr.intValue()];
 			ptr.increment();
