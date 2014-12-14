@@ -142,7 +142,7 @@ public class Table extends GDB {
 			transform = CRS.findMathTransform(datasetDefinition.getCRS(), DefaultGeographicCRS.WGS84, true);
 		} catch (FactoryException e) {
 			e.printStackTrace();
-			transform = IdentityTransform.create(DefaultGeographicCRS.WGS84.getCoordinateSystem().getDimension());
+			transform = null;
 		}
 	}
 
