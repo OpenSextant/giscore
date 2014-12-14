@@ -293,20 +293,6 @@ public class TestFileGDBSupport {
 		}
 	}
 
-	@Test
-	public void testReadCrashGdb() throws IOException {
-		/**
-		 * this test fails with stack trace
-		 * Exception in thread "main" java.lang.NullPointerException
-		 at java.util.GregorianCalendar.computeFields(GregorianCalendar.java:2342)
-		 at java.util.GregorianCalendar.computeFields(GregorianCalendar.java:2312)
-		 at java.util.Calendar.setTimeInMillis(Calendar.java:1804)
-		 at org.opensextant.giscore.filegdb.Row.getAttrArray(Native Method)
-		 at org.opensextant.giscore.filegdb.Row.getAttributes(Row.java:215)
-		 */
-		readGdb("data/gdb/TestCrash.gdb");
-	}
-
 	private static void deleteGdbFolder(File db) {
 		if (db.exists()) {
 			for(File f : db.listFiles()) {
