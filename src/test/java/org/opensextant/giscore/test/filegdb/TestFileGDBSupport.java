@@ -297,12 +297,19 @@ public class TestFileGDBSupport {
 	public void testReadCrashGdb() throws IOException {
 		/**
 		 * this test fails with stack trace
-		 * Exception in thread "main" java.lang.NullPointerException
-		 at java.util.GregorianCalendar.computeFields(GregorianCalendar.java:2342)
-		 at java.util.GregorianCalendar.computeFields(GregorianCalendar.java:2312)
-		 at java.util.Calendar.setTimeInMillis(Calendar.java:1804)
-		 at org.opensextant.giscore.filegdb.Row.getAttrArray(Native Method)
-		 at org.opensextant.giscore.filegdb.Row.getAttributes(Row.java:215)
+		 java.lang.IllegalArgumentException: Angle 13245.373804829087 radians is too big
+		 at org.opensextant.geodesy.Angle.normalize(Angle.java:80)
+		 at org.opensextant.geodesy.Angle.init(Angle.java:93)
+		 at org.opensextant.geodesy.Longitude.<init>(Longitude.java:39)
+		 at org.opensextant.giscore.geometry.Point.<init>(Point.java:123)
+		 at org.opensextant.giscore.filegdb.Row.getPoint(Row.java:167)
+		 at org.opensextant.giscore.filegdb.Row.getGeometry(Row.java:76)
+		 at org.opensextant.giscore.input.gdb.FileGdbInputStream$TableState.next(FileGdbInputStream.java:138)
+		 at org.opensextant.giscore.input.gdb.FileGdbInputStream$TableState.access$500(FileGdbInputStream.java:58)
+		 at org.opensextant.giscore.input.gdb.FileGdbInputStream.read(FileGdbInputStream.java:299)
+		 at org.opensextant.giscore.test.filegdb.TestFileGDBSupport.readGdb(TestFileGDBSupport.java:280)
+		 at org.opensextant.giscore.test.filegdb.TestFileGDBSupport.testReadCrashGdb(TestFileGDBSupport.java:307)
+
 		 */
 		readGdb("data/gdb/TestCrash.gdb");
 	}

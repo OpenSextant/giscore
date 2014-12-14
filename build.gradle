@@ -188,6 +188,7 @@ signing {
 dependencies {
 	def slf4j_version = '1.7.2'
 
+	compile 'org.geotools:gt-shapefile:12.1'
 	compile group: 'org.opensextant', name: 'geodesy', version: '[2.0.0,2.1)'
 	compile group: 'commons-lang', name: 'commons-lang', version: '2.5'
 	compile group: 'commons-io', name: 'commons-io', version: '1.4'
