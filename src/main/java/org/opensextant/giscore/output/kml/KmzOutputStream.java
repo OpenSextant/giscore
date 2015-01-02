@@ -100,6 +100,18 @@ public class KmzOutputStream implements IGISOutputStream {
 		kmlStream.write(object);
 	}
 
+	/**
+	 * Set number of points used to generate a circle. Defines how output
+	 * will iterate over boundary points of Circle geometries at
+	 * <tt>circlePoints</tt> resolution.
+	 *
+	 * @param circlePoints int number of points on boundary to use (1st is due South),
+	 *                     should be greater than 0
+	 */
+	public void setNumberCirclePoints(int circlePoints) {
+		kmlStream.setNumberCirclePoints(circlePoints);
+	}
+
 	/** {@inheritDoc} */
 	@Override
 	public void close() throws IOException {
