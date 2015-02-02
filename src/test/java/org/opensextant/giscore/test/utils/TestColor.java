@@ -56,6 +56,15 @@ public class TestColor {
     }
 
     @Test
+    public void testFromKmlColor() {
+		// convert from KML aabbggrr color representation
+		assertEquals(Color.RED,		Color.fromKmlColor("FF0000FF")); // red
+		assertEquals(Color.GREEN,	Color.fromKmlColor("FF00FF00")); // green
+		assertEquals(Color.BLUE,	Color.fromKmlColor("FFFF0000")); // blue
+		assertEquals(Color.YELLOW,	Color.fromKmlColor("FF00FFFF")); // yellow
+    }
+
+    @Test
     public void testFromAwtColor() {
         assertEquals(Color.BLACK, new Color(java.awt.Color.BLACK));
     }

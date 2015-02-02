@@ -21,6 +21,8 @@ package org.opensextant.giscore.utils;
 
 import edu.umd.cs.findbugs.annotations.NonNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 
 /**
@@ -38,6 +40,8 @@ import java.io.Serializable;
  * Modified by Jason Mathews, July 2012.
  */
 public class Color implements Serializable {
+
+	private static final Logger logger = LoggerFactory.getLogger(Color.class);
 
 	private static final long serialVersionUID = -1L;
 
@@ -338,4 +342,23 @@ public class Color implements Serializable {
 		return new java.awt.Color(value, hasAlpha);
 	}
 
+	/**
+	 * Convert KML color string representation to equivalent Color object instance
+	 *
+	 * @param aabbggrr the KML color string with ABGR components.
+	 *                 string length must be 8 (e.g. FF006400) otherwise not a valid color value.
+	 * @return Color or null if color is invalid
+	 */
+	public static Color fromKmlColor(String aabbggrr) {
+		if (aabbggrr != null && aabbggrr.length() == 8) {
+			try {
+				final int abgr = (int) Long.parseLong(aabbggrr, 16);
+				return new Color(abgr & 0xff, (abgr >> 8) & 0xff, (abgr >> 16) & 0xff, (abgr >> 24) & 0xff);
+			} catch (NumberFormatException e) {
+				// log error below
+			}
+		}
+		logger.warn("invalid color: {}", aabbggrr);
+		return null;
+	}
 }
