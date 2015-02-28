@@ -324,7 +324,7 @@ public class Style extends StyleSelector {
 	 */
 	public void setIconUrl(String url) {
 		iconUrl = url == null ? null : url.trim();
-		hasIconStyle = iconColor != null | iconScale != null || iconHeading != null || iconUrl != null;
+		hasIconStyle = iconColor != null || iconScale != null || iconHeading != null || iconUrl != null;
 	}
 
 	/**
