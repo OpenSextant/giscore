@@ -32,12 +32,15 @@ import java.util.TimeZone;
  * 1997-07-16T07:30:15.30Z   dateTime     YYYY-MM-DDThh:mm:ss.SSSZ
  * </pre>
  * <P>
- * Class is thread-safe.
+ * Class is thread-safe. <P/>
+ *
+ * Extends {@link Number} such that it can safely be used in
+ * java.text.SimpleDateFormat.format().
  *
  * @author Jason Mathews, MITRE Corp.
  * created 4/17/14.
  */
-public class DateTime implements java.io.Serializable, Cloneable, Comparable<DateTime> {
+public class DateTime extends Number implements java.io.Serializable, Cloneable, Comparable<DateTime> {
 
 	private static final Logger log = LoggerFactory.getLogger(DateTime.class);
 
@@ -132,8 +135,8 @@ public class DateTime implements java.io.Serializable, Cloneable, Comparable<Dat
 	 * @throws IllegalArgumentException if type is null
 	 */
 	public DateTime(long date, DateTimeType type) {
-		this.time = date;
 		if (type == null) throw new IllegalArgumentException();
+		this.time = date;
 		this.type = type;
 	}
 
@@ -150,6 +153,10 @@ public class DateTime implements java.io.Serializable, Cloneable, Comparable<Dat
 		this.time = parseDate(datestr);
 	}
 
+    /**
+     * Returns the number of milliseconds since January 1, 1970, 00:00:00 GMT
+     * represented by this <tt>Date</tt> object.
+     */
 	public long getTime() {
 		return time;
 	}
@@ -166,6 +173,26 @@ public class DateTime implements java.io.Serializable, Cloneable, Comparable<Dat
 	public Date toDate() {
 		return new Date(time);
 	}
+
+    @Override
+    public int intValue() {
+        return (int)time;
+    }
+
+    @Override
+    public long longValue() {
+        return time;
+    }
+
+    @Override
+    public float floatValue() {
+        return (float)time;
+    }
+
+    @Override
+    public double doubleValue() {
+        return (double)time;
+    }
 
 	/**
 	 *
@@ -322,12 +349,27 @@ public class DateTime implements java.io.Serializable, Cloneable, Comparable<Dat
 	}
 
 	/**
-	 * Return a copy of this object.
+	 * Return a copy of this <tt>DateTime</tt> object.
 	 */
 	public Object clone() {
 		return new DateTime(time, type);
 	}
 
+    /**
+     * Creates a string representation of this <tt>DateTime</tt> object
+     * based on the type value. <p/>
+     * Here is list of types and corresponding formats:
+     * <pre>
+     *   date -> yyyy-MM-dd
+     *   gYearMonth -> yyyy-MM
+     *   gYear -> yyyy
+     *   dateTime -> yyyy-MM-dd'T'HH:mm:ss.SSS'Z' (default)
+     *  </pre>
+     *  If want custom format use java.text.SimpleDateFormat.format().
+     *
+     * @param type DateTimeType used to select format for this DateTime object
+     * @return a string representation of this date
+     */
 	public String toString(DateTimeType type) {
 		SafeDateFormat dateFormatter;
 		/*
@@ -354,7 +396,7 @@ public class DateTime implements java.io.Serializable, Cloneable, Comparable<Dat
 	}
 
 	/**
-	 * Creates a string representation of this <tt>Date</tt> object of
+	 * Creates a string representation of this <tt>DateTime</tt> object of
 	 * the form:
 	 * <blockquote><pre>
 	 * YYYY-MM-DDThh:mm:ss.SSSZ</pre></blockquote>

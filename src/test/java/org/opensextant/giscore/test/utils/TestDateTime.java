@@ -88,4 +88,18 @@ public class TestDateTime {
 		new DateTime(0, null);
 	}
 
+    @Test
+    public void testSimpleDateFormat() {
+        // DateTime extends Number so SimpleDateFormat should format it same as it would
+        // any long number.
+        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'");
+        df.setTimeZone(TimeZone.getTimeZone("UTC"));
+        // 01:46:40 UTC on 9 September 2001, the Unix billennium
+        DateTime dateTime = new DateTime(1000000000000L);
+        assertEquals(df.format(1000000000000L), df.format(dateTime));
+
+        dateTime = new DateTime();
+        assertEquals(df.format(dateTime.getTime()), df.format(dateTime));
+    }
+
 }
