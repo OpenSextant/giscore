@@ -6,6 +6,8 @@ import org.opensextant.giscore.utils.DateTime.DateTimeType;
 import org.opensextant.giscore.utils.DateTime;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
