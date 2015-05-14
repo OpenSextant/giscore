@@ -370,12 +370,41 @@ public abstract class Common extends Row {
 	}
 
 	/**
+     * Returns true if this object has any foreign XML-namespaced elements
+     */
+    public boolean hasElements() {
+        return !elements.isEmpty();
+    }
+
+	/**
+     * Collection of foreign XML-namespaced elements for this feature
 	 * @return the elements, never null
 	 */
 	@NonNull
 	public List<Element> getElements() {
 		return elements;
 	}
+
+	/**
+     * Find element by name and namespace URI.
+     *
+     * @param name  target element name
+     * @param namespaceUri  target element namespace URI, null if want to find any
+     *                      element just by its name
+     * @return element if found otherwise null
+     */
+    public Element findElement(String name, String namespaceUri) {
+        if (!elements.isEmpty()) {
+            for (Element elt : elements) {
+                if (elt.getName().equals(name)) {
+                    if (namespaceUri == null || namespaceUri.equals(elt.getNamespaceURI())) {
+                        return elt;
+                    }
+                }
+            }
+        }
+        return null;
+    }
 
 	/**
 	 * Add single element to list
