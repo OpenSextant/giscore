@@ -112,6 +112,11 @@ import org.slf4j.LoggerFactory;
  * <p/>
  * Elements such as atom:author, atom:link, xal:AddressDetails, and gx: extensions
  * must be added to the Feature object as {@link Element} objects.
+ * Supported gx extensions include gx:altitudeMode, gx:altitudeOffset, and gx:drawOrder,
+ * gx:TimeStamp, gx:TimeSpan, gx:Tour, gx:Track, and gx:MultiTrack. If gx:Tour element is
+ * defined then that element can have child elements such as gx:FlyTo, gx:SoundCue,
+ * gx:AnimatedUpdate, gx:Wait, etc.
+ * Other gx extensions are not yet supported and will be added when needed.
  * <p/>
  * If description contains HTML markup or special characters (e.g. '&', '<', '>', etc.)
  * then a CDATA block will surround the unescaped text in the generated KML output.
@@ -170,6 +175,11 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      * in root Document declarations
      */
     private Namespace gxNamespace;
+
+    /**
+     * current feature being output
+     */
+    private Feature targetFeature;
 
     /**
      * Ctor
@@ -338,9 +348,14 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             List<Element> elements = handleAttributes(containerStart, tag);
 
             for (Element el : elements) {
-                if (el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX))
+				if (el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+                    // only gx:Tour supported in this context (substitutionGroup = kml:AbstractFeatureGroup)
+                    // which itself can have child elements; e.g. gx:FlyTo, gx:SoundCue, gx:AnimatedUpdate, gx:Wait, etc.
+                    if ("Tour".equals(el.getName())) {
                     handleXmlElement(el);
-                else {
+                    }
+                    // otherwise extension does not apply to this context
+                } else {
                     // what non-kml namespaces can we support without creating invalid KML other than gx: and atom: ??
                     // suppress atom:attributes in post-xml element dump
                     // atoms handled in handleAttributes
@@ -536,8 +551,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      */
     private List<Element> handleAttributes(Common feature, String containerType) {
         try {
-            List<Element> elements = feature.getElements().isEmpty() ?
-                    Collections.<Element>emptyList() : new LinkedList<Element>(feature.getElements());
+	        List<Element> elements = feature.hasElements() ?
+                    new LinkedList<Element>(feature.getElements()) : Collections.<Element>emptyList();
 
             String id = feature.getId();
             if (id != null) writer.writeAttribute(ID, id);
@@ -657,6 +672,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
 
             // todo: other gx extensions that extend features should probably be output here and removed from the list
             // check out what other extended tags are possible..
+            // otherwise invalid elements will create non-compliant KML output
 
             return elements;
         } catch (XMLStreamException e) {
@@ -827,6 +843,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
      */
     @Override
     public void visit(Feature feature) {
+        // need feature available for handling gx extensions
+        targetFeature = feature;
         try {
             String tag = feature.getType();
             writer.writeStartElement(tag);
@@ -839,14 +857,29 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             } else if (feature instanceof NetworkLink) {
                 handleNetworkLink((NetworkLink) feature);
             }
+            Element geometryExt = null;
             for (Element el : elements) {
                 if (el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+                    String name = el.getName();
+                    // only gx:Track and gx:MultiTrack supported in this context
+                    // substitutionGroup = kml:AbstractGeometryGroup
+                    if ("Track".equals(name) || "MultiTrack".equals(name)) {
+                        if (geometryExt == null) {
+                            geometryExt = el; // keep track if already have a geometry
+                            if (feature.getGeometry() != null) {
+                                // cannot have both a geometry and AbstractGeometryGroup extension (e.g. gx:Track) in a Feature
+                                log.error("cannot have both a geometry and {} in a Feature", name);
+                            } else {
+                                // geometry extensions: gx:Track or gx:MultiTrack
                     handleXmlElement(el);
+                            }
+                        } else log.error("cannot have multiple AbstractGeometryGroup extensions in a Feature");
+                    } // otherwise extension does not apply to this context
                 } else {
                     // what non-kml namespaces can we support without creating invalid KML other than gx: and atom: ??
                     // suppress atom:attributes in post-xml element dump
                     // atoms handled in handleAttributes
-                    log.debug("Handle XML element " + el.getName() + " as comment");
+					log.debug("Handle XML element {} as comment", el.getName());
                     writeAsComment(el);
                 }
             }
@@ -854,6 +887,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             writer.writeCharacters("\n");
         } catch (XMLStreamException e) {
             throw new IllegalStateException(e);
+		} finally {
+            targetFeature = null;
         }
     }
 
@@ -1107,6 +1142,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 handleGeometryAttributes(poly);
                 writer.writeStartElement(OUTER_BOUNDARY_IS);
                 writer.writeStartElement(LINEAR_RING);
+                // For XSD reasons, altitudeOffset is part of kml:AbstractGeometrySimpleExtensionGroup
+                // but it is only supported in kml:LinearRing and kml:LineString.
+                handleGxAltitudeOffset();
 				handleSimpleElement(COORDINATES, handlePolygonCoordinates(poly
 						.getOuterRing().getPoints()));
                 writer.writeEndElement();
@@ -1125,6 +1163,28 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
     }
 
+    private void handleGxAltitudeOffset() throws XMLStreamException {
+        if (targetFeature != null) {
+            Element elt = targetFeature.findElement("altitudeOffset", NS_GOOGLE_KML_EXT);
+            // For XSD reasons, altitudeOffset is part of kml:AbstractGeometrySimpleExtensionGroup but it is only supported in
+            // kml:LinearRing and kml:LineString
+            if (elt != null) {
+                final String text = elt.getText();
+                if (StringUtils.isNumeric(text)) {
+                    if (gxNamespace != null)
+                        writer.writeStartElement(gxNamespace.getPrefix(),
+                                "altitudeOffset", gxNamespace.getURI());
+                    else {
+                        writer.writeStartElement("altitudeOffset");
+                        writer.writeDefaultNamespace(NS_GOOGLE_KML_EXT);
+                    }
+                    writer.writeCharacters(text);
+                    writer.writeEndElement();
+                }
+            }
+        }
+    }
+
     /**
      * Handle the output of a ring
      *
@@ -1135,6 +1195,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (r != null)
             try {
                 writer.writeStartElement(LINEAR_RING);
+                // For XSD reasons, altitudeOffset is part of kml:AbstractGeometrySimpleExtensionGroup
+                // but it is only supported in kml:LinearRing and kml:LineString.
+                handleGxAltitudeOffset();
                 handleGeometryAttributes(r);
                 handleSimpleElement(COORDINATES, handleCoordinates(r.getPoints()));
                 writer.writeEndElement();
@@ -1153,6 +1216,9 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
         if (l != null)
             try {
                 writer.writeStartElement(LINE_STRING);
+                // For XSD reasons, altitudeOffset is part of kml:AbstractGeometrySimpleExtensionGroup
+                // but it is only supported in kml:LinearRing and kml:LineString.
+                handleGxAltitudeOffset();
                 handleGeometryAttributes(l);
                 handleSimpleElement(COORDINATES, handleCoordinates(l.getPoints()));
                 writer.writeEndElement();
@@ -1356,6 +1422,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
                 <element ref="kml:altitudeModeGroup" minOccurs="0"/>
             </sequence>
          */
+        // <gx:altitudeOffset>...
         //<extrude>0</extrude>                   <!-- boolean -->
         // <tessellate>0</tessellate>             <!-- boolean -->
         // To enable tessellation, the value for <altitudeMode> must be clampToGround or clampToSeaFloor.

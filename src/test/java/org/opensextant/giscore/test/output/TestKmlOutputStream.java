@@ -63,6 +63,7 @@ import org.opensextant.giscore.output.XmlOutputStreamBase;
 import org.opensextant.giscore.output.atom.IAtomConstants;
 import org.opensextant.giscore.output.kml.KmlOutputStream;
 import org.opensextant.giscore.test.TestGISBase;
+import org.opensextant.giscore.utils.DateTime;
 
 import static junit.framework.Assert.*;
 import static junit.framework.Assert.assertFalse;
@@ -168,8 +169,8 @@ public class TestKmlOutputStream extends TestGISBase {
 		nl.setName("Test Link");
 		nl.setDescription("POI");
 		nl.setOpen(true);
-		nl.setStartTime(new Date());
-		nl.setEndTime(nl.getStartTime());
+		nl.setStartTime(new DateTime());
+		nl.setEndTime(nl.getStartDate());
 		nl.setSnippet("snippet");
 		Namespace gxNs = Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT);
 		nl.addElement(new Element(gxNs, "balloonVisibility").withText("1"));
@@ -561,6 +562,7 @@ public class TestKmlOutputStream extends TestGISBase {
 		kos.write(f);
 		kos.close();
 
+		assertTrue(f.hasElements());
 		// System.out.println("XXX: KML content:\n" + bos.toString("UTF-8"));
 
 		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
@@ -574,6 +576,8 @@ public class TestKmlOutputStream extends TestGISBase {
 			Element track = list.get(0);
 			assertEquals(gxNs, track.getNamespace());
 			assertEquals(6, track.getChildren().size());
+			Element trackElt = f2.findElement("Track", IKml.NS_GOOGLE_KML_EXT);
+			assertNotNull(trackElt);
 		} catch (AssertionError ae) {
 			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
 			throw ae;
