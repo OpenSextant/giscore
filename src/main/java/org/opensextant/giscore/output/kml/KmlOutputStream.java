@@ -348,7 +348,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             List<Element> elements = handleAttributes(containerStart, tag);
 
             for (Element el : elements) {
-				if (el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+				if (el.getNamespaceURI().equals(NS_GOOGLE_KML_EXT)) {
                     // only gx:Tour supported in this context (substitutionGroup = kml:AbstractFeatureGroup)
                     // which itself can have child elements; e.g. gx:FlyTo, gx:SoundCue, gx:AnimatedUpdate, gx:Wait, etc.
                     if ("Tour".equals(el.getName())) {
@@ -859,7 +859,7 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
             }
             Element geometryExt = null;
             for (Element el : elements) {
-                if (el.getNamespaceURI().startsWith(NS_GOOGLE_KML_EXT_PREFIX)) {
+                if (el.getNamespaceURI().equals(NS_GOOGLE_KML_EXT)) {
                     String name = el.getName();
                     // only gx:Track and gx:MultiTrack supported in this context
                     // substitutionGroup = kml:AbstractGeometryGroup
