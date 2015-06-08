@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -37,6 +38,7 @@ import java.util.zip.ZipOutputStream;
 import javax.xml.stream.XMLStreamException;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.opensextant.geodesy.Geodetic2DBounds;
@@ -440,6 +442,7 @@ public class TestKmlOutputStream extends TestGISBase {
 			ds.getNamespaces().add(gxNs);
 			kos.write(ds);
 		}
+		kos.write(new ContainerStart());
 		Feature f = new Feature();
 		TaggedMap lookAt = new TaggedMap("LookAt");
 		if (declareNamespace) {
@@ -469,10 +472,12 @@ public class TestKmlOutputStream extends TestGISBase {
 		lineFeature.setGeometry(line);
 		kos.write(lineFeature);
 
+		kos.write(new ContainerEnd());
 		kos.close();
 		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
 		try {
 			assertNotNull(kis.read()); // skip DocumentStart
+			assertNotNull(kis.read()); // skip ContainerStart
 			IGISObject obj = kis.read(); // Placemark
 			IGISObject obj2 = kis.read(); // Placemark
 			kis.close();
@@ -578,6 +583,63 @@ public class TestKmlOutputStream extends TestGISBase {
 			assertEquals(6, track.getChildren().size());
 			Element trackElt = f2.findElement("Track", IKml.NS_GOOGLE_KML_EXT);
 			assertNotNull(trackElt);
+		} catch (AssertionError ae) {
+			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
+			throw ae;
+		}
+	}
+
+	@Test
+	public void createGxTour() throws IOException, XMLStreamException {
+		ByteArrayOutputStream bos = new ByteArrayOutputStream();
+		KmlOutputStream kos = new KmlOutputStream(bos);
+		DocumentStart ds = new DocumentStart(DocumentType.KML);
+		Namespace gxNs = Namespace.getNamespace("gx", IKml.NS_GOOGLE_KML_EXT);
+		ds.getNamespaces().add(gxNs);
+		kos.write(ds);
+		ContainerStart cs = new ContainerStart();
+
+		/*
+		<gx:Tour>
+		  <gx:Playlist>
+			<gx:FlyTo>
+			  <gx:flyToMode>smooth</gx:flyToMode>
+			</gx:FlyTo>
+		  </gx:Playlist>
+		</gx:Tour>
+		 */
+
+		Element tour = new Element(gxNs, "Tour");
+		Element playlist = new Element(gxNs, "Playlist");
+		tour.getChildren().add(playlist);
+		Element flyTo = new Element(gxNs, "FlyTo");
+		playlist.getChildren().add(flyTo);
+		Element flyToMode = new Element(gxNs, "flyToMode");
+		flyToMode.setText("smooth");
+		flyTo.getChildren().add(flyToMode);
+		cs.addElement(tour);
+		kos.write(cs);
+
+		Feature f = new Feature();
+		f.setName("no tour");
+		f.addElement(tour);
+		kos.write(f);
+		assertTrue(f.hasElements());
+
+		kos.close();
+
+		// System.out.println("XX: KML content:\n" + bos.toString("UTF-8"));
+
+		KmlInputStream kis = new KmlInputStream(new ByteArrayInputStream(bos.toByteArray()));
+		try {
+			assertNotNull(kis.read()); // skip DocumentStart
+			IGISObject obj = kis.read(); // ContainerStart
+			assertTrue(obj instanceof ContainerStart);
+			checkElements(cs.getElements(), ((ContainerStart)obj).getElements());
+			obj = kis.read(); // Feature
+			// gx:Tour write not be written on a Placemark so no elements should be retrieved here
+			Feature f2 = (Feature)obj;
+			assertFalse(f2.hasElements());
 		} catch (AssertionError ae) {
 			System.out.println("Failed with KML content:\n" + bos.toString("UTF-8"));
 			throw ae;
@@ -958,15 +1020,50 @@ public class TestKmlOutputStream extends TestGISBase {
 			Feature sf = (Feature) source;
 			Feature tf = (Feature) test;
 
+			// tests: { description, name, schema, styleUrl, startTime, endTime, style, extendedData, geometry }
 			boolean ae = sf.approximatelyEquals(tf);
 
 			if (!ae) {
 				System.out.println("Expected: " + source);
 				System.out.println("Actual: " + test);
 				fail("Found unequal objects");
+			} else {
+				// need to verify: viewGroup, region, elements, extendedElements
+				// not tested: visibility, snippet
+				assertEquals(sf.getViewGroup(), tf.getViewGroup());
+				assertEquals(sf.getRegion(), tf.getRegion());
+				checkElements(sf.getElements(), tf.getElements());
+				checkElements(sf.getExtendedElements(), tf.getExtendedElements());
 			}
 		} else {
 			assertEquals(source, test);
+		}
+	}
+
+	private static void checkElements(List<Element> srcElements, List<Element> tgtElements) {
+		if (srcElements.isEmpty()) {
+			assertTrue("unexpected elements", tgtElements.isEmpty());
+		} else {
+			assertEquals(srcElements.size(), tgtElements.size());
+			Iterator<Element> tgtIt = tgtElements.iterator();
+			for(Element e : srcElements) {
+				Element tgt = tgtIt.next();
+				assertEquals(e.getNamespace(), tgt.getNamespace());
+				//assertEquals(e.getNamespaceURI(), tgt.getNamespaceURI());
+				// NOTE: if text is empty string or null it should be handled the same
+				assertEquals(StringUtils.trimToNull(e.getText()),
+						StringUtils.trimToNull(tgt.getText()));
+				assertEquals(e.getAttributes(), tgt.getAttributes());
+				checkElements(e.getChildren(), tgt.getChildren());
+				/*
+				if (e.equals(tgt)) {
+					System.out.println("Element mismatch:");
+					System.out.println("Expected: " + e);
+					System.out.println("Actual:   " + tgt);
+					fail("Found unequal elements");
+				}
+				*/
+			}
 		}
 	}
 
