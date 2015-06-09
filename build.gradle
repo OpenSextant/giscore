@@ -63,6 +63,14 @@ eclipse {
 	}
 }
 
+test {
+  exclude 'org/opensextant/giscore/test/TestTransfusionFields*'
+  exclude 'org/opensextant/giscore/test/TestSorterOutputStream*'  
+  exclude 'org/opensextant/giscore/test/filegdb/**'
+  exclude 'org/**/*GDB*'
+  exclude 'org/**/*Gdb*'
+}
+
 ext.IOUtils = Class.forName("org.apache.commons.io.IOUtils")
 def packageLibrary(name, libname, packagen, osn, extn, pre = "") {
 	def libdir = new java.io.File(sourceSets.main.output.classesDir, packagen)
