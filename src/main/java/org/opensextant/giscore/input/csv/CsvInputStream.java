@@ -226,48 +226,52 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 	 */
 	private Object[] readNextToken() throws IOException {
 		StringBuilder b = new StringBuilder();
-		char ch = (char) reader.read();
+		int in = reader.read();
+		char ch = (char)in;
 		// Handle case where there's no content directly
-		if (ch < 0) {
+		if (in < 0) {
 			return new Object[] {b.toString(), EOF};
 		} else if (ch == valueDelimiter) {
 			return new Object[] {b.toString(), null};
 		} else if (checkLineDelimiter(ch)) {
 			return new Object[] {b.toString(), EOL};
 		}
-		if (ch == quote.charValue()) {
-			ch = (char) reader.read();
-			while(ch >= 0) {
+		if (ch == quote) {
+			in = reader.read();
+			while(in >= 0) {
+				ch = (char)in;
 				if (ch == quote) {
 					// either done or quoting the next character
-					ch = (char) reader.read();
+					in = reader.read();
+					ch = (char)in;
 					if (ch != quote) {
-						if (ch < 0) {
+						if (in < 0) {
 							return new Object[] {b.toString(), EOF};
 						} else if (ch == valueDelimiter) {
 							return new Object[] {b.toString(), null};
 						} else if (checkLineDelimiter(ch)) {
 							return new Object[] {b.toString(), EOL};
 						} else {
-							throw new IllegalStateException("Found unexpected char " + ch);
+							throw new RuntimeException("Found unexpected char " + ch);
 						}
 					}
 				}
 				b.append(ch);
-				ch = (char) reader.read();
+				in = reader.read();
 			}
-			throw new IllegalStateException("Quoted string did not end as expected");
+			throw new RuntimeException("Quoted string did not end as expected");
 		} else {
-			while(reader.ready() && ch >= 0 && ch != valueDelimiter) {
+			while(reader.ready() && in >= 0 && ch != valueDelimiter) {
 				b.append(ch);
-				ch = (char) reader.read();
+				in = reader.read();
+				ch = (char)in;
 				if (checkLineDelimiter(ch)) {
 					return new Object[] {b.toString(), EOL};
-				} else if (ch < 0){
+				} else if (in < 0) {
 					return new Object[] {b.toString(), EOF};
 				}
 			}
-			return new Object[] { b.toString(), null };
+			return new Object[] {b.toString(), null};
 		}
 	}
 
