@@ -56,19 +56,13 @@ public class TestCSVInputStream extends TestGISBase {
 	@Test
 	public void testStreamInput() throws Exception {
 		InputStream stream = getStream("csv_example.csv");
-		IGISInputStream is = GISFactory
-				.getInputStream(DocumentType.CSV, stream, null, null);
+		IGISInputStream is = GISFactory.getInputStream(DocumentType.CSV, stream);
 		List<IGISObject> contents = new ArrayList<IGISObject>();
-		try {
-			while (true) {
-				IGISObject obj = is.read();
-				if (obj == null)
-					break;
-				contents.add(obj);
-			}
-		} catch(Exception e) {
-			log.error("", e);
-			fail(e.getMessage());
+		while (true) {
+			IGISObject obj = is.read();
+			if (obj == null)
+				break;
+			contents.add(obj);
 		}
 
 		assertTrue(contents.size() > 0);
