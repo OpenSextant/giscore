@@ -47,20 +47,21 @@ import org.opensextant.giscore.input.IGISInputStream;
  * 
  * @author DRAND
  */
-public class CsvInputStream extends GISInputStreamBase implements IGISInputStream {	
+public class CsvInputStream extends GISInputStreamBase {
 	/*
 	 * Private markers for end of file and end of line
 	 */
 	private static final Object EOF = new Object();
 	private static final Object EOL = new Object();
+
 	/**
 	 * The reader used to read from the stream, never <code>null</code> after
 	 * ctor
 	 */
-	private Reader reader = null;
+	private Reader reader;
 	
 	private Character valueDelimiter = ',';
-	private String lineDelimiter = null;
+	private String lineDelimiter;
 	private Character quote = '"';
 	
 	/**
@@ -166,7 +167,7 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 	 * {@inheritDoc}
 	 *
 	 * @exception  IOException  If an I/O error occurs
-	 * @exception  IllegalStateException
+	 * @exception  IllegalStateException  if encountered invalid input when parsing
 	 */
 	public IGISObject read() throws IOException {
 		if (hasSaved()) {
@@ -222,7 +223,7 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 	/**
 	 * @return
 	 * @throws  IOException  If an I/O error occurs
-	 * @throws  IllegalStateException
+	 * @throws  IllegalStateException  if encountered invalid input when parsing
 	 */
 	private Object[] readNextToken() throws IOException {
 		StringBuilder b = new StringBuilder();
@@ -252,14 +253,14 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 						} else if (checkLineDelimiter(ch)) {
 							return new Object[] {b.toString(), EOL};
 						} else {
-							throw new RuntimeException("Found unexpected char " + ch);
+							throw new IllegalStateException("Found unexpected char " + ch);
 						}
 					}
 				}
 				b.append(ch);
 				in = reader.read();
 			}
-			throw new RuntimeException("Quoted string did not end as expected");
+			throw new IllegalStateException("Quoted string did not end as expected");
 		} else {
 			while(reader.ready() && in >= 0 && ch != valueDelimiter) {
 				b.append(ch);
@@ -299,6 +300,5 @@ public class CsvInputStream extends GISInputStreamBase implements IGISInputStrea
 		}
 		return true;
 	}
-
 
 }
