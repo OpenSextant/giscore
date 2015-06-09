@@ -1,6 +1,6 @@
 language: java
 install: gradle -q assemble
-script: gradle test
+script: gradle test --info
 notifications:
     on_success: change
     on_failure: change
