@@ -57,7 +57,7 @@ public class TestCSVInputStream extends TestGISBase {
 	public void testStreamInput() throws Exception {
 		InputStream stream = getStream("csv_example.csv");
 		IGISInputStream is = GISFactory
-				.getInputStream(DocumentType.CSV, stream, null, "\r\n");
+				.getInputStream(DocumentType.CSV, stream, null, null);
 		List<IGISObject> contents = new ArrayList<IGISObject>();
 		try {
 			while (true) {
