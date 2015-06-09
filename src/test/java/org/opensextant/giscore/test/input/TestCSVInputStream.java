@@ -35,6 +35,8 @@ import org.opensextant.giscore.events.Schema;
 import org.opensextant.giscore.events.SimpleField;
 import org.opensextant.giscore.input.IGISInputStream;
 import org.opensextant.giscore.test.TestGISBase;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -48,6 +50,8 @@ import static org.junit.Assert.fail;
  * 
  */
 public class TestCSVInputStream extends TestGISBase {
+
+	private static final Logger log = LoggerFactory.getLogger(TestCSVInputStream.class);
 
 	@Test
 	public void testStreamInput() throws Exception {
@@ -63,7 +67,7 @@ public class TestCSVInputStream extends TestGISBase {
 				contents.add(obj);
 			}
 		} catch(Exception e) {
-			e.printStackTrace();
+			log.error("", e);
 			fail(e.getMessage());
 		}
 
