@@ -63,7 +63,7 @@ import org.opensextant.giscore.utils.SimpleObjectInputStream;
  *
  * @author DRAND
  */
-public class TestGISBase {
+public abstract class TestGISBase {
 
     /**
      * Autodelete flag (default=true). To keep temp files set System flag
