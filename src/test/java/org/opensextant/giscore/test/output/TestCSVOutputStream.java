@@ -53,7 +53,7 @@ public class TestCSVOutputStream extends TestGISBase {
 
 	@Test
 	public void testStreamOutput1() throws Exception {
-		doTest(null, "csv_example.csv", "\r\n");
+		doTest(null, "csv_example.csv", null);
 	}
 	
 	@Test
@@ -69,8 +69,7 @@ public class TestCSVOutputStream extends TestGISBase {
 
 	private void doTest(Schema s, String testfile, String lineDel) throws IOException {
 		InputStream stream = getStream(testfile);
-		IGISInputStream is = GISFactory
-				.getInputStream(DocumentType.CSV, stream, s, lineDel);
+		IGISInputStream is = GISFactory.getInputStream(DocumentType.CSV, stream, s, lineDel);
 		File temp = File.createTempFile("test", ".csv");
 		try {
 			OutputStream outputStream = new FileOutputStream(temp);
