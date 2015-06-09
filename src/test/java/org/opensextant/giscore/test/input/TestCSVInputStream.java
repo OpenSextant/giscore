@@ -39,6 +39,7 @@ import org.opensextant.giscore.test.TestGISBase;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * Read from a CSV
@@ -47,17 +48,23 @@ import static org.junit.Assert.assertTrue;
  * 
  */
 public class TestCSVInputStream extends TestGISBase {
+
 	@Test
 	public void testStreamInput() throws Exception {
 		InputStream stream = getStream("csv_example.csv");
 		IGISInputStream is = GISFactory
 				.getInputStream(DocumentType.CSV, stream, null, "\r\n");
 		List<IGISObject> contents = new ArrayList<IGISObject>();
-		while (true) {
-			IGISObject obj = is.read();
-			if (obj == null)
-				break;
-			contents.add(obj);
+		try {
+			while (true) {
+				IGISObject obj = is.read();
+				if (obj == null)
+					break;
+				contents.add(obj);
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+			fail(e.getMessage());
 		}
 
 		assertTrue(contents.size() > 0);
