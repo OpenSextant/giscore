@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 import org.opensextant.giscore.DocumentType;
 import org.opensextant.giscore.GISFactory;
@@ -60,56 +61,61 @@ public class TestGdbSupport extends TestGISBase {
 		FileOutputStream fos = new FileOutputStream(test);
 		IGISOutputStream os = null;
 		ZipOutputStream zos = null;
-		zos = new ZipOutputStream(fos);
-		os = GISFactory.getOutputStream(DocumentType.FileGDB, zos,
-				createTemp("t", ".gdb"));
+		try {
+			zos = new ZipOutputStream(fos);
+			os = GISFactory.getOutputStream(DocumentType.FileGDB, zos,
+					createTemp("t", ".gdb"));
 
-		// ContainerStart cs = new ContainerStart("Folder");
-		// cs.setName("mp");
-		// os.write(cs);
+			// ContainerStart cs = new ContainerStart("Folder");
+			// cs.setName("mp");
+			// os.write(cs);
 
-		SimpleField nameid = new SimpleField("nameid");
-		nameid.setType(SimpleField.Type.INT);
-		SimpleField dtm = new SimpleField("dtm");
-		dtm.setType(SimpleField.Type.DATE);
+			SimpleField nameid = new SimpleField("nameid");
+			nameid.setType(SimpleField.Type.INT);
+			SimpleField dtm = new SimpleField("dtm");
+			dtm.setType(SimpleField.Type.DATE);
 
-		Schema s = new Schema();
-		s.put(nameid);
-		s.put(dtm);
-		os.write(s);
+			Schema s = new Schema();
+			s.put(nameid);
+			s.put(dtm);
+			os.write(s);
 
-		Feature f = new Feature();
-		f.setSchema(s.getId());
-		List<Point> pnts = new ArrayList<Point>();
-		pnts.add(new Point(44.0, 33.0));
-		pnts.add(new Point(44.1, 33.4));
-		pnts.add(new Point(44.3, 33.3));
-		pnts.add(new Point(44.2, 33.1));
-		pnts.add(new Point(44.6, 33.2));
-		MultiPoint mp = new MultiPoint(pnts);
-		f.setGeometry(mp);
-		f.putData(nameid, null);
-		f.putData(dtm, new Date());
-		os.write(f);
+			Feature f = new Feature();
+			f.setSchema(s.getId());
+			List<Point> pnts = new ArrayList<Point>();
+			pnts.add(new Point(44.0, 33.0));
+			pnts.add(new Point(44.1, 33.4));
+			pnts.add(new Point(44.3, 33.3));
+			pnts.add(new Point(44.2, 33.1));
+			pnts.add(new Point(44.6, 33.2));
+			MultiPoint mp = new MultiPoint(pnts);
+			f.setGeometry(mp);
+			f.putData(nameid, null);
+			f.putData(dtm, new Date());
+			os.write(f);
 
-		f = new Feature();
-		f.setSchema(s.getId());
-		pnts = new ArrayList<Point>();
-		pnts.add(new Point(44.5, 33.3));
-		pnts.add(new Point(44.6, 33.1));
-		pnts.add(new Point(44.7, 33.0));
-		pnts.add(new Point(44.4, 33.4));
-		pnts.add(new Point(44.2, 33.6));
-		mp = new MultiPoint(pnts);
-		f.setGeometry(mp);
-		f.putData(nameid, 2);
-		f.putData(dtm, new Date());
-		os.write(f);
-		// os.write(new ContainerEnd());
-
-		os.close();
-		zos.close();
-		fos.close();
+			f = new Feature();
+			f.setSchema(s.getId());
+			pnts = new ArrayList<Point>();
+			pnts.add(new Point(44.5, 33.3));
+			pnts.add(new Point(44.6, 33.1));
+			pnts.add(new Point(44.7, 33.0));
+			pnts.add(new Point(44.4, 33.4));
+			pnts.add(new Point(44.2, 33.6));
+			mp = new MultiPoint(pnts);
+			f.setGeometry(mp);
+			f.putData(nameid, 2);
+			f.putData(dtm, new Date());
+			os.write(f);
+			// os.write(new ContainerEnd());
+		} finally {
+			if (os != null) {
+				os.close();
+			}
+			IOUtils.closeQuietly(zos);
+			IOUtils.closeQuietly(fos);
+			if (test.exists() && !test.delete()) test.deleteOnExit();
+		}
 	}
 
 	@Test
@@ -223,7 +229,7 @@ public class TestGdbSupport extends TestGISBase {
 	public void doTest(IGISInputStream is, String suffix, boolean usezip,
 			DocumentType type) throws IOException {
 		File outputdir = createTemp("test", suffix);
-		File outputfile = null;
+		File outputfile;
 		if (usezip) {
 			outputfile = new File(tempdir, "testout"
 					+ System.currentTimeMillis() + ".zip");
@@ -232,21 +238,26 @@ public class TestGdbSupport extends TestGISBase {
 					+ System.currentTimeMillis() + suffix);
 		}
 		OutputStream fos = new FileOutputStream(outputfile);
-		IGISOutputStream os = null;
 		ZipOutputStream zos = null;
-		if (usezip) {
-			zos = new ZipOutputStream(fos);
-			os = GISFactory.getOutputStream(type, zos, outputdir);
-		} else {
-			os = GISFactory.getOutputStream(type, fos, outputdir);
+		try {
+			IGISOutputStream os;
+			if (usezip) {
+				zos = new ZipOutputStream(fos);
+				os = GISFactory.getOutputStream(type, zos, outputdir);
+			} else {
+				os = GISFactory.getOutputStream(type, fos, outputdir);
+			}
+			for (IGISObject object = is.read(); object != null; object = is.read()) {
+				os.write(object);
+			}
+			os.close();
+		} finally {
+			if (usezip) {
+				IOUtils.closeQuietly(zos);
+			}
+			IOUtils.closeQuietly(fos);
+			if (outputfile.exists() && !outputfile.delete()) outputfile.deleteOnExit();
+			if (outputdir.exists() && !outputdir.delete()) outputdir.deleteOnExit();
 		}
-		for (IGISObject object = is.read(); object != null; object = is.read()) {
-			os.write(object);
-		}
-		os.close();
-		if (usezip) {
-			zos.close();
-		}
-		fos.close();
 	}
 }
