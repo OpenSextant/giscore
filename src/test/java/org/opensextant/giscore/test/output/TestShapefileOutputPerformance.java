@@ -102,37 +102,37 @@ public class TestShapefileOutputPerformance extends TestGISBase {
 		IGISInputStream csvin = GISFactory.getInputStream(DocumentType.CSV, tempcsv, schema);
 		FieldCachingObjectBuffer buffer = new FieldCachingObjectBuffer();
 		try {
-		long readstart = System.currentTimeMillis();
-		System.out.println("Writing csv took " + (writestart - readstart) + "ms");
-		while(true) {
-			IGISObject ob = csvin.read();
-			if (ob == null) {
-				csvin.close();
-				break;
-			}
-			if (ob instanceof Row) {
-				Row row = (Row) ob;
-				Feature f = new Feature();
-				Double latVal = new Double((String) row.getData(lat));
-				Double lonVal = new Double((String) row.getData(lon));
-				f.setGeometry(new Point(latVal, lonVal));
-				f.setSchema(schema.getId());
-				for(SimpleField field : row.getFields()) {
-					if (lat.equals(field) || lon.equals(field)) continue;
-					Object val = row.getData(field);
-					f.putData(field, val);
+			long readstart = System.currentTimeMillis();
+			System.out.println("Writing csv took " + (writestart - readstart) + "ms");
+			while(true) {
+				IGISObject ob = csvin.read();
+				if (ob == null) {
+					csvin.close();
+					break;
 				}
-				buffer.write(f);
+				if (ob instanceof Row) {
+					Row row = (Row) ob;
+					Feature f = new Feature();
+					Double latVal = new Double((String) row.getData(lat));
+					Double lonVal = new Double((String) row.getData(lon));
+					f.setGeometry(new Point(latVal, lonVal));
+					f.setSchema(schema.getId());
+					for(SimpleField field : row.getFields()) {
+						if (lat.equals(field) || lon.equals(field)) continue;
+						Object val = row.getData(field);
+						f.putData(field, val);
+					}
+					buffer.write(f);
+				}
 			}
-		}
-		long start = System.currentTimeMillis();
-		System.out.println("Reading into buffer took " + (readstart - start) + "ms");
-		SingleShapefileOutputHandler handler = new SingleShapefileOutputHandler(schema,
-				null, buffer, tempdir, "largepoints", null);
-		handler.process();
-		long delta = System.currentTimeMillis() - start;
-		
-		System.out.println("Writing " + totsize + " records took " + delta + " ms");
+			long start = System.currentTimeMillis();
+			System.out.println("Reading into buffer took " + (readstart - start) + "ms");
+			SingleShapefileOutputHandler handler = new SingleShapefileOutputHandler(schema,
+					null, buffer, tempdir, "largepoints", null);
+			handler.process();
+			long delta = System.currentTimeMillis() - start;
+
+			System.out.println("Writing " + totsize + " records took " + delta + " ms");
 		} finally {
 			buffer.close();
 		}

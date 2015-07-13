@@ -180,8 +180,6 @@ public class TestShapefileOutput extends TestShapefileBase {
         dtm.setScale(2);
         schema.put(dtm);
 
-        ObjectBuffer buffer = new FieldCachingObjectBuffer();
-
         Feature f = new Feature();
         f.putData(id, "id0");
         f.putData(db, Double.MAX_VALUE); // 1.7976931348623157e+308
@@ -189,11 +187,17 @@ public class TestShapefileOutput extends TestShapefileBase {
         f.setSchema(schema.getId());
         Point point = getRandomPoint();
         f.setGeometry(point);
-        buffer.write(f);
 
-        SingleShapefileOutputHandler soh = new SingleShapefileOutputHandler(
+        ObjectBuffer buffer = new FieldCachingObjectBuffer();
+        try {
+            buffer.write(f);
+
+            SingleShapefileOutputHandler soh = new SingleShapefileOutputHandler(
                 schema, null, buffer, shapeOutputDir, "doublePoint", null);
-        soh.process();
+            soh.process();
+        } finally {
+            buffer.close();
+        }
 
         SingleShapefileInputHandler handler = new SingleShapefileInputHandler(
                 shapeOutputDir, "doublePoint");
