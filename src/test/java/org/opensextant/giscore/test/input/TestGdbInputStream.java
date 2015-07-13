@@ -61,7 +61,6 @@ public class TestGdbInputStream {
 			System.err.println(schema.getId());
 			return accept.equals(schema.getId());
 		}
-		
 	}
 	
 	class TestInThread implements Runnable {
@@ -114,32 +113,41 @@ public class TestGdbInputStream {
 	@Test public void testFileGdbZipStream() throws Exception {
 		File temp = File.createTempFile("test", ".zip");
 		FileOutputStream fos = new FileOutputStream(temp);
-		File input = new File("data/gdb/EH_20090331144528.gdb");
-		ZipOutputStream zos = new ZipOutputStream(fos);
-		for(File file : input.listFiles()) {
-			try {
-				FileInputStream fis = new FileInputStream(file);
-				ZipEntry entry = new ZipEntry(file.getCanonicalPath());
-				zos.putNextEntry(entry);
-				IOUtils.copy(fis, zos);
-				IOUtils.closeQuietly(fis);
-			} catch(Exception e) {
-				// Ignore
+		FileInputStream fis = null;
+		IGISInputStream is = null;
+		try {
+			File input = new File("data/gdb/EH_20090331144528.gdb");
+			ZipOutputStream zos = new ZipOutputStream(fos);
+			for (File file : input.listFiles()) {
+				try {
+					fis = new FileInputStream(file);
+					ZipEntry entry = new ZipEntry(file.getCanonicalPath());
+					zos.putNextEntry(entry);
+					IOUtils.copy(fis, zos);
+					IOUtils.closeQuietly(fis);
+				} catch (Exception e) {
+					// Ignore
+				}
 			}
+			IOUtils.closeQuietly(zos);
+			IOUtils.closeQuietly(fos);
+
+			fis = new FileInputStream(temp);
+
+			is = GISFactory.getInputStream(DocumentType.FileGDB, fis);
+			int count = 0;
+			while (is.read() != null) {
+				count++;
+			}
+			assertTrue(count > 0);
+		} finally {
+			IOUtils.closeQuietly(fos);
+			IOUtils.closeQuietly(fis);
+			if (is != null) {
+				is.close();
+			}
+			if (temp.exists() && !temp.delete()) temp.deleteOnExit();
 		}
-		IOUtils.closeQuietly(zos);
-		IOUtils.closeQuietly(fos);
-		
-		FileInputStream fis = new FileInputStream(temp);
-		IGISInputStream is = GISFactory.getInputStream(DocumentType.FileGDB, fis);
-		int count = 0;
-		while(is.read() != null) {
-			count++;
-		}
-		assertTrue(count > 0);
-		IOUtils.closeQuietly(fis);
-		is.close();
-		temp.delete();
 	}
 	
 	@Test public void testMultiThread() throws Exception {
