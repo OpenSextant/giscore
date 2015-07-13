@@ -64,6 +64,7 @@ eclipse {
 }
 
 test {
+  exclude 'org/opensextant/giscore/test/utils/TestKmlMetaDump*'
   exclude 'org/opensextant/giscore/test/TestTransfusionFields*'
   exclude 'org/opensextant/giscore/test/TestSorterOutputStream*'  
   exclude 'org/opensextant/giscore/test/filegdb/**'
