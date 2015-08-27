@@ -1788,6 +1788,8 @@ public class KmlOutputStream extends XmlOutputStreamBase implements IKml {
     private void handleLineStyleElement(Style style)
             throws XMLStreamException {
         writer.writeStartElement(LINE_STYLE);
+        if(style.getLineColorMode() == Style.ColorMode.RANDOM)
+            handleSimpleElement(COLOR_MODE, "random");
         handleColor(COLOR, style.getLineColor());
         handleDouble(WIDTH, style.getLineWidth());
         writer.writeEndElement();

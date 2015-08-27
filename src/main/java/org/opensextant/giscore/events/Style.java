@@ -76,6 +76,7 @@ public class Style extends StyleSelector {
 	private boolean hasLineStyle; // false
 	private Color lineColor;
 	private Double lineWidth;
+	private ColorMode lineColorMode; // default: normal
 
 	private boolean hasListStyle; // false
 	private Color listBgColor;
@@ -140,6 +141,7 @@ public class Style extends StyleSelector {
 				hasLineStyle = true;
 				lineColor = aStyle.lineColor;
 				lineWidth = aStyle.lineWidth;
+				lineColorMode = aStyle.lineColorMode;
 			}
 			if (aStyle.hasListStyle()) {
 				hasListStyle = true;
@@ -205,6 +207,8 @@ public class Style extends StyleSelector {
 					lineColor = aStyle.lineColor;
 				if (aStyle.lineWidth != null)
 					lineWidth = aStyle.lineWidth;
+				if (aStyle.lineColorMode != null)
+					lineColorMode = aStyle.lineColorMode;
 			}
 			if (aStyle.hasListStyle()) {
 				hasListStyle = true;
@@ -395,7 +399,7 @@ public class Style extends StyleSelector {
 	public void setLineStyle(Color color, Double width) {
 		lineColor = color;
 		lineWidth = width == null ? null : (width <= 0.0) ? 0.0 : width;
-		hasLineStyle = lineColor != null || lineWidth != null;
+		hasLineStyle = lineColor != null || lineWidth != null || lineColorMode != null;
 	}
 
 	/**
@@ -414,6 +418,17 @@ public class Style extends StyleSelector {
 	@CheckForNull
 	public Double getLineWidth() {
 		return lineWidth;
+	}
+
+	public ColorMode getLineColorMode() {
+		return lineColorMode;
+	}
+
+	public void setLineColorMode(ColorMode lineColorMode) {
+		this.lineColorMode = lineColorMode;
+		if (lineColorMode != null) {
+			hasLineStyle = true;
+		} else hasLineStyle = lineColor != null || lineWidth != null;
 	}
 
 	public void setListStyle(Color listBgColor, ListItemType listItemType) {
@@ -645,6 +660,7 @@ public class Style extends StyleSelector {
 		if (hasLineStyle) {
 			lineColor = (Color) in.readScalar();
 			lineWidth = (Double) in.readScalar();
+			// TODO: lineColorMode
 		}
 
 		hasListStyle = in.readBoolean();
@@ -693,6 +709,7 @@ public class Style extends StyleSelector {
 		if (hasLineStyle) {
 			out.writeScalar(lineColor);
 			out.writeScalar(lineWidth);
+			// TODO: lineColorMode
 		}
 
 		out.writeBoolean(hasListStyle);
