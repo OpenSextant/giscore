@@ -228,8 +228,8 @@ public class ShapefileInputStream extends GISInputStreamBase {
 		if (handler != null) {
 			handler.close();
 		}
-		if (usingTemp) {
-			workingDir.delete();
+		if (usingTemp && !workingDir.delete()) {
+			workingDir.deleteOnExit();
 		}
 	}
 
