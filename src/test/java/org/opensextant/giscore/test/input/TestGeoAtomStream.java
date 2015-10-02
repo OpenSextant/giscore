@@ -21,6 +21,7 @@ package org.opensextant.giscore.test.input;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -73,7 +74,8 @@ public class TestGeoAtomStream {
 	private void testObjectDataSerialization(String feedurl) throws Exception {
 		URL url = new URL(feedurl);
 		URLConnection connection = url.openConnection();
-		IGISInputStream gis = GISFactory.getInputStream(DocumentType.GeoAtom, connection.getInputStream());
+		InputStream is = connection.getInputStream();
+		IGISInputStream gis = GISFactory.getInputStream(DocumentType.GeoAtom, is);
 		IGISObject ob = gis.read();
 		List<IGISObject> read = new ArrayList<IGISObject>();
 		List<IDataSerializable> serializableList = new ArrayList<IDataSerializable>();
