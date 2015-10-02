@@ -56,14 +56,14 @@ import static org.junit.Assert.assertTrue;
  */
 public class TestGeoAtomStream {
 
-	@Test
+	//@Test
 	public void testInput() throws Exception {
-		// testObjectDataSerialization("http://www.theregister.co.uk/software/headlines.atom");
+		testObjectDataSerialization("http://www.theregister.co.uk/software/headlines.atom");
 	}
 	
 	@Test
 	public void testInput2() throws Exception {
-		testObjectDataSerialization("http://www.microsoft.com/australia/presspass/theme/feed/Windows-7?format=Atom");
+		testObjectDataSerialization("http://alerts.weather.gov/cap/ma.php?x=0");
 	}
 
 	@Test
