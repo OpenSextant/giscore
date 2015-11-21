@@ -21,6 +21,7 @@ package org.opensextant.giscore.input;
 import edu.umd.cs.findbugs.annotations.CheckForNull;
 import edu.umd.cs.findbugs.annotations.NonNull;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -37,9 +38,9 @@ import org.opensextant.giscore.events.Schema;
  * 
  * @author DRAND
  */
-public interface IGISInputStream {
+public interface IGISInputStream extends Closeable {
 	/**
-	 * @return the next gis object present in the source, or <code>null</code>
+	 * @return the next GIS object present in the source, or <code>null</code>
 	 * if there are no more objects present.
 	 * @throws IOException if an I/O error occurs
 	 */
