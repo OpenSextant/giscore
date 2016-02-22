@@ -33,7 +33,7 @@ public class WKTLexer {
 	/**
 	 * The reader, must be a buffered reader
 	 */
-	private Reader reader;
+	private final Reader reader;
 
 	/**
 	 * Buffer of tokens
