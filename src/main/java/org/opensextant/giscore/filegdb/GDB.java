@@ -19,7 +19,7 @@
 package org.opensextant.giscore.filegdb;
 
 public abstract class GDB {
-	public static Object NULL_OBJECT = new Object();
+	public static final Object NULL_OBJECT = new Object();
 	
 	/**
 	 * Holds ptr to internal object
