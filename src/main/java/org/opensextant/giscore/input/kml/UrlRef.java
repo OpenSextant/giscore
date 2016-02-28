@@ -182,27 +182,30 @@ public final class UrlRef implements java.io.Serializable {
 	 * access to the resources within the KMZ file.
 	 *
 	 * @param url		   URL for KML/KMZ resource, never <tt>null</tt>
-	 * @param kmz_file_path relative path within the parent KMZ archive to where the KML, overlay image,
-	 *                      model, etc. is located
+	 * @param kmzFilePath  relative path within the parent KMZ archive to where the KML, overlay image,
+	 *                      model, etc. is located. This is same reference as would be used
+	 *                      in HREF element of NetworkLink/Link or GroundOverlay/Icon in KML.
+	 *                      Use null if not referring to a sub-element within the KMZ file, which
+	 *                      defaults to the root KML file.
 	 * @throws URISyntaxException   if URL has a missing relative file path or fails to construct properly
 	 * @throws NullPointerException if URL is null
 	 */
-	public UrlRef(URL url, String kmz_file_path) throws URISyntaxException {
+	public UrlRef(URL url, String kmzFilePath) throws URISyntaxException {
 		this.url = url;
-		if (kmz_file_path == null) {
+		if (kmzFilePath == null) {
 			this.uri = url.toURI();
-			this.kmzRelPath = null;
+			this.kmzRelPath = null; // defaults to the root KML file
 			return;
 		}
 		String urlStr = url.toExternalForm();
 		// cleanup bad paths if needed
-		if (kmz_file_path.startsWith("/"))
-			kmz_file_path = kmz_file_path.substring(1);
-		if (kmz_file_path.startsWith("./"))
-			kmz_file_path = kmz_file_path.substring(2);
-		while (kmz_file_path.startsWith("../"))
-			kmz_file_path = kmz_file_path.substring(3);
-		if (kmz_file_path.length() == 0)
+		if (kmzFilePath.startsWith("/"))
+			kmzFilePath = kmzFilePath.substring(1);
+		if (kmzFilePath.startsWith("./"))
+			kmzFilePath = kmzFilePath.substring(2);
+		while (kmzFilePath.startsWith("../"))
+			kmzFilePath = kmzFilePath.substring(3);
+		if (kmzFilePath.isEmpty())
 			throw new URISyntaxException(urlStr, "Missing relative file path");
 		StringBuilder buf = new StringBuilder();
 		// append kmz to front of the URL to mark as a special URI
@@ -215,9 +218,9 @@ public final class UrlRef implements java.io.Serializable {
 		else
 			buf.append('&');
 		// append target file to URI as query part
-		buf.append("file=").append(kmz_file_path);
+		buf.append("file=").append(kmzFilePath);
 		this.uri = new URI(buf.toString());
-		this.kmzRelPath = kmz_file_path;
+		this.kmzRelPath = kmzFilePath;
 	}
 
 	/**
