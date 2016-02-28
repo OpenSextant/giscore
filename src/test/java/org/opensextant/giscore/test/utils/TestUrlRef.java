@@ -4,6 +4,10 @@ import junit.framework.TestCase;
 
 import org.opensextant.giscore.input.kml.UrlRef;
 
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+
 /**
  * @author Jason Mathews, MITRE Corp.
  * Date: Oct 28, 2010 5:19:13 PM
