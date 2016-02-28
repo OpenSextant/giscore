@@ -27,6 +27,21 @@ public class TestUrlRef extends TestCase {
         }
     }
 
+    public void testEquals() throws URISyntaxException, MalformedURLException {
+        final URI uri = new URI("http://localhost/mydata");
+        UrlRef val1 = new UrlRef(uri);
+        assertEquals(val1, val1);
+        UrlRef val2 = new UrlRef(uri);
+        assertEquals(val1, val2);
+        assertEquals(val1.hashCode(), val2.hashCode());
+    }
+
+    public void testNotEquals() throws URISyntaxException, MalformedURLException {
+        UrlRef val1 = new UrlRef(new URI("http://localhost1/mydata1"));
+        UrlRef val2 = new UrlRef(new URI("http://localhost2/mydata2"));
+        assertFalse(val1.equals(val2));
+    }
+
     public void testIsIdentifier() {
         
         String[]ids = { "X509Data", "abc-ABC_12.34", "id%20",
