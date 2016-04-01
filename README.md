@@ -20,18 +20,16 @@ Details at https://github.com/OpenSextant/giscore/wiki/FileGDB-Dependencies
 
 ### Configuring a proxy server ###
 
-`
-systemProp.http.proxyHost=proxy.example.org
-systemProp.http.proxyPort=80
-systemProp.http.proxyUser=
-systemProp.http.proxyPassword=
-systemProp.http.nonProxyHosts=*.example.org|localhost
-systemProp.https.proxyHost=proxy.example.org
-systemProp.https.proxyPort=80
-systemProp.https.proxyUser=
-systemProp.https.proxyPassword=
-systemProp.https.nonProxyHosts=*.example.org|localhost
-`
+    systemProp.http.proxyHost=proxy.example.org
+    systemProp.http.proxyPort=80
+    systemProp.http.proxyUser=
+    systemProp.http.proxyPassword=
+    systemProp.http.nonProxyHosts=*.example.org|localhost
+    systemProp.https.proxyHost=proxy.example.org
+    systemProp.https.proxyPort=80
+    systemProp.https.proxyUser=
+    systemProp.https.proxyPassword=
+    systemProp.https.nonProxyHosts=*.example.org|localhost
 
 ### Versions and Packages ###
 
