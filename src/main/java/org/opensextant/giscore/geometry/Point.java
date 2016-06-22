@@ -42,6 +42,9 @@ import org.opensextant.giscore.utils.SimpleObjectOutputStream;
  * ShapeType of Point or PointZ. In Google KML files, this object corresponds to
  * a Geometry object of type Point. <p/>
  *
+ * Note Point extends GeometryBase including tessellate and drawOrder fields but those
+ * fields are not applicable to the Point geometry and ignored.
+ *
  * @author Paul Silvey
  */
 public class Point extends GeometryBase {
