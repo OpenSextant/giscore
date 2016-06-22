@@ -578,7 +578,7 @@ public class Style extends StyleSelector {
 		polyColor = color;
 		polyfill = fill;
 		polyoutline = outline;
-		hasPolyStyle = color != null || fill != null || outline != null;
+		hasPolyStyle = color != null || fill != null || outline != null || polyColorMode != null;
 	}
 
 	/**
