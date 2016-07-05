@@ -1050,6 +1050,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					outline = isTrue(stream.getElementText()); // default=true
 				} else if (localPart.equals(COLOR)) {
 					color = parseColor(stream.getElementText()); // default=WHITE
+				} else if (localPart.equals(COLOR_MODE) &&
+						"random".equals(stream.getElementText())) {
+					style.setPolyColorMode(Style.ColorMode.RANDOM); // default=normal
 				}
 			}
 		}
@@ -1136,6 +1139,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						//log.warn("Invalid LineStyle color: " + value);
 						color = Color.white; // use default
 					}
+				} else if (name.equals(COLOR_MODE) &&
+						"random".equals(stream.getElementText())) {
+					style.setLineColorMode(Style.ColorMode.RANDOM); // default=normal
 				}
 			}
 		}
