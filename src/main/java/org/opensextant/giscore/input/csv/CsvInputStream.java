@@ -285,6 +285,8 @@ public class CsvInputStream extends GISInputStreamBase {
 	 * @throws  IOException  If an I/O error occurs
 	 */
 	private boolean checkLineDelimiter(char ch) throws IOException {
+		// if explicitly specify lineDelim as \r\n in constructor and file was translated to UNIX lineDelim
+		// then this doesn't recognize end of lines.
 		if (ch != lineDelimiter.charAt(0)) 
 			return false;
 		int count = lineDelimiter.length() - 1;
