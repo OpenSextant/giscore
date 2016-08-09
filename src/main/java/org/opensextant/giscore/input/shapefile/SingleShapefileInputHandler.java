@@ -69,6 +69,8 @@ import org.slf4j.LoggerFactory;
  * Read a single shapefile (.prj, .shp, .dbf, etc) to an object buffer for later
  * processing.
  *
+ * https://www.esri.com/library/whitepapers/pdfs/shapefile.pdf
+ *
  * @author DRAND
  */
 public class SingleShapefileInputHandler extends GISInputStreamBase implements
@@ -82,7 +84,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
     // These are the 2D ESRI shape types. Add 10 to get the equivalent 3D types.
     protected static final int NULL_TYPE = 0;
     protected static final int POINT_TYPE = 1;             // 1 is Point,     11 is PointZ
-    protected static final int MULTILINE_TYPE = 3;         // 3 is MultiLine  13 is MultiLineZ
+    protected static final int MULTILINE_TYPE = 3;         // 3 is MultiLine  13 is MultiLineZ (aka PolyLine)
     protected static final int MULTINESTEDRINGS_TYPE = 5;  // 5 is Polygon    15 is PolygonZ
     protected static final int MULTIPOINT_TYPE = 8;        // 8 is MultiPoint 18 is MultiPointZ
 
@@ -227,15 +229,20 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         }
 
         FileInputStream fis = new FileInputStream(shpFile);
-        fileChannel = fis.getChannel();
-        readHeader();
-        fileOffset = 100;
+        try {
+          fileChannel = fis.getChannel();
+          readHeader();
+          fileOffset = 100;
+        } catch(IOException | RuntimeException e) {
+            IOUtils.closeQuietly(fis);
+            throw e;
+        }
     }
 
     /**
      * Check contents of the prj file to
      *
-     * @param prjFile
+     * @param stream
      * @throws IOException                  if an I/O error occurs
      */
     private void checkPrj(InputStream stream) throws IOException {
