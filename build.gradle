@@ -8,7 +8,7 @@ apply plugin: 'signing'
 group = 'org.opensextant'
 version = '2.0.2-SNAPSHOT'
 ext.isReleaseVersion = !version.endsWith('-SNAPSHOT')
-sourceCompatibility = 1.6
+sourceCompatibility = 1.7
 
 ext.publish = [user: null, password: null]
 // Publishing locations and associated variables
