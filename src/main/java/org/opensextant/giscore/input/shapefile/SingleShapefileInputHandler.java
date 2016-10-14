@@ -73,8 +73,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author DRAND
  */
-public class SingleShapefileInputHandler extends GISInputStreamBase implements
-        IGISInputStream {
+public class SingleShapefileInputHandler extends GISInputStreamBase {
+
     private static final Logger logger = LoggerFactory.getLogger(SingleShapefileInputHandler.class);
 
     // Constants
@@ -456,7 +456,15 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
         return readInt(buffer, ByteOrder.LITTLE_ENDIAN);
     }
 
-    // Read the remainder of shapefile header and get bounding box if possible
+    /**
+     * Read the remainder of shapefile header and get bounding box if possible.
+     *
+     * @param buffer
+     * @param is3D
+     * @return bounding box
+     * @throws IllegalArgumentException   if lat/lon value > 8.0 * PI most likely if
+     *          coordinate system is NOT WGS-84 which is assumed
+     */
     private Geodetic2DBounds getBoundingBoxFromHeader(ByteBuffer buffer, boolean is3D) {
         // Read Bounding Box coordinates (assume WGS-84 decimal degrees, elevation in meters)
         double xMin = readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
@@ -587,6 +595,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase implements
 
 
     /**
+     * Read next Polygon (ESRI Polygon or PolygonZ) record.
      * Get the polygon(s) from the information present. We take the points in the
      * poly and turn them into rings. Then the rings are sorted into outer rings,
      * which are distinguished by being clockwise rings, and inner rings, which
