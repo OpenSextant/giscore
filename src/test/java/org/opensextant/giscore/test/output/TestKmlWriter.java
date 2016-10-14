@@ -32,6 +32,7 @@ import org.opensextant.giscore.input.kml.KmlReader;
 import org.opensextant.giscore.output.kml.KmlOutputStream;
 import org.opensextant.giscore.output.kml.KmlWriter;
 import org.opensextant.giscore.test.TestGISBase;
+import org.opensextant.giscore.utils.DateTime;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
@@ -336,40 +337,41 @@ public class TestKmlWriter extends TestGISBase {
 			GregorianCalendar cal = xmlCal.toGregorianCalendar();
 			cal.setTimeZone(gmt);
             */
-			Date firstTime = KmlInputStream.parseDate("2008-08-12T01:00:00Z");
-			assertEquals(firstTime, f.getStartTime());
-			assertEquals(firstTime, f.getEndTime());
+			DateTime firstTime = new DateTime("2008-08-12T01:00:00Z");
+			assertEquals(firstTime, f.getStartDate());
+			assertEquals(firstTime, f.getEndDate());
 			Geometry geom = f.getGeometry();
 			Geodetic2DPoint center = geom.getCenter();
 			assertEquals(new Latitude(Math.toRadians(39.104144789924)).inDegrees(), center.getLatitudeAsDegrees(), 1e-5);
 			assertEquals(new Longitude(Math.toRadians(-76.72894181350101)).inDegrees(), center.getLongitudeAsDegrees(), 1e-5);
 
 			// feature 1 TimeSpan only end time
-			assertNull(features.get(1).getStartTime());
-			assertNotNull(features.get(1).getEndTime());
+			assertNull(features.get(1).getStartDate());
+			assertNotNull(features.get(1).getEndDate());
 
 			// feature 2 TimeSpan both start and end
-			assertNotNull(features.get(2).getStartTime());
-			assertNotNull(features.get(2).getEndTime());
+			assertNotNull(features.get(2).getStartDate());
+			assertNotNull(features.get(2).getEndDate());
 
 			// feature 3 TimeSpan with only begin time
-			assertNotNull(features.get(3).getStartTime());
-			assertNull(features.get(3).getEndTime());
+			assertNotNull(features.get(3).getStartDate());
+			assertNull(features.get(3).getEndDate());
 
 			// feature 4 timeStamp placemark - end marker marks latest time in dataset
-			Date lastEndTime = features.get(4).getEndTime();
+			DateTime lastEndTime = features.get(4).getEndDate();
 			assertNotNull(lastEndTime);
 
 			// feature 5 no time -> static placemark
-			assertNull(features.get(5).getStartTime());
-			assertNull(features.get(5).getEndTime());
+			assertNull(features.get(5).getStartDate());
+			assertNull(features.get(5).getEndDate());
 
 			for (Feature feat : features) {
-				Date starTime = feat.getStartTime();
+				DateTime starTime = feat.getStartDate();
 				// all begin times will be greater or equal to the time of the first feature
-				if (starTime != null)
+				if (starTime != null) {
 					assertTrue(starTime.compareTo(firstTime) >= 0);
-				Date endTime = feat.getEndTime();
+				}
+				DateTime endTime = feat.getEndDate();
 				// all end times will be less or equal to the end time of the last feature
 				if (endTime != null)
 					assertTrue(endTime.compareTo(lastEndTime) <= 0);
