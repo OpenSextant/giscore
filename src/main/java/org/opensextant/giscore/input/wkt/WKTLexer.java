@@ -38,7 +38,7 @@ public class WKTLexer {
 	/**
 	 * Buffer of tokens
 	 */
-	private final Stack<WKTToken> buffer = new Stack<WKTToken>();
+	private final Stack<WKTToken> buffer = new Stack<>();
 
 	/**
 	 * Ctor
@@ -63,7 +63,7 @@ public class WKTLexer {
 	 * @return if there are tokens saved on the stack then pop the first one off
 	 *         the stack and return it. Otherwise read the next token string or
 	 *         return <code>null</code> if we're at the end of the stream
-	 * @throws IOException
+	 * @throws IOException  If an I/O error occurs
 	 */
 	public WKTToken nextToken() throws IOException {
 		if (buffer.empty() == false) {
@@ -79,7 +79,11 @@ public class WKTLexer {
 		if (Character.isLetter(ch)) {
 			return readIdentifier(ch);
 		} else if (Character.isDigit(ch) || ch == '-' || ch == '+' || ch == '.') {
-			return readNumber(ch);
+			try {
+				return readNumber(ch);
+			} catch(NumberFormatException nfe) {
+				throw new IOException(nfe);
+			}
 		} else {
 			return new WKTToken((char) ch); // Treat as a special character
 		}
@@ -108,8 +112,10 @@ public class WKTLexer {
 	 * 
 	 * @param ch
 	 *            initial character read
-	 * @return
-	 * @throws IOException
+	 * @return token
+	 * @throws IOException  If an I/O error occurs
+	 * @throws NumberFormatException if the value does not contain
+     *         a parsable {@code double}.
 	 */
 	private WKTToken readNumber(int ch) throws IOException {
 		StringBuilder sb = new StringBuilder(10);
@@ -132,8 +138,9 @@ public class WKTLexer {
 	 * Read an identifier. For this lexer an identifier is a series of letters.
 	 * 
 	 * @param ch
-	 * @return
-	 * @throws IOException
+	 *            initial character read
+	 * @return token
+	 * @throws IOException  If an I/O error occurs
 	 */
 	private WKTToken readIdentifier(int ch) throws IOException {
 		StringBuilder sb = new StringBuilder(32);

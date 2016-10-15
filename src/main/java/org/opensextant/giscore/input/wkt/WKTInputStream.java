@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.opensextant.geodesy.Angle;
 import org.opensextant.geodesy.Geodetic2DPoint;
 import org.opensextant.geodesy.Geodetic3DPoint;
@@ -63,9 +64,10 @@ import org.opensextant.giscore.input.IGISInputStream;
  * @author DRAND
  */
 public class WKTInputStream implements IGISInputStream {
+
 	protected Reader reader;
 	private WKTLexer lexer;
-	private WKTToken currentop;
+	//private WKTToken currentop;
 	private boolean isM = false;
 	private boolean isZ = false;
 	
@@ -85,7 +87,7 @@ public class WKTInputStream implements IGISInputStream {
 			reader = new BufferedReader(reader);
 			lexer = new WKTLexer(reader);
 		} catch (UnsupportedEncodingException e) {
-			throw new IllegalStateException();
+			throw new IllegalStateException(e);
 		}
 	}
 	
@@ -109,7 +111,7 @@ public class WKTInputStream implements IGISInputStream {
 	 */
 	@Override
 	public IGISObject read() throws IOException {
-		currentop = lexer.nextToken();
+		WKTToken currentop = lexer.nextToken();
 		if(currentop == null) {
 			return null;
 		} else if (! currentop.getType().equals(WKTToken.TokenType.ID)) {
@@ -162,7 +164,7 @@ public class WKTInputStream implements IGISInputStream {
 		expectParen();
 		WKTToken token = lexer.nextToken();
 		LinearRing outerRing = null;
-		List<LinearRing> innerRings = new ArrayList<LinearRing>();
+		List<LinearRing> innerRings = new ArrayList<>();
 		while(true) {
 			if (token.getType().equals(WKTToken.TokenType.CHAR)) {
 				int ch = token.getChar();
@@ -184,19 +186,19 @@ public class WKTInputStream implements IGISInputStream {
 				} else {
 					// Error, something that doesn't belong
 					throw new IOException("Found an unexpected characater in POLYGON: " + token);
-				}				
+				}
 			}
 			token = lexer.nextToken();
 		}
 	}
-	
+
 	private IGISObject readMultiPoint() throws IOException {
 		return new MultiPoint(readPointList());
 	}
-	
+
 	private IGISObject readMultiLineString() throws IOException {
 		expectParen();
-		List<Line> lines = new ArrayList<Line>();
+		List<Line> lines = new ArrayList<>();
 		WKTToken token = lexer.nextToken();
 		while(true) {
 			if (token.getType().equals(WKTToken.TokenType.CHAR)) {
@@ -217,13 +219,12 @@ public class WKTInputStream implements IGISInputStream {
 				}				
 			}
 			token = lexer.nextToken();
-		}		
-		
+		}
 	}
 	
 	private IGISObject readMultiPolygon() throws IOException {
 		expectParen();
-		List<Polygon> polys = new ArrayList<Polygon>();
+		List<Polygon> polys = new ArrayList<>();
 		WKTToken token = lexer.nextToken();
 		while(true) {
 			if (token.getType().equals(WKTToken.TokenType.CHAR)) {
@@ -249,7 +250,7 @@ public class WKTInputStream implements IGISInputStream {
 	
 	private IGISObject readGeometryCollection() throws IOException {
 		expectParen();
-		List<Geometry> geometries = new ArrayList<Geometry>();
+		List<Geometry> geometries = new ArrayList<>();
 		WKTToken token = lexer.nextToken();
 		while(true) {
 			if (token.getType().equals(WKTToken.TokenType.ID)) {
@@ -278,7 +279,7 @@ public class WKTInputStream implements IGISInputStream {
 		// Read a token and see if we're at the thesis, a comma or the next
 		// coordinate
 		WKTToken token = lexer.nextToken();
-		List<Point> pnts = new ArrayList<Point>();
+		List<Point> pnts = new ArrayList<>();
 		while(true) {
 			if (token.getType().equals(WKTToken.TokenType.CHAR)) {
 				int ch = token.getChar();
@@ -307,7 +308,7 @@ public class WKTInputStream implements IGISInputStream {
 	 * @throws IOException if an error occurs
 	 */
 	private Geodetic2DPoint readCoordinate() throws IOException {
-		WKTToken x, y, z = null, m;
+		WKTToken x, y, z = null;
 		
 		x = lexer.nextToken();
 		y = lexer.nextToken();
@@ -315,7 +316,7 @@ public class WKTInputStream implements IGISInputStream {
 			z = lexer.nextToken();
 		}
 		if (isM) {
-			m = lexer.nextToken(); // Just to consumer, we don't use it
+			lexer.nextToken(); // Just to consumer, we don't use it
 		}
 		
 		if (isZ) {
@@ -342,7 +343,7 @@ public class WKTInputStream implements IGISInputStream {
 
 	/**
 	 * Expect a ')' to close a parenthetical expression
-	 * @throws IOException 
+	 * @throws IOException  If an I/O error occurs
 	 */
 	private void expectThesis() throws IOException {
 		WKTToken token = lexer.nextToken();
@@ -366,11 +367,7 @@ public class WKTInputStream implements IGISInputStream {
 
 	@Override
 	public void close() {
-		try {
-			reader.close();
-		} catch (IOException e) {
-			throw new IllegalStateException();
-		}
+		IOUtils.closeQuietly(reader);
 	}
 
 	@NonNull
