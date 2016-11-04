@@ -247,7 +247,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
      */
     private void checkPrj(InputStream stream) throws IOException {
         try {
-            Reader reader = new InputStreamReader(stream, "UTF8");
+            Reader reader = new InputStreamReader(stream, "UTF-8");
             StringWriter writer = new StringWriter();
             IOUtils.copy(reader, writer);
             PrjReader wkt = new PrjReader(writer.toString());
@@ -256,7 +256,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
                 Object v1 = geogcs.getValues().get(0);
                 if (v1 instanceof String) {
                     String datum = (String) v1;
-                    if (!"GCS_WGS_1984".equals(datum)) {
+                    if (!"GCS_WGS_1984".equals(datum) && !"WGS 84".equals(datum)) {
                         logger.warn("Shapefile is not a WGS 84 datum: " + datum);
                     }
                 }
@@ -429,15 +429,20 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
      * Read the header from the stream
      *
      * @throws IOException              if an error occurs
-     * @throws IllegalArgumentException
+     * @throws IllegalArgumentException if shape file has invalid metadata
      */
-    private void readHeader() throws IllegalArgumentException, IOException {
+    private void readHeader() throws IOException {
         ByteBuffer buffer = readFromChannel(0, 100);
         shpType = getShapeTypeFromHeader(buffer);
         getBoundingBoxFromHeader(buffer, is3D(shpType));
     }
 
-    // Read first part of shapefile header and get shapeType if possible
+	/**
+     * Read first part of shapefile header and get shapeType if possible
+     * @param buffer
+     * @return shapeType
+     * @throws IllegalArgumentException if shape file has invalid metadata
+     */
     private int getShapeTypeFromHeader(ByteBuffer buffer)
             throws IllegalArgumentException {
         // Read and validate the shapefile signature (should be 9994)
@@ -502,9 +507,9 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
         Geodetic2DPoint gp;
         Longitude lon = new Longitude(readDouble(buffer, ByteOrder.LITTLE_ENDIAN), Angle.DEGREES);
         Latitude lat = new Latitude(readDouble(buffer, ByteOrder.LITTLE_ENDIAN), Angle.DEGREES);
-        if (!is3D)
+        if (!is3D) {
             gp = new Geodetic2DPoint(lon, lat); // ESRI Point type (X and Y fields)
-        else {
+        } else {
             // ESRI PointZ type (x, y, z, and m fields)
             gp = new Geodetic3DPoint(lon, lat, readDouble(buffer, ByteOrder.LITTLE_ENDIAN));
             readDouble(buffer, ByteOrder.LITTLE_ENDIAN); // measure value M not used
