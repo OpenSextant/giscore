@@ -39,7 +39,6 @@ import org.opensextant.giscore.events.Row;
 import org.opensextant.giscore.events.Schema;
 import org.opensextant.giscore.events.SimpleField;
 import org.opensextant.giscore.input.GISInputStreamBase;
-import org.opensextant.giscore.input.IGISInputStream;
 
 /**
  * Reads a CSV file in as a series of rows. It is up to the caller to decide

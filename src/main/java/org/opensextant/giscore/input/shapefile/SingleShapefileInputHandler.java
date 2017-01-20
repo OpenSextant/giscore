@@ -59,7 +59,6 @@ import org.opensextant.giscore.geometry.MultiPolygons;
 import org.opensextant.giscore.geometry.Point;
 import org.opensextant.giscore.geometry.Polygon;
 import org.opensextant.giscore.input.GISInputStreamBase;
-import org.opensextant.giscore.input.IGISInputStream;
 import org.opensextant.giscore.input.dbf.DbfInputStream;
 import org.opensextant.giscore.utils.PolyHolder;
 import org.slf4j.Logger;

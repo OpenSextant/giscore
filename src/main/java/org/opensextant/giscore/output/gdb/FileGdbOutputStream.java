@@ -41,7 +41,6 @@ import org.opensextant.giscore.events.ContainerStart;
 import org.opensextant.giscore.events.Feature;
 import org.opensextant.giscore.events.IGISObject;
 import org.opensextant.giscore.events.Row;
-import org.opensextant.giscore.events.Schema;
 import org.opensextant.giscore.events.SimpleField;
 import org.opensextant.giscore.filegdb.ESRIErrorCodes;
 import org.opensextant.giscore.filegdb.GDB;

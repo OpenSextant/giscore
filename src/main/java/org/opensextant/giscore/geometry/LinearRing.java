@@ -42,8 +42,6 @@ import org.opensextant.geodesy.Geodetic2DBounds;
 import org.opensextant.geodesy.Geodetic2DPoint;
 import org.opensextant.geodesy.Geodetic3DBounds;
 import org.opensextant.geodesy.Geodetic3DPoint;
-import org.opensextant.geodesy.Latitude;
-import org.opensextant.geodesy.Longitude;
 import org.opensextant.geodesy.UnmodifiableGeodetic2DBounds;
 import org.opensextant.geodesy.UnmodifiableGeodetic3DBounds;
 import org.opensextant.giscore.IStreamVisitor;
