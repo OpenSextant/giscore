@@ -6,7 +6,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 group = 'org.opensextant'
-version = '2.0.2-SNAPSHOT'
+version = '2.0.3-SNAPSHOT'
 ext.isReleaseVersion = !version.endsWith('-SNAPSHOT')
 sourceCompatibility = 1.7
 
@@ -22,9 +22,10 @@ if (project.hasProperty('ospubLocaldest')) {
 	ext.publish.password = project.hasProperty('ospubPassword') ? ospubPassword : null
 }
 def oss_staging = "https://oss.sonatype.org/service/local/staging/deploy/maven2/"
+def osgeo = "http://download.osgeo.org/webdav/geotools/"
 
 repositories {
-	[ mavenCentral(), maven { url oss_snapshot } ]
+	[ mavenCentral(), maven { url oss_snapshot }, maven { url osgeo } ]
 }
 
 buildscript {
@@ -183,7 +184,8 @@ jar {
 
 artifacts {
 	archives jar
-	archives javadocJar
+	//this fails with many errors & warnings using gradle 2.2.1
+	//archives javadocJar
 	archives sourcesJar
 }
 
@@ -195,6 +197,9 @@ signing {
 dependencies {
 	def slf4j_version = '1.7.2'
 
+	compile("org.geotools:gt-shapefile:12.1") {
+		exclude group: 'javax.media'
+	}
 	compile group: 'org.opensextant', name: 'geodesy', version: '[2.0.0,2.1)'
 	compile group: 'commons-lang', name: 'commons-lang', version: '2.5'
 	compile group: 'commons-io', name: 'commons-io', version: '1.4'

@@ -22,6 +22,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.geotools.referencing.CRS;
+import org.geotools.referencing.crs.DefaultGeographicCRS;
+import org.geotools.referencing.operation.transform.IdentityTransform;
+import org.opengis.referencing.FactoryException;
+import org.opengis.referencing.operation.MathTransform;
 
 /**
  * A table represents a dataset or a feature class
@@ -30,6 +35,10 @@ import org.apache.commons.lang.StringUtils;
  *
  */
 public class Table extends GDB {
+
+	private DatasetDefinition datasetDefinition;
+	private MathTransform transform;
+
 	public static class FieldInfo {
 		public int type;
 		public int length;
@@ -126,7 +135,22 @@ public class Table extends GDB {
 		}
 		return fieldInfo;
 	}
-	
+
+	public void loadDatasetDefinition(String definition) {
+		datasetDefinition = new DatasetDefinition(definition);
+		try {
+			transform = CRS.findMathTransform(datasetDefinition.getCRS(), DefaultGeographicCRS.WGS84, true);
+		} catch (FactoryException e) {
+			e.printStackTrace();
+			transform = null;
+		}
+	}
+
+	public MathTransform getTransform() {
+		return transform;
+
+	}
+
 	/**
 	 * Get field information as an array of values in the following order:
 	 * <ul>

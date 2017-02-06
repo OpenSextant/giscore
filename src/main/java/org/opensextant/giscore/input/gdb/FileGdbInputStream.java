@@ -44,6 +44,7 @@ import org.opensextant.giscore.events.Feature;
 import org.opensextant.giscore.events.IGISObject;
 import org.opensextant.giscore.events.Schema;
 import org.opensextant.giscore.events.SimpleField;
+import org.opensextant.giscore.filegdb.DatasetDefinition;
 import org.opensextant.giscore.filegdb.EnumRows;
 import org.opensextant.giscore.filegdb.Geodatabase;
 import org.opensextant.giscore.filegdb.Row;
@@ -69,7 +70,7 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 		private Table currentTable;
 		private EnumRows rows;
 		private Schema currentSchema;
-		
+
 		public TableState(boolean hasGeo, List<String> paths) {
 			this.hasGeo = hasGeo;
 			this.paths = paths;
@@ -108,11 +109,13 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 				index++;
 				fcPath = paths.get(index);
 				currentSchema = getSchema(fcPath);
+
 				if (acceptor != null && !acceptor.accept(currentSchema)) {
 					currentSchema = null;
 					return next();
 				}
 				currentTable = database.openTable(fcPath);
+				currentTable.loadDatasetDefinition(database.getDatasetDefinition(fcPath, Geodatabase.FEATURE_CLASS));
 				rows = currentTable.enumerate();
 				ContainerStart cs = new ContainerStart("Folder");
 				cs.setSchema(currentSchema.getId());
@@ -254,7 +257,7 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 		IAcceptSchema acceptor = (IAcceptSchema) argv.get(IAcceptSchema.class, 0);
 		inputPath = path;
 		database = new Geodatabase(inputPath);
-		
+
 		init(acceptor);
 	}
 	
