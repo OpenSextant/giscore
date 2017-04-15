@@ -37,7 +37,7 @@ public class Table extends GDB {
 	}
 	
 	private Geodatabase db;
-	private Map<String, FieldInfo> fieldInfo = null;
+	private Map<String, FieldInfo> fieldInfo;
 	/**
 	 * These hold references to C++ structures and are managed by the native
 	 * code. Cleaned up in finalize.
@@ -167,5 +167,5 @@ public class Table extends GDB {
 	/**
 	 * Cleanup
 	 */
-	private native void close1();	
+	private native void close1();
 }

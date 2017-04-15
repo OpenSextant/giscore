@@ -58,11 +58,11 @@ public class PrjReader {
 	/**
 	 * Root entry, setup in ctor when parse is called.
 	 */
-	private Entry root;
+	private final Entry root;
 
 	@SuppressWarnings("unchecked")
 	public static class Entry {
-		private String tag;
+		private final String tag;
 		private final List values = new ArrayList();
 
 		/**

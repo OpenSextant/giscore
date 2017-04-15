@@ -56,9 +56,9 @@ import org.opensextant.giscore.utils.Args;
 public class FileGdbInputStream extends GISInputStreamBase implements FileGdbConstants {
 	
 	private class TableState {
-		private boolean hasGeo;
+		private final boolean hasGeo;
 		private int index = -1;
-		private List<String> paths = new ArrayList<String>();
+		private final List<String> paths;
 		/**
 		 * If currentTable is null we're writing the schema for the table or 
 		 * feature class. Otherwise we're enumerating the rows or features for
@@ -187,7 +187,7 @@ public class FileGdbInputStream extends GISInputStreamBase implements FileGdbCon
 		}
 	}
 	
-	private Geodatabase database;
+	private final Geodatabase database;
 	private File inputPath;
 	private boolean deleteOnClose = false;
 	private TableState table;
