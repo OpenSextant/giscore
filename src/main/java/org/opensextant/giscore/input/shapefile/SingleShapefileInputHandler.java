@@ -160,6 +160,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
      * @throws IllegalArgumentException if shape stream is {@code null} or if
      *                                  shapefilename is {@code null} or blank
      *                                  string.
+     * @throws IllegalStateException    if Schema not the first thing returned from dbf
      * @throws IOException              if an I/O error occurs
      */
     public SingleShapefileInputHandler(InputStream shpStream,
@@ -197,6 +198,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
      *                       without the .shp extension
      * @throws IllegalArgumentException if Input directory is null or does not exist
      *                                  or if shapefilename is null or blank string.
+     * @throws IllegalStateException    if Schema not the first thing returned from dbf
      * @throws IOException              if an I/O error occurs
      */
     public SingleShapefileInputHandler(File inputDirectory, String shapefilename)
@@ -241,7 +243,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
     /**
      * Check contents of the prj file to
      *
-     * @param stream
+     * @param stream                        InputStream to project file
      * @throws IOException                  if an I/O error occurs
      */
     private void checkPrj(InputStream stream) throws IOException {
@@ -334,6 +336,14 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
         if (channelCloseException != null) throw channelCloseException;
     }
 
+    /**
+     * Read the next feature from the shapefile. A shapefile will contain a
+     * uniform set of geometry features.
+     *
+     * @return the next feature or <code>null</code> if we are done.
+     * @throws IOException              if an I/O error occurs
+     * @throws IllegalArgumentException if unable to read a valid geometry
+     */
     public IGISObject read() throws IOException {
         if (hasSaved()) {
             return readSaved();
@@ -348,7 +358,6 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
      *
      * @return the next feature or <code>null</code> if we are done.
      * @throws IOException              if an I/O error occurs
-     * @throws IllegalArgumentException if unable to read a valid geometry
      */
     private IGISObject readNext() throws IOException {
         if (fileOffset >= (2 * fileLength)) return null;
@@ -368,9 +377,16 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
         return f;
     }
 
-    // Read the next Geometry Object and validate type. Return null at valid EOF.
+    /**
+     * Read the next Geometry Object and validate type. Return null at valid EOF.
+     *
+     * @param is3D
+     * @param includeM
+     * @return
+     * @throws IOException              if an I/O error occurs
+     */
     private Geometry getGeometry(boolean is3D, boolean includeM)
-            throws IOException, IllegalArgumentException {
+            throws IOException {
         // EOF is OK if it occurs here, otherwise we'll throw the exception to caller
         ByteBuffer buffer = readFromChannel(fileOffset, 8);
         int num = readInt(buffer, ByteOrder.BIG_ENDIAN);
@@ -387,9 +403,14 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
                 throw new IOException("Shapefile contains record with " +
                         "unexpected shape type " + recShapeType + ", expecting " + shpType);
             // Now read the record content, corresponding to specified shapeType (adjusted if 3D)
-            int st = (is3D) ? shpType - 10 : shpType;
-            if (st == POINT_TYPE) geomObj = getPoint(buffer, is3D);
-            else {
+            int st = is3D ? shpType - 10 : shpType;
+            if (st == POINT_TYPE) {
+                try {
+                    geomObj = getPoint(buffer, is3D);
+                } catch(IllegalArgumentException e ) {
+                    throw new IOException(e);
+                }
+            } else {
                 // Skip over Bounding Box coordinates (we'll reconstruct directly from points)
                 for (int i = 0; i < 4; i++) readDouble(buffer, ByteOrder.LITTLE_ENDIAN);
                 if (st == MULTILINE_TYPE) geomObj = getPolyLine(buffer, is3D, includeM);
@@ -429,6 +450,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
      *
      * @throws IOException              if an error occurs
      * @throws IllegalArgumentException if shape file has invalid metadata
+     *                                  or not supported (e.g. not WGS-84)
      */
     private void readHeader() throws IOException {
         ByteBuffer buffer = readFromChannel(0, 100);
@@ -442,14 +464,15 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
      * @return shapeType
      * @throws IllegalArgumentException if shape file has invalid metadata
      */
-    private int getShapeTypeFromHeader(ByteBuffer buffer)
-            throws IllegalArgumentException {
+    private int getShapeTypeFromHeader(ByteBuffer buffer) {
         // Read and validate the shapefile signature (should be 9994)
         int fileSig = readInt(buffer, ByteOrder.BIG_ENDIAN);
         if (fileSig != SIGNATURE)
             throw new IllegalArgumentException("Invalid Shapefile signature");
         // Skip over unused bytes in header
-        for (int i = 0; i < 5; i++) readInt(buffer, ByteOrder.BIG_ENDIAN);
+        for (int i = 0; i < 5; i++) {
+            readInt(buffer, ByteOrder.BIG_ENDIAN);
+        }
         // Read the file length (total number of 2-byte words, including header)
         fileLength = readInt(buffer, ByteOrder.BIG_ENDIAN);  // fileLen (not used)
         // Read and validate the shapefile version (should be 1000)
@@ -491,6 +514,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
             bbox = new Geodetic3DBounds(sw);
             bbox.include(ne);
         } else {
+            // NOTE: if shapefile not WGS84 then may have values out of expected range
             Geodetic2DPoint sw = new Geodetic2DPoint(new Longitude(xMin, Angle.DEGREES),
                     new Latitude(yMin, Angle.DEGREES));
             Geodetic2DPoint ne = new Geodetic2DPoint(new Longitude(xMax, Angle.DEGREES),
@@ -502,6 +526,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
     }
 
     // Read next Point (ESRI Point or PointZ) record
+    // throws IllegalArgumentException error if units or value are out of range
     private Point getPoint(ByteBuffer buffer, boolean is3D) {
         Geodetic2DPoint gp;
         Longitude lon = new Longitude(readDouble(buffer, ByteOrder.LITTLE_ENDIAN), Angle.DEGREES);
@@ -526,6 +551,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
     }
 
     // Read PolyLine and Polygon point values and return Geodetic point array
+    // throws IllegalArgumentException error if units or value are out of range
     private Geodetic2DPoint[] getPolyPoints(ByteBuffer buffer, int nPoints, boolean is3D, boolean includeM) {
         Geodetic2DPoint[] pts;
         // Read the X and Y points into arrays
@@ -577,6 +603,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
 
     // Read next MultiLine (ESRI Polyline or PolylineZ) record
     // Take flattened file structure and construct the part hierarchy
+    // throws IllegalArgumentException error if units or value are out of range
     private Geometry getPolyLine(ByteBuffer buffer, boolean is3D, boolean includeM) {
         int nParts = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
         int nPoints = readInt(buffer, ByteOrder.LITTLE_ENDIAN);  // total numPoints
@@ -610,9 +637,9 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
      *                 measured data
      * @return a geometry
      * @throws IllegalArgumentException
+     * @throws IllegalStateException
      */
-    private Geometry getPolygon(ByteBuffer buffer, boolean is3D, boolean includeM)
-            throws IllegalArgumentException {
+    private Geometry getPolygon(ByteBuffer buffer, boolean is3D, boolean includeM) {
         int nParts = readInt(buffer, ByteOrder.LITTLE_ENDIAN);
         int nPoints = readInt(buffer, ByteOrder.LITTLE_ENDIAN);  // total numPoints
         int[] parts = getPartOffsets(buffer, nParts, nPoints);
@@ -697,6 +724,7 @@ public class SingleShapefileInputHandler extends GISInputStreamBase {
     }
 
     // Read next MultiPoint (ESRI MultiPoint or MultiPointZ) record
+    // throws IllegalArgumentException error if units or value are out of range
     private Geometry getMultipoint(ByteBuffer buffer, boolean is3D, boolean includeM) {
         int nPoints = readInt(buffer, ByteOrder.LITTLE_ENDIAN);  // total numPoints
         Geodetic2DPoint[] pts = getPolyPoints(buffer, nPoints, is3D, includeM);
