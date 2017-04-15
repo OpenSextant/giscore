@@ -26,9 +26,9 @@ package org.opensextant.giscore.data;
  *
  */
 public class DocType {
-	private String name;
-	private boolean requiresZipStream;
-	private boolean requiresZipEntry;
+	private final String name;
+	private final boolean requiresZipStream;
+	private final boolean requiresZipEntry;
 	
 	public DocType(String name, boolean requiresZipStream, boolean requiresZipEntry) {
 		if (name == null || name.trim().length() == 0) {
