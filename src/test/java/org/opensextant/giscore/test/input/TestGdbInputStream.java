@@ -80,15 +80,14 @@ public class TestGdbInputStream {
 			}
 		}
 	}
-	
-	
+
 	@Test public void testFileGdbInput() throws Exception {
 		IGISInputStream gis = GISFactory.getInputStream(DocumentType.FileGDB, 
 				new File("data/gdb/EH_20090331144528.gdb"),
 				new TestAccept(new URI("uri:/EHFC_20090331144528")));
 		int schema_count = 0;
 		int total = 0;
-		IGISObject gisobject = null;
+		IGISObject gisobject;
 		SimpleField lpath = null;
 		while((gisobject = gis.read()) != null) {
 			total++;

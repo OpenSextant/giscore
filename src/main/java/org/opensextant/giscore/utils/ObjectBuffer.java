@@ -66,7 +66,7 @@ public class ObjectBuffer {
 	 * Optional cacher that is applied to the output stream that streamlines
 	 * the data that is stored to the file system.
 	 */
-	private IObjectCacher cacher = null;
+	private IObjectCacher cacher;
 	
 	/**
 	 * The actual data buffer, allocated on the
@@ -181,8 +181,9 @@ public class ObjectBuffer {
 	 * have been exhausted.
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
-	 * @throws IOException 
+	 * @throws IOException  if an I/O error occurs
 	 * @throws ClassNotFoundException 
+	 * @throws IllegalStateException if move beyond the buffer with no secondaryStore
 	 */
 	@Nullable
 	public IDataSerializable read() throws ClassNotFoundException, IOException, InstantiationException, IllegalAccessException {
