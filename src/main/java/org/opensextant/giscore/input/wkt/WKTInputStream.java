@@ -185,7 +185,7 @@ public class WKTInputStream implements IGISInputStream {
 					// Ignore, it's a separator
 				} else {
 					// Error, something that doesn't belong
-					throw new IOException("Found an unexpected characater in POLYGON: " + token);
+					throw new IOException("Found an unexpected character in POLYGON: " + token);
 				}
 			}
 			token = lexer.nextToken();
@@ -215,7 +215,7 @@ public class WKTInputStream implements IGISInputStream {
 					// Ignore, it's a separator
 				} else {
 					// Error, something that doesn't belong
-					throw new IOException("Found an unexpected characater in POLYGON: " + token);
+					throw new IOException("Found an unexpected character in POLYGON: " + token);
 				}				
 			}
 			token = lexer.nextToken();
@@ -241,7 +241,7 @@ public class WKTInputStream implements IGISInputStream {
 					// Ignore, it's a separator
 				} else {
 					// Error, something that doesn't belong
-					throw new IOException("Found an unexpected characater in POLYGON: " + token);
+					throw new IOException("Found an unexpected character in POLYGON: " + token);
 				}				
 			}
 			token = lexer.nextToken();
@@ -267,7 +267,7 @@ public class WKTInputStream implements IGISInputStream {
 					// Ignore, it's a separator
 				} else {
 					// Error, something that doesn't belong
-					throw new IOException("Found an unexpected characater in POLYGON: " + token);
+					throw new IOException("Found an unexpected character in POLYGON: " + token);
 				}				
 			}
 			token = lexer.nextToken();
@@ -289,7 +289,7 @@ public class WKTInputStream implements IGISInputStream {
 					// Ignore, it's a separator
 				} else {
 					// Error, something that doesn't belong
-					throw new IOException("Found an unexpected characater in LINESTRING: " + token);
+					throw new IOException("Found an unexpected character in LINESTRING: " + token);
 				}				
 			} else if (token.getType().equals(WKTToken.TokenType.NUMBER)) {
 				lexer.push(token);
