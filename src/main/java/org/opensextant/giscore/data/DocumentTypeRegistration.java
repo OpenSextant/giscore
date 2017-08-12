@@ -42,7 +42,8 @@ import org.opensextant.giscore.output.IGISOutputStream;
  */
 @SuppressWarnings("rawtypes") 
 public class DocumentTypeRegistration {
-	private DocType type;
+
+	private final DocType type;
 	private Class inputStreamClass;
 	private Class inputStreamArgs[] = new Class[0];
 	private boolean inputStreamArgsRequired[] = new boolean[0];

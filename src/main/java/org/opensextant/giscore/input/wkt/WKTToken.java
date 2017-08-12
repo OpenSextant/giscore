@@ -24,12 +24,13 @@ package org.opensextant.giscore.input.wkt;
  * @author DRAND
  */
 public class WKTToken {
+
 	public enum TokenType {
 		ID, NUMBER, CHAR
 	}
 	
-	private TokenType type = TokenType.NUMBER;
-	private String identifier = null;
+	private final TokenType type;
+	private String identifier;
 	private Double nvalue = 0.0;
 	private char cvalue = 0;
 	
