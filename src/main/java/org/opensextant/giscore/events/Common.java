@@ -429,7 +429,7 @@ public abstract class Common extends Row {
 	 * Read object from the data stream.
 	 *
 	 * @param in the input stream, never <code>null</code>
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 * @throws ClassNotFoundException
 	 */
 	public void readData(SimpleObjectInputStream in) throws IOException,
@@ -468,7 +468,7 @@ public abstract class Common extends Row {
 	 * Write the object to the data stream
 	 *
 	 * @param out
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeData(SimpleObjectOutputStream out) throws IOException {
 		super.writeData(out);
@@ -522,7 +522,7 @@ public abstract class Common extends Row {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
+		if (obj == null || !super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;

@@ -204,7 +204,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 					"field should never be null or empty");
 		}
 		final Object value = extendedData.get(field);
-		return ObjectUtils.NULL.equals(value) ? null : value;
+		return ObjectUtils.NULL == value ? null : value;
 	}
 
     /**
@@ -223,7 +223,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 					"field should never be null or empty");
 		}
         final Object value = extendedData.remove(field);
-        return ObjectUtils.NULL.equals(value) ? null : value;
+        return ObjectUtils.NULL == value ? null : value;
     }
 
 	/*
@@ -235,7 +235,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
+		if (obj == null || !super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
@@ -290,7 +290,7 @@ public class Row extends AbstractObject implements IDataSerializable {
 			b.append(field.getType().name());
 			b.append(')');
 			b.append(" = ");
-			if (ObjectUtils.NULL.equals(entry.getValue())) {
+			if (ObjectUtils.NULL == entry.getValue()) {
 				b.append("null");
 			} else {
 				b.append('\'');
