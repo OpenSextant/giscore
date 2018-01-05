@@ -44,7 +44,7 @@ public class ContainerStart extends Common implements IContainerType {
 	@NonNull
 	private String type;
 
-    private boolean open;
+    private boolean open; // kml:open default=0 [false]
 
 	private List<StyleSelector> styles;
 
@@ -127,7 +127,7 @@ public class ContainerStart extends Common implements IContainerType {
 	 */
 	public void addStyle(StyleSelector style) {
 		if (style != null) {
-			if (styles == null) styles = new LinkedList<StyleSelector>();
+			if (styles == null) styles = new LinkedList<>();
 			styles.add(style);
 		}
 	}
@@ -151,7 +151,7 @@ public class ContainerStart extends Common implements IContainerType {
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!super.equals(obj))
+		if (obj == null || !super.equals(obj))
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
