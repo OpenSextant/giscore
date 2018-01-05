@@ -40,6 +40,7 @@ import org.opensextant.giscore.utils.SimpleObjectOutputStream;
  * @author DRAND
  */
 public class Feature extends Common {
+
 	private static final long serialVersionUID = 1L;
 
 	private StyleSelector style;
@@ -161,8 +162,9 @@ public class Feature extends Common {
 	}
 
 	/**
-	 * The approximately equals method checks all the fields for equality with
-	 * the exception of the geometry.
+	 * The approximately equals method checks most of the fields for equality with
+	 * the exception of the geometry which is checked for equivalence not equality.
+               * Snippet, visibility, and elements, and extendedElements fields are not tested.
 	 * 
 	 * @param other Other feature to compare against
 	 * @return true if this and other are approximately equal

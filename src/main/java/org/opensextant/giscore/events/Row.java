@@ -44,17 +44,18 @@ import org.opensextant.giscore.utils.SimpleObjectOutputStream;
  * @author DRAND
  */
 public class Row extends AbstractObject implements IDataSerializable {
+
     private static final long serialVersionUID = 1L;
     
 	protected URI schema;
-	protected final Map<SimpleField, Object> extendedData = new LinkedHashMap<SimpleField, Object>();
+	protected final Map<SimpleField, Object> extendedData = new LinkedHashMap<>();
 
 	/**
 	 * Store non-Data and non-SimpleData extended data elements.
 	 * These are arbitrary XML elements of a non-KML namespace.
 	 */
 	@NonNull
-	private List<Element> extendedElements = new ArrayList<Element>();
+	private List<Element> extendedElements = new ArrayList<>();
 
 	/* (non-Javadoc)
 	 * @see org.mitre.giscore.geometry.VisitableGeometry#accept(org.mitre.giscore.output.StreamVisitorBase)
