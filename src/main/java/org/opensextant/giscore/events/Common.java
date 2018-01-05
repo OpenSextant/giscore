@@ -60,7 +60,7 @@ public abstract class Common extends Row {
 	private TaggedMap region;
 
 	@NonNull
-	private List<Element> elements = new ArrayList<Element>();
+	private List<Element> elements = new ArrayList<>();
 
 	/**
 	 * @return the name
@@ -567,9 +567,7 @@ public abstract class Common extends Row {
 				return false;
 		} else if (!visibility.equals(other.visibility))
 			return false;
-		if (!elements.equals(other.elements))
-			return false;
-		return true;
+		return elements.equals(other.elements);
 	}
 
 	/* (non-Javadoc)
