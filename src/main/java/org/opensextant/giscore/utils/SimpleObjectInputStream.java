@@ -70,6 +70,7 @@ public class SimpleObjectInputStream implements Closeable {
 	static final int OBJECT_NULL = 8;
 	static final int DATE = 9;
 	static final int COLOR = 10;
+	static final int DATETIME = 11;
 	
 	// Sync with output
 	private static final short UNCACHED = 1;
@@ -78,13 +79,13 @@ public class SimpleObjectInputStream implements Closeable {
 	
 	private final DataInputStream stream;
 	
-	private final Map<Integer, Class<IDataSerializable>> classMap = new HashMap<Integer, Class<IDataSerializable>>();
+	private final Map<Integer, Class<IDataSerializable>> classMap = new HashMap<>();
 	
 	/**
 	 * Objects that are references in the input stream. Used to reduce small
 	 * counts of objects that are used thousands of times in the input stream.
 	 */
-	private final Map<String, Object> refs = new HashMap<String, Object>();
+	private final Map<String, Object> refs = new HashMap<>();
 	
 	/**
 	 * Creates an SimpleObjectInputStream that reads from the specified InputStream.
@@ -292,6 +293,8 @@ public class SimpleObjectInputStream implements Closeable {
 			return stream.readBoolean();
 		case DATE:
 			return new Date(stream.readLong());
+		case DATETIME:
+			return new DateTime(stream.readLong());
 		case COLOR:
 			int value = stream.readInt();
 			return new Color(value, true);

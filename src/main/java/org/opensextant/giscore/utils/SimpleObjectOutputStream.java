@@ -60,6 +60,7 @@ import org.slf4j.LoggerFactory;
  * @author DRAND
  */
 public class SimpleObjectOutputStream implements Closeable {
+
 	// Sync with input
 	private static final short NULL = 0;
 	private static final short UNCACHED = 1;
@@ -75,7 +76,7 @@ public class SimpleObjectOutputStream implements Closeable {
 	/**
 	 * Tracks the correspondence between a generated id and the class
 	 */
-	private final Map<Class<?extends IDataSerializable>,Integer> classMap = new HashMap<Class<?extends IDataSerializable>,Integer>();
+	private final Map<Class<?extends IDataSerializable>,Integer> classMap = new HashMap<>();
 
 	/**
 	 * Current class id value, incremented for each additional class. Zero
@@ -217,8 +218,10 @@ public class SimpleObjectOutputStream implements Closeable {
 	
 	/**
 	 * Write primitive non-array value, i.e. a string, boolean, java.awt.Color, integer,
-	 * float, etc. The value is written with a prior marker to allow reading later
-	 * @param value the value, must be a supported type
+	 * float, etc. The value is written with a prior marker to allow reading later.
+	 * 
+	 * @param value the value, must be a supported type otherwise NULL value is written
+	 *              in its place.
 	 * @throws IOException if an I/O error occurs
 	 */
 	public void writeScalar(Object value) throws IOException {
@@ -250,6 +253,9 @@ public class SimpleObjectOutputStream implements Closeable {
 		} else if (value instanceof Date) {
 			stream.writeShort(SimpleObjectInputStream.DATE);
 			writeLong(((Date) value).getTime());
+		} else if (value instanceof DateTime) {
+			stream.writeShort(SimpleObjectInputStream.DATETIME);
+			writeLong(((DateTime) value).getTime());
         } else if (value instanceof Color) {
             stream.writeShort(SimpleObjectInputStream.COLOR);
             stream.writeInt(((Color)value).getRGB());
