@@ -48,8 +48,8 @@ import org.slf4j.LoggerFactory;
  */
 public class DbfInputStream extends GISInputStreamBase implements
         IGISInputStream, IDbfConstants {
-    private static final Logger logger = LoggerFactory
-            .getLogger(DbfInputStream.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(DbfInputStream.class);
 
     /**
      * Class to instantiate when reading in rows
@@ -365,8 +365,6 @@ public class DbfInputStream extends GISInputStreamBase implements
                 }
 
             case LONG:
-                // numeric fields starting with '*'  are considered null
-                if (valStr.startsWith("*")) return null;
                 try {
                     return Long.valueOf(valStr);
                 } catch (NumberFormatException e) {
@@ -386,6 +384,10 @@ public class DbfInputStream extends GISInputStreamBase implements
                         // try as Double
                     }
                 }
+
+                // numeric fields starting with '*'  are considered null
+                if (valStr.startsWith("*")) return null;
+
                 try {
                     return new Double(valStr);
                 } catch (NumberFormatException e) {
