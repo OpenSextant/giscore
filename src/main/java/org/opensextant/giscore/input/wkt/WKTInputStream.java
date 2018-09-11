@@ -61,15 +61,22 @@ import org.opensextant.giscore.input.IGISInputStream;
  * 
  * This library can represent Z but not M.
  * 
+ * OGC 01-103r4 (Section 7 of that document provides the syntax)
+ * http://www.opengeospatial.org/standards/sfa
+ *
+ * http://en.wikipedia.org/wiki/Well-known_text
+ * http://edndoc.esri.com/arcsde/9.0/general_topics/wkt_representation.htm
+ * https://msdn.microsoft.com/en-us/library/mt712880.aspx
+ * http://geoscript.org/examples/geom/wkt.html
+ * 
  * @author DRAND
  */
 public class WKTInputStream implements IGISInputStream {
 
 	protected Reader reader;
 	private WKTLexer lexer;
-	//private WKTToken currentop;
-	private boolean isM = false;
-	private boolean isZ = false;
+	private boolean isM;
+	private boolean isZ;
 	
 	/**
 	 * Ctor
@@ -106,8 +113,12 @@ public class WKTInputStream implements IGISInputStream {
 	 *
 	 * @return next <code>IGISObject</code>,
 	 *         or <code>null</code> if the end of the stream is reached.
-	 * @throws IOException if an I/O error occurs or if there
+	 *
+	 * @throws IOException if an I/O error occurs or if there is a parsing error
 	 * @throws IllegalStateException if a fatal error with the underlying data structure
+	 * @throws IllegalArgumentException if Line contains less than 2 Points,
+	 * 									or Polygon contains less than 4 Points
+	 * 									or MultiPolygon contains empty polygon list
 	 */
 	@Override
 	public IGISObject read() throws IOException {
@@ -117,11 +128,15 @@ public class WKTInputStream implements IGISInputStream {
 		} else if (! currentop.getType().equals(WKTToken.TokenType.ID)) {
 			throw new IllegalStateException("Expected an identifier but found the token type " + currentop.getType() + " instead");
 		}
-		
+
 		// Find out if we have extra geometry and remove the M and/or Z from
 		// the type of the geometry to ease matching
 		String id = currentop.getIdentifier();
+		// WKTs are not case sensitive
 		id = id.toUpperCase();
+		// WKT String "POINT EMPTY" returns id token = "POINTEMPTY" rather than as 2 separate tokens
+		if (id.endsWith("EMPTY")) return null;
+
 		isM = id.endsWith("ZM") || id.endsWith("M") || id.endsWith("MZ");
 		isZ = id.endsWith("ZM") || id.endsWith("Z") || id.endsWith("MZ");
 		if (isZ && isM) {
@@ -129,7 +144,7 @@ public class WKTInputStream implements IGISInputStream {
 		} else if (isZ || isM) {
 			id = id.substring(0, id.length() - 1);
 		}
-		
+
 		if ("POINT".equals(id)) {
 			return readPoint();
 		} else if ("LINESTRING".equals(id)) {
@@ -145,10 +160,12 @@ public class WKTInputStream implements IGISInputStream {
 		} else if ("GEOMETRYCOLLECTION".equals(id)) {
 			return readGeometryCollection();
 		}
-		
+
 		return null;
 	}
 
+	// throws IllegalStateException if input token is number a number
+	// POINT(EMPTY) will throw IllegalStateException
 	private IGISObject readPoint() throws IOException {
 		expectParen();
 		Geodetic2DPoint pnt = readCoordinate();
@@ -156,10 +173,24 @@ public class WKTInputStream implements IGISInputStream {
 		return new Point(pnt);
 	}
 	
+	/**
+	 *
+	 * @return Line
+	 * @throws IOException  If an I/O error occurs
+	 * @throws IllegalArgumentException if Line contains less than 2 Points
+	 * @throws IllegalStateException is input token is not a number
+	 */
 	private IGISObject readLine() throws IOException {
 		return new Line(readPointList()); 
 	}
 	
+	/**
+	 *
+	 * @return Polygon
+	 * @throws IOException  If an I/O error occurs
+	 * @throws IllegalArgumentException if Polygon contains less than 4 Points
+	 * @throws IllegalStateException if input token is not a number
+	 */
 	private IGISObject readPolygon() throws IOException {
 		expectParen();
 		WKTToken token = lexer.nextToken();
@@ -175,6 +206,8 @@ public class WKTInputStream implements IGISInputStream {
 					lexer.push(token);
 					// A ring
 					List<Point> pnts = readPointList();
+					if (pnts.size() < 4) throw new IllegalArgumentException("Polygon must contain at least 4 Points");
+					// LinearRing must contain at least 4 Points
 					LinearRing ring = new LinearRing(pnts);
 					if (outerRing == null) {
 						outerRing = ring;
@@ -192,10 +225,28 @@ public class WKTInputStream implements IGISInputStream {
 		}
 	}
 
+	/**
+	 *
+	 * @return MultiPoint
+	 * @throws IOException  If an I/O error occurs
+	 * @throws IllegalArgumentException error if object is not valid.
+	 * @throws IllegalStateException if input token is not a number
+	 */
 	private IGISObject readMultiPoint() throws IOException {
+		// MultiPoint must contain at least 1 Point
 		return new MultiPoint(readPointList());
 	}
 
+	/**
+	 *
+	 * @return MultiLine
+	 * @throws IOException  If an I/O error occurs
+	 * @throws IllegalArgumentException
+	 * 						Error if object is not valid.
+	 * 						Each line must contain at least 2 Points
+	 * 						and multi line must contain at least 1 line unless explicit EMPTY string is present
+	 * @throws IllegalStateException if input token is not a number
+	 */
 	private IGISObject readMultiLineString() throws IOException {
 		expectParen();
 		List<Line> lines = new ArrayList<>();
@@ -208,9 +259,8 @@ public class WKTInputStream implements IGISInputStream {
 					return new MultiLine(lines);
 				} else if ('(' == ch) {
 					lexer.push(token);
-					// A line
-					List<Point> pnts = readPointList();
-					lines.add(new Line(pnts));
+					// A line which must contain at least 2 Points
+					lines.add(new Line(readPointList()));
 				} else if (',' == ch) {
 					// Ignore, it's a separator
 				} else {
@@ -222,6 +272,13 @@ public class WKTInputStream implements IGISInputStream {
 		}
 	}
 	
+	/**
+	 *
+	 * @return MultiPolygon
+	 * @throws IOException  If an I/O error occurs
+	 * @throws IllegalStateException if Polygon contains less than 4 Points
+	 * @throws IllegalArgumentException error if object is not valid (must contain at least one polygon)
+	 */
 	private IGISObject readMultiPolygon() throws IOException {
 		expectParen();
 		List<Polygon> polys = new ArrayList<>();
@@ -274,6 +331,7 @@ public class WKTInputStream implements IGISInputStream {
 		}		
 	}
 		
+	// throws IllegalStateException is input token is not a number
 	private List<Point> readPointList() throws IOException {
 		expectParen();
 		// Read a token and see if we're at the thesis, a comma or the next
@@ -304,25 +362,26 @@ public class WKTInputStream implements IGISInputStream {
 	/**
 	 * Read 2, 3 or 4 numbers depending on the values of isM and isZ. Then 
 	 * use the appropriate constructor to make a point.
+	 *
 	 * @return the point constructed
 	 * @throws IOException if an error occurs
+	 * @throws IllegalStateException is input token is not a number
 	 */
 	private Geodetic2DPoint readCoordinate() throws IOException {
-		WKTToken x, y, z = null;
-		
-		x = lexer.nextToken();
-		y = lexer.nextToken();
-		if (isZ) {
-			z = lexer.nextToken();
+		final WKTToken x = lexer.nextToken();
+		final WKTToken y = lexer.nextToken();
+		if (y == null) {
+			throw new IllegalStateException("Missing expected y coordinate");
 		}
+		final WKTToken z = isZ ? lexer.nextToken() : null;
 		if (isM) {
-			lexer.nextToken(); // Just to consumer, we don't use it
+			lexer.nextToken(); // Just to consume, we don't use it
 		}
 		
 		if (isZ) {
-			if (x.getType().equals(WKTToken.TokenType.NUMBER) && 
-					y.getType().equals(WKTToken.TokenType.NUMBER) &&
-					z.getType().equals(WKTToken.TokenType.NUMBER)) {
+			if (WKTToken.TokenType.NUMBER.equals(x.getType()) &&
+					WKTToken.TokenType.NUMBER.equals(y.getType()) &&
+					WKTToken.TokenType.NUMBER.equals(z.getType())) {
 				Longitude lon = new Longitude(x.getDouble(), Angle.DEGREES);
 				Latitude lat = new Latitude(y.getDouble(), Angle.DEGREES);
 				return new Geodetic3DPoint(lon, lat, z.getDouble());
@@ -330,8 +389,8 @@ public class WKTInputStream implements IGISInputStream {
 				throw new IllegalStateException("One of these tokens was not a number: " + x + ", " + y + ", " + z);
 			}
 		} else {
-			if (x.getType().equals(WKTToken.TokenType.NUMBER) && 
-					y.getType().equals(WKTToken.TokenType.NUMBER)) {
+			if (WKTToken.TokenType.NUMBER.equals(x.getType()) &&
+					WKTToken.TokenType.NUMBER.equals(y.getType())) {
 				Longitude lon = new Longitude(x.getDouble(), Angle.DEGREES);
 				Latitude lat = new Latitude(y.getDouble(), Angle.DEGREES);
 				return new Geodetic2DPoint(lon, lat);
