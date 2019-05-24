@@ -93,8 +93,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Read a Google Earth Keyhole Markup Language (KML) file in as an input stream
- * one event at a time.
+ * Read a Keyhole Markup Language (KML) file in as an input stream one event at a time.
  * <p/>
  * <P>Supports KML 2.0 through KML 2.2 data formats with allowance
  * for sloppy or lax KML files as would be allowed in Google Earth. Limited
@@ -222,7 +221,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 
 	private static final Pattern WHITESPACE_PAT = Pattern.compile(",\\s+\\.?\\d");
 
-	private static final Set<String> ms_kml_ns = new HashSet<String>(8);
+	private static final Set<String> ms_kml_ns = new HashSet<>(8);
 
 	static {
 		ms_kml_ns.add("http://earth.google.com/kml/2.0");
@@ -236,16 +235,16 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		ms_kml_ns.add("http://www.opengis.net/kml/3.0");
 	}
 
-	private static final Set<String> ms_features = new HashSet<String>(5);   // Placement, etc.
-	private static final Set<String> ms_containers = new HashSet<String>(2); // Document, Folder
-	private static final Set<String> ms_attributes = new HashSet<String>(2); // open, metadata
-	private static final Set<String> ms_geometries = new HashSet<String>(6); // Point, LineString, etc.
+	private static final Set<String> ms_features = new HashSet<>(5);   // Placement, etc.
+	private static final Set<String> ms_containers = new HashSet<>(2); // Document, Folder
+	private static final Set<String> ms_attributes = new HashSet<>(2); // open, metadata
+	private static final Set<String> ms_geometries = new HashSet<>(6); // Point, LineString, etc.
 
 	private static final Longitude COORD_ERROR = new Longitude();
 	private static final QName ID_ATTR = new QName(ID);
 
 	private Map<String, String> schemaAliases;
-	private final Map<String, Schema> schemata = new HashMap<String, Schema>();
+	private final Map<String, Schema> schemata = new HashMap<>();
 	private boolean dupAltitudeModeWarn;
 
 	static {
@@ -342,7 +341,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					ds.getNamespaces().add(gnamespace);
 				} catch (IllegalArgumentException e) {
 					// ignore invalid namespaces since often namespaces may not even be used in the document itself
-					log.warn("ignore invalid namespace " + prefix + "=" + ns.getNamespaceURI());
+					log.warn("ignore invalid namespace {}={}", prefix, ns.getNamespaceURI());
 				}
 			}
 		} catch (XMLStreamException e) {
@@ -378,7 +377,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					} else if (XMLStreamReader.END_ELEMENT == type) {
 						IGISObject rval = handleEndElement(e);
 						if (rval != null)
-							return rval;
+							return rval == NullObject.getInstance() ? null : rval;
 					}
 					/*
 						 // saving comments messes up the junit tests so comment out for now
