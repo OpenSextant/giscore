@@ -55,6 +55,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class TestShapefileOutput extends TestShapefileBase {
+
     @Test
     public void testWriteReferencePointOutput() throws Exception {
 
@@ -126,7 +127,7 @@ public class TestShapefileOutput extends TestShapefileBase {
         SimpleField dtm = new SimpleField("dtm", Type.LONG);
         schema.put(dtm);
         ObjectBuffer buffer = new FieldCachingObjectBuffer();
-        List<Point> pts = new ArrayList<Point>(5);
+        List<Point> pts = new ArrayList<>(5);
         for (int i = 0; i < 5; i++) {
             Feature f = new Feature();
             f.putData(id, "id " + i);
@@ -150,7 +151,7 @@ public class TestShapefileOutput extends TestShapefileBase {
         SimpleField dtm = new SimpleField("dtm", Type.DATE);
         schema.put(dtm);
         ObjectBuffer buffer = new FieldCachingObjectBuffer();
-        List<Point> pts = new ArrayList<Point>(5);
+        List<Point> pts = new ArrayList<>(5);
         for (int i = 0; i < 5; i++) {
             Feature f = new Feature();
             f.putData(id, "id " + i);
@@ -164,6 +165,36 @@ public class TestShapefileOutput extends TestShapefileBase {
 
         writeShapefile(schema, buffer, pts, "pointz");
     }
+
+/*
+    @Test
+    public void testNullGeometryShape() throws Exception {
+        Schema schema = new Schema(new URI("urn:test"));
+        SimpleField id = new SimpleField("testid");
+        id.setLength(10);
+        schema.put(id);
+        SimpleField dtm = new SimpleField("dtm", Type.DATE);
+        schema.put(dtm);
+        ObjectBuffer buffer = new FieldCachingObjectBuffer(2);
+        //List<Point> pts = new ArrayList<>(2);
+        //pts.add(null);
+        //pts.add(null);
+
+        Feature f = new Feature();
+        f.putData(id, "1");
+        f.putData(dtm, new Date(System.currentTimeMillis()));
+        f.setSchema(schema.getId());
+        buffer.write(f);
+
+        f = new Feature();
+        f.putData(id, "2");
+        f.putData(dtm, new Date(System.currentTimeMillis()));
+        f.setSchema(schema.getId());
+        buffer.write(f);
+
+        writeShapefile(schema, buffer, null, "nogeom");
+    }
+*/
 
     @Test
     public void testNumericOutput() throws Exception {
@@ -246,13 +277,13 @@ public class TestShapefileOutput extends TestShapefileBase {
         SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
         schema.put(date);
         ObjectBuffer buffer = new FieldCachingObjectBuffer();
-        List<Line> lines = new ArrayList<Line>(5);
+        List<Line> lines = new ArrayList<>(5);
         for (int i = 0; i < 5; i++) {
             Feature f = new Feature();
             f.putData(id, "id " + i);
             f.putData(date, new Date());
             f.setSchema(schema.getId());
-            List<Point> pts = new ArrayList<Point>(2);
+            List<Point> pts = new ArrayList<>(2);
             pts.add(getRandomPoint());
             pts.add(getRandomPoint());
             Line line = new Line(pts);
@@ -274,13 +305,13 @@ public class TestShapefileOutput extends TestShapefileBase {
         SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
         schema.put(date);
         ObjectBuffer buffer = new FieldCachingObjectBuffer();
-        List<Line> lines = new ArrayList<Line>(5);
+        List<Line> lines = new ArrayList<>(5);
         for (int i = 0; i < 5; i++) {
             Feature f = new Feature();
             f.putData(id, "id " + i);
             f.putData(date, new Date());
             f.setSchema(schema.getId());
-            List<Point> pts = new ArrayList<Point>(2);
+            List<Point> pts = new ArrayList<>(2);
             pts.add(getRandomPointZ());
             pts.add(getRandomPointZ());
             Line line = new Line(pts);
@@ -307,9 +338,9 @@ public class TestShapefileOutput extends TestShapefileBase {
         f.putData(id, "id multiline");
         f.putData(date, new Date());
         f.setSchema(schema.getId());
-        List<Line> lines = new ArrayList<Line>(5);
+        List<Line> lines = new ArrayList<>(5);
         for (int i = 0; i < 5; i++) {
-            List<Point> pts = new ArrayList<Point>(2);
+            List<Point> pts = new ArrayList<>(2);
             pts.add(getRandomPoint());
             pts.add(getRandomPoint());
             Line line = new Line(pts);
@@ -331,14 +362,14 @@ public class TestShapefileOutput extends TestShapefileBase {
         SimpleField date = new SimpleField("today", SimpleField.Type.DATE);
         schema.put(date);
         ObjectBuffer buffer = new FieldCachingObjectBuffer();
-        List<LinearRing> rings = new ArrayList<LinearRing>(5);
+        List<LinearRing> rings = new ArrayList<>(5);
         for (int i = 0; i < 5; i++) {
             Point cp = getRandomPoint();
             Feature f = new Feature();
             f.putData(id, "id " + i);
             f.putData(date, new Date());
             f.setSchema(schema.getId());
-            List<Point> pts = new ArrayList<Point>(6);
+            List<Point> pts = new ArrayList<>(6);
             pts.add(getRingPoint(cp, 4, 5, .3, .4));
             pts.add(getRingPoint(cp, 3, 5, .3, .4));
             pts.add(getRingPoint(cp, 2, 5, .3, .4));
@@ -481,7 +512,7 @@ public class TestShapefileOutput extends TestShapefileBase {
             f.putData(id, "id polyz " + i);
             f.putData(date, new Date());
             f.setSchema(schema.getId());
-            List<Point> pts = new ArrayList<Point>(6);
+            List<Point> pts = new ArrayList<>(6);
             for (int k = 0; k < 5; k++) {
                 pts.add(getRingPointZ(cp, k, 5, 1.0, 2.0));
             }
@@ -519,10 +550,10 @@ public class TestShapefileOutput extends TestShapefileBase {
         f.putData(id, "id multiring");
         f.putData(date, new Date());
         f.setSchema(schema.getId());
-        List<LinearRing> rings = new ArrayList<LinearRing>(5);
+        List<LinearRing> rings = new ArrayList<>(5);
         for (int i = 0; i < 5; i++) {
             Point cp = getRandomPoint(25.0); // Center of outer poly
-            List<Point> pts = new ArrayList<Point>(6);
+            List<Point> pts = new ArrayList<>(6);
             // rings must be in clockwise point order
             for (int k = 0; k < 5; k++) {
                 pts.add(getRingPoint(cp, 4 - k, 5, .2, .5));
@@ -551,10 +582,10 @@ public class TestShapefileOutput extends TestShapefileBase {
         f.putData(id, "id multiringz");
         f.putData(date, new Date());
         f.setSchema(schema.getId());
-        List<LinearRing> rings = new ArrayList<LinearRing>(5);
+        List<LinearRing> rings = new ArrayList<>(5);
         for (int i = 0; i < 5; i++) {
             Point cp = getRandomPoint(25.0); // Center of outer poly
-            List<Point> pts = new ArrayList<Point>(6);
+            List<Point> pts = new ArrayList<>(6);
             // rings must be in clockwise point order
             for (int k = 0; k < 5; k++) {
                 pts.add(getRingPointZ(cp, 4 - k, 5, 1.0, 2.0));
@@ -583,11 +614,11 @@ public class TestShapefileOutput extends TestShapefileBase {
         f.putData(id, "id multipoly");
         f.putData(date, new Date());
         f.setSchema(schema.getId());
-        List<Polygon> polys = new ArrayList<Polygon>(4);
+        List<Polygon> polys = new ArrayList<>(4);
         for (int i = 0; i < 4; i++) {
             Point cp = getRandomPoint(25.0); // Center of outer poly
             int sides = RandomUtils.nextInt(4) + 4;
-            List<Point> pts = new ArrayList<Point>(sides + 1);
+            List<Point> pts = new ArrayList<>(sides + 1);
             // First (outer) ring should be in clockwise point order
             for (int k = 0; k < sides; k++) {
                 pts.add(getRingPoint(cp, k, sides, 1.0, 2.0));
@@ -595,9 +626,9 @@ public class TestShapefileOutput extends TestShapefileBase {
             pts.add(pts.get(0)); // should start and end with the same point
             LinearRing outerRing = new LinearRing(pts, true);
             int inners = RandomUtils.nextInt(4) + 1;
-            List<LinearRing> innerRings = new ArrayList<LinearRing>(inners);
+            List<LinearRing> innerRings = new ArrayList<>(inners);
             for (int j = 0; j < inners; j++) {
-                pts = new ArrayList<Point>(6);
+                pts = new ArrayList<>(6);
                 Point ircp = getRingPoint(cp, j, inners, .5, 1.0);
                 for (int k = 0; k < 5; k++) {
                     pts.add(getRingPoint(ircp, k, 5, .24, .2));
@@ -628,16 +659,16 @@ public class TestShapefileOutput extends TestShapefileBase {
         f.putData(id, "id multipolyz");
         f.putData(date, new Date());
         f.setSchema(schema.getId());
-        List<Polygon> polys = new ArrayList<Polygon>(5);
+        List<Polygon> polys = new ArrayList<>(5);
         for (int i = 0; i < 5; i++) {
             Point cp = getRandomPoint(25.0); // Center of outer poly
-            List<Point> pts = new ArrayList<Point>(6);
+            List<Point> pts = new ArrayList<>(6);
             for (int k = 0; k < 5; k++) {
                 pts.add(getRingPointZ(cp, k, 5, 2, 1.5));
             }
             pts.add(pts.get(0)); // should start and end with the same point
             LinearRing outerRing = new LinearRing(pts, true);
-            List<LinearRing> innerRings = new ArrayList<LinearRing>(4);
+            List<LinearRing> innerRings = new ArrayList<>(4);
             for (int j = 0; j < 4; j++) {
                 pts = new ArrayList<Point>(6);
                 Point ircp = getRingPointZ(cp, j, 4, .5, 1.0);
