@@ -387,16 +387,12 @@ public class KmlInputStream extends XmlInputStream implements IKml {
                                  return comment;
                          */
 				}
-			} catch (ArrayIndexOutOfBoundsException e) {
+			} catch (ArrayIndexOutOfBoundsException | XMLStreamException | NullPointerException e) {
 				// if have wrong encoding can end up here
 				//log.warn("Unexpected parse error", e);
 				throw new IOException(e);
 			} catch (NoSuchElementException e) {
 				return null;
-			} catch (NullPointerException e) {
-				throw new IOException(e);
-			} catch (XMLStreamException e) {
-				throw new IOException(e);
 			}
 		}
 	}
@@ -422,8 +418,8 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	@NonNull
 	private IGISObject handleContainer(XMLEvent e) throws XMLStreamException {
-		StartElement se = e.asStartElement();
-		QName name = se.getName();
+		final StartElement se = e.asStartElement();
+		final QName name = se.getName();
 		String containerTag = name.getLocalPart();
 		ContainerStart cs = new ContainerStart(containerTag); // Folder or Document
 		addLast(cs);
@@ -849,20 +845,19 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			XMLEvent ne = stream.peek();
 			if (foundEndTag(ne, name)) {
 				if (key != null || value != null || style != null) {
-					if (key == null) {
+					if (key == null || key.equalsIgnoreCase(StyleMap.NORMAL)) {
 						key = StyleMap.NORMAL; // default
-					} else if (key.equalsIgnoreCase(StyleMap.NORMAL))
-						key = StyleMap.NORMAL;
-					else if (key.equalsIgnoreCase(StyleMap.HIGHLIGHT))
+					} else if (key.equalsIgnoreCase(StyleMap.HIGHLIGHT)) {
 						key = StyleMap.HIGHLIGHT;
-					else
-						log.warn("Unknown StyleMap key: " + key);
+					} else {
+						log.warn("Unknown StyleMap key: {}", key);
+					}
 
 					if (sm.containsKey(key)) {
 						if (value != null) {
-							log.warn("StyleMap already has " + key + " definition. Ignore styleUrl=" + value);
+							log.warn("StyleMap already has {} definition. Ignore styleUrl={}", key, value);
 						} else {
-							log.warn("StyleMap already has " + key + " definition. Ignore inline Style");
+							log.warn("StyleMap already has {} definition. Ignore inline Style", key);
 						}
 						// Google Earth keeps the first pair for a given key
 					} else {
@@ -1016,7 +1011,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						try {
 							listItemType = Style.ListItemType.valueOf(text);
 						} catch (IllegalArgumentException e2) {
-							log.warn("Invalid ListItemType value: " + text);
+							log.warn("Invalid ListItemType value: {}", text);
 						}
 				} else if (localPart.equals(BG_COLOR)) {
 					bgColor = parseColor(stream.getElementText());
@@ -1097,7 +1092,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						try {
 							scale = Double.parseDouble(value);
 						} catch (NumberFormatException nfe) {
-							log.warn("Invalid scale value: " + value);
+							log.warn("Invalid scale value: {}", value);
 						}
 				} else if (name.equals(COLOR)) {
 					color = parseColor(stream.getElementText());
@@ -1129,7 +1124,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						try {
 							width = Double.parseDouble(value);
 						} catch (NumberFormatException nfe) {
-							log.warn("Invalid width value: " + value);
+							log.warn("Invalid width value: {}", value);
 						}
 				} else if (name.equals(COLOR)) {
 					String value = stream.getElementText();
@@ -1238,7 +1233,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 				// fall through and log bad value
 			}
 
-		log.warn("Invalid color value: " + cstr);
+		log.warn("Invalid color value: {}", cstr);
 		return null;
 	}
 
@@ -1272,7 +1267,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						try {
 							scale = Double.parseDouble(value);
 						} catch (NumberFormatException nfe) {
-							log.warn("Invalid scale value: " + value);
+							log.warn("Invalid scale value: {}", value);
 						}
 				} else if (localPart.equals(HEADING)) {
 					String value = getNonEmptyElementText();
@@ -1280,7 +1275,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						try {
 							heading = Double.parseDouble(value);
 						} catch (NumberFormatException nfe) {
-							log.warn("Invalid heading value: " + value);
+							log.warn("Invalid heading value: {}", value);
 						}
 				} else if (localPart.equals(COLOR)) {
 					String value = stream.getElementText();
@@ -1312,9 +1307,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	@NonNull
 	private IGISObject handleStartElement(XMLEvent e) throws XMLStreamException {
-		StartElement se = e.asStartElement();
-		QName name = se.getName();
-		String ns = name.getNamespaceURI();
+		final StartElement se = e.asStartElement();
+		final QName name = se.getName();
+		final String ns = name.getNamespaceURI();
 
 		// handle non-kml namespace elements as foreign elements
 		// review: should we check instead if namespace doesn't equal our root document namespace...
@@ -1378,7 +1373,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						} else throw new XMLStreamException("unexpected element");
 					}
 				} else {
-					log.debug("XXX: handle startElement with foreign namespace: {}", name);
+					log.debug("XX: handle startElement with foreign namespace: {}", name);
 					return getForeignElement(se);
 				}
 			}
@@ -1390,7 +1385,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		/*
 		} catch(NullPointerException npe) {
 			// bad encoding in characters may throw NullPointerException
-			log.warn("XXX: Skip element: " + localname);
+			log.warn("XX: Skip element: {}", localname);
 			log.debug("", npe);
 			skipNextElement(stream, name);
 		}
@@ -1602,7 +1597,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			if (name != null) {
 				// add alias to schema alias list
 				if (schemaAliases == null)
-					schemaAliases = new HashMap<String, String>();
+					schemaAliases = new HashMap<>();
 				schemaAliases.put(name, parent);
 			}
 		}
@@ -1725,7 +1720,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 								fs.setGeometry(geo);
 							}
 						} catch (XMLStreamException xe) {
-							log.warn("Failed XML parsing: skip geometry " + localname);
+							log.warn("Failed XML parsing: skip geometry {}", localname);
 							log.debug("", xe);
 							skipNextElement(stream, qName);
 						} catch (RuntimeException rte) {
@@ -1891,7 +1886,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					String ns = qname.getNamespaceURI();
 					if (ns != null && !rootNs.equals(ns)) {
 						if (!handleExtension(map, se, qname)) {
-							log.debug("Skip " + qname.getPrefix() + ":" + sename);
+							log.debug("Skip {}:{}", qname.getPrefix(), sename);
 						}
 						continue;
 					}
@@ -1984,7 +1979,9 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			} else {
 				eltname = prefix + ":" + eltname; // prefix name with namespace prefix
 			}
-			log.debug("Handle tag data " + prefix + ":" + el.getName());
+			if(log.isTraceEnabled()) {
+				log.trace("Handle tag data " + prefix + ":" + el.getName());
+			}
 		} // else log.debug("non-prefix ns=" + el.getNamespace());
 		if (namePrefix == null) namePrefix = eltname;
 		else namePrefix += "/" + eltname;
@@ -2061,7 +2058,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 		if (localname.equals(POINT)) {
 			return parseCoordinate(name);
 		} else if (localname.equals(MULTI_GEOMETRY)) {
-			List<Geometry> geometries = new ArrayList<Geometry>();
+			List<Geometry> geometries = new ArrayList<>();
 			while (true) {
 				XMLEvent event = stream.nextEvent();
 				if (foundEndTag(event, name)) {
@@ -2192,7 +2189,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			// contains one outer ring and 0 or more inner rings
 			LinearRing outer = null;
 			GeometryGroup geom = new GeometryGroup();
-			List<LinearRing> inners = new ArrayList<LinearRing>();
+			List<LinearRing> inners = new ArrayList<>();
 			while (true) {
 				XMLEvent event = stream.nextEvent();
 				if (foundEndTag(event, name)) {
@@ -2283,7 +2280,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						try {
 							latitude = new Latitude(Double.parseDouble(value), Angle.DEGREES);
 						} catch (IllegalArgumentException nfe) {
-							log.warn("Invalid latitude value: " + value);
+							log.warn("Invalid latitude value: {}", value);
 						}
 				} else if (name.equals(LONGITUDE)) {
 					String value = getNonEmptyElementText();
@@ -2291,7 +2288,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						try {
 							longitude = new Longitude(Double.parseDouble(value), Angle.DEGREES);
 						} catch (IllegalArgumentException nfe) {
-							log.warn("Invalid longitude value: " + value);
+							log.warn("Invalid longitude value: {}", value);
 						}
 				} else if (name.equals(ALTITUDE)) {
 					String value = getNonEmptyElementText();
@@ -2299,7 +2296,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						try {
 							altitude = Double.valueOf(value);
 						} catch (NumberFormatException nfe) {
-							log.warn("Invalid altitude value: " + value);
+							log.warn("Invalid altitude value: {}", value);
 						}
 				}
 			}
@@ -2380,7 +2377,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 					try {
 						geom.drawOrder = Integer.valueOf(value);
 					} catch (NumberFormatException nfe) {
-						log.warn("Invalid drawOrder value: " + value);
+						log.warn("Invalid drawOrder value: {}", value);
 					}
 			} else {
 				log.warn("invalid namespace for drawOrder: {}", name);
@@ -2447,8 +2444,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 						log.debug("Skip duplicate value for {}", qName);
 						dupAltitudeModeWarn = true;
 					}
-				} else if (EXTRUDE.equals(localPart)) {
-					if (isTrue(stream.getElementText()))
+				} else if (EXTRUDE.equals(localPart) && isTrue(stream.getElementText())) {
 						extrude = Boolean.TRUE; // default=false
 				}
 				// Note tessellate tag is not applicable to Point
@@ -2496,7 +2492,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 	 */
 	@NonNull
 	public static List<Point> parseCoord(String coord) {
-		List<Point> list = new ArrayList<Point>();
+		List<Point> list = new ArrayList<>();
 		NumberStreamTokenizer st = new NumberStreamTokenizer(coord);
 		st.ordinaryChar(',');
 		boolean seenComma = false;
@@ -2669,8 +2665,7 @@ public class KmlInputStream extends XmlInputStream implements IKml {
 			String elementText = stream.getElementText();
 			return elementText == null || elementText.isEmpty() ? elementText : elementText.trim();
 		} catch (XMLStreamException e) {
-			log.warn("Unable to parse " + name.getLocalPart()
-					+ " as text element: " + e);
+			log.warn("Unable to parse {} as text element: {}", name.getLocalPart(), e);
 			skipNextElement(stream, name);
 			return null;
 		}
