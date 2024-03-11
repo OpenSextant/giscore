@@ -1,5 +1,8 @@
 ## Info on Giscore ##
 
+**NOTICE:** As of 2024 this library repo is not supported.  It has been subsumed under `Xponents/Core/` for general Java-compatibility and sustainment. 
+Test data for this library will remain here until further notice. [Xponents](https://github.com/OpenSextant/Xponents) is the only active, known consumer of the library.
+
 GIScore provides the capability to perform streaming input and output of data from different 
 file formats with an emphasis on GIS file formats such as ESRI Shapefiles or 
 geo-databases (GDB) and Google Earth KML/KMZ. As time went on it was extended to include other 
